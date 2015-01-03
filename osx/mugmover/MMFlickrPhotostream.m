@@ -62,8 +62,8 @@ static OFFlickrAPIContext *     flickrContext;
 
         // NSLog(@"STEP 1 Create the OFFlickr request object");
         self.initializationProgress = 0.2; // That's 1 out of 5 steps
-        flickrContext = [[OFFlickrAPIContext alloc] initWithAPIKey: MUGMOVER_API_KEY
-                                                      sharedSecret: MUGMOVER_SHARED_SECRET];
+        flickrContext = [[OFFlickrAPIContext alloc] initWithAPIKey: MUGMOVER_API_KEY_MACRO
+                                                      sharedSecret: MUGMOVER_SHARED_SECRET_MACRO];
         OFFlickrAPIRequest *flickrRequest = [MMFlickrPhotostream getRequestFromPoolSettingDelegate: self];
         
         // NSLog(@"STEP 2 Initiate the OAuth the request");
@@ -264,7 +264,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
                           face.flickrNoteWidth, @"note_w",
                           face.flickrNoteHeight, @"note_h",
                           face.flickrNoteText, @"note_text",
-                          MUGMOVER_API_KEY, @"api_key",
+                          MUGMOVER_API_KEY_MACRO, @"api_key",
                           nil];
     [flickrRequest callAPIMethodWithPOST: @"flickr.photos.notes.add"
                                     arguments: args];
@@ -284,7 +284,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
     flickrRequest.sessionInfo = [pieces componentsJoinedByString: @";"];
 
     NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys: noteId, @"note_id",
-                          MUGMOVER_API_KEY, @"api_key",
+                          MUGMOVER_API_KEY_MACRO, @"api_key",
                           nil];
     [flickrRequest callAPIMethodWithPOST: @"flickr.photos.notes.delete"
                                arguments: args];

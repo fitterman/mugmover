@@ -1,0 +1,12 @@
+//
+//  Debug.xcconfig
+//  
+//
+//  Created by Bob Fitterman on 1/3/15.
+//  Copyright (c) 2015 Dicentra LLC. All rights reserved.
+//
+
+// NOTE: Because you are limited to one set of xcconfig files per target,
+// be sure to use "pod install --no-integrate, which  then requires
+// the following line:
+#include "Pods/Target Support Files/Pods/Pods.debug.xcconfig"

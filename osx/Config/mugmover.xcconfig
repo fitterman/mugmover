@@ -1,0 +1,11 @@
+//
+//  mugmover.xcconfig
+//  
+//
+//  Created by Bob Fitterman on 1/3/15.
+//  Copyright (c) 2015 Dicentra LLC. All rights reserved.
+//
+
+#include "secrets.xcconfig"
+
+GCC_PREPROCESSOR_DEFINITIONS = MUGMOVER_API_KEY_MACRO=$(MUGMOVER_API_KEY_CONSTANT) MUGMOVER_SHARED_SECRET_MACRO=$(MUGMOVER_SHARED_SECRET_CONSTANT)
