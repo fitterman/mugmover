@@ -1,0 +1,593 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8EE5090B10E91E9048578D4E /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33EBE9A01471814A3096BC04 /* libPods.a */; };
+		C42F7AD21A152F60006E38DD /* MMFlickrPhotostream.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7AD11A152F60006E38DD /* MMFlickrPhotostream.m */; };
+		C42F7AD51A1532FC006E38DD /* MMFace.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7AD41A1532FC006E38DD /* MMFace.m */; };
+		C42F7AD81A153368006E38DD /* MMPhotoLibrary.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */; };
+		C42F7ADB1A1533AB006E38DD /* MMPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7ADA1A1533AB006E38DD /* MMPoint.m */; };
+		C42F7ADE1A15340B006E38DD /* MMREVIEWTHIS.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7ADD1A15340B006E38DD /* MMREVIEWTHIS.m */; };
+		C4968CB71A15101500F34E46 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4968CB61A15101500F34E46 /* Cocoa.framework */; };
+		C4968CC11A15101500F34E46 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C4968CBF1A15101500F34E46 /* InfoPlist.strings */; };
+		C4968CC31A15101500F34E46 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CC21A15101500F34E46 /* main.m */; };
+		C4968CC71A15101500F34E46 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = C4968CC51A15101500F34E46 /* Credits.rtf */; };
+		C4968CCA1A15101500F34E46 /* MMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CC91A15101500F34E46 /* MMAppDelegate.m */; };
+		C4968CCD1A15101500F34E46 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4968CCB1A15101500F34E46 /* MainMenu.xib */; };
+		C4968CCF1A15101500F34E46 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C4968CCE1A15101500F34E46 /* Images.xcassets */; };
+		C4968CD61A15101500F34E46 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4968CD51A15101500F34E46 /* XCTest.framework */; };
+		C4968CD71A15101500F34E46 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4968CB61A15101500F34E46 /* Cocoa.framework */; };
+		C4968CDF1A15101500F34E46 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C4968CDD1A15101500F34E46 /* InfoPlist.strings */; };
+		C4968CE11A15101500F34E46 /* mugmoverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CE01A15101500F34E46 /* mugmoverTests.m */; };
+		C4968CEC1A151B0300F34E46 /* MMTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CEB1A151B0300F34E46 /* MMTrack.m */; };
+		C4F3F1811A26E90900C2BE00 /* MMPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = C4F3F1801A26E90900C2BE00 /* MMPhoto.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		C4118EEF1A58645E0057A72B /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+			);
+		};
+/* End PBXBuildRule section */
+
+/* Begin PBXContainerItemProxy section */
+		C4968CD81A15101500F34E46 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C4968CAB1A15101500F34E46 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C4968CB21A15101500F34E46;
+			remoteInfo = mugmover;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		039BFC3F28C56A52811B2453 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
+		0E070295DAA19FDD2B92D323 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
+		33EBE9A01471814A3096BC04 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		C4118EEE1A49E4F30057A72B /* MMEnvironment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MMEnvironment.h; sourceTree = "<group>"; };
+		C42F7AD01A152F60006E38DD /* MMFlickrPhotostream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFlickrPhotostream.h; sourceTree = "<group>"; };
+		C42F7AD11A152F60006E38DD /* MMFlickrPhotostream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFlickrPhotostream.m; sourceTree = "<group>"; };
+		C42F7AD31A1532FC006E38DD /* MMFace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFace.h; sourceTree = "<group>"; };
+		C42F7AD41A1532FC006E38DD /* MMFace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFace.m; sourceTree = "<group>"; };
+		C42F7AD61A153368006E38DD /* MMPhotoLibrary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMPhotoLibrary.h; sourceTree = "<group>"; };
+		C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPhotoLibrary.m; sourceTree = "<group>"; };
+		C42F7AD91A1533AB006E38DD /* MMPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMPoint.h; sourceTree = "<group>"; };
+		C42F7ADA1A1533AB006E38DD /* MMPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPoint.m; sourceTree = "<group>"; };
+		C42F7ADC1A15340B006E38DD /* MMREVIEWTHIS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMREVIEWTHIS.h; sourceTree = "<group>"; };
+		C42F7ADD1A15340B006E38DD /* MMREVIEWTHIS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMREVIEWTHIS.m; sourceTree = "<group>"; };
+		C4968CB31A15101500F34E46 /* mugmover.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mugmover.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C4968CB61A15101500F34E46 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		C4968CB91A15101500F34E46 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		C4968CBA1A15101500F34E46 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		C4968CBB1A15101500F34E46 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		C4968CBE1A15101500F34E46 /* mugmover-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "mugmover-Info.plist"; sourceTree = "<group>"; };
+		C4968CC01A15101500F34E46 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C4968CC21A15101500F34E46 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C4968CC41A15101500F34E46 /* mugmover-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "mugmover-Prefix.pch"; sourceTree = "<group>"; };
+		C4968CC61A15101500F34E46 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
+		C4968CC81A15101500F34E46 /* MMAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MMAppDelegate.h; sourceTree = "<group>"; };
+		C4968CC91A15101500F34E46 /* MMAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MMAppDelegate.m; sourceTree = "<group>"; };
+		C4968CCC1A15101500F34E46 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
+		C4968CCE1A15101500F34E46 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		C4968CD41A15101500F34E46 /* mugmoverTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mugmoverTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C4968CD51A15101500F34E46 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		C4968CDC1A15101500F34E46 /* mugmoverTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "mugmoverTests-Info.plist"; sourceTree = "<group>"; };
+		C4968CDE1A15101500F34E46 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C4968CE01A15101500F34E46 /* mugmoverTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = mugmoverTests.m; sourceTree = "<group>"; };
+		C4968CEA1A151B0300F34E46 /* MMTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMTrack.h; sourceTree = "<group>"; };
+		C4968CEB1A151B0300F34E46 /* MMTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMTrack.m; sourceTree = "<group>"; };
+		C4F3F17F1A26E90900C2BE00 /* MMPhoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMPhoto.h; sourceTree = "<group>"; };
+		C4F3F1801A26E90900C2BE00 /* MMPhoto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPhoto.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C4968CB01A15101500F34E46 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C4968CB71A15101500F34E46 /* Cocoa.framework in Frameworks */,
+				8EE5090B10E91E9048578D4E /* libPods.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4968CD11A15101500F34E46 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C4968CD71A15101500F34E46 /* Cocoa.framework in Frameworks */,
+				C4968CD61A15101500F34E46 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		C4968CAA1A15101500F34E46 = {
+			isa = PBXGroup;
+			children = (
+				C4118EEE1A49E4F30057A72B /* MMEnvironment.h */,
+				C4968CBC1A15101500F34E46 /* mugmover */,
+				C4968CDA1A15101500F34E46 /* mugmoverTests */,
+				C4968CB51A15101500F34E46 /* Frameworks */,
+				C4968CB41A15101500F34E46 /* Products */,
+				DC4767F782FE81717C27A9BA /* Pods */,
+			);
+			sourceTree = "<group>";
+		};
+		C4968CB41A15101500F34E46 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C4968CB31A15101500F34E46 /* mugmover.app */,
+				C4968CD41A15101500F34E46 /* mugmoverTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C4968CB51A15101500F34E46 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C4968CB61A15101500F34E46 /* Cocoa.framework */,
+				C4968CD51A15101500F34E46 /* XCTest.framework */,
+				C4968CB81A15101500F34E46 /* Other Frameworks */,
+				33EBE9A01471814A3096BC04 /* libPods.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C4968CB81A15101500F34E46 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C4968CB91A15101500F34E46 /* AppKit.framework */,
+				C4968CBA1A15101500F34E46 /* CoreData.framework */,
+				C4968CBB1A15101500F34E46 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		C4968CBC1A15101500F34E46 /* mugmover */ = {
+			isa = PBXGroup;
+			children = (
+				C4968CC81A15101500F34E46 /* MMAppDelegate.h */,
+				C4968CC91A15101500F34E46 /* MMAppDelegate.m */,
+				C42F7AD31A1532FC006E38DD /* MMFace.h */,
+				C42F7AD41A1532FC006E38DD /* MMFace.m */,
+				C4F3F17F1A26E90900C2BE00 /* MMPhoto.h */,
+				C4F3F1801A26E90900C2BE00 /* MMPhoto.m */,
+				C42F7AD61A153368006E38DD /* MMPhotoLibrary.h */,
+				C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */,
+				C42F7AD01A152F60006E38DD /* MMFlickrPhotostream.h */,
+				C42F7AD11A152F60006E38DD /* MMFlickrPhotostream.m */,
+				C42F7AD91A1533AB006E38DD /* MMPoint.h */,
+				C42F7ADA1A1533AB006E38DD /* MMPoint.m */,
+				C4968CEA1A151B0300F34E46 /* MMTrack.h */,
+				C4968CEB1A151B0300F34E46 /* MMTrack.m */,
+				C4968CCB1A15101500F34E46 /* MainMenu.xib */,
+				C4968CCE1A15101500F34E46 /* Images.xcassets */,
+				C4968CBD1A15101500F34E46 /* Supporting Files */,
+				C42F7ADC1A15340B006E38DD /* MMREVIEWTHIS.h */,
+				C42F7ADD1A15340B006E38DD /* MMREVIEWTHIS.m */,
+			);
+			path = mugmover;
+			sourceTree = "<group>";
+		};
+		C4968CBD1A15101500F34E46 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				C4968CBE1A15101500F34E46 /* mugmover-Info.plist */,
+				C4968CBF1A15101500F34E46 /* InfoPlist.strings */,
+				C4968CC21A15101500F34E46 /* main.m */,
+				C4968CC41A15101500F34E46 /* mugmover-Prefix.pch */,
+				C4968CC51A15101500F34E46 /* Credits.rtf */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		C4968CDA1A15101500F34E46 /* mugmoverTests */ = {
+			isa = PBXGroup;
+			children = (
+				C4968CE01A15101500F34E46 /* mugmoverTests.m */,
+				C4968CDB1A15101500F34E46 /* Supporting Files */,
+			);
+			path = mugmoverTests;
+			sourceTree = "<group>";
+		};
+		C4968CDB1A15101500F34E46 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				C4968CDC1A15101500F34E46 /* mugmoverTests-Info.plist */,
+				C4968CDD1A15101500F34E46 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		DC4767F782FE81717C27A9BA /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				0E070295DAA19FDD2B92D323 /* Pods.debug.xcconfig */,
+				039BFC3F28C56A52811B2453 /* Pods.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C4968CB21A15101500F34E46 /* mugmover */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C4968CE41A15101500F34E46 /* Build configuration list for PBXNativeTarget "mugmover" */;
+			buildPhases = (
+				CC7C5CAAE5F3FDF50CB6A173 /* Check Pods Manifest.lock */,
+				C4968CAF1A15101500F34E46 /* Sources */,
+				C4968CB01A15101500F34E46 /* Frameworks */,
+				C4968CB11A15101500F34E46 /* Resources */,
+				76015215AAA8A6B5EB5A05DE /* Copy Pods Resources */,
+			);
+			buildRules = (
+				C4118EEF1A58645E0057A72B /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = mugmover;
+			productName = mugmover;
+			productReference = C4968CB31A15101500F34E46 /* mugmover.app */;
+			productType = "com.apple.product-type.application";
+		};
+		C4968CD31A15101500F34E46 /* mugmoverTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C4968CE71A15101500F34E46 /* Build configuration list for PBXNativeTarget "mugmoverTests" */;
+			buildPhases = (
+				C4968CD01A15101500F34E46 /* Sources */,
+				C4968CD11A15101500F34E46 /* Frameworks */,
+				C4968CD21A15101500F34E46 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C4968CD91A15101500F34E46 /* PBXTargetDependency */,
+			);
+			name = mugmoverTests;
+			productName = mugmoverTests;
+			productReference = C4968CD41A15101500F34E46 /* mugmoverTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C4968CAB1A15101500F34E46 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = MM;
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "Dicentra LLC";
+				TargetAttributes = {
+					C4968CD31A15101500F34E46 = {
+						TestTargetID = C4968CB21A15101500F34E46;
+					};
+				};
+			};
+			buildConfigurationList = C4968CAE1A15101500F34E46 /* Build configuration list for PBXProject "mugmover" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = C4968CAA1A15101500F34E46;
+			productRefGroup = C4968CB41A15101500F34E46 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C4968CB21A15101500F34E46 /* mugmover */,
+				C4968CD31A15101500F34E46 /* mugmoverTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C4968CB11A15101500F34E46 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C4968CC11A15101500F34E46 /* InfoPlist.strings in Resources */,
+				C4968CCF1A15101500F34E46 /* Images.xcassets in Resources */,
+				C4968CC71A15101500F34E46 /* Credits.rtf in Resources */,
+				C4968CCD1A15101500F34E46 /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4968CD21A15101500F34E46 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C4968CDF1A15101500F34E46 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		76015215AAA8A6B5EB5A05DE /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CC7C5CAAE5F3FDF50CB6A173 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C4968CAF1A15101500F34E46 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C42F7AD81A153368006E38DD /* MMPhotoLibrary.m in Sources */,
+				C4968CCA1A15101500F34E46 /* MMAppDelegate.m in Sources */,
+				C4968CEC1A151B0300F34E46 /* MMTrack.m in Sources */,
+				C4968CC31A15101500F34E46 /* main.m in Sources */,
+				C42F7AD51A1532FC006E38DD /* MMFace.m in Sources */,
+				C42F7ADE1A15340B006E38DD /* MMREVIEWTHIS.m in Sources */,
+				C42F7AD21A152F60006E38DD /* MMFlickrPhotostream.m in Sources */,
+				C4F3F1811A26E90900C2BE00 /* MMPhoto.m in Sources */,
+				C42F7ADB1A1533AB006E38DD /* MMPoint.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4968CD01A15101500F34E46 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C4968CE11A15101500F34E46 /* mugmoverTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C4968CD91A15101500F34E46 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C4968CB21A15101500F34E46 /* mugmover */;
+			targetProxy = C4968CD81A15101500F34E46 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		C4968CBF1A15101500F34E46 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C4968CC01A15101500F34E46 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		C4968CC51A15101500F34E46 /* Credits.rtf */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C4968CC61A15101500F34E46 /* en */,
+			);
+			name = Credits.rtf;
+			sourceTree = "<group>";
+		};
+		C4968CCB1A15101500F34E46 /* MainMenu.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C4968CCC1A15101500F34E46 /* Base */,
+			);
+			name = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		C4968CDD1A15101500F34E46 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C4968CDE1A15101500F34E46 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		C4968CE21A15101500F34E46 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		C4968CE31A15101500F34E46 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		C4968CE51A15101500F34E46 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0E070295DAA19FDD2B92D323 /* Pods.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "mugmover/mugmover-Prefix.pch";
+				INFOPLIST_FILE = "mugmover/mugmover-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		C4968CE61A15101500F34E46 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 039BFC3F28C56A52811B2453 /* Pods.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "mugmover/mugmover-Prefix.pch";
+				INFOPLIST_FILE = "mugmover/mugmover-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		C4968CE81A15101500F34E46 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/mugmover.app/Contents/MacOS/mugmover";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "mugmover/mugmover-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "mugmoverTests/mugmoverTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		C4968CE91A15101500F34E46 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/mugmover.app/Contents/MacOS/mugmover";
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+					"$(inherited)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "mugmover/mugmover-Prefix.pch";
+				INFOPLIST_FILE = "mugmoverTests/mugmoverTests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C4968CAE1A15101500F34E46 /* Build configuration list for PBXProject "mugmover" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C4968CE21A15101500F34E46 /* Debug */,
+				C4968CE31A15101500F34E46 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C4968CE41A15101500F34E46 /* Build configuration list for PBXNativeTarget "mugmover" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C4968CE51A15101500F34E46 /* Debug */,
+				C4968CE61A15101500F34E46 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C4968CE71A15101500F34E46 /* Build configuration list for PBXNativeTarget "mugmoverTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C4968CE81A15101500F34E46 /* Debug */,
+				C4968CE91A15101500F34E46 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C4968CAB1A15101500F34E46 /* Project object */;
+}
