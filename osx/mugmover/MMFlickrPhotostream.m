@@ -7,14 +7,12 @@
 //
 
 #import "MMFlickrPhotostream.h"
+#import "MMFlickrRequest.h"
+#import "MMFlickrRequestPool.h"
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
 
 @implementation MMFlickrPhotostream
-
-#define MAX_POOL_SIZE (20)
-
-#define MAX_RETRIES (5)
 
 NSInteger           nextPhotoToDeliver;
 NSInteger           page;
@@ -22,11 +20,6 @@ NSInteger           photosInBuffer;
 NSInteger           photosPerPage;
 NSDictionary       *photoResponseDictionary;
 long                retryCount;
-
-static NSMutableArray *         activeFlickrRequestPool;
-static NSMutableArray *         availableFlickrRequestPool;
-static OFFlickrAPIContext *     flickrContext;
-
 
 - (id)initWithHandle: (NSString *)flickrHandle
          libraryPath: (NSString *)libraryPath
@@ -61,17 +54,17 @@ static OFFlickrAPIContext *     flickrContext;
                                                            andSelector: @selector(handleIncomingURL:withReplyEvent:)
                                                          forEventClass: kInternetEventClass
                                                             andEventID: kAEGetURL];
-     
-            /* Create the request pool */
-        
-        availableFlickrRequestPool = [[NSMutableArray alloc] initWithCapacity: MAX_POOL_SIZE];
-        activeFlickrRequestPool = [[NSMutableArray alloc] initWithCapacity: MAX_POOL_SIZE];
 
         // NSLog(@"STEP 1 Create the OFFlickr request object");
         self.initializationProgress = 0.2; // That's 1 out of 5 steps
-        flickrContext = [[OFFlickrAPIContext alloc] initWithAPIKey: MUGMOVER_API_KEY_MACRO
-                                                      sharedSecret: MUGMOVER_SHARED_SECRET_MACRO];
-        OFFlickrAPIRequest *flickrRequest = [MMFlickrPhotostream getRequestFromPoolSettingDelegate: self];
+        _flickrContext = [[OFFlickrAPIContext alloc] initWithAPIKey: MUGMOVER_API_KEY_MACRO
+                                                       sharedSecret: MUGMOVER_SHARED_SECRET_MACRO];
+        _requestPool = [[MMFlickrRequestPool alloc] initWithContext: _flickrContext];
+        if (!_requestPool)
+        {
+            NSLog(@"ERROR    Unable to initialize pool!");
+        }
+        OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
         
         // NSLog(@"STEP 2 Initiate the OAuth the request");
         self.initializationProgress = 0.4; // That's 2 out of 5 steps
@@ -90,6 +83,7 @@ static OFFlickrAPIContext *     flickrContext;
     _accessSecret = nil;
     _accessToken = nil;
     _currentPhoto = nil;
+    _flickrContext = nil;
     _handle = nil;
     _library = nil;
     _photoDictionary = nil;
@@ -107,14 +101,14 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
     // NSLog(@"       secret=%@", inSecret);
     self.initializationProgress = 0.6; /* That's 3 out of 5 steps */
 
-    flickrContext.OAuthToken = inRequestToken;
-    flickrContext.OAuthTokenSecret = inSecret;
+    _flickrContext.OAuthToken = inRequestToken;
+    _flickrContext.OAuthTokenSecret = inSecret;
     
-    [MMFlickrPhotostream returnRequestToPool: inRequest];
+    [_requestPool returnRequestToPool: inRequest];
     //    [progressLabel setStringValue: @"Pending your approval..."];
     
-    NSURL *authURL = [flickrContext userAuthorizationURLWithRequestToken: inRequestToken
-                                                     requestedPermission: OFFlickrWritePermission];
+    NSURL *authURL = [_flickrContext userAuthorizationURLWithRequestToken: inRequestToken
+                                                      requestedPermission: OFFlickrWritePermission];
     // NSLog(@"       authUrl=%@", [authURL absoluteString]);
     [[NSWorkspace sharedWorkspace] openURL: authURL];
     
@@ -138,7 +132,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
         // NSLog(@"ERROR Invalid callback URL");
         self.initializationProgress = -1.0;
     }
-    OFFlickrAPIRequest *flickrRequest = [MMFlickrPhotostream getRequestFromPoolSettingDelegate: self];
+    OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
     [flickrRequest fetchOAuthAccessTokenWithRequestToken: requestToken verifier: verifier];
 }
 
@@ -156,72 +150,21 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
     // NSLog(@"       userFullName=%@", inFullName);
     // NSLog(@"       username=%@", inUserName);
     // NSLog(@"       nsid=%@", inNSID);
-    self.accessToken = inAccessToken;
-    self.accessSecret = inSecret;
-    flickrContext.OAuthToken = inAccessToken;
-    flickrContext.OAuthTokenSecret = inSecret;
+    _accessToken = inAccessToken;
+    _accessSecret = inSecret;
+    _flickrContext.OAuthToken = inAccessToken;
+    _flickrContext.OAuthTokenSecret = inSecret;
     
-    [MMFlickrPhotostream returnRequestToPool: inRequest];
+    [_requestPool returnRequestToPool: inRequest];
     self.initializationProgress = 1.0; /* That's 5 out of 5 steps */
 
-}
-
-+ (OFFlickrAPIRequest *)getRequestFromPoolSettingDelegate: (OFFlickrAPIRequestDelegateType) delegate
-{
-    @synchronized(availableFlickrRequestPool)
-    {
-        NSInteger last = [availableFlickrRequestPool count];
-        OFFlickrAPIRequest *request;
-        if (last > 0)
-        {
-            last = last - 1;
-            request = [availableFlickrRequestPool objectAtIndex: last];
-            [availableFlickrRequestPool removeObjectAtIndex: last];
-        }
-        else
-        {
-            request = [[OFFlickrAPIRequest alloc] initWithAPIContext: flickrContext];
-            if (request)
-            {
-                request.sessionInfo = @"OAuth";
-            }
-            else
-            {
-                @throw [NSException exceptionWithName: @"PoolManagement"
-                                               reason: @"Unable to allocate new request"
-                                             userInfo: nil];
-            }
-        }
-        [request setDelegate: delegate];
-        [activeFlickrRequestPool addObject: request];
-        return request;
-    }
-}
-
-+ (void)returnRequestToPool: (OFFlickrAPIRequest *)request
-{
-    @synchronized(availableFlickrRequestPool)
-    {
-        NSInteger index = [activeFlickrRequestPool indexOfObjectIdenticalTo: request];
-        if (index == NSNotFound)
-        {
-            @throw [NSException exceptionWithName: @"PoolManagement"
-                                           reason: @"Unable to find request in active pool"
-                                         userInfo: nil];
-        }
-        else
-        {
-            [activeFlickrRequestPool removeObjectAtIndex: index];
-            [availableFlickrRequestPool addObject: request];
-        }
-    }
 }
 
 - (void)nextPhoto
 {
     if ((photosInBuffer == 0) || (nextPhotoToDeliver >= photosInBuffer))
     {
-        OFFlickrAPIRequest *flickrRequest = [MMFlickrPhotostream getRequestFromPoolSettingDelegate: self];
+        OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
         if ([flickrRequest isRunning])
         {
             @throw [NSException exceptionWithName: @"PoolManagement"
@@ -260,7 +203,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
 - (void)addFaceNoteTo: (NSString *)flickrPhotoid
                  face: (MMFace *)face
 {
-    OFFlickrAPIRequest *flickrRequest = [MMFlickrPhotostream getRequestFromPoolSettingDelegate: self];
+    OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
     if ([flickrRequest isRunning])
     {
         @throw [NSException exceptionWithName: @"PoolManagement"
@@ -284,7 +227,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
 
 - (void)deleteNote: (NSString *)noteId
 {
-    OFFlickrAPIRequest *flickrRequest = [MMFlickrPhotostream getRequestFromPoolSettingDelegate: self];
+    OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
     if ([flickrRequest isRunning])
     {
         @throw [NSException exceptionWithName: @"PoolManagement"
@@ -305,7 +248,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
 - (void)fetchExifUsingPhotoId: (NSString *)photoId
                        secret: (NSString *)secret
 {
-    OFFlickrAPIRequest *flickrRequest = [MMFlickrPhotostream getRequestFromPoolSettingDelegate: self];
+    OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
     if ([flickrRequest isRunning])
     {
         @throw [NSException exceptionWithName: @"PoolManagement"
@@ -326,7 +269,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
 - (void)fetchInfoUsingPhotoId: (NSString *)photoId
                        secret: (NSString *)secret
 {
-    OFFlickrAPIRequest *flickrRequest = [MMFlickrPhotostream getRequestFromPoolSettingDelegate: self];
+    OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
     if ([flickrRequest isRunning])
     {
         @throw [NSException exceptionWithName: @"PoolManagement"
@@ -358,6 +301,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
 //    // NSLog(@"  COMPLETION: request=%@", inRequest.sessionInfo);
     if ([inRequest.sessionInfo hasPrefix: @"fetchExif;"])
     {
+        retryCount = 0;
         NSArray *exifArray = [inResponseDictionary valueForKeyPath: @"photo.exif"];
         NSMutableDictionary  *exifData = [NSMutableDictionary new];
         for (id dict in exifArray)
@@ -389,6 +333,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
     }
     else if ([inRequest.sessionInfo hasPrefix: @"fetchInfo;"])
     {
+        retryCount = 0;
         /* CAUTION: FetchInfo operation implies all the mugmover notes will be deleted. */
         NSArray *noteArray = [inResponseDictionary valueForKeyPath: @"photo.notes.note"];
         if (noteArray)
@@ -414,6 +359,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
     }
     else if ([inRequest.sessionInfo hasPrefix: @"addNote"])
     {
+        retryCount = 0;
         /* If it worked, there's nothing to do. */
     }
     else if ([inRequest.sessionInfo isEqualToString: @"nextPhoto"])
@@ -466,11 +412,9 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
         default:
             break;
     }
-    if (inRequest.sessionInfo && (retryCount < MAX_RETRIES))
+    if (inRequest.sessionInfo)
     {
-        retryCount++;
-        // NSLog(@"RETRYING %lu/%d", retryCount, MAX_RETRIES);
-        return YES;
+        return [_requestPool canRetry: inRequest];
     }
     return NO;
     
@@ -525,6 +469,6 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
 
 - (NSURL *)urlFromDictionary: (NSDictionary *) photoDict
 {
-    return [flickrContext photoSourceURLFromDictionary: photoDict size: OFFlickrSmallSize];
+    return [_flickrContext photoSourceURLFromDictionary: photoDict size: OFFlickrSmallSize];
 }
 @end

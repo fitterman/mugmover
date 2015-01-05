@@ -12,6 +12,8 @@
 #import "FMDB/FMDatabaseAdditions.h"
 #import "FMDB/FMResultSet.h"
 #import "MMFlickrPhotostream.h"
+#import "MMFlickrRequest.h"
+#import "MMFlickrRequestPool.h"
 #import "MMPhoto.h"
 #import "MMPhotolibrary.h"
 #import "MMPoint.h"
@@ -501,7 +503,7 @@
 
 - (void)fetchFlickrSizes
 {
-    OFFlickrAPIRequest *flickrRequest = [MMFlickrPhotostream getRequestFromPoolSettingDelegate: self];
+    OFFlickrAPIRequest *flickrRequest = [_stream.requestPool getRequestFromPoolSettingDelegate: self];
     if ([flickrRequest isRunning])
     {
         @throw [NSException exceptionWithName: @"PoolManagement"

@@ -12,6 +12,7 @@
 @class MMFace;
 @class MMPhoto;
 @class MMPhotoLibrary;
+@class MMFlickrRequestPool;
 
 @interface MMFlickrPhotostream : NSObject <OFFlickrAPIRequestDelegate>
 
@@ -19,18 +20,16 @@
 @property (strong)              NSString *              accessToken;
 @property (strong)              MMPhoto *               currentPhoto;
 @property (assign)              NSInteger               currentPhotoIndex;
+@property (strong)              OFFlickrAPIContext *    flickrContext;
 @property (strong)              NSString *              handle; /* TODO Verify reasoning for strong */
 @property (assign)              Float32                 initializationProgress;
 @property (strong)              MMPhotoLibrary *        library;
 @property (strong)              NSMutableDictionary *   photoDictionary;
 @property (assign)              NSInteger               photosInBuffer;
 @property (assign)              NSInteger               photosInStream;
+@property (strong)              MMFlickrRequestPool *   requestPool;
 @property (strong, readonly)    NSOperationQueue *      streamQueue;
 
-
-+ (OFFlickrAPIRequest *)getRequestFromPoolSettingDelegate: (OFFlickrAPIRequestDelegateType) delegate;
-
-+ (void)returnRequestToPool:(OFFlickrAPIRequest *)request;
 
 - (void)addFaceNoteTo: (NSString *)flickrPhotoid
                  face: (MMFace *)face;
