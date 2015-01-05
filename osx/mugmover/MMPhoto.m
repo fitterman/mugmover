@@ -437,6 +437,9 @@
     [self findRelevantAdjustments];
     [self adjustForStraightenCropAndGetFaces];
     [self queueFacesToStream];
+    
+    // When done, release it from the library
+    [_stream removeFromPhotoDictionary: self];
 }
 
 - (BOOL) queueFacesToStream

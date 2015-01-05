@@ -15,16 +15,17 @@
 
 @interface MMFlickrPhotostream : NSObject <OFFlickrAPIRequestDelegate>
 
-@property (strong)              NSString *             accessSecret;
-@property (strong)              NSString *             accessToken;
-@property (strong)              MMPhoto *              currentPhoto;
-@property (assign)              NSInteger              currentPhotoIndex;
-@property (strong)              NSString *             handle; /* TODO Verify reasoning for strong */
-@property (assign)              Float32                initializationProgress;
-@property (strong)              MMPhotoLibrary *       library;
-@property (assign)              NSInteger              photosInBuffer;
-@property (assign)              NSInteger              photosInStream;
-@property (strong, readonly)    NSOperationQueue *     streamQueue;
+@property (strong)              NSString *              accessSecret;
+@property (strong)              NSString *              accessToken;
+@property (strong)              MMPhoto *               currentPhoto;
+@property (assign)              NSInteger               currentPhotoIndex;
+@property (strong)              NSString *              handle; /* TODO Verify reasoning for strong */
+@property (assign)              Float32                 initializationProgress;
+@property (strong)              MMPhotoLibrary *        library;
+@property (strong)              NSMutableDictionary *   photoDictionary;
+@property (assign)              NSInteger               photosInBuffer;
+@property (assign)              NSInteger               photosInStream;
+@property (strong, readonly)    NSOperationQueue *      streamQueue;
 
 
 + (OFFlickrAPIRequest *)getRequestFromPoolSettingDelegate: (OFFlickrAPIRequestDelegateType) delegate;
@@ -41,6 +42,8 @@
          libraryPath: (NSString *)libraryPath;
 
 - (void)nextPhoto;
+
+- (void)removeFromPhotoDictionary: (MMPhoto *)photo;
 
 - (BOOL) trackFailedAPIRequest: (OFFlickrAPIRequest *)inRequest
                          error: (NSError *)inError;

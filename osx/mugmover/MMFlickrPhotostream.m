@@ -39,9 +39,16 @@ static OFFlickrAPIContext *     flickrContext;
         {
             return nil;
         }
-        self.library = [[MMPhotoLibrary alloc] initWithPath: (NSString *)libraryPath];
-        if (!self.library)
+        _library = [[MMPhotoLibrary alloc] initWithPath: (NSString *)libraryPath];
+        if (!_library)
         {
+            return nil;
+        }
+        
+        _photoDictionary = [[NSMutableDictionary alloc] init];
+        if (!_photoDictionary)
+        {
+            _library = nil;
             return nil;
         }
         self.handle = flickrHandle;
@@ -332,6 +339,11 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
     
 }
 
+- (void)removeFromPhotoDictionary: (MMPhoto *)photo
+{
+    NSString *photoKey = [NSString stringWithFormat:@"%lx", (NSInteger)(photo)];
+    [_photoDictionary removeObjectForKey: photoKey];
+}
 
 #pragma mark ObjectiveFlickr delegate methods
 
@@ -363,6 +375,9 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
                                                 MMPhoto *photo = [[MMPhoto alloc] initWithFlickrDictionary: photoToBeReturned
                                                                                             exifDictionary: exifData
                                                                                                     stream: self];
+                                                
+                                                NSString *photoKey = [NSString stringWithFormat:@"%lx", (NSInteger)(photo)];
+                                                [_photoDictionary setObject: photo forKey: photoKey];
                                                 self.currentPhoto = photo;
                                             }];
         [self.streamQueue addOperation: returnPhoto];
