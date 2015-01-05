@@ -22,32 +22,30 @@ NSString *photosPath;
     if (self)
     {
         facesPath = [NSString stringWithFormat:@"%@/%@", value, @"Faces.db"];
-        self.facesDatabase = [FMDatabase databaseWithPath:facesPath];
+        _facesDatabase = [FMDatabase databaseWithPath:facesPath];
         photosPath = [NSString stringWithFormat:@"%@/%@", value, @"Library.apdb"];
-        self.photosDatabase = [FMDatabase databaseWithPath:photosPath];
+        _photosDatabase = [FMDatabase databaseWithPath:photosPath];
         
+        NSLog(@"Opening _photosPath=%@", photosPath);
         if (self.facesDatabase && self.photosDatabase &&
-            [self.facesDatabase open] && [self.photosDatabase open])
+            [self.facesDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE] &&
+            [self.photosDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE])
         {
             return self;
         }
         else
         {
-            if (!self.facesDatabase)
+            if (self.facesDatabase)
             {
-                // NSLog(@"ERROR facesDatabase at %@ failed to open.", facesPath);
+                NSLog(@"ERROR facesDatabase at %@ failed to with error %d (%@).", facesPath,
+                      _facesDatabase.lastErrorCode, _facesDatabase.lastErrorMessage);
+                [_facesDatabase close];
             }
-            else
+            if (self.photosDatabase)
             {
-                [self.facesDatabase close];
-            }
-            if (!self.photosDatabase)
-            {
-                // NSLog(@"ERROR photosDatabase at %@ failed to open.", photosPath);
-            }
-            else
-            {
-                [self.photosDatabase close];
+                NSLog(@"ERROR photosDatabase at %@ failed to with error %d (%@).", photosPath,
+                      _photosDatabase.lastErrorCode, _photosDatabase.lastErrorMessage);
+                [_photosDatabase close];
             }
             return nil;
         }
@@ -117,6 +115,7 @@ NSString *photosPath;
     NSString *versionPath = [pathPieces componentsJoinedByString: @"/"];
     if (versionPath)
     {
+        NSLog(@"           versionPath=%@", versionPath);
         return [MMPhotoLibrary getImageEXIF: versionPath];
     }
     return nil;
