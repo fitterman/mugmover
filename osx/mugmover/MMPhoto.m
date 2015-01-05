@@ -469,9 +469,8 @@
     BOOL result = NO;
     if (self.faceArray)
     {
-        for (NSInteger i = 0 ; i < [self.faceArray count] ; i++)
+        for (MMFace *face in _faceArray)
         {
-            MMFace *face = [self.faceArray objectAtIndex:i];
             NSBlockOperation *addFaceOperation = [NSBlockOperation blockOperationWithBlock:^
                                                   {
                                                       // // NSLog (@"  BLOCK adding face uuid=%@", face.faceUuid);

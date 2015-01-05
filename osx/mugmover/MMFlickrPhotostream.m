@@ -304,11 +304,11 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
         retryCount = 0;
         NSArray *exifArray = [inResponseDictionary valueForKeyPath: @"photo.exif"];
         NSMutableDictionary  *exifData = [NSMutableDictionary new];
-        for (id dict in exifArray)
+        for (NSDictionary *dict in exifArray)
         {
-            NSString *tag = [(NSDictionary *)dict objectForKey: @"tag"];
-            NSString *tagspace = [(NSDictionary *)dict objectForKey: @"tagspace"];
-            NSDictionary *raw = [(NSDictionary *)dict objectForKey: @"raw"];
+            NSString *tag = [dict objectForKey: @"tag"];
+            NSString *tagspace = [dict objectForKey: @"tagspace"];
+            NSDictionary *raw = [dict objectForKey: @"raw"];
 
             NSArray *pieces = [NSArray arrayWithObjects: tagspace, tag, nil];
             [exifData setObject: [raw valueForKey: @"_text"] forKey: [pieces componentsJoinedByString: @":"]];
