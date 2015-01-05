@@ -18,6 +18,8 @@
 
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 
++ (NSDictionary *) versionExifFromMasterPath: masterPath;
+
 + (NSDictionary *) versionExifFromMasterPath: masterPath
                                  versionUuid: versionUuid
                              versionFilename: versionFilename;

@@ -98,6 +98,22 @@ NSString *photosPath;
 }
 
 + (NSDictionary *) versionExifFromMasterPath: (NSString *) masterPath
+{
+    NSArray *pathPieces = [NSArray arrayWithObjects: @"/Users/Bob/Pictures/Jay Phillips",
+                           @"Masters",
+                           masterPath,
+                           nil];
+    
+    NSString *fullMasterPath = [pathPieces componentsJoinedByString: @"/"];
+    if (fullMasterPath)
+    {
+        NSLog(@"           fullMasterPath=%@", fullMasterPath);
+        return [MMPhotoLibrary getImageExif: fullMasterPath];
+    }
+    return nil;
+}
+
++ (NSDictionary *) versionExifFromMasterPath: (NSString *) masterPath
                                  versionUuid: (NSString *) versionUuid
                              versionFilename: (NSString *) versionFilename
 {
@@ -116,13 +132,13 @@ NSString *photosPath;
     if (versionPath)
     {
         NSLog(@"           versionPath=%@", versionPath);
-        return [MMPhotoLibrary getImageEXIF: versionPath];
+        return [MMPhotoLibrary getImageExif: versionPath];
     }
     return nil;
 }
 
 // This method extracts Exif data from a local file, which we probably do not need to do!
-+(NSDictionary*) getImageEXIF:(NSString*) filePath
++(NSDictionary*) getImageExif:(NSString*) filePath
 {
     NSDictionary* exifDictionary = nil;
     NSURL* fileURL = [NSURL fileURLWithPath : filePath];

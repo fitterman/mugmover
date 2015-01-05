@@ -97,7 +97,7 @@
     // multiple matches and will have to take a guess which is the best match.
 
     NSString *query = @"SELECT v.versionNumber version, v.uuid versionUuid, m.uuid, imagePath, v.filename filename, "
-                             "masterUuid, masterHeight, masterWidth, rotation "
+                             "masterUuid, masterHeight, masterWidth, rotation, isOriginal "
                        "FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid "
                        "WHERE m.isInTrash != 1 AND m.originalVersionName  = ? AND "
                              "v.processedWidth = ? AND v.processedHeight = ? "
@@ -114,13 +114,23 @@
     {
         while ([resultSet next])
         {
+            NSDictionary *exif = nil;
+
+            NSString *masterPath = [resultSet stringForColumn: @"imagePath"];
             NSString *versionFilename = [resultSet stringForColumn: @"filename"];
             NSString *versionUuid = [resultSet stringForColumn: @"versionUuid"];
-            NSString *masterPath = [resultSet stringForColumn: @"imagePath"];
-            
-            NSDictionary *exif = [MMPhotoLibrary versionExifFromMasterPath: masterPath
-                                                               versionUuid: versionUuid
-                                                           versionFilename: versionFilename];
+
+            if ([resultSet boolForColumn: @"isOriginal"])
+            {
+                exif = [MMPhotoLibrary versionExifFromMasterPath: masterPath];
+            }
+            else
+            {
+                
+                exif = [MMPhotoLibrary versionExifFromMasterPath: masterPath
+                                                     versionUuid: versionUuid
+                                                 versionFilename: versionFilename];
+            }
             
             if (exif)
             {
@@ -437,14 +447,6 @@
     [self findRelevantAdjustments];
     [self adjustForStraightenCropAndGetFaces];
     [self queueFacesToStream];
-    
-    // When done, release it from the library
-    for (MMFace *face in _faceArray)
-    {
-        [face releaseStrongPointers];
-    }
-    [self releaseStrongPointers];
-    [_stream removeFromPhotoDictionary: self];
 }
 
 - (void)releaseStrongPointers
@@ -462,6 +464,7 @@
 }
 - (BOOL) queueFacesToStream
 {
+    BOOL result = NO;
     if (self.faceArray)
     {
         for (NSInteger i = 0 ; i < [self.faceArray count] ; i++)
@@ -472,12 +475,18 @@
                                                       // // NSLog (@"  BLOCK adding face uuid=%@", face.faceUuid);
                                                       [self.stream addFaceNoteTo: [_flickrDictionary valueForKey: @"id"]
                                                                        face: face];
+                                                      [face releaseStrongPointers];
                                                   }];
             [self.stream.streamQueue addOperation: addFaceOperation];
         }
-        return YES;
+
+        // We either have to do the releaase here (because we have faces)...
+        result  = YES;
     }
-    return NO;
+
+// TODO     [self releaseStrongPointers];
+// TODO     [_stream removeFromPhotoDictionary: self];
+    return result;
 }
 
 - (NSString *)title
