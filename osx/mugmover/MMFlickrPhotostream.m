@@ -85,6 +85,17 @@ static OFFlickrAPIContext *     flickrContext;
     return self;
 }
 
+- (void) close
+{
+    _accessSecret = nil;
+    _accessToken = nil;
+    _currentPhoto = nil;
+    _handle = nil;
+    _library = nil;
+    _photoDictionary = nil;
+    _streamQueue = nil;
+}
+
 -   (void)flickrAPIRequest: (OFFlickrAPIRequest *)inRequest
 didObtainOAuthRequestToken: (NSString *)inRequestToken
                     secret: (NSString *)inSecret
@@ -231,15 +242,9 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
     }
     else
     {
-        /* We are ready to return the photo, but first we have to get the exif data, 
-           because it comes back looking like it's all done in a single request.
-####
-        
-        if (nextPhotoToDeliver < 8)
-        {
-            nextPhotoToDeliver = 8;
-        }
-         */
+        // We are ready to return the photo, but first we have to get the exif data,
+        // because it comes back looking like it's all done in a single request.
+
         NSDictionary *photoToBeReturned = [[photoResponseDictionary valueForKeyPath: @"photos.photo"] objectAtIndex: nextPhotoToDeliver];
         NSString *photo_id = [photoToBeReturned objectForKey: @"id"];
         NSString *secret = [photoToBeReturned objectForKey: @"secret"];

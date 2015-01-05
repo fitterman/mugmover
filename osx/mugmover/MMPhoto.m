@@ -439,9 +439,27 @@
     [self queueFacesToStream];
     
     // When done, release it from the library
+    for (MMFace *face in _faceArray)
+    {
+        [face releaseStrongPointers];
+    }
+    [self releaseStrongPointers];
     [_stream removeFromPhotoDictionary: self];
 }
 
+- (void)releaseStrongPointers
+{
+    _exifDictionary = nil;
+    _faceArray = nil;
+    _flickrDictionary = nil;
+    _masterUuid = nil;
+    _originalDate = nil;
+    _originalFilename = nil;
+    _smallUrl = nil;
+    _stream = nil;
+    _versionUuid = nil;
+
+}
 - (BOOL) queueFacesToStream
 {
     if (self.faceArray)

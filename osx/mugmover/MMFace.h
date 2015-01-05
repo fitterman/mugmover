@@ -45,6 +45,8 @@
 - (void) rotate: (Float64) degrees
          origin: (MMPoint *) centerPoint;
 
+- (void) releaseStrongPointers;
+
 - (BOOL) visibleWithCroppeWidth: (Float64) width
                   croppedHeight: (Float64) height;
 

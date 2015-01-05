@@ -35,6 +35,8 @@
 - (void)addFaceNoteTo: (NSString *)flickrPhotoid
                  face: (MMFace *)face;
 
+- (void) close;
+
 - (void)fetchExifUsingPhotoId: (NSString *)photoId
                        secret: (NSString *)secret;
 

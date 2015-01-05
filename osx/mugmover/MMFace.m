@@ -168,5 +168,13 @@
     return [NSString stringWithFormat: @"%ld", (NSInteger) result];
 }
 
+- (void) releaseStrongPointers
+{
+    _centerPoint = nil;
+    _faceUuid = nil;
+    _masterUuid = nil;
+    _photo = nil;
+
+}
 
 @end

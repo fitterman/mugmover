@@ -10,14 +10,12 @@
 #import "MMAppDelegate.h"
 #import "MMTrack.h"
 #import "MMFlickrPhotostream.h"
-#import "MMPhotoLibrary.h"
 #import "MMPhoto.h"
 #import "MMFace.h"
 
 @implementation MMAppDelegate
 
 MMFlickrPhotostream *stream = nil;
-MMPhotoLibrary *photoLibrary = nil;
 NSDictionary *flickrPhotoPointer;
 
 BOOL const MMdebugging = NO;
@@ -91,6 +89,10 @@ BOOL const MMdebugging = NO;
             if (stream.currentPhotoIndex + 1 < stream.photosInStream)
             {
                 [stream nextPhoto]; /* There are more left to get. */
+            }
+            else
+            {
+                [stream close];
             }
         }
     }
