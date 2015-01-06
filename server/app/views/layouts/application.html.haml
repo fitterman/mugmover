@@ -1,0 +1,20 @@
+!!!
+%html
+  %head
+    %title Mugmarker
+    = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
+    = javascript_include_tag 'application', 'data-turbolinks-track' => true
+    = javascript_include_tag '//cdnjs.cloudflare.com/ajax/libs/jquery-throttle-debounce/1.1/jquery.ba-throttle-debounce.min.js'
+    = javascript_include_tag '//
+    :javascript
+      var window_load_ready_function = function() {
+         #{ yield :window_load }
+      }
+      $(window).load( window_load_ready_function );
+      $(document).on( 'page:load', window_load_ready_function );
+  %body
+    .container
+      %h1 Review:
+      %hr/
+      .page
+        = yield
