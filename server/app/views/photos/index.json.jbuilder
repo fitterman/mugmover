@@ -1,4 +1,4 @@
-index = 0
+index = (@photos.page.to_i - 1) * @photos.perpage.to_i
 json.array!(@photos) do |photo|
   json.extract! photo, :id
   json.url flickr_photo_url(params[:flickr_id], photo.id, format: :json)

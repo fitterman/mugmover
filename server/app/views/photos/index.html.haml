@@ -16,40 +16,28 @@
   #picturebar{style: "position:relative;" }
 
 #picture-container{style: 'position:relative;'}
-
-- content_for :window_load do
-  :plain
-    $('#picturebar').width(leftGap + (totalPhotos * 104) + leftGap)
-    $('#picture-container').on('mouseover', '.floating', function() {
-      $(this).css('border-color', 'red');
-      $('#caption').html($(this).data('caption'));
-    })
-    $('#picture-container').on('mouseout', '.floating', function() {
-      $(this).css('border-color', 'silver');
-      $('#caption').html('&nbsp;');
-    });
-    // When the page loads, adjust the scroll position of the picturebar so that
-    // the current element is in view.
-    // var relativeY = $('div.selected').offset().left - $('#picturebar').offset().left;
-    // if (relativeY / $(window).width() > 0.5)
-    // {
-    //   $('#picturebar').scrollLeft(relativeY - 100);
-    // }
-  var scrollingDone = function() { console.log($('#picturebar').scrollLeft()); };
-  $('#picturebar').scroll( $.debounce( 250, scrollingDone) );
-
+    
 :plain
   <script type="text/template" id="photos-template-text">
     <% _.each(photos, function(photo) { %>
-      <div class="picturethumb unselected" style="position: absolute; background-repeat: no-repeat; background-position: center; 
-          background-image: url('<%- photo.get('thumb') %>'); left: <%- leftGap + (photo.get('index') * 104) %>px;" 
-          phid="<%- photo.get('id') %>">
-      </div>
+      <% if ($('.picturethumb[phid=' + photo.get('id') + ']').length == 0) { %>
+          <div class="picturethumb unselected" style="position: absolute; 
+              background-repeat: no-repeat; background-position: center; 
+              background-image: url('<%- photo.get('thumb') %>');
+              left: <%- i2x(photo.get('index')) %>px;" 
+              phid="<%- photo.get('id') %>">
+          </div>
+      <% }; %>
     <% }); %>
+    <% var rightX = $('#picturebar-container').scrollLeft() + $('#picturebar-container').width(); %>
+    <% var rightI = x2i(rightX); %>
+    <% if (photos[photos.length-1].get('index') < rightI) { %>
+      <% photoList.render({n: rightI}); %>
+    <% }; %>
   </script>
 
   <script type="text/template" id="photo-template-text">
-    <img src=<%- photo.get('url') %> style="z-index: 1; position: absolute; top: 0; left: 0;">
+    <img src=<%- photo.get('url') %> style="z-index: 1; position: absolute; top: 0; left: 0; max-width:500px; max-height:500px;">
     <% var notes = photo.get('notes'); %>
     <% for (var i = 0, len = notes.length; i < len; i++) { %>
         <div class="floating" style="z-index: 100; position: absolute; border: 1px solid silver;
@@ -60,8 +48,30 @@
   </script>
 
 :javascript
-  var leftGap = 400; // pixels
+  var endGap = 400; // pixels
+  var photoWidth = 104; // pixels (2px on each side + 100px photo)
   var totalPhotos = #{@total_photos};
+
+  // functions to convert a zero-based index to a horizontal pixel offset and back.
+  var i2x = function(i) { return endGap + (i * photoWidth) };
+  var x2i = function(x) { return Math.floor((x - endGap) / photoWidth) };
+
+  $('#picturebar').width(i2x(totalPhotos) + endGap); // that is the endGap on the RHS
+  $('#picture-container').on('mouseover', '.floating', function() {
+    $(this).css('border-color', 'red');
+    $('#caption').html($(this).data('caption'));
+  })
+  $('#picture-container').on('mouseout', '.floating', function() {
+    $(this).css('border-color', 'silver');
+    $('#caption').html('&nbsp;');
+  });
+
+  var scrollingDone = function() {
+    var x = $('#picturebar-container').scrollLeft();
+    var i = x2i(x);
+    photoList.render({n: i}); 
+  };
+  $('#picturebar-container').scroll( $.debounce( 250, scrollingDone) );
 
   $('#picturebar').on('click', '.picturethumb', function() {
     $('#picturebar > .selected').removeClass('selected').addClass('unselected');
@@ -78,14 +88,15 @@
 
   var PhotoList = Backbone.View.extend({
     el: '#picturebar',
-    render: function() {
+    render: function(options) {
       var photos =  new Photos();
       var that = this;
       photos.fetch({
+        data: { n: options.n },
         success: function(photos) {
           var template = _.template($('#photos-template-text').html());
           var html = template({ photos: photos.models });
-          that.$el.html(html);
+          that.$el.append(html);
           return this;
         }
       })
@@ -120,7 +131,7 @@
   var showPhoto = new ShowPhoto();
 
   router.on('route:home', function() {
-    photoList.render();
+    photoList.render({n: 0});
   });
   router.on('route:show', function(id) {
     showPhoto.render({id: id})
