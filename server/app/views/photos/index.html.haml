@@ -93,6 +93,9 @@
       var that = this;
       photos.fetch({
         data: { n: options.n },
+        error: function(photos) {
+          alert('An unexpected error occurred. Please try again.');
+        },
         success: function(photos) {
           var template = _.template($('#photos-template-text').html());
           var html = template({ photos: photos.models });
@@ -109,6 +112,9 @@
       var photo = new Photo({id: options.id});
       var that = this;
       photo.fetch({
+        error: function(photos) {
+          alert('An unexpected error occurred. Please try again.');
+        },
         success: function(photo) {
           var template = _.template($('#photo-template-text').html());
           var html = template({photo: photo});
