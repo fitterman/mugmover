@@ -11,12 +11,56 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141215232339) do
+ActiveRecord::Schema.define(version: 20150107200059) do
+
+  create_table "display_names", force: true do |t|
+    t.integer "person_id"
+    t.string  "name"
+    t.string  "timestamps"
+  end
+
+  create_table "faces", force: true do |t|
+    t.integer "photo_id"
+    t.string  "database_uuid"
+    t.string  "face_uuid"
+    t.float   "x"
+    t.float   "y"
+    t.float   "w"
+    t.float   "h"
+    t.integer "person_id"
+    t.string  "timestamps"
+  end
+
+  create_table "hosting_service_accounts", force: true do |t|
+    t.string   "name"
+    t.string   "hosting_service_account_handle"
+    t.string   "access_token"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "people", force: true do |t|
+    t.integer "primary_display_name_id"
+    t.string  "timestamps"
+  end
 
   create_table "photos", force: true do |t|
-    t.string   "provider"
-    t.string   "account"
-    t.string   "unique_id"
+    t.integer  "service_collection_id"
+    t.string   "database_uuid"
+    t.string   "master_uuid"
+    t.integer  "version_uuid"
+    t.integer  "processed_width"
+    t.integer  "processed_height"
+    t.string   "name"
+    t.string   "filename"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "service_collections", force: true do |t|
+    t.string   "name"
+    t.integer  "hosting_service_account_id"
+    t.string   "hosting_service_folder_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
