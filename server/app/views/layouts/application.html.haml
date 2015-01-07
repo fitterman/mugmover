@@ -5,6 +5,8 @@
     = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
     = javascript_include_tag '//cdnjs.cloudflare.com/ajax/libs/jquery-throttle-debounce/1.1/jquery.ba-throttle-debounce.min.js'
+    = javascript_include_tag '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js'
+    = javascript_include_tag '//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js'
     = csrf_meta_tags
     :javascript
       var window_load_ready_function = function() {
@@ -14,7 +16,8 @@
       $(document).on( 'page:load', window_load_ready_function );
   %body
     .container
-      %h1 Review:
+      %h1
+        = yield :title
       %hr/
       .page
         = yield

@@ -1,3 +1,128 @@
-%h1 Listing photos
-- @photos.each do |photo|
-  = link_to image_tag(FlickRaw.url_t(photo)), flickr_photo_path(flickr_id: photo.owner, id: photo.id)
+:css
+  .picturethumb {display: inline-flex; width: 100px; height: 100px; border: 2px solid none; opacity: 0.5;}
+  .picturethumb:hover {opacity: 1.0;}
+  .selected     {background-color: red; border: 2px solid red; opacity: 1.0; }
+
+%p#notice= notice
+
+- content_for :title do
+  flickr / 
+  = params[:flickr_id]
+
+#caption
+  &nbsp;
+
+#picturebar-container{style: 'height: 120px; overflow-y: scroll; white-space: nowrap;'}
+  #picturebar{style: "position:relative;" }
+
+#picture-container{style: 'position:relative;'}
+
+- content_for :window_load do
+  :plain
+    $('#picturebar').width(leftGap + (totalPhotos * 104) + leftGap)
+    $('#picture-container').on('mouseover', '.floating', function() {
+      $(this).css('border-color', 'red');
+      $('#caption').html($(this).data('caption'));
+    })
+    $('#picture-container').on('mouseout', '.floating', function() {
+      $(this).css('border-color', 'silver');
+      $('#caption').html('&nbsp;');
+    });
+    // When the page loads, adjust the scroll position of the picturebar so that
+    // the current element is in view.
+    // var relativeY = $('div.selected').offset().left - $('#picturebar').offset().left;
+    // if (relativeY / $(window).width() > 0.5)
+    // {
+    //   $('#picturebar').scrollLeft(relativeY - 100);
+    // }
+  var scrollingDone = function() { console.log($('#picturebar').scrollLeft()); };
+  $('#picturebar').scroll( $.debounce( 250, scrollingDone) );
+
+:plain
+  <script type="text/template" id="photos-template-text">
+    <% _.each(photos, function(photo) { %>
+      <div class="picturethumb unselected" style="position: absolute; background-repeat: no-repeat; background-position: center; 
+          background-image: url('<%- photo.get('thumb') %>'); left: <%- leftGap + (photo.get('index') * 104) %>px;" 
+          phid="<%- photo.get('id') %>">
+      </div>
+    <% }); %>
+  </script>
+
+  <script type="text/template" id="photo-template-text">
+    <img src=<%- photo.get('url') %> style="z-index: 1; position: absolute; top: 0; left: 0;">
+    <% var notes = photo.get('notes'); %>
+    <% for (var i = 0, len = notes.length; i < len; i++) { %>
+        <div class="floating" style="z-index: 100; position: absolute; border: 1px solid silver;
+            left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
+            width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
+            data-caption="<%- notes[i].text %>"></div>
+    <% }; %>
+  </script>
+
+:javascript
+  var leftGap = 400; // pixels
+  var totalPhotos = #{@total_photos};
+
+  $('#picturebar').on('click', '.picturethumb', function() {
+    $('#picturebar > .selected').removeClass('selected').addClass('unselected');
+    $(this).removeClass('unselected').addClass('selected');
+    router.navigate('show/' + $(this).attr('phid') , {trigger: true}); 
+  });
+
+  var Photos = Backbone.Collection.extend({
+    url: '/flickr/#{params[:flickr_id]}/photos'
+  });
+  var Photo = Backbone.Model.extend({
+    urlRoot: '/flickr/#{params[:flickr_id]}/photos'
+  });
+
+  var PhotoList = Backbone.View.extend({
+    el: '#picturebar',
+    render: function() {
+      var photos =  new Photos();
+      var that = this;
+      photos.fetch({
+        success: function(photos) {
+          var template = _.template($('#photos-template-text').html());
+          var html = template({ photos: photos.models });
+          that.$el.html(html);
+          return this;
+        }
+      })
+      
+    }
+  });
+  var ShowPhoto = Backbone.View.extend({
+    el: '#picture-container',
+    render: function(options) {
+      var photo = new Photo({id: options.id});
+      var that = this;
+      photo.fetch({
+        success: function(photo) {
+          var template = _.template($('#photo-template-text').html());
+          var html = template({photo: photo});
+          that.$el.html(html);
+          return this;
+        }        
+      })
+    }
+  });
+
+  var Router = Backbone.Router.extend({
+    routes: {
+      '':         'home',
+      'show/:id': 'show',
+    }
+  });
+
+  var router = new Router();
+  var photoList = new PhotoList();
+  var showPhoto = new ShowPhoto();
+
+  router.on('route:home', function() {
+    photoList.render();
+  });
+  router.on('route:show', function(id) {
+    showPhoto.render({id: id})
+  });
+  Backbone.history.start();
