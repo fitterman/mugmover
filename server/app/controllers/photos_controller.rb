@@ -11,8 +11,9 @@ class PhotosController < ApplicationController
   #   +n+ is the index of the photo to be sure to obtain
   # internally the photos come back in pages of PAGESIZE.
   def index
-    @photos = Flickr.get_photos(params[:flickr_id], params[:n].to_i / PAGESIZE, PAGESIZE)
+    @photos = Flickr.get_photos(params[:flickr_id], params[:n].to_i, PAGESIZE)
     @total_photos = @photos.total.to_i
+    @photos_per_request = @photos.perpage.to_i
   end
 
   # GET /photos/1

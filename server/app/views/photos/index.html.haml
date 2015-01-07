@@ -30,9 +30,10 @@
       <% }; %>
     <% }); %>
     <% var rightX = $('#picturebar-container').scrollLeft() + $('#picturebar-container').width(); %>
-    <% var rightI = x2i(rightX); %>
-    <% if (photos[photos.length-1].get('index') < rightI) { %>
-      <% photoList.render({n: rightI}); %>
+    <% var rightN = Math.floor(x2i(rightX) / photosPerRequest); %>
+    <% var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); %>
+    <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>
+      <% photoList.render({n: currentN + 1}); %>
     <% }; %>
   </script>
 
@@ -51,6 +52,8 @@
   var endGap = 400; // pixels
   var photoWidth = 104; // pixels (2px on each side + 100px photo)
   var totalPhotos = #{@total_photos};
+  var photosPerRequest = #{@photos_per_request};
+  var lastRequestN = Math.floor(totalPhotos  / photosPerRequest);
 
   // functions to convert a zero-based index to a horizontal pixel offset and back.
   var i2x = function(i) { return endGap + (i * photoWidth) };
@@ -69,7 +72,7 @@
   var scrollingDone = function() {
     var x = $('#picturebar-container').scrollLeft();
     var i = x2i(x);
-    photoList.render({n: i}); 
+    photoList.render({n: Math.floor(i / photosPerRequest)}); 
   };
   $('#picturebar-container').scroll( $.debounce( 250, scrollingDone) );
 
