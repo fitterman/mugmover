@@ -248,13 +248,5 @@ NSString *photosPath;
  //  Integer: faceDetectionRotationFromMaster, masterHeight, masterWidth,
  //          processedHeight, processedWidth, rotation,
  
- // Returns an array of matching records
- func masterVersions(masterUuid:String) -> FMResultSet
- {
- 
- let versionSet = db.executeQuery("SELECT * FROM Versions WHERE masterUuid = ? ORDER BY versionNumber DESC",
- withArgumentsInArray: [masterUuid])
- return versionSet;
- }
- }
+
 */
