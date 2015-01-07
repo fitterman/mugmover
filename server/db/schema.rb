@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150107200059) do
+ActiveRecord::Schema.define(version: 20150107203355) do
 
   create_table "display_names", force: true do |t|
     t.integer "person_id"
@@ -33,8 +33,8 @@ ActiveRecord::Schema.define(version: 20150107200059) do
 
   create_table "hosting_service_accounts", force: true do |t|
     t.string   "name"
-    t.string   "hosting_service_account_handle"
-    t.string   "access_token"
+    t.string   "handle"
+    t.string   "auth_token"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
