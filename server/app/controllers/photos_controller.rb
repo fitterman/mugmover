@@ -16,12 +16,6 @@ class PhotosController < ApplicationController
     @photos_per_request = @photos.perpage.to_i
   end
 
-  # GET /photos/1
-  # GET /photos/1.json
-  def show
-    @photo = Flickr.get_info(params[:flickr_id], params[:id])
-  end
-
 private
 
     # Only allow the white list through.

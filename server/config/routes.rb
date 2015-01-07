@@ -1,7 +1,18 @@
 Rails.application.routes.draw do
 
+  namespace :api do
+    namespace :v1 do
+      resources :display_names
+      resources :faces
+      resources :hosting_service_accounts
+      resources :people
+      resources :photos
+      resources :service_collections
+    end
+  end
+
   resources :flickr do
-    resources :photos, only: [:show, :index]
+    resources :photos, only: [:index]
   end
 
   # The priority is based upon order of creation: first created -> highest priority.

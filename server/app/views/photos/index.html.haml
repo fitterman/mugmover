@@ -33,7 +33,7 @@
     <% var rightN = Math.floor(x2i(rightX) / photosPerRequest); %>
     <% var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); %>
     <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>
-      <% photoList.render({n: currentN + 1}); %>
+      <% photoList.render({flickr_id: '#{params[:flickr_id]}', n: currentN + 1}); %>
     <% }; %>
   </script>
 
@@ -57,7 +57,7 @@
 
   // functions to convert a zero-based index to a horizontal pixel offset and back.
   var i2x = function(i) { return endGap + (i * photoWidth) };
-  var x2i = function(x) { return Math.floor((x - endGap) / photoWidth) };
+  var x2i = function(x) { return Math.floor(Math.max(0, x - endGap) / photoWidth) };
 
   $('#picturebar').width(i2x(totalPhotos) + endGap); // that is the endGap on the RHS
   $('#picture-container').on('mouseover', '.floating', function() {
@@ -72,7 +72,7 @@
   var scrollingDone = function() {
     var x = $('#picturebar-container').scrollLeft();
     var i = x2i(x);
-    photoList.render({n: Math.floor(i / photosPerRequest)}); 
+    photoList.render({flickr_id: '#{params[:flickr_id]}', n: Math.floor(i / photosPerRequest)}); 
   };
   $('#picturebar-container').scroll( $.debounce( 250, scrollingDone) );
 
@@ -83,10 +83,10 @@
   });
 
   var Photos = Backbone.Collection.extend({
-    url: '/flickr/#{params[:flickr_id]}/photos'
+    url: '/api/v1/photos'
   });
   var Photo = Backbone.Model.extend({
-    urlRoot: '/flickr/#{params[:flickr_id]}/photos'
+    urlRoot: '/api/v1/photos'
   });
 
   var PhotoList = Backbone.View.extend({
@@ -95,7 +95,7 @@
       var photos =  new Photos();
       var that = this;
       photos.fetch({
-        data: { n: options.n },
+        data: { n: options.n, flickr_id: options.flickr_id },
         error: function(photos) {
           alert('An unexpected error occurred. Please try again.');
         },
@@ -140,9 +140,9 @@
   var showPhoto = new ShowPhoto();
 
   router.on('route:home', function() {
-    photoList.render({n: 0});
+    photoList.render({flickr_id: '#{params[:flickr_id]}', n: 0});
   });
   router.on('route:show', function(id) {
-    showPhoto.render({id: id})
+    showPhoto.render({flickr_id: '#{params[:flickr_id]}', id: id})
   });
   Backbone.history.start();
