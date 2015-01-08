@@ -143,13 +143,13 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
                      userName: (NSString *)inUserName
                      userNSID: (NSString *)inNSID
 {
-     NSLog(@"STEP 5 You're in. Save the access token");
-     NSLog(@"       request=%@", inRequest);
-     NSLog(@"       accessToken=%@", inAccessToken);
-     NSLog(@"       inSecret=%@", inSecret);
-     NSLog(@"       userFullName=%@", inFullName);
-     NSLog(@"       username=%@", inUserName);
-     NSLog(@"       nsid=%@", inNSID);
+     // NSLog(@"STEP 5 You're in. Save the access token");
+     // NSLog(@"       request=%@", inRequest);
+     // NSLog(@"       accessToken=%@", inAccessToken);
+     // NSLog(@"       inSecret=%@", inSecret);
+     // NSLog(@"       userFullName=%@", inFullName);
+     // NSLog(@"       username=%@", inUserName);
+     // NSLog(@"       nsid=%@", inNSID);
     _accessToken = inAccessToken;
     _accessSecret = inSecret;
     _flickrContext.OAuthToken = inAccessToken;
