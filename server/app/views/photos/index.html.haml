@@ -1,8 +1,13 @@
-:css
-  .picturethumb {display: inline-flex; width: 100px; height: 100px; border: 2px solid none; opacity: 0.5;}
-  .picturethumb:hover {opacity: 1.0;}
-  .selected     {background-color: red; border: 2px solid red; opacity: 1.0; }
+- thumbsize = 50
 
+:css
+  .picturethumb { z-index: 2; display: inline-flex; 
+                  width: #{thumbsize}px; height: #{thumbsize}px; 
+                  background-size: contain; border: 2px solid none; }
+  .unselected   { opacity: 0.5; }
+  .selected     { background-color: red; border: 2px solid red; opacity: 1.0; }
+  .enlarged     { z-index: 3; opacity: 1.0; 
+                  width: #{2 * thumbsize}px; height: #{2 * thumbsize}px; }
 %p#notice= notice
 
 - content_for :title do
@@ -24,6 +29,7 @@
           <div class="picturethumb unselected" style="position: absolute; 
               background-repeat: no-repeat; background-position: center; 
               background-image: url('<%- photo.get('thumb') %>');
+              top: 27px;
               left: <%- i2x(photo.get('index')) %>px;" 
               phid="<%- photo.get('id') %>">
           </div>
@@ -38,7 +44,8 @@
   </script>
 
   <script type="text/template" id="photo-template-text">
-    <img src=<%- photo.get('url') %> style="z-index: 1; position: absolute; top: 0; left: 0; max-width:500px; max-height:500px;">
+    <img src=<%- photo.get('url') %> 
+         style="z-index: 1; position: absolute; top: 0; left: 0; max-width:500px; max-height:500px;">
     <% var notes = photo.get('notes'); %>
     <% for (var i = 0, len = notes.length; i < len; i++) { %>
         <div class="floating" style="z-index: 100; position: absolute; border: 1px solid silver;
@@ -50,7 +57,7 @@
 
 :javascript
   var endGap = 400; // pixels
-  var photoWidth = 104; // pixels (2px on each side + 100px photo)
+  var photoWidth = #{thumbsize} + 4; // pixels (2px on each side)
   var totalPhotos = #{@total_photos};
   var photosPerRequest = #{@photos_per_request};
   var lastRequestN = Math.floor(totalPhotos  / photosPerRequest);
@@ -76,6 +83,14 @@
   };
   $('#picturebar-container').scroll( $.debounce( 250, scrollingDone) );
 
+  $('#picturebar').on('mouseover', '.picturethumb', function() {
+    $(this).addClass('enlarged').css({ top: $(this).position().top - #{thumbsize / 2},
+                                       left: $(this).position().left - #{thumbsize / 2}});
+                                     });
+  $('#picturebar').on('mouseout', '.picturethumb', function() {
+    $(this).removeClass('enlarged').css({ top: $(this).position().top + #{thumbsize / 2},
+                                          left: $(this).position().left + #{thumbsize / 2}});
+                                        });
   $('#picturebar').on('click', '.picturethumb', function() {
     $('#picturebar > .selected').removeClass('selected').addClass('unselected');
     $(this).removeClass('unselected').addClass('selected');
