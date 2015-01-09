@@ -11,6 +11,7 @@
 #import "FMDB/FMDatabase.h"
 #import "FMDB/FMDatabaseAdditions.h"
 #import "FMDB/FMResultSet.h"
+#import "MMApiRequest.h"
 #import "MMFlickrPhotostream.h"
 #import "MMFlickrRequest.h"
 #import "MMFlickrRequestPool.h"
@@ -39,22 +40,22 @@
             {
                 return nil;
             }
-
+            
             _flickrDictionary = flickrDictionary;
             _exifDictionary = exifDictionary;
             self.smallUrl = [stream urlFromDictionary:flickrDictionary];
             
             // Now that you have an MMPhoto instance, store some things you will need later
-            _originalFilename = [_exifDictionary objectForKey: @"IPTC:ObjectName"];
-            _originalDate = [_exifDictionary objectForKey: @"ExifIFD:DateTimeOriginal"];
+            _originalFilename = [_exifDictionary valueForKeyPath: @"IPTC.ObjectName"];
+            _originalDate = [_exifDictionary valueForKeyPath: @"ExifIFD.DateTimeOriginal"];
 
             // The versionUuid might be in one of two places. Check one if the other isn't there.
-            _versionUuid = [_exifDictionary objectForKey: @"IPTC:SpecialInstructions"];
+            _versionUuid = [_exifDictionary valueForKeyPath: @"IPTC.SpecialInstructions"];
             if (!_versionUuid)
             {
-                _versionUuid = [_exifDictionary objectForKey: @"XMP-photoshop:Instructions"];
+                _versionUuid = [_exifDictionary valueForKeyPath: @"XMP-photoshop.Instructions"];
             }
-            NSObject *versionObject = [_exifDictionary objectForKey: @"IPTC:ApplicationRecordVersion"];
+            NSObject *versionObject = [_exifDictionary valueForKeyPath: @"IPTC.ApplicationRecordVersion"];
             _version = (versionObject) ? [(NSString *)versionObject integerValue] : -1;
 
         }
@@ -73,7 +74,7 @@
     if ((_version != -1) && _versionUuid)
     {
         NSNumber *number = [NSNumber numberWithInteger: _version - 1];
-        NSArray *args = [NSArray arrayWithObjects: _versionUuid, number, nil];
+        NSArray *args = @[_versionUuid, number];
         
         FMResultSet *resultSet = [_stream.library.photosDatabase executeQuery: @"SELECT * FROM RKVersion WHERE uuid = ? AND versionNumber = ?"
                                                          withArgumentsInArray: args];
@@ -105,12 +106,12 @@
                              "v.processedWidth = ? AND v.processedHeight = ? "
                        "ORDER BY v.versionNumber DESC ";
             ;
-    NSArray *args = [NSArray arrayWithObjects: _originalFilename, width, height, nil];
+    NSArray *args = @[_originalFilename, width, height];
     FMResultSet *resultSet = [library.photosDatabase executeQuery: query
                                              withArgumentsInArray: args];
 
-    NSString *flickrModifyTime = [_exifDictionary valueForKey: @"IFD0:ModifyDate"];
-    NSString *flickrOriginalTime = [_exifDictionary valueForKey: @"ExifIFD:DateTimeOriginal"];
+    NSString *flickrModifyTime = [_exifDictionary valueForKeyPath: @"IFD0.ModifyDate"];
+    NSString *flickrOriginalTime = [_exifDictionary valueForKeyPath: @"ExifIFD.DateTimeOriginal"];
 
     if (resultSet)
     {
@@ -209,7 +210,7 @@
     FMDatabase *photosDb = [self.stream.library photosDatabase];
     if (photosDb)
     {
-        NSArray *args = [NSArray arrayWithObjects: self.versionUuid, nil];
+        NSArray *args = @[_versionUuid];
         NSString *adjQuerySql = @"SELECT * FROM RKImageAdjustment "
                                  "WHERE name IN ('RKCropOperation', 'RKStraightenCropOperation') "
                                  "AND isEnabled = 1 "
@@ -240,7 +241,7 @@
                     NSDictionary *parameters = (NSDictionary *)[unarchiver decodeObjectForKey: @"root"];
                     if (parameters)
                     {
-                        NSNumber *operationVersion = [parameters valueForKeyPath: @"DGOperationVersionNumber"];
+                        NSNumber *operationVersion = [parameters valueForKey: @"DGOperationVersionNumber"];
                         if ([operationVersion intValue] != 0)
                         {
                             @throw [NSException exceptionWithName: @"UnexpectedOperationParameter"
@@ -309,9 +310,9 @@
         return nil;
     }
 
-    NSArray *args = [NSArray arrayWithObjects: _masterUuid, nil];
+    NSArray *args = @[_masterUuid];
     NSUInteger matches = [[[self.stream library] facesDatabase]
-                                intForQuery:@"SELECT COUNT(*) cnt FROM RKDetectedFace WHERE masterUuid = ? AND ignore = 0",
+                                intForQuery:@"SELECT COUNT(*) cnt FROM RKDetectedFace WHERE masterUuid = ?",
                                 _masterUuid];
 
     if (matches > 0)
@@ -323,9 +324,10 @@
             return nil;
         }
         // TODO By counting rejected faces you can spot pictures with large crowds where only one person matters
-        FMResultSet *resultSet = [faceDb executeQuery: @"SELECT f.*,     fn.name FROM RKDetectedFace f "
+        FMResultSet *resultSet = [faceDb executeQuery: @"SELECT f.*, "
+                                  "fn.name, fn.uuid faceNameUuid, fn.fullName, fn.keyVersionUuid FROM RKDetectedFace f "
                                   "LEFT JOIN RKFaceName fn ON f.faceKey = fn.faceKey "
-                                  "WHERE masterUuid = ? AND ignore = 0 AND rejected = 0"
+                                  "WHERE masterUuid = ?"
                                  withArgumentsInArray: args];
         if (resultSet)
         {
@@ -344,10 +346,6 @@
             
             while ([resultSet next])
             {
-                NSString *caption = [NSString stringWithFormat: @"%@ (%@)",
-                                     [resultSet stringForColumn:@"uuid" ],
-                                     [resultSet stringForColumn:@"name" ] ];
-                
                 
                 MMPoint *topLeft     = [[MMPoint alloc] initWithX: [resultSet doubleForColumn:@"topLeftX" ]
                                                                 y: [resultSet doubleForColumn:@"topLeftY" ]];
@@ -364,11 +362,17 @@
                                                              bottomRight: bottomRight
                                                                faceWidth: faceWidth
                                                               faceHeight: faceHeight
-
-                                                                faceUuid: caption
+                                                                  ignore: [resultSet boolForColumn: @"ignore"]
+                                                                rejected: [resultSet boolForColumn: @"rejected"]
+                                                                faceUuid: [resultSet stringForColumn:@"uuid" ]
                                                                    photo: self];
                 if (face)
                 {
+                    [face setName: [resultSet stringForColumn: @"name"]
+                     faceNameUuid: [resultSet stringForColumn: @"faceNameUuid"]
+                          faceKey: [resultSet intForColumn: @"faceKey"]
+                   keyVersionUuid: [resultSet stringForColumn: @"keyVersionUuid"]];
+
                     if (MMdebugging)
                     {
                         NSLog(@"FACE DIMS     %3.1fWx%3.1fH", face.faceWidth, face.faceHeight);
@@ -394,8 +398,8 @@
                         NSLog(@"ADJUSTED      centerPoint=%@", face.centerPoint);
                     }
 
-                    BOOL visible = [face visibleWithCroppeWidth: cropWidth
-                                                  croppedHeight: cropHeight];
+                    BOOL visible = [face visibleWithCroppedWidth: cropWidth
+                                                   croppedHeight: cropHeight];
                     if (MMdebugging)
                     {
                         NSLog(@"SET VIS       visible=%d", visible);
@@ -448,7 +452,69 @@
 {
     [self findRelevantAdjustments];
     [self adjustForStraightenCropAndGetFaces];
+    [self sendPhotoToMugmover];
     [self queueFacesToStream];
+}
+
+- (void) sendPhotoToMugmover
+{
+    NSDictionary *properties = @{
+                                 @"source":
+                                    @{ @"app":                  @"mmu",
+                                       @"appVersion": (NSString *) [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"],
+                                       @"databaseUuid":         [[_stream library] databaseUuid],
+                                       @"databaseVersion":      [[_stream library] databaseVersion],
+                                       @"databaseAppId":        [[_stream library] databaseAppId],
+                                     },
+                                 @"crop":
+                                    @{ @"cropOrigin":           [_cropOrigin asDictionary],
+                                       @"croppedHeight":        [NSNumber numberWithLong: _croppedHeight],
+                                       @"croppedWidth":         [NSNumber numberWithLong: _croppedWidth],
+                                       @"rotationAngle":        [NSNumber numberWithDouble: _rotationAngle],
+                                       @"straightenAngle":      [NSNumber numberWithDouble: _straightenAngle],
+                                     },
+                                 @"master":
+                                    @{ @"height":               [NSNumber numberWithLong: _masterHeight],
+                                       @"uuid":                 _masterUuid,
+                                       @"width":                [NSNumber numberWithLong: _masterWidth],
+                                     },
+                                 @"version":
+                                    @{ @"number":               [NSNumber numberWithLong: _version],
+                                       @"uuid":                 _versionUuid,
+                                    },
+                                 @"flickr":                     _flickrDictionary,
+                                 @"originalDate":               _originalDate,
+                                 @"originalFilename":           _originalFilename ? _originalFilename : @"",
+                               };
+    
+
+    NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
+    [attributes setObject: properties forKey: @"properties"];
+    
+    if (_faceArray)
+    {
+        NSMutableArray *facesProperties = [[NSMutableArray alloc] initWithCapacity: [_faceArray count]];
+        for (MMFace *face in _faceArray)
+        {
+            [facesProperties addObject: [face properties]];
+        
+        }
+        [attributes setObject: facesProperties forKey: @"faces"];
+    }
+
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject: attributes
+                                                       options: 0
+                                                         error: &error];
+    if (!jsonData) {
+        NSLog(@"JSON Serialization returned an error: %@", error);
+    } else {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        NSLog(@"JSON serialized to %@", jsonString);
+        NSDictionary *postData = @{@"data": jsonString};
+        _apiRequest = [[MMApiRequest alloc] initUploadForApiVersion: 1
+                                            bodyData: postData];
+    }
 }
 
 - (void)releaseStrongPointers
@@ -467,7 +533,7 @@
 - (BOOL) queueFacesToStream
 {
     BOOL result = NO;
-    if (self.faceArray)
+    if (_faceArray)
     {
         for (MMFace *face in _faceArray)
         {
@@ -481,7 +547,7 @@
             [self.stream.streamQueue addOperation: addFaceOperation];
         }
 
-        // We either have to do the releaase here (because we have faces)...
+        // We either have to do the release here (because we have faces)...
         result  = YES;
     }
 
@@ -513,7 +579,7 @@
 
     NSString *photoId = [_flickrDictionary valueForKey: @"id"];
     NSString *secret = [_flickrDictionary valueForKey: @"secret"];
-    NSArray  *pieces = [NSArray arrayWithObjects: @"fetchSizes", photoId, secret, nil];
+    NSArray  *pieces = @[@"fetchSizes", photoId, secret];
     flickrRequest.sessionInfo = [pieces componentsJoinedByString: @";"];
 
     [flickrRequest callAPIMethodWithGET: @"flickr.photos.getSizes"

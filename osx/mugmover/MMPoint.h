@@ -15,6 +15,8 @@
 - (id) initWithX: (Float64) x
                y: (Float64) y;
 
+- (NSDictionary *) asDictionary;
+
 - (void) rotate: (Float64) degrees
      relativeTo: (MMPoint *) origin;
 

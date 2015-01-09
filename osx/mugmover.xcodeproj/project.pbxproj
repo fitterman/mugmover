@@ -14,6 +14,8 @@
 		C42F7ADB1A1533AB006E38DD /* MMPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7ADA1A1533AB006E38DD /* MMPoint.m */; };
 		C460A0E81A5B1C1B00CF958F /* MMFlickrRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C460A0E61A5B1C1B00CF958F /* MMFlickrRequest.m */; };
 		C460A0EB1A5B2CC200CF958F /* MMFlickrRequestPool.m in Sources */ = {isa = PBXBuildFile; fileRef = C460A0EA1A5B2CC200CF958F /* MMFlickrRequestPool.m */; };
+		C4836F921A5F14F5006EB567 /* MMApiRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C4836F911A5F14F5006EB567 /* MMApiRequest.m */; };
+		C4836F951A5F230E006EB567 /* NSString+Encode.m in Sources */ = {isa = PBXBuildFile; fileRef = C4836F941A5F230E006EB567 /* NSString+Encode.m */; };
 		C4968CB71A15101500F34E46 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4968CB61A15101500F34E46 /* Cocoa.framework */; };
 		C4968CC11A15101500F34E46 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C4968CBF1A15101500F34E46 /* InfoPlist.strings */; };
 		C4968CC31A15101500F34E46 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CC21A15101500F34E46 /* main.m */; };
@@ -69,6 +71,10 @@
 		C460A0E91A5B2CC200CF958F /* MMFlickrRequestPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFlickrRequestPool.h; sourceTree = "<group>"; };
 		C460A0EA1A5B2CC200CF958F /* MMFlickrRequestPool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFlickrRequestPool.m; sourceTree = "<group>"; };
 		C474FCA01A58A4D60054EEB0 /* secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = secrets.xcconfig; sourceTree = "<group>"; };
+		C4836F901A5F14F5006EB567 /* MMApiRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMApiRequest.h; sourceTree = "<group>"; };
+		C4836F911A5F14F5006EB567 /* MMApiRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMApiRequest.m; sourceTree = "<group>"; };
+		C4836F931A5F230E006EB567 /* NSString+Encode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Encode.h"; sourceTree = "<group>"; };
+		C4836F941A5F230E006EB567 /* NSString+Encode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Encode.m"; sourceTree = "<group>"; };
 		C4968CB31A15101500F34E46 /* mugmover.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mugmover.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4968CB61A15101500F34E46 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		C4968CB91A15101500F34E46 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -119,6 +125,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C4836F961A5F231C006EB567 /* Categories */ = {
+			isa = PBXGroup;
+			children = (
+				C4836F931A5F230E006EB567 /* NSString+Encode.h */,
+				C4836F941A5F230E006EB567 /* NSString+Encode.m */,
+			);
+			name = Categories;
+			sourceTree = "<group>";
+		};
 		C4968CAA1A15101500F34E46 = {
 			isa = PBXGroup;
 			children = (
@@ -164,6 +179,8 @@
 		C4968CBC1A15101500F34E46 /* mugmover */ = {
 			isa = PBXGroup;
 			children = (
+				C4836F901A5F14F5006EB567 /* MMApiRequest.h */,
+				C4836F911A5F14F5006EB567 /* MMApiRequest.m */,
 				C4968CC81A15101500F34E46 /* MMAppDelegate.h */,
 				C4968CC91A15101500F34E46 /* MMAppDelegate.m */,
 				C42F7AD31A1532FC006E38DD /* MMFace.h */,
@@ -184,6 +201,7 @@
 				C4968CEB1A151B0300F34E46 /* MMTrack.m */,
 				C4968CCB1A15101500F34E46 /* MainMenu.xib */,
 				C4968CCE1A15101500F34E46 /* Images.xcassets */,
+				C4836F961A5F231C006EB567 /* Categories */,
 				C4968CBD1A15101500F34E46 /* Supporting Files */,
 			);
 			path = mugmover;
@@ -373,6 +391,8 @@
 				C4968CEC1A151B0300F34E46 /* MMTrack.m in Sources */,
 				C4968CC31A15101500F34E46 /* main.m in Sources */,
 				C460A0E81A5B1C1B00CF958F /* MMFlickrRequest.m in Sources */,
+				C4836F951A5F230E006EB567 /* NSString+Encode.m in Sources */,
+				C4836F921A5F14F5006EB567 /* MMApiRequest.m in Sources */,
 				C460A0EB1A5B2CC200CF958F /* MMFlickrRequestPool.m in Sources */,
 				C42F7AD51A1532FC006E38DD /* MMFace.m in Sources */,
 				C42F7AD21A152F60006E38DD /* MMFlickrPhotostream.m in Sources */,

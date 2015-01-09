@@ -16,12 +16,18 @@
 
 // The location of a face is actually based on polar coordinates (from the master's center)
 @property (readonly, strong)    MMPoint *   centerPoint;
-@property (assign)              Float64     faceWidth;
+@property (readonly)            NSInteger   faceKey;
 @property (assign)              Float64     faceHeight;
+@property (strong, readonly)    NSString *  faceNameUuid;
 @property (strong)              NSString *  faceUuid;
+@property (assign)              Float64     faceWidth;
+@property (assign, readonly)    BOOL        ignore;
+@property (strong, readonly)    NSString *  keyVersionUuid;
 @property (strong)              NSString *  masterUuid;
+@property (strong, readonly)    NSString *  name;
 @property (strong)              MMPhoto *   photo;
-@property (assign)              BOOL        visible;
+@property (assign, readonly)    BOOL        rejected;
+@property (assign, readonly)    BOOL        visible;
 
 
 
@@ -30,6 +36,8 @@
                      bottomRight: (MMPoint *) bottomRight
                        faceWidth: (NSInteger) faceWidth
                       faceHeight: (NSInteger) faceHeight
+                          ignore: (BOOL) ignore
+                        rejected: (BOOL) rejected
                         faceUuid: (NSString *) faceUuid
                            photo: (MMPhoto *) photo;
 
@@ -42,12 +50,19 @@
 - (NSString *) flickrNoteHeight;
 - (NSString *) flickrNoteText;
 
+- (NSDictionary *) properties;
+
 - (void) rotate: (Float64) degrees
          origin: (MMPoint *) centerPoint;
 
 - (void) releaseStrongPointers;
 
-- (BOOL) visibleWithCroppeWidth: (Float64) width
-                  croppedHeight: (Float64) height;
+- (void) setName: (NSString *) name
+    faceNameUuid: (NSString *) faceNameUuid
+         faceKey: (NSInteger) faceKey
+  keyVersionUuid: (NSString *) keyVersionUuid;
+
+- (BOOL) visibleWithCroppedWidth: (Float64) width
+                   croppedHeight: (Float64) height;
 
 @end

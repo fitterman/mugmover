@@ -203,26 +203,29 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
 - (void)addFaceNoteTo: (NSString *)flickrPhotoid
                  face: (MMFace *)face
 {
-    OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
-    if ([flickrRequest isRunning])
+    if (face.visible && (!face.rejected) && (!face.ignore))
     {
-        @throw [NSException exceptionWithName: @"PoolManagement"
-                                       reason: @"Pool request is still running (in addFaceNoteTo)"
-                                     userInfo: nil];
-        
+        OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
+        if ([flickrRequest isRunning])
+        {
+            @throw [NSException exceptionWithName: @"PoolManagement"
+                                           reason: @"Pool request is still running (in addFaceNoteTo)"
+                                         userInfo: nil];
+            
+        }
+        flickrRequest.sessionInfo = @"addNote";
+        // add a note for this face
+        NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys: flickrPhotoid, @"photo_id",
+                              face.flickrNoteX, @"note_x",
+                              face.flickrNoteY, @"note_y",
+                              face.flickrNoteWidth, @"note_w",
+                              face.flickrNoteHeight, @"note_h",
+                              face.flickrNoteText, @"note_text",
+                              MUGMOVER_API_KEY_MACRO, @"api_key",
+                              nil];
+        [flickrRequest callAPIMethodWithPOST: @"flickr.photos.notes.add"
+                                        arguments: args];
     }
-    flickrRequest.sessionInfo = @"addNote";
-    // add a note for this face
-    NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys: flickrPhotoid, @"photo_id",
-                          face.flickrNoteX, @"note_x",
-                          face.flickrNoteY, @"note_y",
-                          face.flickrNoteWidth, @"note_w",
-                          face.flickrNoteHeight, @"note_h",
-                          face.flickrNoteText, @"note_text",
-                          MUGMOVER_API_KEY_MACRO, @"api_key",
-                          nil];
-    [flickrRequest callAPIMethodWithPOST: @"flickr.photos.notes.add"
-                                    arguments: args];
 }
 
 - (void)deleteNote: (NSString *)noteId
@@ -235,7 +238,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
                                      userInfo: nil];
         
     }
-    NSArray  *pieces = [NSArray arrayWithObjects: @"deleteNote", noteId, nil];
+    NSArray  *pieces = @[@"deleteNote", noteId];
     flickrRequest.sessionInfo = [pieces componentsJoinedByString: @";"];
 
     NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys: noteId, @"note_id",
@@ -257,7 +260,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
         
     }
 
-    NSArray  *pieces = [NSArray arrayWithObjects: @"fetchExif", photoId, secret, nil];
+    NSArray  *pieces = @[@"fetchExif", photoId, secret];
     flickrRequest.sessionInfo = [pieces componentsJoinedByString: @";"];
     [flickrRequest callAPIMethodWithGET: @"flickr.photos.getExif"
                               arguments: [NSDictionary dictionaryWithObjectsAndKeys: photoId, @"photo_id",
@@ -278,7 +281,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
         
     }
 
-    NSArray  *pieces = [NSArray arrayWithObjects: @"fetchInfo", photoId, secret, nil];
+    NSArray  *pieces = @[@"fetchInfo", photoId, secret];
     flickrRequest.sessionInfo = [pieces componentsJoinedByString: @";"];
     [flickrRequest callAPIMethodWithGET: @"flickr.photos.getInfo"
                               arguments: [NSDictionary dictionaryWithObjectsAndKeys: photoId, @"photo_id",
@@ -310,8 +313,13 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
             NSString *tagspace = [dict objectForKey: @"tagspace"];
             NSDictionary *raw = [dict objectForKey: @"raw"];
 
-            NSArray *pieces = [NSArray arrayWithObjects: tagspace, tag, nil];
-            [exifData setObject: [raw valueForKey: @"_text"] forKey: [pieces componentsJoinedByString: @":"]];
+            NSDictionary *spaceDictionary = [exifData objectForKey: tagspace];
+            if (!spaceDictionary)
+            {
+                spaceDictionary = [[NSMutableDictionary alloc] init];
+                [exifData setObject: spaceDictionary forKey: tagspace];
+            }
+            [spaceDictionary setValue: [raw valueForKey: @"_text"] forKey: tag];
         }
         
         NSDictionary *photoToBeReturned = [[photoResponseDictionary valueForKeyPath: @"photos.photo"] objectAtIndex: nextPhotoToDeliver];

@@ -73,7 +73,8 @@
     return sqrt(pow((p1.x - p2.x), 2.0) + pow((p1.y - p2.y), 2.0));
 }
 
-- (NSString *) description {
+- (NSString *) description
+{
     if ((Float64) fabs(_x) < 1.0 || (Float64) fabs(_y) < 1.0)
     {
         return [NSString stringWithFormat:@"(%5.3f, %5.3f)", self.x, self.y];
@@ -84,4 +85,9 @@
     }
 }
 
+- (NSDictionary *) asDictionary
+{
+    return @{@"x": [NSNumber numberWithDouble: _x],
+             @"y": [NSNumber numberWithDouble: _y]};
+}
 @end

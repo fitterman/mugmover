@@ -22,6 +22,8 @@
                      bottomRight: (MMPoint *) bottomRight
                        faceWidth: (NSInteger) faceWidth
                       faceHeight: (NSInteger) faceHeight
+                          ignore: (BOOL) ignore
+                        rejected: (BOOL) rejected
                         faceUuid: (NSString *) faceUuid
                            photo: (MMPhoto *) photo;
 {
@@ -69,6 +71,8 @@
 
         _faceUuid = faceUuid;
         _masterUuid = photo.masterUuid;
+        _ignore = ignore;
+        _rejected = rejected;
         _visible = YES;
 
         if (MMdebugging)
@@ -94,8 +98,36 @@
     }
 }
 
-- (BOOL) visibleWithCroppeWidth: (Float64) width
-                  croppedHeight: (Float64) height;
+- (void) setName: (NSString *) name
+    faceNameUuid: (NSString *) faceNameUuid
+         faceKey: (NSInteger) faceKey
+  keyVersionUuid: (NSString *) keyVersionUuid;
+{
+    _name = name ? name : @"";
+    _faceNameUuid = faceNameUuid ? faceNameUuid : @"";
+    _faceKey = faceKey;
+    _keyVersionUuid = keyVersionUuid ? keyVersionUuid : @"";
+}
+
+- (NSDictionary *) properties
+{
+    return @{
+             @"center":            [_centerPoint asDictionary],
+             @"height":            [NSNumber numberWithDouble: _faceHeight],
+             @"ignore":            @(_ignore),
+             @"rejected":          @(_rejected),
+             @"uuid":              _faceUuid,
+             @"visible":           @(_visible),
+             @"width":             [NSNumber numberWithDouble: _faceWidth],
+             @"faceNameUuid":      _faceNameUuid,
+             @"faceKey":           @(_faceKey),
+             @"name":              _name,
+             @"keyVersionUuid":    _keyVersionUuid,
+             };
+}
+
+- (BOOL) visibleWithCroppedWidth: (Float64) width
+                   croppedHeight: (Float64) height;
 {
     _visible = ((_centerPoint.x - (_faceWidth / 2.0) >= 0.0) && (_centerPoint.x - (_faceWidth / 2.0) < width) &&
                 (_centerPoint.y - (_faceHeight / 2.0) >= 0.0) && (_centerPoint.y + (_faceHeight / 2.0) < height));
@@ -105,6 +137,8 @@
     }
     return _visible;
 }
+
+#pragma mark FlickrHelperMethods
 
 - (Float64) flickrImageHeight
 {
@@ -134,7 +168,14 @@
 
 - (NSString *) flickrNoteText
 {
-    return [NSString stringWithFormat: @"Get the name on mugmover: %@", self.faceUuid];
+    if ([_name isEqualToString: @""])
+    {
+        return [NSString stringWithFormat: @"Add the name on mugmover: %@", _faceUuid];
+    }
+    else
+    {
+        return [NSString stringWithFormat: @"Name provided by mugmover: %@ (%@)", _name, _faceUuid];
+    }
 }
 
 

@@ -10,10 +10,12 @@
 #import <ObjectiveFlickr/ObjectiveFlickr.h>
 #import "MMPhoto.h"
 
+@class MMApiRequest;
 @class MMFlickrPhotostream;
 
 @interface MMPhoto : NSObject <OFFlickrAPIRequestDelegate>
 
+@property (strong)              MMApiRequest *             apiRequest;
 @property (strong)              MMPoint *                  cropOrigin;
 @property (assign)              Float64                    croppedHeight;
 @property (assign)              Float64                    croppedWidth;

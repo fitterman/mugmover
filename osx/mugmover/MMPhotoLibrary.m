@@ -31,17 +31,31 @@ NSString *photosPath;
             [self.facesDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE] &&
             [self.photosDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE])
         {
+            NSInteger versionMajor = [_photosDatabase
+                                      intForQuery:@"SELECT propertyValue FROM RKAdminData "
+                                                   "WHERE propertyArea = 'database' AND propertyName = 'versionMajor'"];
+            NSInteger versionMinor = [_photosDatabase
+                                      intForQuery:@"SELECT propertyValue FROM RKAdminData "
+                                                   "WHERE propertyArea = 'database' AND propertyName = 'versionMinor'"];
+            _databaseVersion = [NSString stringWithFormat: @"%ld.%ld", versionMajor, versionMinor];
+            _databaseUuid = [_photosDatabase
+                             stringForQuery:@"SELECT propertyValue FROM RKAdminData "
+                                             "WHERE propertyArea = 'database' AND propertyName = 'databaseUuid'"];
+            _databaseAppId = [_photosDatabase
+                              stringForQuery:@"SELECT propertyValue FROM RKAdminData "
+                                              "WHERE propertyArea = 'database' AND propertyName = 'applicationIdentifier'"];
+            
             return self;
         }
         else
         {
-            if (self.facesDatabase)
+            if (_facesDatabase)
             {
                 NSLog(@"ERROR facesDatabase at %@ failed to with error %d (%@).", facesPath,
                       _facesDatabase.lastErrorCode, _facesDatabase.lastErrorMessage);
                 [_facesDatabase close];
             }
-            if (self.photosDatabase)
+            if (_photosDatabase)
             {
                 NSLog(@"ERROR photosDatabase at %@ failed to with error %d (%@).", photosPath,
                       _photosDatabase.lastErrorCode, _photosDatabase.lastErrorMessage);
@@ -49,12 +63,11 @@ NSString *photosPath;
             }
             return nil;
         }
-        
     }
     return self;
 }
 
-/* 
+/*
     Masters have paths like "path to iphoto library/" + "Masters/" + "2012/05/14/20120514-132735/" + "03485_s_9aefb8sby3508.jpg"
     Versions are named like "path to iphoto library/" + "Previews/" + "2012/05/14/20120514-132735/" + versionUuid + "03485_s_9aefb8sby3508.jpg"
 
@@ -71,7 +84,7 @@ NSString *photosPath;
     // of the master image. By observation, all masters appear to have 2 versions, numbered 0 and 1,
     // so this could be reduced to merely looking for version 1 of the image, but it seems safer
     // to do it this way.
-    NSArray *args = [NSArray arrayWithObjects: masterUuid, nil];
+    NSArray *args = @[masterUuid];
     NSDictionary *result = nil;
     
     FMResultSet *versionRecord = [_photosDatabase executeQuery: @ "SELECT v.filename, v.uuid versionUuid, imagePath "
@@ -99,10 +112,7 @@ NSString *photosPath;
 
 + (NSDictionary *) versionExifFromMasterPath: (NSString *) masterPath
 {
-    NSArray *pathPieces = [NSArray arrayWithObjects: @"/Users/Bob/Pictures/Jay Phillips",
-                           @"Masters",
-                           masterPath,
-                           nil];
+    NSArray *pathPieces = @[@"/Users/Bob/Pictures/Jay Phillips", @"Masters", masterPath];
     
     NSString *fullMasterPath = [pathPieces componentsJoinedByString: @"/"];
     if (fullMasterPath)
@@ -118,15 +128,14 @@ NSString *photosPath;
                              versionFilename: (NSString *) versionFilename
 {
     NSArray *masterPathPieces = [masterPath componentsSeparatedByString: @"/"];
-    NSArray *pathPieces = [NSArray arrayWithObjects: @"/Users/Bob/Pictures/Jay Phillips",
-                                                     @"Previews",
-                                                     [masterPathPieces objectAtIndex: 0],
-                                                     [masterPathPieces objectAtIndex: 1],
-                                                     [masterPathPieces objectAtIndex: 2],
-                                                     [masterPathPieces objectAtIndex: 3],
-                                                     versionUuid,
-                                                     versionFilename,
-                                                     nil];
+    NSArray *pathPieces = @[@"/Users/Bob/Pictures/Jay Phillips",
+                            @"Previews",
+                            [masterPathPieces objectAtIndex: 0],
+                            [masterPathPieces objectAtIndex: 1],
+                            [masterPathPieces objectAtIndex: 2],
+                            [masterPathPieces objectAtIndex: 3],
+                            versionUuid,
+                            versionFilename];
     
     NSString *versionPath = [pathPieces componentsJoinedByString: @"/"];
     if (versionPath)
