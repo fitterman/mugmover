@@ -1,5 +1,6 @@
 module Api
   module V1
+    # TODO Get this back to using ApiController
     class PhotosController < ApplicationController
       # NOTE: If PAGESIZE is so small that it can't span a page with images, the
       # continuation code may leave a gap if images in the middle of the horizontal
@@ -23,10 +24,10 @@ module Api
       end
 
     private
-
+        # TODO Get back to using this...
         # Only allow the white list through.
         def photo_params
-          params.require(:photo).permit(:flickr_id, :provider, :unique_id)
+          params.require(:photo).permit(:flickr_id, :n, :id)
         end
     end
   end

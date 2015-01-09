@@ -2,11 +2,13 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+      resource :upload, only: [:create]
+      resources :photos
+
       resources :display_names
       resources :faces
       resources :hosting_service_accounts
       resources :people
-      resources :photos
       resources :service_collections
     end
   end
