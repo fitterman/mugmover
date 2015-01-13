@@ -27,16 +27,12 @@ BOOL const MMdebugging = NO;
     [self updateUserInterface];
     
     stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
-                                             libraryPath: @"/Users/bob/Projects/mugmover/Sample Library"];
+                                             libraryPath: @"/Users/Bob/Pictures/Jay Phillips/Database/apdb"];
     if (stream)
     {
         // Register for KVO on some network-associated values
         [stream addObserver: self
                  forKeyPath: @"initializationProgress"
-                    options: (NSKeyValueObservingOptionNew)
-                    context: (__bridge void *)(self)];
-        [stream addObserver: self
-                 forKeyPath: @"currentPhoto"
                     options: (NSKeyValueObservingOptionNew)
                     context: (__bridge void *)(self)];
     }
@@ -61,38 +57,7 @@ BOOL const MMdebugging = NO;
             // NSLog(@"      initializationProgress=%@", newValue);
             if ([newValue floatValue] == 1.0)
             {
-                [stream nextPhoto]; /* This kicks off the whole process */
-            }
-        }
-        else if ([keyPath isEqual: @"currentPhoto"])
-        {
-            MMPhoto *photoObj = (MMPhoto *)[change objectForKey: NSKeyValueChangeNewKey];
-            
-            NSLog(@"%lu/%lu", (long)stream.currentPhotoIndex + 1, (long)stream.photosInStream);
-            if (photoObj)
-            {
-                NSLog(@"  url=%@", photoObj.smallUrl);
-                
-                if ([photoObj findMatchingInIphotoLibraryByVersionUuidAndVersion])
-                {
-                    NSLog(@"FOUND MATCH 1  versionUuid=%@ version=%ld", photoObj.versionUuid, photoObj.version);
-                    [photoObj processPhoto];
-                }
-                else
-                {
-                    // TODO Add a counter here to keep track of how often this fails
-                    // We now request the photo sizes and when that returns,
-                    // we can look for a matching image.
-                    [photoObj fetchFlickrSizes];
-                }
-            }
-            if (stream.currentPhotoIndex + 1 < stream.photosInStream)
-            {
-                [stream nextPhoto]; /* There are more left to get. */
-            }
-            else
-            {
-                [stream close];
+                [stream getPhotos]; /* This kicks off the whole process */
             }
         }
     }

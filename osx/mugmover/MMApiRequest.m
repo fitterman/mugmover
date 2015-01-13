@@ -67,8 +67,7 @@
 - (void)connection: (NSURLConnection *) connection
 didReceiveResponse: (NSURLResponse *) response
 {
-    // This method is called when the server has determined that it
-    // has enough information to create the NSURLResponse object.
+    // This gets called each time the server sends out a chnk of the response.
     // It can be called multiple times, for example in the case of a
     // redirect, so each time we reset the data.
     
@@ -90,6 +89,7 @@ didReceiveResponse: (NSURLResponse *) response
     _connection = nil;
     _receivedData = nil;
     
+    // TODO Add retry logic and a real callback to the caller to alert them of the failure
     // inform the user
     NSLog(@"Connection failed! Error - %@ %@",
           [error localizedDescription],
@@ -101,9 +101,6 @@ didReceiveResponse: (NSURLResponse *) response
     // do something with the data
     // receivedData is declared as a property elsewhere
     NSLog(@"Succeeded! Received %ld bytes of data", [_receivedData length]);
-    
-    // For now, request objects are transient, but I wonder if we need to make
-    // them persistent (and pooled).
     
     _connection = nil;
     _receivedData = nil;

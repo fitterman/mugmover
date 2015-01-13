@@ -14,6 +14,8 @@
 @property (strong) NSMutableData *          receivedData;
 @property (strong) NSMutableURLRequest *    request;
 
+// TODO Add retry count and automatic retries
+
 - (id) initUploadForApiVersion: (NSInteger) version
                       bodyData: (NSDictionary *)bodyData;
 @end

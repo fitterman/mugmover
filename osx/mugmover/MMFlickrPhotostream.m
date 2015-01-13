@@ -14,9 +14,7 @@
 
 @implementation MMFlickrPhotostream
 
-NSInteger           nextPhotoToDeliver;
 NSInteger           page;
-NSInteger           photosInBuffer;
 NSInteger           photosPerPage;
 NSDictionary       *photoResponseDictionary;
 long                retryCount;
@@ -45,8 +43,6 @@ long                retryCount;
             return nil;
         }
         self.handle = flickrHandle;
-        photosInBuffer = 0;
-        nextPhotoToDeliver = 0;
         page = 1;
         self.initializationProgress = 0.0;
      
@@ -71,9 +67,11 @@ long                retryCount;
         // Initiate the request, giving Flickr the mugmover callback to hit
         [flickrRequest fetchOAuthRequestTokenWithCallbackURL: [NSURL URLWithString: @"mugmover:callback"]];
         
-        _streamQueue = [NSOperationQueue mainQueue] ;
-        //[NSOperationQueue new];
-        //[_streamQueue setMaxConcurrentOperationCount: 12];
+        _streamQueue = [NSOperationQueue mainQueue];
+
+        // TODO Get this running in another thread
+        //_streamQueue = [[NSOperationQueue alloc] init];
+        //[_streamQueue setMaxConcurrentOperationCount:  NSOperationQueueDefaultMaxConcurrentOperationCount];
     }
     return self;
 }
@@ -82,7 +80,6 @@ long                retryCount;
 {
     _accessSecret = nil;
     _accessToken = nil;
-    _currentPhoto = nil;
     _flickrContext = nil;
     _handle = nil;
     _library = nil;
@@ -160,96 +157,7 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
 
 }
 
-- (void)nextPhoto
-{
-    if ((photosInBuffer == 0) || (nextPhotoToDeliver >= photosInBuffer))
-    {
-        OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
-        if ([flickrRequest isRunning])
-        {
-            @throw [NSException exceptionWithName: @"PoolManagement"
-                                           reason: @"Pool request is still running"
-                                         userInfo: nil];
-
-        }
-        NSBlockOperation *getPhotosOperation = [NSBlockOperation blockOperationWithBlock:^
-                                                {
-                                                    flickrRequest.sessionInfo = @"nextPhoto";
-                                                    [flickrRequest callAPIMethodWithGET: @"flickr.people.getPhotos"
-                                                                              arguments: [NSDictionary dictionaryWithObjectsAndKeys: @"400", @"per_page",
-                                                                                          [NSString stringWithFormat: @"%ld", page], @"page",
-                                                                                          /* TODO */ @"127850168@N06", @"user_id",
-                                                                                          nil]];
-                                                }];
-        [self.streamQueue addOperation: getPhotosOperation];
-    }
-    else
-    {
-        // We are ready to return the photo, but first we have to get the exif data,
-        // because it comes back looking like it's all done in a single request.
-
-        NSDictionary *photoToBeReturned = [[photoResponseDictionary valueForKeyPath: @"photos.photo"] objectAtIndex: nextPhotoToDeliver];
-        NSString *photo_id = [photoToBeReturned objectForKey: @"id"];
-        NSString *secret = [photoToBeReturned objectForKey: @"secret"];
-        NSBlockOperation *fetchExtraOperation = [NSBlockOperation blockOperationWithBlock:^
-                                                {
-                                                    [self fetchExifUsingPhotoId: photo_id secret: secret];
-                                                    [self fetchInfoUsingPhotoId: photo_id secret: secret];
-                                                }];
-        [self.streamQueue addOperation: fetchExtraOperation];
-    }
-}
-
-- (void)addFaceNoteTo: (NSString *)flickrPhotoid
-                 face: (MMFace *)face
-{
-    if (face.visible && (!face.rejected) && (!face.ignore))
-    {
-        OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
-        if ([flickrRequest isRunning])
-        {
-            @throw [NSException exceptionWithName: @"PoolManagement"
-                                           reason: @"Pool request is still running (in addFaceNoteTo)"
-                                         userInfo: nil];
-            
-        }
-        flickrRequest.sessionInfo = @"addNote";
-        // add a note for this face
-        NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys: flickrPhotoid, @"photo_id",
-                              face.flickrNoteX, @"note_x",
-                              face.flickrNoteY, @"note_y",
-                              face.flickrNoteWidth, @"note_w",
-                              face.flickrNoteHeight, @"note_h",
-                              face.flickrNoteText, @"note_text",
-                              MUGMOVER_API_KEY_MACRO, @"api_key",
-                              nil];
-        [flickrRequest callAPIMethodWithPOST: @"flickr.photos.notes.add"
-                                        arguments: args];
-    }
-}
-
-- (void)deleteNote: (NSString *)noteId
-{
-    OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
-    if ([flickrRequest isRunning])
-    {
-        @throw [NSException exceptionWithName: @"PoolManagement"
-                                       reason: @"Pool request is still running (in deleteNoteFrom)"
-                                     userInfo: nil];
-        
-    }
-    NSArray  *pieces = @[@"deleteNote", noteId];
-    flickrRequest.sessionInfo = [pieces componentsJoinedByString: @";"];
-
-    NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys: noteId, @"note_id",
-                          MUGMOVER_API_KEY_MACRO, @"api_key",
-                          nil];
-    [flickrRequest callAPIMethodWithPOST: @"flickr.photos.notes.delete"
-                               arguments: args];
-}
-
-- (void)fetchExifUsingPhotoId: (NSString *)photoId
-                       secret: (NSString *)secret
+- (void) getPhotos
 {
     OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
     if ([flickrRequest isRunning])
@@ -257,37 +165,18 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
         @throw [NSException exceptionWithName: @"PoolManagement"
                                        reason: @"Pool request is still running"
                                      userInfo: nil];
-        
+
     }
-
-    NSArray  *pieces = @[@"fetchExif", photoId, secret];
-    flickrRequest.sessionInfo = [pieces componentsJoinedByString: @";"];
-    [flickrRequest callAPIMethodWithGET: @"flickr.photos.getExif"
-                              arguments: [NSDictionary dictionaryWithObjectsAndKeys: photoId, @"photo_id",
-                                          secret, @"secret",
-                                          nil]];
-
-}
-
-- (void)fetchInfoUsingPhotoId: (NSString *)photoId
-                       secret: (NSString *)secret
-{
-    OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
-    if ([flickrRequest isRunning])
-    {
-        @throw [NSException exceptionWithName: @"PoolManagement"
-                                       reason: @"Pool request is still running"
-                                     userInfo: nil];
-        
-    }
-
-    NSArray  *pieces = @[@"fetchInfo", photoId, secret];
-    flickrRequest.sessionInfo = [pieces componentsJoinedByString: @";"];
-    [flickrRequest callAPIMethodWithGET: @"flickr.photos.getInfo"
-                              arguments: [NSDictionary dictionaryWithObjectsAndKeys: photoId, @"photo_id",
-                                          secret, @"secret",
-                                          nil]];
-    
+    NSBlockOperation *getPhotosOperation = [NSBlockOperation blockOperationWithBlock:^
+                                            {
+                                                flickrRequest.sessionInfo = @"getPhotos";
+                                                [flickrRequest callAPIMethodWithGET: @"flickr.people.getPhotos"
+                                                                          arguments: [NSDictionary dictionaryWithObjectsAndKeys: @"400", @"per_page",
+                                                                                      [NSString stringWithFormat: @"%ld", page], @"page",
+                                                                                      /* TODO */ @"127850168@N06", @"user_id",
+                                                                                      nil]];
+                                            }];
+    [self.streamQueue addOperation: getPhotosOperation];
 }
 
 - (void)removeFromPhotoDictionary: (MMPhoto *)photo
@@ -301,92 +190,34 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
 - (void)flickrAPIRequest: (OFFlickrAPIRequest *)inRequest
  didCompleteWithResponse: (NSDictionary *)inResponseDictionary
 {
-//    // NSLog(@"  COMPLETION: request=%@", inRequest.sessionInfo);
-    if ([inRequest.sessionInfo hasPrefix: @"fetchExif;"])
-    {
-        retryCount = 0;
-        NSArray *exifArray = [inResponseDictionary valueForKeyPath: @"photo.exif"];
-        NSMutableDictionary  *exifData = [NSMutableDictionary new];
-        for (NSDictionary *dict in exifArray)
-        {
-            NSString *tag = [dict objectForKey: @"tag"];
-            NSString *tagspace = [dict objectForKey: @"tagspace"];
-            NSDictionary *raw = [dict objectForKey: @"raw"];
-
-            NSDictionary *spaceDictionary = [exifData objectForKey: tagspace];
-            if (!spaceDictionary)
-            {
-                spaceDictionary = [[NSMutableDictionary alloc] init];
-                [exifData setObject: spaceDictionary forKey: tagspace];
-            }
-            [spaceDictionary setValue: [raw valueForKey: @"_text"] forKey: tag];
-        }
-        
-        NSDictionary *photoToBeReturned = [[photoResponseDictionary valueForKeyPath: @"photos.photo"] objectAtIndex: nextPhotoToDeliver];
-        /* Here we subtract 2 because (a) Flickr counts page from 1 not zero and (b) "page" always points to the NEXT page */
-        self.currentPhotoIndex = ((page - 2) * photosPerPage) + nextPhotoToDeliver;
-        nextPhotoToDeliver++; /* Point to the next NOW so if you are re-entered, you are already on the next */
-        NSBlockOperation *returnPhoto = [NSBlockOperation blockOperationWithBlock:^
-                                            {
-                                                // // NSLog (@"  BLOCK returning photo with exif");
-                                                MMPhoto *photo = [[MMPhoto alloc] initWithFlickrDictionary: photoToBeReturned
-                                                                                            exifDictionary: exifData
-                                                                                                    stream: self];
-                                                
-                                                NSString *photoKey = [NSString stringWithFormat:@"%lx", (NSInteger)(photo)];
-                                                [_photoDictionary setObject: photo forKey: photoKey];
-                                                self.currentPhoto = photo;
-                                            }];
-        [self.streamQueue addOperation: returnPhoto];
-    }
-    else if ([inRequest.sessionInfo hasPrefix: @"fetchInfo;"])
-    {
-        retryCount = 0;
-        /* CAUTION: FetchInfo operation implies all the mugmover notes will be deleted. */
-        NSArray *noteArray = [inResponseDictionary valueForKeyPath: @"photo.notes.note"];
-        if (noteArray)
-        {
-            for (id dict in noteArray)
-            {
-                NSString *noteId = [(NSDictionary *)dict objectForKey: @"id"];
-                NSString *noteText = [dict valueForKey: @"_text"];
-                if (noteText)
-                {
-                    NSRange result = [noteText rangeOfString: @"mugmover" options: NSCaseInsensitiveSearch];
-                    if (result.location != NSNotFound)
-                    {
-                        NSBlockOperation *deleteNote = [NSBlockOperation blockOperationWithBlock:^
-                                                        {
-                                                            [self deleteNote: noteId];
-                                                        }];
-                        [self.streamQueue addOperation: deleteNote];
-                    }
-                }
-            }
-        }
-    }
-    else if ([inRequest.sessionInfo hasPrefix: @"addNote"])
-    {
-        retryCount = 0;
-        /* If it worked, there's nothing to do. */
-    }
-    else if ([inRequest.sessionInfo isEqualToString: @"nextPhoto"])
+    NSLog(@"  COMPLETION: request=%@", inRequest.sessionInfo);
+    if ([inRequest.sessionInfo isEqualToString: @"getPhotos"])
     {
         photoResponseDictionary = inResponseDictionary;
-        photosInBuffer = [[photoResponseDictionary valueForKeyPath: @"photos.photo"] count];
         if (!self.photosInStream)
         {
             self.photosInStream = [[photoResponseDictionary valueForKeyPath: @"photos.total"] integerValue];
             photosPerPage = [[photoResponseDictionary valueForKeyPath: @"photos.perpage"] integerValue];
         }
         /* If you get an empty buffer back, that means there are no more photos to be had: quit trying */
-        if (photosInBuffer != 0)
+        NSArray *photos =[photoResponseDictionary valueForKeyPath: @"photos.photo"];
+        for (NSDictionary *photoToBeReturned in photos)
         {
-            nextPhotoToDeliver = 0;
-            page++;
-            retryCount = 0;
-            [self nextPhoto];
+            MMPhoto *photo = [[MMPhoto alloc] initWithFlickrDictionary: photoToBeReturned
+                                                                stream: self];
+            NSString *photoKey = [NSString stringWithFormat:@"%lx", (NSInteger)(photo)];
+            [_photoDictionary setObject: photo forKey: photoKey];
+
+            NSBlockOperation *returnPhoto = [NSBlockOperation blockOperationWithBlock:^
+                                                 {
+                                                     // // NSLog (@"  BLOCK returning photo with exif");
+                                                     NSLog(@"%lu/%lu", (long)_currentPhotoIndex + 1, (long)_photosInStream);
+                                                     [photo performNextStep];
+                                                 }
+                                             ];
+            [self.streamQueue addOperation: returnPhoto];
         }
+        // TODO Request the next batch
     }
 }
 
@@ -434,30 +265,9 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
     if ([self trackFailedAPIRequest: inRequest
                               error: inError])
     {
-        NSArray *pieces = [inRequest.sessionInfo componentsSeparatedByString: @";"];
-        if ([inRequest.sessionInfo hasPrefix: @"fetchExif;"])
+        if ([inRequest.sessionInfo isEqualToString: @"getPhotos"])
         {
-            [self fetchExifUsingPhotoId: pieces[1] secret: pieces[2]]; /* Retry */
-        }
-        else if ([inRequest.sessionInfo hasPrefix: @"fetchInfo;"])
-        {
-            [self fetchInfoUsingPhotoId: pieces[1] secret: pieces[2]]; /* Retry */
-        }
-        else  if ([inRequest.sessionInfo hasPrefix: @"nextPhoto"])
-        {
-            [self nextPhoto]; /* Retry */
-        }
-        else  if ([inRequest.sessionInfo hasPrefix: @"deleteNote;"])
-        {
-            [self deleteNote: pieces[1]]; /* Retry */
-        }
-        
-        else  if ([inRequest.sessionInfo hasPrefix: @"addNote;"])
-        {
-            @throw [NSException exceptionWithName: @"Unimplemented"
-                                           reason: @"Recovery from failure during note addition is unimplemented"
-                                         userInfo: nil];
-            [self addFaceNoteTo: pieces[1] face: pieces[2]]; /* Retry */
+            [self getPhotos]; /* Retry */
         }
         else
         {

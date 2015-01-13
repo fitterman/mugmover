@@ -106,6 +106,9 @@
             [_activeFlickrRequestPool removeObjectForKey: requestKey];
             [_availableFlickrRequestPool addObject: wrappedRequest];
         }
+        NSLog(@"POOL STATS   active=%lu, available=%lu",
+              (unsigned long)[_activeFlickrRequestPool count],
+              (unsigned long)[_availableFlickrRequestPool count]);
     }
 }
 

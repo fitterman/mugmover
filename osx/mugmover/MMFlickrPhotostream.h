@@ -25,24 +25,16 @@
 @property (assign)              Float32                 initializationProgress;
 @property (strong)              MMPhotoLibrary *        library;
 @property (strong)              NSMutableDictionary *   photoDictionary;
-@property (assign)              NSInteger               photosInBuffer;
 @property (assign)              NSInteger               photosInStream;
 @property (strong)              MMFlickrRequestPool *   requestPool;
 @property (strong, readonly)    NSOperationQueue *      streamQueue;
 
-
-- (void)addFaceNoteTo: (NSString *)flickrPhotoid
-                 face: (MMFace *)face;
-
 - (void) close;
 
-- (void)fetchExifUsingPhotoId: (NSString *)photoId
-                       secret: (NSString *)secret;
+- (id) initWithHandle: (NSString *)flickrHandle
+          libraryPath: (NSString *)libraryPath;
 
-- (id)initWithHandle: (NSString *)flickrHandle
-         libraryPath: (NSString *)libraryPath;
-
-- (void)nextPhoto;
+- (void) getPhotos;
 
 - (void)removeFromPhotoDictionary: (MMPhoto *)photo;
 
@@ -54,8 +46,3 @@
 @end
 
 
-enum MMImageSizes { MMImage75x75, /* @"75x75" */    MMImage150x150, /*@"150x150"*/
-                    MMImage100 = 100, MMImage240 = 240, MMImage320 = 320,
-                    MMImage500 = 500, MMImage640 = 640, MMImage800 = 800,
-                    MMImage1024 = 1024, MMImageOriginal = 9999,
-};
