@@ -125,13 +125,21 @@
     NSBlockOperation *blockOperation;
     if ((!_faceArray) || ([_faceArray count] == 0))
     {
-        
-        blockOperation = [NSBlockOperation blockOperationWithBlock:^
-                          {
-                              // When you are done adding all the new faces, delete the old notes
-                              [self deleteOldNote];
-                          }];
-        [_stream.streamQueue addOperation: blockOperation];
+        if ([_oldNotesToDelete count] == 0)
+        {
+            // Get the stream pointer before you blow it away
+            [self releaseStrongPointers];
+            [_stream removeFromPhotoDictionary: self];
+        }
+        else
+        {
+            blockOperation = [NSBlockOperation blockOperationWithBlock:^
+                              {
+                                  // When you are done adding all the new faces, delete the old notes
+                                  [self deleteOneNote];
+                              }];
+            [_stream.streamQueue addOperation: blockOperation];
+        }
     }
     else
     {
@@ -145,19 +153,11 @@
     }
 }
 
-- (void) deleteOldNote
+- (void) deleteOneNote
 {
-    if ([_oldNotesToDelete count] == 0)
-    {
-        [self considerReleasingPhoto];
-        // tell the stream to delete this photo now
-    }
-    else
-    {
-        NSString *noteId = [_oldNotesToDelete objectAtIndex: 0];
-        [_oldNotesToDelete removeObjectAtIndex: 0];
-        [self deleteNote: noteId];
-    }
+    NSString *noteId = [_oldNotesToDelete objectAtIndex: 0];
+    [_oldNotesToDelete removeObjectAtIndex: 0];
+    [self deleteNote: noteId];
 }
 
 - (BOOL) findMatchingInIphotoLibraryByVersionUuidAndVersion
@@ -644,35 +644,19 @@
 
 - (void)releaseStrongPointers
 {
+    _apiRequest = nil;
+    _cropOrigin = nil;
     _exifDictionary = nil;
     _faceArray = nil;
     _flickrDictionary = nil;
+    _flickrRequest = nil;
     _masterUuid = nil;
+    _oldNotesToDelete = nil;
     _originalDate = nil;
     _originalFilename = nil;
     _originalUrl = nil;
-    _stream = nil;
+    _request = nil;
     _versionUuid = nil;
-
-}
-
-- (void) considerReleasingPhoto
-{
-    // If there are any faces left, don't release the photo
-    if (_faceArray)
-    {
-        for (MMFace *face in _faceArray)
-        {
-            if (face)
-            {
-                return;
-            }
-        }
-    }
-
-    // OK, now you can do it.
-    [self releaseStrongPointers];
-    [_stream removeFromPhotoDictionary: self];
 }
 
 - (NSString *)title

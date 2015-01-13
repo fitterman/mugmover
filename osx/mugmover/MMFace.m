@@ -212,10 +212,11 @@
 - (void) releaseStrongPointers
 {
     _centerPoint = nil;
+    _faceNameUuid = nil;
     _faceUuid = nil;
+    _keyVersionUuid = nil;
     _masterUuid = nil;
-    _photo = nil;
-
+    _name = nil;
 }
 
 @end

@@ -25,11 +25,9 @@
 @property (strong, readonly)    NSString *  keyVersionUuid;
 @property (strong)              NSString *  masterUuid;
 @property (strong, readonly)    NSString *  name;
-@property (strong)              MMPhoto *   photo;
+@property (weak)                MMPhoto *   photo;
 @property (assign, readonly)    BOOL        rejected;
 @property (assign, readonly)    BOOL        visible;
-
-
 
 - (id) initFromIphotoWithTopLeft: (MMPoint *) topLeft
                       bottomLeft: (MMPoint *) bottomLeft

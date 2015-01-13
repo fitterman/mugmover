@@ -14,8 +14,6 @@
 
 @implementation MMFlickrPhotostream
 
-NSInteger           page;
-NSInteger           photosPerPage;
 NSDictionary       *photoResponseDictionary;
 long                retryCount;
 
@@ -43,7 +41,7 @@ long                retryCount;
             return nil;
         }
         self.handle = flickrHandle;
-        page = 1;
+        _page = 1;
         self.initializationProgress = 0.0;
      
         [[NSAppleEventManager sharedAppleEventManager] setEventHandler: self
@@ -171,8 +169,8 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
                                             {
                                                 flickrRequest.sessionInfo = @"getPhotos";
                                                 [flickrRequest callAPIMethodWithGET: @"flickr.people.getPhotos"
-                                                                          arguments: [NSDictionary dictionaryWithObjectsAndKeys: @"400", @"per_page",
-                                                                                      [NSString stringWithFormat: @"%ld", page], @"page",
+                                                                          arguments: [NSDictionary dictionaryWithObjectsAndKeys: @"16", @"per_page",
+                                                                                      [NSString stringWithFormat: @"%ld", _page], @"page",
                                                                                       /* TODO */ @"127850168@N06", @"user_id",
                                                                                       nil]];
                                             }];
@@ -183,6 +181,11 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
 {
     NSString *photoKey = [NSString stringWithFormat:@"%lx", (NSInteger)(photo)];
     [_photoDictionary removeObjectForKey: photoKey];
+    if ([_photoDictionary count] == 0)
+    {
+        _page++;
+        [self getPhotos];
+    }
 }
 
 #pragma mark ObjectiveFlickr delegate methods
@@ -196,11 +199,14 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
         photoResponseDictionary = inResponseDictionary;
         if (!self.photosInStream)
         {
-            self.photosInStream = [[photoResponseDictionary valueForKeyPath: @"photos.total"] integerValue];
-            photosPerPage = [[photoResponseDictionary valueForKeyPath: @"photos.perpage"] integerValue];
+            _photosInStream = [[photoResponseDictionary valueForKeyPath: @"photos.total"] integerValue];
         }
-        /* If you get an empty buffer back, that means there are no more photos to be had: quit trying */
         NSArray *photos =[photoResponseDictionary valueForKeyPath: @"photos.photo"];
+        // If you get an empty buffer back, that means there are no more photos to be had: quit trying
+        if ((!photos) || ([photos count] == 0))
+        {
+            NSLog(@"END OF STREAM");
+        }
         for (NSDictionary *photoToBeReturned in photos)
         {
             MMPhoto *photo = [[MMPhoto alloc] initWithFlickrDictionary: photoToBeReturned
@@ -217,7 +223,6 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
                                              ];
             [self.streamQueue addOperation: returnPhoto];
         }
-        // TODO Request the next batch
     }
 }
 

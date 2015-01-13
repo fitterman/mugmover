@@ -29,7 +29,7 @@
 @property (readonly)            BOOL                        didProcessPhoto;
 @property (strong)              NSMutableArray *            faceArray;
 @property (strong)              NSDictionary *              flickrDictionary;
-@property (strong)              OFFlickrAPIRequest          *flickrRequest;
+@property (strong)              OFFlickrAPIRequest *        flickrRequest;
 @property (assign)              Float64                     masterHeight;
 @property (strong)              NSString *                  masterUuid;
 @property (assign)              Float64                     masterWidth;
@@ -40,7 +40,7 @@
 @property (strong)              MMNetworkRequest *          request;
 @property (assign)              Float64                     rotationAngle;
 @property (readonly)            Float64                     straightenAngle;
-@property (strong)              MMFlickrPhotostream *       stream;
+@property (weak)                MMFlickrPhotostream *       stream;
 @property (assign)              NSInteger                   version;
 @property (strong)              NSString *                  versionUuid;
 

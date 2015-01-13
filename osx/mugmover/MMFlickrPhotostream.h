@@ -24,6 +24,7 @@
 @property (strong)              NSString *              handle; /* TODO Verify reasoning for strong */
 @property (assign)              Float32                 initializationProgress;
 @property (strong)              MMPhotoLibrary *        library;
+@property (assign, readonly)    NSInteger               page;
 @property (strong)              NSMutableDictionary *   photoDictionary;
 @property (assign)              NSInteger               photosInStream;
 @property (strong)              MMFlickrRequestPool *   requestPool;
