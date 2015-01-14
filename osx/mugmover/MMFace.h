@@ -50,6 +50,8 @@
 
 - (NSDictionary *) properties;
 
+- (void) moveCenterRelativeToTopLeftOrigin;
+
 - (void) rotate: (Float64) degrees
          origin: (MMPoint *) centerPoint;
 

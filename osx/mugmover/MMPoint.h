@@ -17,6 +17,8 @@
 
 - (NSDictionary *) asDictionary;
 
+- (NSDictionary *) asIntDictionary;
+
 - (void) rotate: (Float64) degrees
      relativeTo: (MMPoint *) origin;
 

@@ -557,11 +557,19 @@
 {
     [self findRelevantAdjustments];
     [self adjustForStraightenCropAndGetFaces];
+    [self moveFacesRelativeToTopLeftOrigin];
     [self sendPhotoToMugmover];
     [self discardHiddenFaces];
     [self updateNotesOnFlickr];
 }
 
+- (void) moveFacesRelativeToTopLeftOrigin
+{
+    for (MMFace *face in _faceArray)
+    {
+        [face moveCenterRelativeToTopLeftOrigin];
+    }
+}
 - (void) discardHiddenFaces
 {
     NSMutableArray *discardedItems = [NSMutableArray array];

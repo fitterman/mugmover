@@ -157,6 +157,8 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
 
 - (void) getPhotos
 {
+    NSString *userId = @"127850168@N06"; // TODO Don't hardcode this
+    
     OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
     if ([flickrRequest isRunning])
     {
@@ -169,10 +171,10 @@ didObtainOAuthRequestToken: (NSString *)inRequestToken
                                             {
                                                 flickrRequest.sessionInfo = @"getPhotos";
                                                 [flickrRequest callAPIMethodWithGET: @"flickr.people.getPhotos"
-                                                                          arguments: [NSDictionary dictionaryWithObjectsAndKeys: @"16", @"per_page",
-                                                                                      [NSString stringWithFormat: @"%ld", _page], @"page",
-                                                                                      /* TODO */ @"127850168@N06", @"user_id",
-                                                                                      nil]];
+                                                                          arguments: @{@"per_page": @"16",
+                                                                                       @"page": [NSString stringWithFormat: @"%ld", _page],
+                                                                                       @"user_id": userId
+                                                                                       }];
                                             }];
     [self.streamQueue addOperation: getPhotosOperation];
 }

@@ -112,13 +112,13 @@
 - (NSDictionary *) properties
 {
     return @{
-             @"center":            [_centerPoint asDictionary],
-             @"height":            [NSNumber numberWithDouble: _faceHeight],
+             @"center":            [_centerPoint asIntDictionary],
+             @"height":            [NSNumber numberWithLongLong: _faceHeight],
              @"ignore":            @(_ignore),
              @"rejected":          @(_rejected),
              @"uuid":              _faceUuid,
              @"visible":           @(_visible),
-             @"width":             [NSNumber numberWithDouble: _faceWidth],
+             @"width":             [NSNumber numberWithLongLong: _faceWidth],
              @"faceNameUuid":      _faceNameUuid,
              @"faceKey":           @(_faceKey),
              @"name":              _name,
@@ -178,6 +178,10 @@
     }
 }
 
+- (void) moveCenterRelativeToTopLeftOrigin
+{
+    _centerPoint.y = _photo.croppedHeight - _centerPoint.y;
+}
 
 - (NSString *) flickrNoteX
 {
@@ -189,9 +193,8 @@
 /* Flickr origin is topLeft while iPhoto origin is bottomLeft */
 - (NSString *) flickrNoteY
 {
-    Float64 result = _centerPoint.y + (_faceHeight / 2.0);
+    Float64 result = _centerPoint.y - (_faceHeight / 2.0);
     result *= ([self flickrImageHeight] / _photo.croppedHeight); /* Now scale it */
-    result = [self flickrImageHeight] - result; /* flickr origin is top left, iphoto is bottom left */
     return [NSString stringWithFormat: @"%ld", (NSInteger)round(result)];
 }
 

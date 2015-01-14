@@ -90,4 +90,10 @@
     return @{@"x": [NSNumber numberWithDouble: _x],
              @"y": [NSNumber numberWithDouble: _y]};
 }
+
+- (NSDictionary *) asIntDictionary
+{
+    return @{@"x": [NSNumber numberWithLongLong: round(_x)],
+             @"y": [NSNumber numberWithLongLong: round(_y)]};
+}
 @end
