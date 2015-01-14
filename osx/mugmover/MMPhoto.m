@@ -30,7 +30,8 @@
     self = [self init];
     if (self)
     {
-        if (stream && flickrDictionary)
+        _flickrDictionary = [[NSMutableDictionary alloc] init];
+        if (_flickrDictionary && stream && flickrDictionary)
         {
             _stream = stream;
             _rotationAngle = 0.0;
@@ -38,10 +39,23 @@
             _cropOrigin = [[MMPoint alloc] initWithX: 0.0 y: 0.0];
             if (!_cropOrigin)
             {
+                _flickrDictionary = nil;
                 return nil;
             }
             
-            _flickrDictionary = flickrDictionary;
+            for (NSString *key in flickrDictionary)
+            {
+                NSString *value = [flickrDictionary valueForKey: key];
+                if ([key hasPrefix: @"is"])
+                {
+                    NSNumber *boolValue = [[NSNumber alloc ]initWithBool:([value isEqualToString: @"1"])];
+                    [_flickrDictionary setValue: boolValue forKey: key];
+                }
+                else
+                {
+                    [_flickrDictionary setValue: value forKey: key];
+                }
+            }
             _exifDictionary = [NSMutableDictionary new];
             _oldNotesToDelete = [[NSMutableArray alloc] init];
             _flickrRequest = [_stream.requestPool getRequestFromPoolSettingDelegate: self];
@@ -895,8 +909,10 @@
                     NSString *heightString = [dict objectForKey: @"height"];
                     if (widthString && heightString)
                     {
-                        [_flickrDictionary setValue: widthString forKey: @"width"];
-                        [_flickrDictionary setValue: heightString forKey: @"height"];
+                        [_flickrDictionary setValue: [NSNumber numberWithInteger: [widthString integerValue]]
+                                             forKey: @"width"];
+                        [_flickrDictionary setValue: [NSNumber numberWithInteger: [heightString integerValue]]
+                                             forKey: @"height"];
                     }
                 }
             }

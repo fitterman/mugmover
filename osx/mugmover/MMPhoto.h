@@ -28,7 +28,7 @@
 @property (readonly)            BOOL                        didFetchSizes;
 @property (readonly)            BOOL                        didProcessPhoto;
 @property (strong)              NSMutableArray *            faceArray;
-@property (strong)              NSDictionary *              flickrDictionary;
+@property (strong)              NSMutableDictionary *       flickrDictionary;
 @property (strong)              OFFlickrAPIRequest *        flickrRequest;
 @property (assign)              Float64                     masterHeight;
 @property (strong)              NSString *                  masterUuid;
