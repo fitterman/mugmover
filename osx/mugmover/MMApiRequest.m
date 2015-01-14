@@ -14,15 +14,15 @@
 
 
 - (id) initUploadForApiVersion: (NSInteger) version
-                      bodyData: (NSDictionary *)bodyData // values should NOT be URLEncoded
+                      bodyData: (NSDictionary *) bodyData // values should NOT be URLEncoded
 {
     
     self = [self init];
     if (self)
     {
-        NSString *stringUrl = [[NSString alloc] initWithFormat:@"http://localhost:3000/api/v%ld/upload", version];
+        NSString *stringUrl = [[NSString alloc] initWithFormat: @"http://localhost:3000/api/v%ld/upload", version];
 
-        _request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString: stringUrl]];
+        _request = [NSMutableURLRequest requestWithURL: [NSURL URLWithString: stringUrl]];
         [_request setCachePolicy: NSURLRequestUseProtocolCachePolicy];
         [_request setTimeoutInterval: DEFAULT_API_TIMEOUT];
 
@@ -30,7 +30,7 @@
         if (bodyData)
         {
             // Set the request's content type to application/x-www-form-urlencoded
-            [_request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+            [_request setValue: @"application/x-www-form-urlencoded" forHTTPHeaderField: @"Content-Type"];
             
             // Designate the request a POST request and specify its body data
             [_request setHTTPMethod: @"POST"];
@@ -57,15 +57,15 @@
                                                       delegate: self];
         if (!_connection)
         {
-            _receivedData = nil; // Release the receivedData object.
+            [self releaseStrongPointers];
             return nil;
         }
     }
     return self;
 }
 
-- (void)connection: (NSURLConnection *) connection
-didReceiveResponse: (NSURLResponse *) response
+- (void) connection: (NSURLConnection *) connection
+ didReceiveResponse: (NSURLResponse *) response
 {
     // This gets called each time the server sends out a chnk of the response.
     // It can be called multiple times, for example in the case of a
@@ -74,35 +74,36 @@ didReceiveResponse: (NSURLResponse *) response
     [_receivedData setLength: 0];
 }
 
-- (void)connection: (NSURLConnection *) connection
-    didReceiveData: (NSData *) data
+- (void) connection: (NSURLConnection *) connection
+     didReceiveData: (NSData *) data
 {
     // Append the new data to what you have already.
     [_receivedData appendData: data];
 }
 
-- (void)connection: (NSURLConnection *) connection
-  didFailWithError: (NSError *) error
+- (void ) connection: (NSURLConnection *) connection
+    didFailWithError: (NSError *) error
 {
-    // Release the connection and the data object.
-
-    _connection = nil;
-    _receivedData = nil;
-    
     // TODO Add retry logic and a real callback to the caller to alert them of the failure
     // inform the user
     NSLog(@"Connection failed! Error - %@ %@",
           [error localizedDescription],
-          [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey]);
+          [[error userInfo] objectForKey: NSURLErrorFailingURLStringErrorKey]);
+    [self releaseStrongPointers];
+
 }
 
-- (void)connectionDidFinishLoading: (NSURLConnection *) connection
+- (void) connectionDidFinishLoading: (NSURLConnection *) connection
 {
     // do something with the data
-    // receivedData is declared as a property elsewhere
     NSLog(@"Succeeded! Received %ld bytes of data", [_receivedData length]);
-    
+    [self releaseStrongPointers];
+}
+
+- (void) releaseStrongPointers
+{
     _connection = nil;
     _receivedData = nil;
+    _request = nil;
 }
 @end

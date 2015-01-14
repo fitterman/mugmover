@@ -12,59 +12,59 @@
 
 @interface mugmoverTests : XCTestCase
 
-- (void)testMidpointCalculation;
-- (void)testDistanceCalculationDiagonally;
-- (void)testDistanceCalculationHorizontally;
-- (void)testDistanceCalculationVertically;
+- (void) testMidpointCalculation;
+- (void) testDistanceCalculationDiagonally;
+- (void) testDistanceCalculationHorizontally;
+- (void) testDistanceCalculationVertically;
 
 @end
 
 @implementation mugmoverTests
 
-- (void)setUp
+- (void) setUp
 {
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }
 
-- (void)tearDown
+- (void) tearDown
 {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
 
-- (void)testMidpointCalculation
+- (void) testMidpointCalculation
 {
-    MMPoint *p1 = [[MMPoint alloc] initWithX:1.5 y: 1.5];
-    MMPoint *p2 = [[MMPoint alloc] initWithX:-1.0 y: 1.0];
-    MMPoint *midpoint = [MMPoint midpointOf:p1 and:p2];
+    MMPoint *p1 = [[MMPoint alloc] initWithX: 1.5 y: 1.5];
+    MMPoint *p2 = [[MMPoint alloc] initWithX: -1.0 y: 1.0];
+    MMPoint *midpoint = [MMPoint midpointOf: p1 and: p2];
     XCTAssertEqualWithAccuracy(midpoint.x, .25, 0.01);
     XCTAssertEqualWithAccuracy(midpoint.y, 1.25, 0.01);
 }
 
-- (void)testDistanceCalculationDiagonally;
+- (void) testDistanceCalculationDiagonally;
 {
-    MMPoint *p1 = [[MMPoint alloc] initWithX:1.0 y: 1.0];
-    MMPoint *p2 = [[MMPoint alloc] initWithX:4.0 y: 5.0];
-    XCTAssertEqualWithAccuracy([MMPoint distanceBetween:p1 and: p2], 5.0, 0.01);
+    MMPoint *p1 = [[MMPoint alloc] initWithX: 1.0 y: 1.0];
+    MMPoint *p2 = [[MMPoint alloc] initWithX: 4.0 y: 5.0];
+    XCTAssertEqualWithAccuracy([MMPoint distanceBetween: p1 and: p2], 5.0, 0.01);
 }
 
-- (void)testDistanceCalculationHorizontally;
+- (void) testDistanceCalculationHorizontally;
 {
-    MMPoint *p1 = [[MMPoint alloc] initWithX:-0.5 y: 1.5];
-    MMPoint *p2 = [[MMPoint alloc] initWithX:1.5 y: 1.5];
-    XCTAssertEqualWithAccuracy([MMPoint distanceBetween:p1 and: p2], 2.0, 0.01);
+    MMPoint *p1 = [[MMPoint alloc] initWithX: -0.5 y: 1.5];
+    MMPoint *p2 = [[MMPoint alloc] initWithX: 1.5 y: 1.5];
+    XCTAssertEqualWithAccuracy([MMPoint distanceBetween: p1 and: p2], 2.0, 0.01);
 }
 
-- (void)testDistanceCalculationVertically;
+- (void) testDistanceCalculationVertically;
 {
-    MMPoint *p1 = [[MMPoint alloc] initWithX:1.5 y: 1.5];
-    MMPoint *p2 = [[MMPoint alloc] initWithX:1.5 y: 1.0];
-    XCTAssertEqualWithAccuracy([MMPoint distanceBetween:p1 and: p2], 0.5, 0.01);
+    MMPoint *p1 = [[MMPoint alloc] initWithX: 1.5 y: 1.5];
+    MMPoint *p2 = [[MMPoint alloc] initWithX: 1.5 y: 1.0];
+    XCTAssertEqualWithAccuracy([MMPoint distanceBetween: p1 and: p2], 0.5, 0.01);
     
 }
 
-- (void)testFaceCreation
+- (void) testFaceCreation
 {
     MMFace *topRightSquare = [[MMFace alloc] initFromIphotoWithTopLeft: [[MMPoint alloc] initWithX: 0.808162715123663 y: 0.731601784929713]
                                                            bottomRight: [[MMPoint alloc] initWithX: 0.990247876728963 y: 0.996058805356458]

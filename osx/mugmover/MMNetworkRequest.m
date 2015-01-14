@@ -43,7 +43,7 @@
 
         if (!_connection)
         {
-            _request = nil;
+            [self releaseStrongPointers];
             return nil;
         }
         _delegate = delegate;
@@ -52,12 +52,13 @@
     return self;
 }
 
-- (void)connection: (NSURLConnection *) connection
-didReceiveResponse: (NSURLResponse *) response
+- (void) connection: (NSURLConnection *) connection
+ didReceiveResponse: (NSURLResponse *) response
 {
     long long filesize = [response expectedContentLength];
     NSLog(@"FILESIZE %lld", filesize);
     [_delegate setByteLength: filesize];
+    [self releaseStrongPointers];
 }
 
 - (BOOL) retryable
@@ -78,18 +79,22 @@ didReceiveResponse: (NSURLResponse *) response
     
 }
 
-- (void)connection: (NSURLConnection *) connection
-  didFailWithError: (NSError *) error
+- (void) connection: (NSURLConnection *) connection
+   didFailWithError: (NSError *) error
 {
     // Release the connection and the data object.
     
     [_delegate mmNetworkRequest: self
                didFailWithError: error];
-    _request = nil;
-    _connection = nil;
-    _receivedData = nil;
-    
+    [self releaseStrongPointers];
 }
 
+- (void) releaseStrongPointers
+{
+    _connection = nil;
+    _delegate = nil;
+    _receivedData = nil;
+    _request = nil;
+}
 
 @end

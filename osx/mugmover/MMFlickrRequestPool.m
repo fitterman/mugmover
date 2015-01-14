@@ -45,7 +45,7 @@
 {
     @synchronized(_availableFlickrRequestPool)
     {
-        NSString *requestKey = [NSString stringWithFormat:@"%lx", (NSInteger)(request)];
+        NSString *requestKey = [NSString stringWithFormat: @"%lx", (NSInteger)(request)];
         MMFlickrRequest *wrappedRequest = [_activeFlickrRequestPool objectForKey: requestKey];
         
         if (wrappedRequest)
@@ -57,7 +57,7 @@
     }
 }
 
-- (OFFlickrAPIRequest *)getRequestFromPoolSettingDelegate: (OFFlickrAPIRequestDelegateType) delegate
+- (OFFlickrAPIRequest *) getRequestFromPoolSettingDelegate: (OFFlickrAPIRequestDelegateType) delegate
 {
     @synchronized(_availableFlickrRequestPool)
     {
@@ -82,17 +82,17 @@
         [wrappedRequest.request setDelegate: delegate];
         
         // Note that we use the request id for the key, not the wrapped request
-        NSString *requestKey = [NSString stringWithFormat:@"%lx", (NSInteger)(wrappedRequest.request)];
+        NSString *requestKey = [NSString stringWithFormat: @"%lx", (NSInteger)(wrappedRequest.request)];
         [_activeFlickrRequestPool setObject: wrappedRequest forKey: requestKey];
         return wrappedRequest.request;
     }
 }
 
-- (void)returnRequestToPool: (OFFlickrAPIRequest *)request
+- (void) returnRequestToPool: (OFFlickrAPIRequest *) request
 {
     @synchronized(_availableFlickrRequestPool)
     {
-        NSString *requestKey = [NSString stringWithFormat:@"%lx", (NSInteger)(request)];
+        NSString *requestKey = [NSString stringWithFormat: @"%lx", (NSInteger)(request)];
         NSObject *wrappedRequest = [_activeFlickrRequestPool objectForKey: requestKey];
         
         if (!wrappedRequest)

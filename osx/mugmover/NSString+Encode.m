@@ -12,10 +12,10 @@
 
 // From http://iosdevelopertips.com/networking/url-encoding-method-in-objective-c.html
 
-- (NSString *)encodeString:(NSStringEncoding)encoding
+- (NSString *) encodeString: (NSStringEncoding) encoding
 {
-    return (NSString *) CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)self,
-                                                                NULL, (CFStringRef)@";/?:@&=$+{}<>,",
+    return (NSString *) CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef) self,
+                                                                NULL, (CFStringRef) @";/?:@&=$+{}<>,",
                                                                 CFStringConvertNSStringEncodingToEncoding(encoding)));
 }
 @end

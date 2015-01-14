@@ -15,8 +15,8 @@
 @interface MMFace : NSObject
 
 // The location of a face is actually based on polar coordinates (from the master's center)
-@property (readonly, strong)    MMPoint *   centerPoint;
-@property (readonly)            NSInteger   faceKey;
+@property (strong, readonly)    MMPoint *   centerPoint;
+@property (assign, readonly)    NSInteger   faceKey;
 @property (assign)              Float64     faceHeight;
 @property (strong, readonly)    NSString *  faceNameUuid;
 @property (strong)              NSString *  faceUuid;

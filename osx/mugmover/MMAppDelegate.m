@@ -20,7 +20,7 @@ NSDictionary *flickrPhotoPointer;
 
 BOOL const MMdebugging = NO;
 
-- (void)applicationDidFinishLaunching: (NSNotification *)aNotification
+- (void) applicationDidFinishLaunching: (NSNotification *) aNotification
 {
     MMTrack *aTrack = [[MMTrack alloc] init];
     [self setTrack: aTrack]; /* alternatively, self.track = aTrack; */
@@ -45,11 +45,12 @@ BOOL const MMdebugging = NO;
  call  -removeObserver:forKeyPath:context:  when the time comes
 */
 
-- (void)observeValueForKeyPath: (NSString *)keyPath
-                      ofObject: (id)object
-                        change: (NSDictionary *)change
-                       context: (void *)context {
-    if (context == (__bridge void *)self) // Make sure it's your context that is observing
+- (void) observeValueForKeyPath: (NSString *) keyPath
+                       ofObject: (id) object
+                         change: (NSDictionary *) change
+                        context: (void *) context
+{
+    if (context == (__bridge void *) self) // Make sure it's your context that is observing
     {
         if ([keyPath isEqual: @"initializationProgress"])
         {
@@ -68,14 +69,14 @@ BOOL const MMdebugging = NO;
     }
 }
 
-- (IBAction)mute: (id)sender
+- (IBAction) mute: (id) sender
 {
     self.track.volume = 0.0;
     /* WAS [self.track setVolume: 0.0]; */
     [self updateUserInterface];
 }
 
-- (IBAction)takeFloatValueForVolumeFrom: (id)sender
+- (IBAction) takeFloatValueForVolumeFrom: (id) sender
 {
     float newValue = [sender floatValue];
     [self.track setVolume: newValue];
@@ -91,7 +92,7 @@ BOOL const MMdebugging = NO;
     // NSLog(@"%@ sent takeFloatValueForVolumeFrom: with value %1.2f", senderName, [sender floatValue]);
 }
 
-- (void)updateUserInterface
+- (void) updateUserInterface
 {
     
     float volume = [self.track volume];

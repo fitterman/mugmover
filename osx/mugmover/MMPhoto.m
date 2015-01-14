@@ -15,6 +15,7 @@
 #import "MMFlickrPhotostream.h"
 #import "MMFlickrRequest.h"
 #import "MMFlickrRequestPool.h"
+#import "MMNetworkRequest.h"
 #import "MMPhoto.h"
 #import "MMPhotolibrary.h"
 #import "MMPoint.h"
@@ -24,8 +25,8 @@
 
 @implementation MMPhoto
 
-- (MMPhoto *) initWithFlickrDictionary: (NSDictionary *)flickrDictionary
-                                stream: (MMFlickrPhotostream *)stream
+- (MMPhoto *) initWithFlickrDictionary: (NSDictionary *) flickrDictionary
+                                stream: (MMFlickrPhotostream *) stream
 {
     self = [self init];
     if (self)
@@ -48,7 +49,7 @@
                 NSString *value = [flickrDictionary valueForKey: key];
                 if ([key hasPrefix: @"is"])
                 {
-                    NSNumber *boolValue = [[NSNumber alloc ]initWithBool:([value isEqualToString: @"1"])];
+                    NSNumber *boolValue = [[NSNumber alloc ] initWithBool: ([value isEqualToString: @"1"])];
                     [_flickrDictionary setValue: boolValue forKey: key];
                 }
                 else
@@ -279,6 +280,7 @@
 - (void) setByteLength: (long long) length
 {
     [_flickrDictionary setValue: @(length) forKey: @"bytes"];
+    [_request releaseStrongPointers];
     _didFetchOriginalByteSize = YES;
     [self performNextStep];
 }
@@ -304,7 +306,7 @@
     }
 }
 
-- (void) updateFromIphotoLibraryVersionRecord: (FMResultSet *)resultSet
+- (void) updateFromIphotoLibraryVersionRecord: (FMResultSet *) resultSet
 {
     if (resultSet)
     {
@@ -431,7 +433,7 @@
 
     NSArray *args = @[_masterUuid];
     NSUInteger matches = [[[self.stream library] facesDatabase]
-                                intForQuery:@"SELECT COUNT(*) cnt FROM RKDetectedFace WHERE masterUuid = ?",
+                                intForQuery: @"SELECT COUNT(*) cnt FROM RKDetectedFace WHERE masterUuid = ?",
                                 _masterUuid];
 
     if (matches > 0)
@@ -466,12 +468,12 @@
             while ([resultSet next])
             {
                 
-                MMPoint *topLeft     = [[MMPoint alloc] initWithX: [resultSet doubleForColumn:@"topLeftX" ]
-                                                                y: [resultSet doubleForColumn:@"topLeftY" ]];
-                MMPoint *bottomLeft  = [[MMPoint alloc] initWithX: [resultSet doubleForColumn:@"bottomLeftX" ]
-                                                                y: [resultSet doubleForColumn:@"bottomLeftY" ]];
-                MMPoint *bottomRight = [[MMPoint alloc] initWithX: [resultSet doubleForColumn:@"bottomRightX" ]
-                                                                y: [resultSet doubleForColumn:@"bottomRightY" ]];
+                MMPoint *topLeft     = [[MMPoint alloc] initWithX: [resultSet doubleForColumn: @"topLeftX" ]
+                                                                y: [resultSet doubleForColumn: @"topLeftY" ]];
+                MMPoint *bottomLeft  = [[MMPoint alloc] initWithX: [resultSet doubleForColumn: @"bottomLeftX" ]
+                                                                y: [resultSet doubleForColumn: @"bottomLeftY" ]];
+                MMPoint *bottomRight = [[MMPoint alloc] initWithX: [resultSet doubleForColumn: @"bottomRightX" ]
+                                                                y: [resultSet doubleForColumn: @"bottomRightY" ]];
                 NSInteger faceWidth = [resultSet intForColumn: @"width"];
                 NSInteger faceHeight = [resultSet intForColumn: @"height"];
 
@@ -483,7 +485,7 @@
                                                               faceHeight: faceHeight
                                                                   ignore: [resultSet boolForColumn: @"ignore"]
                                                                 rejected: [resultSet boolForColumn: @"rejected"]
-                                                                faceUuid: [resultSet stringForColumn:@"uuid" ]
+                                                                faceUuid: [resultSet stringForColumn: @"uuid" ]
                                                                    photo: self];
                 if (face)
                 {
@@ -604,7 +606,7 @@
     NSDictionary *properties = @{
                                  @"source":
                                     @{ @"app":                  @"mmu",
-                                       @"appVersion": (NSString *) [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"],
+                                       @"appVersion": (NSString *) [[NSBundle mainBundle] objectForInfoDictionaryKey: @"CFBundleShortVersionString"],
                                        @"databaseUuid":         [[_stream library] databaseUuid],
                                        @"databaseVersion":      [[_stream library] databaseVersion],
                                        @"databaseAppId":        [[_stream library] databaseAppId],
@@ -655,7 +657,7 @@
     if (!jsonData) {
         NSLog(@"JSON Serialization returned an error: %@", error);
     } else {
-        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        NSString *jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
         NSDictionary *postData = @{@"data": jsonString};
         NSLog(@"Uploading Data");
         _apiRequest = [[MMApiRequest alloc] initUploadForApiVersion: 1
@@ -664,7 +666,7 @@
 
 }
 
-- (void)releaseStrongPointers
+- (void) releaseStrongPointers
 {
     _apiRequest = nil;
     _cropOrigin = nil;
@@ -681,9 +683,9 @@
     _versionUuid = nil;
 }
 
-- (NSString *)title
+- (NSString *) title
 {
-    NSString *title = [self.flickrDictionary  objectForKey:@"title"];
+    NSString *title = [self.flickrDictionary  objectForKey: @"title"];
     if (![title length])
     {
         title = @"No title";
@@ -793,7 +795,7 @@
 
 }
 
-- (void)deleteNote: (NSString *)noteId
+- (void) deleteNote: (NSString *) noteId
 {
     if ([_flickrRequest isRunning])
     {
@@ -816,11 +818,11 @@
 
 #pragma mark ObjectiveFlickr delegate methods
 
-- (void)flickrAPIRequest: (OFFlickrAPIRequest *)inRequest
- didCompleteWithResponse: (NSDictionary *)inResponseDictionary
+- (void) flickrAPIRequest: (OFFlickrAPIRequest *) inRequest
+  didCompleteWithResponse: (NSDictionary *) inResponseDictionary
 {
     NSLog(@"  COMPLETION: request=%@", inRequest.sessionInfo);
-    NSArray *pieces = [inRequest.sessionInfo componentsSeparatedByString:@";"];
+    NSArray *pieces = [inRequest.sessionInfo componentsSeparatedByString: @";"];
 
     if ([pieces[0] isEqualToString: @"fetchExif"])
     {
@@ -851,7 +853,7 @@
             _versionUuid = [_exifDictionary valueForKeyPath: @"XMP-photoshop.Instructions"];
         }
         NSObject *versionObject = [_exifDictionary valueForKeyPath: @"IPTC.ApplicationRecordVersion"];
-        _version = (versionObject) ? [(NSString *)versionObject integerValue] : -1;
+        _version = (versionObject) ? [(NSString *) versionObject integerValue] : -1;
 
         _didFetchExif = YES;
         [self performNextStep];
@@ -862,7 +864,7 @@
         NSString *originalFormat = [inResponseDictionary valueForKeyPath: @"photo.originalformat"];
         if (originalSecret && originalFormat)
         {
-            _originalUrl = [NSString stringWithFormat:@"https://farm%@.staticflickr.com/%@/%@_%@_o.%@",
+            _originalUrl = [NSString stringWithFormat: @"https://farm%@.staticflickr.com/%@/%@_%@_o.%@",
                                         [_flickrDictionary valueForKey: @"farm"],
                                         [_flickrDictionary valueForKey: @"server"],
                                         [_flickrDictionary valueForKey: @"id"],
@@ -935,13 +937,13 @@
     }
 }
 
-- (void)flickrAPIRequest: (OFFlickrAPIRequest *)inRequest
-        didFailWithError: (NSError *)inError
+- (void) flickrAPIRequest: (OFFlickrAPIRequest *) inRequest
+         didFailWithError: (NSError *) inError
 {
     NSLog(@"      FAILED: request=%@", inRequest.sessionInfo);
     BOOL retryable = [_stream trackFailedAPIRequest: inRequest
                                               error: inError];
-    NSArray *pieces = [inRequest.sessionInfo componentsSeparatedByString:@";"];
+    NSArray *pieces = [inRequest.sessionInfo componentsSeparatedByString: @";"];
 
     if (retryable)
     {
@@ -1010,11 +1012,11 @@
 }
 
 - (void) mmNetworkRequest: (MMNetworkRequest *) request
-         didFailWithError: (NSError *)error
+         didFailWithError: (NSError *) error
 {
     NSLog(@"Connection failed! Error - %@ %@",
           [error localizedDescription],
-          [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey]);
+          [[error userInfo] objectForKey: NSURLErrorFailingURLStringErrorKey]);
     if (![_request retryable])
     {
         [self performNextStep];

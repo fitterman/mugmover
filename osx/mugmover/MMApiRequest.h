@@ -17,5 +17,5 @@
 // TODO Add retry count and automatic retries
 
 - (id) initUploadForApiVersion: (NSInteger) version
-                      bodyData: (NSDictionary *)bodyData;
+                      bodyData: (NSDictionary *) bodyData;
 @end

@@ -16,15 +16,15 @@
 NSString *facesPath;
 NSString *photosPath;
 
-- (id)initWithPath:(NSString *)value
+- (id) initWithPath: (NSString *) value
 {
     self = [self init];
     if (self)
     {
-        facesPath = [NSString stringWithFormat:@"%@/%@", value, @"Faces.db"];
-        _facesDatabase = [FMDatabase databaseWithPath:facesPath];
-        photosPath = [NSString stringWithFormat:@"%@/%@", value, @"Library.apdb"];
-        _photosDatabase = [FMDatabase databaseWithPath:photosPath];
+        facesPath = [NSString stringWithFormat: @"%@/%@", value, @"Faces.db"];
+        _facesDatabase = [FMDatabase databaseWithPath: facesPath];
+        photosPath = [NSString stringWithFormat: @"%@/%@", value, @"Library.apdb"];
+        _photosDatabase = [FMDatabase databaseWithPath: photosPath];
         
         NSLog(@"Opening _photosPath=%@", photosPath);
         if (self.facesDatabase && self.photosDatabase &&
@@ -32,18 +32,18 @@ NSString *photosPath;
             [self.photosDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE])
         {
             NSInteger versionMajor = [_photosDatabase
-                                      intForQuery:@"SELECT propertyValue FROM RKAdminData "
-                                                   "WHERE propertyArea = 'database' AND propertyName = 'versionMajor'"];
+                                      intForQuery: @"SELECT propertyValue FROM RKAdminData "
+                                                    "WHERE propertyArea = 'database' AND propertyName = 'versionMajor'"];
             NSInteger versionMinor = [_photosDatabase
-                                      intForQuery:@"SELECT propertyValue FROM RKAdminData "
-                                                   "WHERE propertyArea = 'database' AND propertyName = 'versionMinor'"];
+                                      intForQuery: @"SELECT propertyValue FROM RKAdminData "
+                                                    "WHERE propertyArea = 'database' AND propertyName = 'versionMinor'"];
             _databaseVersion = [NSString stringWithFormat: @"%ld.%ld", versionMajor, versionMinor];
             _databaseUuid = [_photosDatabase
-                             stringForQuery:@"SELECT propertyValue FROM RKAdminData "
-                                             "WHERE propertyArea = 'database' AND propertyName = 'databaseUuid'"];
+                             stringForQuery: @"SELECT propertyValue FROM RKAdminData "
+                                              "WHERE propertyArea = 'database' AND propertyName = 'databaseUuid'"];
             _databaseAppId = [_photosDatabase
-                              stringForQuery:@"SELECT propertyValue FROM RKAdminData "
-                                              "WHERE propertyArea = 'database' AND propertyName = 'applicationIdentifier'"];
+                              stringForQuery: @"SELECT propertyValue FROM RKAdminData "
+                                               "WHERE propertyArea = 'database' AND propertyName = 'applicationIdentifier'"];
             
             return self;
         }
@@ -147,7 +147,7 @@ NSString *photosPath;
 }
 
 // This method extracts Exif data from a local file, which we probably do not need to do!
-+(NSDictionary*) getImageExif:(NSString*) filePath
++(NSDictionary*) getImageExif: (NSString*) filePath
 {
     NSDictionary* exifDictionary = nil;
     NSURL* fileURL = [NSURL fileURLWithPath : filePath];
@@ -168,7 +168,7 @@ NSString *photosPath;
             {
                 
                 // cast CFDictonaryRef to NSDictionary
-                exifDictionary = [NSDictionary dictionaryWithDictionary : (__bridge NSDictionary *)metadataRef];
+                exifDictionary = [NSDictionary dictionaryWithDictionary : (__bridge NSDictionary *) metadataRef];
                 if (exifDictionary)
                 {
                     NSDictionary *iptcDictionary = [exifDictionary objectForKey: @"{IPTC}"];

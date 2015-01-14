@@ -32,17 +32,17 @@
 
 - (void) close;
 
-- (id) initWithHandle: (NSString *)flickrHandle
-          libraryPath: (NSString *)libraryPath;
+- (id) initWithHandle: (NSString *) flickrHandle
+          libraryPath: (NSString *) libraryPath;
 
 - (void) getPhotos;
 
-- (void)removeFromPhotoDictionary: (MMPhoto *)photo;
+- (void) removeFromPhotoDictionary: (MMPhoto *) photo;
 
-- (BOOL) trackFailedAPIRequest: (OFFlickrAPIRequest *)inRequest
-                         error: (NSError *)inError;
+- (BOOL) trackFailedAPIRequest: (OFFlickrAPIRequest *) inRequest
+                         error: (NSError *) inError;
 
-- (NSURL *)urlFromDictionary: (NSDictionary *)photoDict;
+- (NSURL *) urlFromDictionary: (NSDictionary *) photoDict;
 
 @end
 

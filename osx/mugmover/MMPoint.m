@@ -13,8 +13,8 @@
 
 @implementation MMPoint
 
-- (id)initWithX: (Float64) x
-              y: (Float64) y
+- (id) initWithX: (Float64) x
+               y: (Float64) y
 {
     self = [self init];
     if (self)
@@ -63,12 +63,14 @@
     _y *= yFactor;
 }
 
-+ (id) midpointOf: (MMPoint *)p1 and: (MMPoint *)p2
++ (id) midpointOf: (MMPoint *) p1 
+              and: (MMPoint *) p2
 {
-    return [[MMPoint alloc] initWithX:(p1.x + p2.x) / 2.0 y: (p1.y + p2.y) / 2.0];
+    return [[MMPoint alloc] initWithX: (p1.x + p2.x) / 2.0 y: (p1.y + p2.y) / 2.0];
 }
 
-+ (Float64) distanceBetween:(MMPoint *)p1 and:(MMPoint *)p2
++ (Float64) distanceBetween: (MMPoint *) p1
+                        and: (MMPoint *) p2
 {
     return sqrt(pow((p1.x - p2.x), 2.0) + pow((p1.y - p2.y), 2.0));
 }
@@ -77,11 +79,11 @@
 {
     if ((Float64) fabs(_x) < 1.0 || (Float64) fabs(_y) < 1.0)
     {
-        return [NSString stringWithFormat:@"(%5.3f, %5.3f)", self.x, self.y];
+        return [NSString stringWithFormat: @"(%5.3f, %5.3f)", self.x, self.y];
     }
     else
     {
-        return [NSString stringWithFormat:@"(%3.1f, %3.1f)", self.x, self.y];
+        return [NSString stringWithFormat: @"(%3.1f, %3.1f)", self.x, self.y];
     }
 }
 

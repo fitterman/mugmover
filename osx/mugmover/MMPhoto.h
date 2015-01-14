@@ -22,11 +22,11 @@
 @property (assign)              Float64                     croppedHeight;
 @property (assign)              Float64                     croppedWidth;
 @property (strong)              NSMutableDictionary *       exifDictionary;
-@property (readonly)            BOOL                        didFetchOriginalByteSize;
-@property (readonly)            BOOL                        didFetchExif;
-@property (readonly)            BOOL                        didFetchInfo;
-@property (readonly)            BOOL                        didFetchSizes;
-@property (readonly)            BOOL                        didProcessPhoto;
+@property (assign, readonly)    BOOL                        didFetchOriginalByteSize;
+@property (assign, readonly)    BOOL                        didFetchExif;
+@property (assign, readonly)    BOOL                        didFetchInfo;
+@property (assign, readonly)    BOOL                        didFetchSizes;
+@property (assign, readonly)    BOOL                        didProcessPhoto;
 @property (strong)              NSMutableArray *            faceArray;
 @property (strong)              NSMutableDictionary *       flickrDictionary;
 @property (strong)              OFFlickrAPIRequest *        flickrRequest;
@@ -39,13 +39,13 @@
 @property (strong)              NSString *                  originalUrl;
 @property (strong)              MMNetworkRequest *          request;
 @property (assign)              Float64                     rotationAngle;
-@property (readonly)            Float64                     straightenAngle;
+@property (assign, readonly)    Float64                     straightenAngle;
 @property (weak)                MMFlickrPhotostream *       stream;
 @property (assign)              NSInteger                   version;
 @property (strong)              NSString *                  versionUuid;
 
-- (MMPhoto *) initWithFlickrDictionary: (NSDictionary *)flickrDictionary
-                                stream: (MMFlickrPhotostream *)stream;
+- (MMPhoto *) initWithFlickrDictionary: (NSDictionary *) flickrDictionary
+                                stream: (MMFlickrPhotostream *) stream;
 
 - (void) adjustForStraightenCropAndGetFaces;
 
@@ -63,6 +63,6 @@
 
 - (void) setByteLength: (long long) length;
 
-- (NSString *)title;
+- (NSString *) title;
 
 @end

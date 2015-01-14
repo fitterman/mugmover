@@ -11,13 +11,13 @@
 
 @interface MMPhotoLibrary : NSObject
 
-@property (strong, readonly) NSString *     databaseAppId;
-@property (strong, readonly) NSString *     databaseUuid;
-@property (strong, readonly) NSString *     databaseVersion;
-@property (strong) FMDatabase *             facesDatabase;
-@property (strong) FMDatabase *             photosDatabase;
+@property (strong, readonly)    NSString *          databaseAppId;
+@property (strong, readonly)    NSString *          databaseUuid;
+@property (strong, readonly)    NSString *          databaseVersion;
+@property (strong)              FMDatabase *        facesDatabase;
+@property (strong)              FMDatabase *        photosDatabase;
 
-- (id)initWithPath:(NSString *)value;
+- (id) initWithPath: (NSString *) value;
 
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 

@@ -12,17 +12,18 @@
 
 @interface MMNetworkRequest : NSObject
 
-@property (strong) NSURLConnection *        connection;
-@property (strong) MMPhoto *                delegate;
-@property (strong) NSMutableData *          receivedData;
-@property (strong) NSMutableURLRequest *    request;
-@property (assign) NSInteger                retries;
+@property (strong)              NSURLConnection *        connection;
+@property (strong)              MMPhoto *                delegate;
+@property (strong)              NSMutableData *          receivedData;
+@property (strong)              NSMutableURLRequest *    request;
+@property (assign)              NSInteger                retries;
 
 // TODO Add retry count and automatic retries
 
 - (id) initMakeHeadRequest: (NSString *) stringUrl
                   delegate: (MMPhoto *) delegate;
 
+- (void) releaseStrongPointers;
 - (BOOL) retryable;
 
 @end

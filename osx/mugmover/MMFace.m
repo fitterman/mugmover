@@ -187,7 +187,7 @@
 {
     Float64 result = _centerPoint.x - (_faceWidth / 2.0);
     result *= ([self flickrImageWidth] / _photo.croppedWidth); /* Now scale it */
-    return [NSString stringWithFormat: @"%ld", (NSInteger)round(result)];
+    return [NSString stringWithFormat: @"%ld", (NSInteger) round(result)];
 }
 
 /* Flickr origin is topLeft while iPhoto origin is bottomLeft */
@@ -195,7 +195,7 @@
 {
     Float64 result = _centerPoint.y - (_faceHeight / 2.0);
     result *= ([self flickrImageHeight] / _photo.croppedHeight); /* Now scale it */
-    return [NSString stringWithFormat: @"%ld", (NSInteger)round(result)];
+    return [NSString stringWithFormat: @"%ld", (NSInteger) round(result)];
 }
 
 - (NSString *) flickrNoteWidth

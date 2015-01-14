@@ -19,9 +19,9 @@
 
 - (BOOL) canRetry: (OFFlickrAPIRequest *) request;
 
-- (OFFlickrAPIRequest *)getRequestFromPoolSettingDelegate: (OFFlickrAPIRequestDelegateType) delegate;
+- (OFFlickrAPIRequest *) getRequestFromPoolSettingDelegate: (OFFlickrAPIRequestDelegateType) delegate;
 
-- (void)returnRequestToPool:(OFFlickrAPIRequest *)request;
+- (void) returnRequestToPool: (OFFlickrAPIRequest *) request;
 
 
 @end
