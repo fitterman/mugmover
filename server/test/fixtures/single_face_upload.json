@@ -1,0 +1,61 @@
+{
+    "faces": [
+        {
+            "center": {
+                "x": 1612,
+                "y": 758
+            },
+            "height": 163,
+            "ignore": false,
+            "rejected": false,
+            "visible": true,
+            "width": 163,
+            "uuid": "Bov8U7u1RZiHPGG+b6N1vg",
+            "faceNameUuid": "K75GLVfHSUKGjPNBQaxcrA",
+            "faceKey": 80,
+            "keyVersionUuid": "fI6GK4epTPKYbC76qREiVg",
+            "name": "Goldie Fitterman"
+        }
+    ],
+    "source": {
+        "app": "mmu",
+        "databaseUuid": "7lgzeq8DRW6hzOn5PwcOnA",
+        "appVersion": "0.0.1",
+        "databaseAppId": "com.apple.iPhoto",
+        "databaseVersion": "110.226"
+    },
+    "service": {
+        "name": "flickr",
+        "bytes": 1402245,
+        "farm": "4",
+        "height": 2259,
+        "id": "15281160839",
+        "isfamily": false,
+        "isfriend": false,
+        "ispublic": true,
+        "owner": "127850168@N06",
+        "secret": "3de0d7d53b",
+        "server": "3936",
+        "title": "DSC06916-bw",
+        "width": 3194
+    },
+    "photo": {
+        "height": 2259,
+        "masterUuid": "MI80iU0IQ26ifJdnyp73fQ",
+        "originalDate": "1939:11:12 03:10:01",
+        "originalFilename": "DSC06916-bw",
+        "number": 2,
+        "versionUuid": "hq8WcJDnSnqwjmRjWrKTUA",
+        "width": 3194
+    },
+    "crop": {
+        "cropOrigin": {
+            "x": 1032,
+            "y": 547
+        },
+        "croppedHeight": 2259,
+        "croppedWidth": 3194,
+        "rotationAngle": 180,
+        "straightenAngle": -1.080590486526489
+    }
+}
