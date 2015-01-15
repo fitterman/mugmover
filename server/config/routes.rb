@@ -13,7 +13,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :flickr do
+  resources :flickr, only: [] do
     resources :photos, only: [:index]
   end
 
