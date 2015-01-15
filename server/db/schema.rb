@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150114174445) do
+ActiveRecord::Schema.define(version: 20150115175506) do
 
   create_table "display_names", force: true do |t|
     t.integer "named_face_id"
@@ -64,6 +64,8 @@ ActiveRecord::Schema.define(version: 20150114174445) do
     t.string   "hosting_service_photo_id"
     t.string   "original_date"
     t.text     "request"
+    t.datetime "date_uploaded"
+    t.string   "original_format"
   end
 
   create_table "service_collections", force: true do |t|

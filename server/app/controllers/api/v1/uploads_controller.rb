@@ -51,7 +51,9 @@ module Api
             photo.version_uuid = photo_hash['versionUuid']
             photo.master_uuid = photo_hash['masterUuid']
             photo.database_uuid = request['source']['databaseUuid']
-            photo.original_date = photo_hash['original_date']
+            photo.original_date = photo_hash['originalDate']
+            photo.date_uploaded = service_hash['dateUploaded']
+            photo.original_format = service_hash['originalFormat']
             photo.request = pristine_request
 
             if !photo.save
@@ -114,7 +116,7 @@ module Api
               face # Need this here so the .map collects all the faces
             end
             if errors.any?
-               raise StandardError.new("Aborting")
+              raise StandardError.new("Aborting")
             end
             return [errors, hosting_service_account, photo, faces]
           end           
