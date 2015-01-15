@@ -865,6 +865,13 @@
     {
         NSString *originalSecret = [inResponseDictionary valueForKeyPath: @"photo.originalsecret"];
         NSString *originalFormat = [inResponseDictionary valueForKeyPath: @"photo.originalformat"];
+        NSString *dateUploaded = [inResponseDictionary valueForKeyPath: @"photo.dateuploaded"];
+        if (dateUploaded)
+        {
+            [_flickrDictionary setValue: [NSNumber numberWithUnsignedLong: [dateUploaded longLongValue]]
+                                 forKey: @"dateUploaded"];
+        }
+
         if (originalSecret && originalFormat)
         {
             _originalUrl = [NSString stringWithFormat: @"https://farm%@.staticflickr.com/%@/%@_%@_o.%@",
@@ -873,6 +880,8 @@
                                         [_flickrDictionary valueForKey: @"id"],
                                         originalSecret,
                                         originalFormat];
+            [_flickrDictionary setValue: originalFormat
+                                 forKey: @"originalFormat"];
         }
         else
         {
