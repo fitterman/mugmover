@@ -119,13 +119,14 @@
         if ([self findMatchingInIphotoLibraryByVersionUuidAndVersion] ||
             [self findMatchingVersionInIphotoLibraryByAttributes])
         {
-            [self processPhoto]; // This calls sendPhotoToMugMover and updateNotesOnFlickr
+            [self processPhoto]; // This does everything
         }
         else
         {
             NSLog(@"ORPHAN PHOTO    "); // TODO Figure out what to do with this.
             // TODO May want to start deleting any mugmover comments as a cleanup step.
             // If so, call [self updateNotesOnFlickr]] but not sure about that.
+            // If you call it, remember that it still adds and deletes notes, with NO optimization.
         }
         _didProcessPhoto = YES;
     }
@@ -576,7 +577,10 @@
     [self moveFacesRelativeToTopLeftOrigin];
     [self sendPhotoToMugmover];
     [self discardHiddenFaces];
-    [self updateNotesOnFlickr];
+    // TODO Some day we will reinstate the following line. When you do, be sure to look into
+    // optimizing the note generation so that we don't keep deleting and adding the same notes.
+    // Without that we will use up our API quota very quickly.
+    // [self updateNotesOnFlickr];
 }
 
 - (void) moveFacesRelativeToTopLeftOrigin
@@ -618,18 +622,16 @@
                                        @"rotationAngle":        [NSNumber numberWithDouble: _rotationAngle],
                                        @"straightenAngle":      [NSNumber numberWithDouble: _straightenAngle],
                                      },
-                                 @"master":
+                                 @"photo":
                                     @{ @"height":               [NSNumber numberWithLong: _masterHeight],
-                                       @"uuid":                 _masterUuid,
+                                       @"number":               [NSNumber numberWithLong: _version],
+                                       @"masterUuid":           _masterUuid,
+                                       @"originalDate":         _originalDate,
+                                       @"originalFilename":     _originalFilename ? _originalFilename : @"",
+                                       @"versionUuid":          _versionUuid,
                                        @"width":                [NSNumber numberWithLong: _masterWidth],
-                                     },
-                                 @"version":
-                                    @{ @"number":               [NSNumber numberWithLong: _version],
-                                       @"uuid":                 _versionUuid,
                                     },
                                  @"flickr":                     _flickrDictionary,
-                                 @"originalDate":               _originalDate,
-                                 @"originalFilename":           _originalFilename ? _originalFilename : @"",
                                };
     
 
@@ -654,7 +656,8 @@
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject: attributes
                                                        options: 0
                                                          error: &error];
-    if (!jsonData) {
+    if (!jsonData)
+    {
         NSLog(@"JSON Serialization returned an error: %@", error);
     } else {
         NSString *jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
