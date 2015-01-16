@@ -56,7 +56,6 @@
  didReceiveResponse: (NSURLResponse *) response
 {
     long long filesize = [response expectedContentLength];
-    NSLog(@"FILESIZE %lld", filesize);
     [_delegate setByteLength: filesize];
     [self releaseStrongPointers];
 }

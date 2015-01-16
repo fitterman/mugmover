@@ -96,7 +96,11 @@
 - (void) connectionDidFinishLoading: (NSURLConnection *) connection
 {
     // do something with the data
-    NSLog(@"Succeeded! Received %ld bytes of data", [_receivedData length]);
+    NSLog(@"Status: TBD. Received %ld bytes of data\n%@",
+// TODO             (long)[httpResponse statusCode]
+            [_receivedData length],
+            [[NSString alloc] initWithData: _receivedData
+                                  encoding: NSASCIIStringEncoding]);
     [self releaseStrongPointers];
 }
 

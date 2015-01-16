@@ -57,6 +57,7 @@
                     [_flickrDictionary setValue: value forKey: key];
                 }
             }
+            [_flickrDictionary setValue: @"flickr" forKey: @"name"];
             _exifDictionary = [NSMutableDictionary new];
             _oldNotesToDelete = [[NSMutableArray alloc] init];
             _flickrRequest = [_stream.requestPool getRequestFromPoolSettingDelegate: self];
@@ -81,10 +82,6 @@
     // This sequentially performs each step, ensuring that it won't go to the next step
     // from inside the network delegates by using block operations as needed.
     NSBlockOperation *blockOperation;
-    NSLog(@" performNextStep %lx exif=%hhd info=%hhd sizes=%hhd byteSize=%hhd processed=%hhd",
-          (NSInteger) self,
-          _didFetchExif, _didFetchInfo, _didFetchSizes, _didFetchOriginalByteSize,
-          _didProcessPhoto);
     if (!_didFetchExif)                     // STEP 1: Get the Exif data from Flickr
     {
         [self fetchFlickrExif];
@@ -559,7 +556,7 @@
     }
     if (MMdebugging)
     {
-        NSLog(@"FINAL SIZE    cropOrigin=%@ cropDims=%3.1fWx%3.1fH", cropOrigin, _masterWidth, _masterHeight);
+        NSLog(@"INFO FINAL SIZE    cropOrigin=%@ cropDims=%3.1fWx%3.1fH", cropOrigin, _masterWidth, _masterHeight);
     }
     return result;
 
@@ -631,12 +628,11 @@
                                        @"versionUuid":          _versionUuid,
                                        @"width":                [NSNumber numberWithLong: _masterWidth],
                                     },
-                                 @"flickr":                     _flickrDictionary,
+                                 @"service":                     _flickrDictionary,
                                };
     
 
-    NSMutableDictionary *attributes = [[NSMutableDictionary alloc] init];
-    [attributes setObject: properties forKey: @"properties"];
+    NSMutableDictionary *attributes = [properties mutableCopy];
 
 
     if (_faceArray)
@@ -658,11 +654,11 @@
                                                          error: &error];
     if (!jsonData)
     {
-        NSLog(@"JSON Serialization returned an error: %@", error);
+        NSLog(@"ERROR  JSON Serialization returned an error: %@", error);
     } else {
         NSString *jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
         NSDictionary *postData = @{@"data": jsonString};
-        NSLog(@"Uploading Data");
+        NSLog(@"INFO   Uploading Data");
         _apiRequest = [[MMApiRequest alloc] initUploadForApiVersion: 1
                                                            bodyData: postData];
     }
