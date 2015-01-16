@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150115175506) do
+ActiveRecord::Schema.define(version: 20150115235250) do
 
   create_table "display_names", force: true do |t|
     t.integer "named_face_id"
@@ -31,6 +31,7 @@ ActiveRecord::Schema.define(version: 20150115175506) do
     t.boolean "ignore"
     t.boolean "rejected"
     t.boolean "visible"
+    t.integer "face_key"
   end
 
   create_table "hosting_service_accounts", force: true do |t|
@@ -45,8 +46,8 @@ ActiveRecord::Schema.define(version: 20150115175506) do
     t.integer "hosting_service_account_id"
     t.string  "database_uuid"
     t.string  "face_name_uuid"
-    t.integer "face_key"
     t.integer "primary_display_name_id"
+    t.integer "face_key"
   end
 
   create_table "photos", force: true do |t|

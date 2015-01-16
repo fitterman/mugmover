@@ -70,7 +70,7 @@ test "should reject missing a parameter needed for a HostingServiceAccount objec
 
   test "should reject missing a parameter needed for a FaceName object" do
     hash = JSON.parse(@json)
-    hash['faces'].first['faceNameUuid'] = ''
+    hash['faces'].first['faceKey'] = nil
     assert_no_difference('HostingServiceAccount.count') do
       assert_no_difference('Photo.count') do
         assert_no_difference('Face.count') do
@@ -81,7 +81,7 @@ test "should reject missing a parameter needed for a HostingServiceAccount objec
               response_data_structure = JSON.parse(@response.body)
               assert_equal 'application/json', @response.content_type
               assert_equal('fail', response_data_structure['status'])
-              assert_equal({'face' => {"Bov8U7u1RZiHPGG+b6N1vg" => ["Face name uuid can't be blank"]}},
+              assert_equal({'face' => {"Bov8U7u1RZiHPGG+b6N1vg" => ["Face key can't be blank"]}},
                            response_data_structure['errors'])
             end
           end
