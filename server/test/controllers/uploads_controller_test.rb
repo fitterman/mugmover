@@ -37,7 +37,7 @@ test "should reject missing a parameter needed for a HostingServiceAccount objec
                 response_data_structure = JSON.parse(@response.body)
                 assert_equal 'application/json', @response.content_type
                 assert_equal('fail', response_data_structure['status'])
-                assert_equal({'service' => ['Name missing or not recognized']}, 
+                assert_equal({'service' => ['Name is not included in the list']}, 
                              response_data_structure['errors'])
             end
           end

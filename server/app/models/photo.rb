@@ -25,6 +25,7 @@ class Photo < ActiveRecord::Base
     photo.date_uploaded = service_hash['dateUploaded']
     photo.original_format = service_hash['originalFormat']
     photo.request = photo_hash
+    photo.save
     return photo
   end
 

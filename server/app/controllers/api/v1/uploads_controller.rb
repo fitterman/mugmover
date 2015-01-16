@@ -21,47 +21,39 @@ module Api
         pristine_request = request.dup
 
         errors = {} # Give it scope
-        begin
-          Photo.transaction do
-            
-            # Separate the properties you will need
-            photo_hash = request['photo']
-            service_hash = request.delete('service')
-            service_name = service_hash.delete('name')
-            if service_name == "flickr"
 
-              # Determine which account this is associated with
-              hosting_service_account = HostingServiceAccount.find_or_create_by(name: 'flickr', 
-                                                                                handle: service_hash['owner']) do |new_hsa|
-                if !new_hsa.save
-                  errors[:service] = new_hsa.errors.full_messages
-                  raise ForceRollbackError
-                end
-              end
-            else
-              errors[:service] = ['Name missing or not recognized']
-              raise ForceRollbackError # Don't even bother processing photo or face data
-            end
+        Photo.transaction do
+          
+          # Separate the properties you will need
+          photo_hash = request['photo']
+          service_hash = request.delete('service')
+          database_uuid = request['source']['databaseUuid']
 
-            database_uuid = request['source']['databaseUuid']
-
+          hosting_service_account = HostingServiceAccount.from_request(service_hash)
+          if hosting_service_account.errors.present?
+            errors[:service] = hosting_service_account.errors.full_messages
+          else
             photo = Photo.from_request(hosting_service_account, database_uuid, service_hash, photo_hash)
-            if !photo.save
+            if photo.errors.present?
               errors[:photo] = photo.errors.full_messages
-              raise ForceRollbackError  # Don't even bother processing face data
+            else
+              faces, face_errors = Face.from_request(hosting_service_account, database_uuid, photo, request['faces'])
+              if face_errors.present?
+                errors[:face] = face_errors
+              end
             end
+          end
 
-            faces, face_errors = Face.from_request(hosting_service_account, database_uuid, photo, request['faces'])
-            if face_errors.present?
-              errors[:face] = face_errors
-              raise ForceRollbackError
-            end
-
+          if errors.empty?
             return [errors, hosting_service_account, photo, faces]
-          end           
-        rescue ForceRollbackError => e
-          return [errors, nil, nil, []]
-        end
+          end
+
+          # One or more errors... abort the transaction, then return the errors
+          raise ActiveRecord::Rollback
+
+        end # of the transaction
+
+        return [errors, nil, nil, []]
       end
     end
   end
