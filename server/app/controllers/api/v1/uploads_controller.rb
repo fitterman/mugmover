@@ -37,6 +37,7 @@ module Api
             if photo.errors.present?
               errors[:photo] = photo.errors.full_messages
             else
+              # This creates the face and its associated objects, unless it finds existing ones
               faces, face_errors = Face.from_request(hosting_service_account, database_uuid, photo, request['faces'])
               if face_errors.present?
                 errors[:face] = face_errors

@@ -11,27 +11,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150115235250) do
+ActiveRecord::Schema.define(version: 20150116213125) do
 
   create_table "display_names", force: true do |t|
-    t.integer "named_face_id"
-    t.string  "name"
-    t.string  "timestamps"
+    t.integer  "named_face_id"
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "faces", force: true do |t|
-    t.integer "photo_id"
-    t.string  "face_uuid"
-    t.float   "center_x"
-    t.float   "center_y"
-    t.float   "width"
-    t.float   "height"
-    t.integer "named_face_id"
-    t.string  "timestamps"
-    t.boolean "ignore"
-    t.boolean "rejected"
-    t.boolean "visible"
-    t.integer "face_key"
+    t.integer  "photo_id"
+    t.string   "face_uuid"
+    t.float    "center_x"
+    t.float    "center_y"
+    t.float    "width"
+    t.float    "height"
+    t.integer  "named_face_id"
+    t.boolean  "ignore"
+    t.boolean  "rejected"
+    t.boolean  "visible"
+    t.integer  "face_key"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "hosting_service_accounts", force: true do |t|
@@ -43,11 +45,13 @@ ActiveRecord::Schema.define(version: 20150115235250) do
   end
 
   create_table "named_faces", force: true do |t|
-    t.integer "hosting_service_account_id"
-    t.string  "database_uuid"
-    t.string  "face_name_uuid"
-    t.integer "primary_display_name_id"
-    t.integer "face_key"
+    t.integer  "hosting_service_account_id"
+    t.string   "database_uuid"
+    t.string   "face_name_uuid"
+    t.integer  "primary_display_name_id"
+    t.integer  "face_key"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "photos", force: true do |t|
