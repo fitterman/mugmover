@@ -33,11 +33,10 @@
     {
         _photo = photo;
         
-        if (MMdebugging)
         {
-            NSLog(@"              %@", faceUuid);
-            NSLog(@"INPUTS        topLeft=%@ bottomLeft=%@ bottomRight=%@ %3.1fWx%3.1fH",
-                  topLeft, bottomLeft, bottomRight, photo.masterWidth, photo.masterHeight);
+            DDLogInfo(@"PROC'ING FACE faceUdid=%@", faceUuid);
+            DDLogInfo(@"INPUTS        topLeft=%@ bottomLeft=%@ bottomRight=%@ %3.1fWx%3.1fH",
+                    topLeft, bottomLeft, bottomRight, photo.masterWidth, photo.masterHeight);
         }
 
         // iPhoto coordinates are arranged with the origin at the bottom left. The
@@ -49,10 +48,9 @@
         [bottomLeft scaleByXFactor: _photo.masterWidth yFactor: _photo.masterHeight];
         [bottomRight scaleByXFactor: _photo.masterWidth yFactor: _photo.masterHeight];
         
-        if (MMdebugging)
         {
-            NSLog(@"SCALED PTS    topLeft=%@ bottomLeft=%@ bottomRight=%@",
-                  topLeft, bottomLeft, bottomRight);
+            DDLogInfo(@"SCALED PTS    topLeft=%@ bottomLeft=%@ bottomRight=%@",
+                    topLeft, bottomLeft, bottomRight);
         }
 
         _centerPoint = [MMPoint midpointOf: topLeft and: bottomRight];
@@ -75,9 +73,9 @@
         _rejected = rejected;
         _visible = YES;
 
-        if (MMdebugging)
         {
-            NSLog(@"CREATED       centerPoint=%@ %3.1fWx%3.1fH", _centerPoint, _photo.masterWidth, _photo.masterHeight);
+            DDLogInfo(@"CREATED       centerPoint=%@ %3.1fWx%3.1fH", 
+                    _centerPoint, _photo.masterWidth, _photo.masterHeight);
         }
     }
     return self;
@@ -86,15 +84,17 @@
 - (void) rotate: (Float64) degrees
          origin: (MMPoint *) centerPoint
 {
-    if (MMdebugging)
     {
-        NSLog(@"BEFORE ROTATE centerPoint=%@ %3.1fWx%3.1fH", _centerPoint, _photo.masterWidth, _photo.masterHeight);
-        NSLog(@"ROTATION      degrees=%3.1f origin=%@", degrees, centerPoint);
+        DDLogInfo(@"BEFORE ROTATE centerPoint=%@ %3.1fWx%3.1fH", 
+                _centerPoint, _photo.masterWidth, _photo.masterHeight);
+        DDLogInfo(@"ROTATION      degrees=%3.1f origin=%@", 
+                degrees, centerPoint);
     }
     [self.centerPoint rotate: degrees relativeTo: centerPoint];
-    if (MMdebugging)
+
     {
-        NSLog(@"AFTER ROTATE  centerPoint=%@ %3.1fWx%3.1fH", _centerPoint, _photo.masterWidth, _photo.masterHeight);
+        DDLogInfo(@"AFTER ROTATE  centerPoint=%@ %3.1fWx%3.1fH", 
+                _centerPoint, _photo.masterWidth, _photo.masterHeight);
     }
 }
 
@@ -131,9 +131,9 @@
 {
     _visible = ((_centerPoint.x - (_faceWidth / 2.0) >= 0.0) && (_centerPoint.x - (_faceWidth / 2.0) < width) &&
                 (_centerPoint.y - (_faceHeight / 2.0) >= 0.0) && (_centerPoint.y + (_faceHeight / 2.0) < height));
-    if (MMdebugging)
     {
-        NSLog(@"SET VISIBLITY centerPoint=%@ %3.1fWx%3.1fH visibility=%d", _centerPoint, width, height, _visible);
+        DDLogInfo(@"SET VISIBLITY centerPoint=%@ %3.1fWx%3.1fH visibility=%d",
+                _centerPoint, width, height, _visible);
     }
     return _visible;
 }

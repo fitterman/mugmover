@@ -18,10 +18,13 @@
 MMFlickrPhotostream *stream = nil;
 NSDictionary *flickrPhotoPointer;
 
-BOOL const MMdebugging = NO;
+BOOL const MMdebugLevel;
 
 - (void) applicationDidFinishLaunching: (NSNotification *) aNotification
 {
+    [DDLog addLogger:[DDASLLogger sharedInstance]];
+    [DDLog addLogger:[DDTTYLogger sharedInstance]];
+
     MMTrack *aTrack = [[MMTrack alloc] init];
     [self setTrack: aTrack]; /* alternatively, self.track = aTrack; */
     [self updateUserInterface];
@@ -55,7 +58,7 @@ BOOL const MMdebugging = NO;
         if ([keyPath isEqual: @"initializationProgress"])
         {
             NSNumber *newValue = (NSNumber *)[change objectForKey: NSKeyValueChangeNewKey];
-            // NSLog(@"      initializationProgress=%@", newValue);
+            DDLogInfo(@"       initializationProgress=%@", newValue);
             if ([newValue floatValue] == 1.0)
             {
                 [stream getPhotos]; /* This kicks off the whole process */
@@ -89,7 +92,7 @@ BOOL const MMdebugging = NO;
     else {
         senderName = @"slider";
     }
-    // NSLog(@"%@ sent takeFloatValueForVolumeFrom: with value %1.2f", senderName, [sender floatValue]);
+    DDLogInfo(@"%@ sent takeFloatValueForVolumeFrom: with value %1.2f", senderName, [sender floatValue]);
 }
 
 - (void) updateUserInterface

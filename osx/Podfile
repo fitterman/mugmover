@@ -1,4 +1,7 @@
+## be sure to use "pod install --no-integrate", which  then requires
+
 platform :osx, '10.7'
 source 'https://github.com/CocoaPods/Specs.git'
+pod 'CocoaLumberjack'
 pod 'FMDB', '~> 2.4'
 pod 'objectiveflickr'

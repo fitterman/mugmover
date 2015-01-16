@@ -96,7 +96,6 @@
     }
     else if (!_didFetchSizes)               // STEP 3: Get the images sizes in hopes of accessing the original image
     {
-        NSLog(@"Succeeded");
         blockOperation = [NSBlockOperation blockOperationWithBlock:^
                           {
                               [self fetchFlickrSizes];
@@ -120,7 +119,7 @@
         }
         else
         {
-            NSLog(@"ORPHAN PHOTO    "); // TODO Figure out what to do with this.
+            DDLogError(@"ORPHAN PHOTO    "); // TODO Figure out what to do with this.
             // TODO May want to start deleting any mugmover comments as a cleanup step.
             // If so, call [self updateNotesOnFlickr]] but not sure about that.
             // If you call it, remember that it still adds and deletes notes, with NO optimization.
@@ -129,7 +128,7 @@
     }
     else
     {
-        NSLog(@"processPhoto was called an extra time!");
+        DDLogError(@"processPhoto was called an extra time!");
     }
 }
 
@@ -140,9 +139,12 @@
     {
         if ([_oldNotesToDelete count] == 0)
         {
-            // Get the stream pointer before you blow it away
-            [self releaseStrongPointers];
-            [_stream removeFromPhotoDictionary: self];
+            // We can't do this one from the delegate callback, so we queue it as well
+            blockOperation = [NSBlockOperation blockOperationWithBlock:^
+                              {
+                                [self releaseStrongPointers];
+                                [_stream removeFromPhotoDictionary: self];
+                              }];
         }
         else
         {
@@ -151,7 +153,6 @@
                                   // When you are done adding all the new faces, delete the old notes
                                   [self deleteOneNote];
                               }];
-            [_stream.streamQueue addOperation: blockOperation];
         }
     }
     else
@@ -159,11 +160,11 @@
         blockOperation = [NSBlockOperation blockOperationWithBlock:^
                           {
                               MMFace *face = [_faceArray objectAtIndex: 0];
-                              NSLog (@"  BLOCK adding face uuid=%@", face.faceUuid);
+                              DDLogInfo (@"  BLOCK adding face uuid=%@", face.faceUuid);
                               [self addNoteForOneFace];
                           }];
-        [_stream.streamQueue addOperation: blockOperation];
     }
+    [_stream.streamQueue addOperation: blockOperation];
 }
 
 - (void) deleteOneNote
@@ -259,15 +260,15 @@
                     _versionUuid = versionUuid;
                     _version = [[resultSet stringForColumn: @"version"] intValue];
                     [self updateFromIphotoLibraryVersionRecord: resultSet];
-                    NSLog(@"MATCH ACCEPTED");
+                    DDLogInfo(@"VERSION MATCH");
                     return YES;
                 }
-                NSLog(@"MATCH REJECTED  iphotoModifyTime=%@, flickrModifyTime=%@, iphotoOriginalTime=%@, flickrOriginalTime=%@",
+                DDLogInfo(@"POSS MATCH REJD iphotoModifyTime=%@, flickrModifyTime=%@, iphotoOriginalTime=%@, flickrOriginalTime=%@",
                             iphotoModifyTime, flickrModifyTime, iphotoOriginalTime, flickrOriginalTime);
             }
             else
             {
-                NSLog(@"VERSION NOT FOUND");
+                DDLogWarn(@"NO MATCH FOUND");
                 continue;
             }
         }
@@ -300,7 +301,7 @@
     }
     else
     {
-        NSLog(@"Failed to create center point(s) for crop or rotation");
+        DDLogError(@"Failed to create center point(s) for crop or rotation");
     }
 }
 
@@ -340,14 +341,14 @@
                                       withArgumentsInArray: args];
         if (!adjustments)
         {
-            // NSLog(@"    FMDB error=%@", [photosDb lastErrorMessage]);
+            DDLogError(@"    FMDB error=%@", [photosDb lastErrorMessage]);
             return nil;
         }
 
         while ([adjustments next])
         {
             NSString *operationName = [adjustments stringForColumn: @"name"];
-            // NSLog(@"    operationName=%@", operationName);
+            DDLogInfo(@"ADJ FOUND     operationName=%@", operationName);
 
             NSData *blob = [adjustments dataForColumn: @"data"];
             if (blob)
@@ -375,18 +376,16 @@
                             Float64 y = (Float64) [[parameters valueForKeyPath: @"inputKeys.inputYOrigin"] intValue];
                             _cropOrigin.x += x;
                             _cropOrigin.y += y;
-                            if (MMdebugging)
                             {
-                                NSLog(@"SET CROP TO   cropOrigin=%@ %3.1fWx%3.1fH", _cropOrigin, _croppedWidth, _croppedHeight);
+                                DDLogInfo(@"SET CROP TO   cropOrigin=%@ %3.1fWx%3.1fH", _cropOrigin, _croppedWidth, _croppedHeight);
                             }
                         }
                         else if ([operationName isEqualToString: @"RKStraightenCropOperation"])
                         {
                             NSString *angle = [parameters valueForKeyPath: @"inputKeys.inputRotation"];
                             _straightenAngle += [angle floatValue];
-                            if (MMdebugging)
                             {
-                                NSLog(@"SET ROTATION  straigtenAngle=%3.1f", _straightenAngle);
+                                DDLogInfo(@"SET ROTATION  straigtenAngle=%3.1f", _straightenAngle);
                             }
                         }
                     }
@@ -411,21 +410,21 @@
     rotateCenterPoint = [[MMPoint alloc] initWithX: (cropWidth / 2.0) y: (cropHeight / 2.0)];
     if (!rotateCenterPoint)
     {
-        NSLog(@"ERROR     Unable to allocate rotateCenterPoint");
+        DDLogError(@"ERROR     Unable to allocate rotateCenterPoint");
         return nil;
     }
     BOOL quarterTurn = (rotationAngle == 90.0) || (rotationAngle == 270.0);
 
     if (!_masterUuid)
     {
-        NSLog(@"WARNING   Photo has no masterUuid");
+        DDLogWarn(@"WARNING   Photo has no masterUuid");
         return nil;
     }
 
     FMDatabase *faceDb = [self.stream.library facesDatabase];
     if (!faceDb)
     {
-        NSLog(@"ERROR   No face database!");
+        DDLogError(@"ERROR   No face database!");
         return nil;
     }
 
@@ -439,7 +438,7 @@
         result = [[NSMutableArray alloc] initWithCapacity: matches];
         if (!result)
         {
-            NSLog(@"ERROR   No result returned by FMDatabase");
+            DDLogError(@"ERROR   No result returned by FMDatabase");
             return nil;
         }
         // TODO By counting rejected faces you can spot pictures with large crowds where only one person matters
@@ -458,9 +457,8 @@
                                 (_masterHeight * sin(absStraightenAngleInRadians));
             Float64 newHeight = (_masterHeight * cos(absStraightenAngleInRadians)) +
                                 (_masterWidth * sin(absStraightenAngleInRadians));
-            if (MMdebugging)
             {
-                NSLog(@"GROW CANVAS   %3.1fWx%3.1fH", newWidth, newHeight);
+                DDLogInfo(@"GROW CANVAS   %3.1fWx%3.1fH", newWidth, newHeight);
             }
             
             while ([resultSet next])
@@ -492,9 +490,8 @@
                           faceKey: [resultSet intForColumn: @"faceKey"]
                    keyVersionUuid: [resultSet stringForColumn: @"keyVersionUuid"]];
 
-                    if (MMdebugging)
                     {
-                        NSLog(@"FACE DIMS     %3.1fWx%3.1fH", face.faceWidth, face.faceHeight);
+                        DDLogInfo(@"FACE DIMS     %3.1fWx%3.1fH", face.faceWidth, face.faceHeight);
                     }
                     [face rotate: straightenAngle origin: straightenCenterPoint];
                     
@@ -512,16 +509,14 @@
                     
                     // Then figure out whether the face is still visible.
 
-                    if (MMdebugging)
                     {
-                        NSLog(@"ADJUSTED      centerPoint=%@", face.centerPoint);
+                        DDLogInfo(@"ADJUSTED      centerPoint=%@", face.centerPoint);
                     }
 
                     BOOL visible = [face visibleWithCroppedWidth: cropWidth
                                                    croppedHeight: cropHeight];
-                    if (MMdebugging)
                     {
-                        NSLog(@"SET VIS       visible=%d", visible);
+                        DDLogInfo(@"SET VIS       visible=%d", visible);
                     }
 
                     [face rotate: -rotationAngle origin: rotateCenterPoint];
@@ -554,9 +549,8 @@
         _masterHeight = cropHeight;
         _masterWidth = cropWidth;
     }
-    if (MMdebugging)
     {
-        NSLog(@"INFO FINAL SIZE    cropOrigin=%@ cropDims=%3.1fWx%3.1fH", cropOrigin, _masterWidth, _masterHeight);
+        DDLogInfo(@"FINAL SIZE    cropOrigin=%@ cropDims=%3.1fWx%3.1fH", cropOrigin, _masterWidth, _masterHeight);
     }
     return result;
 
@@ -577,7 +571,18 @@
     // TODO Some day we will reinstate the following line. When you do, be sure to look into
     // optimizing the note generation so that we don't keep deleting and adding the same notes.
     // Without that we will use up our API quota very quickly.
-    // [self updateNotesOnFlickr];
+
+    // To restore Flickr note-writing, remove the next two lines
+    if (_oldNotesToDelete)
+    {
+        [_oldNotesToDelete removeAllObjects];
+    }
+    if (_faceArray)
+    {
+        [_faceArray removeAllObjects];
+    }
+
+    [self updateNotesOnFlickr];
 }
 
 - (void) moveFacesRelativeToTopLeftOrigin
@@ -654,11 +659,11 @@
                                                          error: &error];
     if (!jsonData)
     {
-        NSLog(@"ERROR  JSON Serialization returned an error: %@", error);
+        DDLogError(@"ERROR JSON Serialization returned: %@", error);
     } else {
         NSString *jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
         NSDictionary *postData = @{@"data": jsonString};
-        NSLog(@"INFO   Uploading Data");
+        DDLogInfo(@"TO MUGMOVER");
         _apiRequest = [[MMApiRequest alloc] initUploadForApiVersion: 1
                                                            bodyData: postData];
     }
@@ -667,6 +672,10 @@
 
 - (void) releaseStrongPointers
 {
+    if (_flickrRequest)
+    {
+        [_stream.requestPool returnRequestToPool: _flickrRequest];
+    }
     _apiRequest = nil;
     _cropOrigin = nil;
     _exifDictionary = nil;
@@ -702,7 +711,6 @@
 
 - (void) fetchFlickrSizes
 {
-    NSLog(@" entering fetchFlickrSizes");
     if ([_flickrRequest isRunning])
     {
         NSString *message = [NSString stringWithFormat: @"Pool request is still running, sessionInfo=%@",
@@ -820,7 +828,7 @@
 - (void) flickrAPIRequest: (OFFlickrAPIRequest *) inRequest
   didCompleteWithResponse: (NSDictionary *) inResponseDictionary
 {
-    NSLog(@"  COMPLETION: request=%@", inRequest.sessionInfo);
+    DDLogInfo(@"RESP RECEIVED request=%@", inRequest.sessionInfo);
     NSArray *pieces = [inRequest.sessionInfo componentsSeparatedByString: @";"];
 
     if ([pieces[0] isEqualToString: @"fetchExif"])
@@ -948,7 +956,7 @@
 - (void) flickrAPIRequest: (OFFlickrAPIRequest *) inRequest
          didFailWithError: (NSError *) inError
 {
-    NSLog(@"      FAILED: request=%@", inRequest.sessionInfo);
+    DDLogError(@"      FAILED: request=%@", inRequest.sessionInfo);
     BOOL retryable = [_stream trackFailedAPIRequest: inRequest
                                               error: inError];
     NSArray *pieces = [inRequest.sessionInfo componentsSeparatedByString: @";"];
@@ -957,7 +965,7 @@
     {
         if ([pieces[0] isEqualToString: @"fetchSizes"])
         {
-            NSLog(@" Failed @");
+            DDLogError(@" Failed @");
             [self fetchFlickrSizes];
         }
         else if ([pieces[0] isEqualToString: @"fetchExif"])
@@ -994,7 +1002,7 @@
     else
     {
         // TODO Report you are giving up.
-        NSLog(@"  DEFEATED   Unable to process request %@", pieces[0]);
+        DDLogError(@"ABANDONING  Unable to process request %@", pieces[0]);
         if ([pieces[0] isEqualToString: @"deleteNote"])
         {
             // If you are giving up on deleting a note, queue the next one.
@@ -1022,7 +1030,7 @@
 - (void) mmNetworkRequest: (MMNetworkRequest *) request
          didFailWithError: (NSError *) error
 {
-    NSLog(@"Connection failed! Error - %@ %@",
+    DDLogError(@"Connection failed! Error - %@ %@",
           [error localizedDescription],
           [[error userInfo] objectForKey: NSURLErrorFailingURLStringErrorKey]);
     if (![_request retryable])

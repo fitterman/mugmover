@@ -9,6 +9,6 @@
 #ifndef mugmover_MMEnvironment_h
 #define mugmover_MMEnvironment_h
 
-extern BOOL const MMdebugging;
+extern BOOL const MMdebugLevel;
 
 #endif

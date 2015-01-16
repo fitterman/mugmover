@@ -19,6 +19,8 @@
 
 - (id) initWithPath: (NSString *) value;
 
+- (void) close;
+
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 
 + (NSDictionary *) versionExifFromMasterPath: masterPath;

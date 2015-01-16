@@ -21,6 +21,8 @@
 
 - (OFFlickrAPIRequest *) getRequestFromPoolSettingDelegate: (OFFlickrAPIRequestDelegateType) delegate;
 
+- (void) releaseAll;
+
 - (void) returnRequestToPool: (OFFlickrAPIRequest *) request;
 
 

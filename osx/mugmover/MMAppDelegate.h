@@ -8,6 +8,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "DDASLLogger.h"
+#import "DDTTYLogger.h"
+#import "DDFileLogger.h"
+
 @class MMTrack;
 @class ObjectiveFlickr;
 

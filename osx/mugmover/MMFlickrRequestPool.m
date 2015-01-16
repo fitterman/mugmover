@@ -84,6 +84,10 @@
         // Note that we use the request id for the key, not the wrapped request
         NSString *requestKey = [NSString stringWithFormat: @"%lx", (NSInteger)(wrappedRequest.request)];
         [_activeFlickrRequestPool setObject: wrappedRequest forKey: requestKey];
+        DDLogInfo(@"POOL STATS   active=%lu, available=%lu",
+                  (unsigned long)[_activeFlickrRequestPool count],
+                  (unsigned long)[_availableFlickrRequestPool count]);
+
         return wrappedRequest.request;
     }
 }
@@ -106,10 +110,19 @@
             [_activeFlickrRequestPool removeObjectForKey: requestKey];
             [_availableFlickrRequestPool addObject: wrappedRequest];
         }
-        NSLog(@"POOL STATS   active=%lu, available=%lu",
+        DDLogInfo(@"POOL STATS   active=%lu, available=%lu",
               (unsigned long)[_activeFlickrRequestPool count],
               (unsigned long)[_availableFlickrRequestPool count]);
     }
 }
 
+- (void) releaseAll
+{
+    @synchronized(_availableFlickrRequestPool)
+    {
+        [_activeFlickrRequestPool removeAllObjects];
+        _activeFlickrRequestPool = nil;
+        _availableFlickrRequestPool = nil;
+    }
+}
 @end

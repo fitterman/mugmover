@@ -86,7 +86,7 @@
 {
     // TODO Add retry logic and a real callback to the caller to alert them of the failure
     // inform the user
-    NSLog(@"Connection failed! Error - %@ %@",
+    DDLogError(@"Connection failed! Error - %@ %@",
           [error localizedDescription],
           [[error userInfo] objectForKey: NSURLErrorFailingURLStringErrorKey]);
     [self releaseStrongPointers];
@@ -96,11 +96,15 @@
 - (void) connectionDidFinishLoading: (NSURLConnection *) connection
 {
     // do something with the data
-    NSLog(@"Status: TBD. Received %ld bytes of data\n%@",
+    NSString *formattedString = [[NSString alloc] initWithData: _receivedData
+                                                      encoding: NSASCIIStringEncoding];
+    NSInteger strLen = [formattedString length];
+    if (strLen > 20)
+    {
+        formattedString = [NSString stringWithFormat: @"%@...", [formattedString substringToIndex: 20]];
+    }
+    DDLogInfo(@"MUGMOVER RESP status=TBD, received=%@ (%ld bytes total)", formattedString, (long) strLen);
 // TODO             (long)[httpResponse statusCode]
-            [_receivedData length],
-            [[NSString alloc] initWithData: _receivedData
-                                  encoding: NSASCIIStringEncoding]);
     [self releaseStrongPointers];
 }
 

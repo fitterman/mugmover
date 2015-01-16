@@ -48,19 +48,18 @@ long                retryCount;
                                                            andSelector: @selector(handleIncomingURL:withReplyEvent:)
                                                          forEventClass: kInternetEventClass
                                                             andEventID: kAEGetURL];
-
-        // NSLog(@"STEP 1 Create the OFFlickr request object");
+        DDLogInfo(@"STEP 1 Create the OFFlickr request object");
         self.initializationProgress = 0.2; // That's 1 out of 5 steps
         _flickrContext = [[OFFlickrAPIContext alloc] initWithAPIKey: MUGMOVER_API_KEY_MACRO
                                                        sharedSecret: MUGMOVER_SHARED_SECRET_MACRO];
         _requestPool = [[MMFlickrRequestPool alloc] initWithContext: _flickrContext];
         if (!_requestPool)
         {
-            NSLog(@"ERROR    Unable to initialize pool!");
+            DDLogError(@"    Unable to initialize pool!");
         }
         OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
         
-        // NSLog(@"STEP 2 Initiate the OAuth the request");
+        DDLogInfo(@"STEP 2 Initiate the OAuth the request");
         self.initializationProgress = 0.4; // That's 2 out of 5 steps
         // Initiate the request, giving Flickr the mugmover callback to hit
         [flickrRequest fetchOAuthRequestTokenWithCallbackURL: [NSURL URLWithString: @"mugmover:callback"]];
@@ -90,10 +89,10 @@ long                retryCount;
                      secret: (NSString *) inSecret
 {
     
-    // NSLog(@"STEP 3 Use the request token");
-    // NSLog(@"       request=%@", inRequest);
-    // NSLog(@"       requestToken=%@", inRequestToken);
-    // NSLog(@"       secret=%@", inSecret);
+    DDLogInfo(@"STEP 3 Use the request token");
+    DDLogInfo(@"       request=%@", inRequest);
+    DDLogInfo(@"       requestToken=%@", inRequestToken);
+    DDLogInfo(@"       secret=%@", inSecret);
     self.initializationProgress = 0.6; /* That's 3 out of 5 steps */
 
     _flickrContext.OAuthToken = inRequestToken;
@@ -104,7 +103,7 @@ long                retryCount;
     
     NSURL *authURL = [_flickrContext userAuthorizationURLWithRequestToken: inRequestToken
                                                       requestedPermission: OFFlickrWritePermission];
-    // NSLog(@"       authUrl=%@", [authURL absoluteString]);
+    DDLogInfo(@"       authUrl=%@", [authURL absoluteString]);
     [[NSWorkspace sharedWorkspace] openURL: authURL];
     
 }
@@ -112,11 +111,11 @@ long                retryCount;
 - (void) handleIncomingURL: (NSAppleEventDescriptor *) event
             withReplyEvent: (NSAppleEventDescriptor *) replyEvent
 {
-    // NSLog(@"STEP 4 Handle incoming (mugmover) URL");
+    DDLogInfo(@"STEP 4 Handle incoming (mugmover) URL");
     self.initializationProgress = 0.8; /* That's 4 out of 5 steps */
     
     NSURL *callbackURL = [NSURL URLWithString: [[event paramDescriptorForKeyword: keyDirectObject] stringValue]];
-    // NSLog(@"       callbackURL=%@", [callbackURL absoluteString]);
+    DDLogInfo(@"       callbackURL=%@", [callbackURL absoluteString]);
     
     NSString *requestToken= nil;
     NSString *verifier = nil;
@@ -124,7 +123,7 @@ long                retryCount;
     BOOL result = OFExtractOAuthCallback(callbackURL, [NSURL URLWithString: @"mugmover:callback"], &requestToken, &verifier);
     if (!result)
     {
-        // NSLog(@"ERROR Invalid callback URL");
+        DDLogError(@"Invalid callback URL");
         self.initializationProgress = -1.0;
     }
     OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
@@ -138,13 +137,13 @@ long                retryCount;
                       userName: (NSString *) inUserName
                       userNSID: (NSString *) inNSID
 {
-     // NSLog(@"STEP 5 You're in. Save the access token");
-     // NSLog(@"       request=%@", inRequest);
-     // NSLog(@"       accessToken=%@", inAccessToken);
-     // NSLog(@"       inSecret=%@", inSecret);
-     // NSLog(@"       userFullName=%@", inFullName);
-     // NSLog(@"       username=%@", inUserName);
-     // NSLog(@"       nsid=%@", inNSID);
+     DDLogInfo(@"STEP 5 You're in. Save the access token");
+     DDLogInfo(@"       request=%@", inRequest);
+     DDLogInfo(@"       accessToken=%@", inAccessToken);
+     DDLogInfo(@"       inSecret=%@", inSecret);
+     DDLogInfo(@"       userFullName=%@", inFullName);
+     DDLogInfo(@"       username=%@", inUserName);
+     DDLogInfo(@"       nsid=%@", inNSID);
     _accessToken = inAccessToken;
     _accessSecret = inSecret;
     _flickrContext.OAuthToken = inAccessToken;
@@ -195,7 +194,7 @@ long                retryCount;
 - (void) flickrAPIRequest: (OFFlickrAPIRequest *) inRequest
   didCompleteWithResponse: (NSDictionary *) inResponseDictionary
 {
-    NSLog(@"  COMPLETION: request=%@", inRequest.sessionInfo);
+    DDLogInfo(@"RESP RECEIVED request=%@", inRequest.sessionInfo);
     if ([inRequest.sessionInfo isEqualToString: @"getPhotos"])
     {
         photoResponseDictionary = inResponseDictionary;
@@ -207,7 +206,9 @@ long                retryCount;
         // If you get an empty buffer back, that means there are no more photos to be had: quit trying
         if ((!photos) || ([photos count] == 0))
         {
-            NSLog(@"END OF STREAM");
+            DDLogInfo(@"END OF STREAM");
+            [_requestPool releaseAll];
+            [self releaseStrongPointers];
         }
         for (NSDictionary *photoToBeReturned in photos)
         {
@@ -218,8 +219,10 @@ long                retryCount;
 
             NSBlockOperation *returnPhoto = [NSBlockOperation blockOperationWithBlock:^
                                                  {
-                                                     // // NSLog (@"  BLOCK returning photo with exif");
-                                                     NSLog(@"%lu/%lu", (long)_currentPhotoIndex + 1, (long)_photosInStream);
+                                                     _currentPhotoIndex++;
+                                                     DDLogInfo(@"QUEUEING      %lu/%lu",
+                                                                (long)_currentPhotoIndex,
+                                                                (long)_photosInStream);
                                                      [photo performNextStep];
                                                  }
                                              ];
@@ -231,7 +234,7 @@ long                retryCount;
 - (BOOL) trackFailedAPIRequest: (OFFlickrAPIRequest *) inRequest
                          error: (NSError *) inError
 {
-    NSLog(@"ERROR flickrAPIRequest failed %@ (code=%lx), sessionInfo=\"%@\" retryCount=%lu",
+    DDLogError(@"ERROR flickrAPIRequest failed %@ (code=%lx), sessionInfo=\"%@\" retryCount=%lu",
           inError.localizedDescription,
           (long) inError.code,
           inRequest.sessionInfo,
@@ -243,16 +246,16 @@ long                retryCount;
      */
     switch (inError.code) {
         case OFFlickrAPIRequestConnectionError:
-            // NSLog(@"OFFlickrAPIRequestConnectionError");
+            DDLogError(@"OFFlickrAPIRequestConnectionError");
             break;
         case OFFlickrAPIRequestTimeoutError:
-            // NSLog(@"OFFlickrAPIRequestTimeoutError");
+            DDLogError(@"OFFlickrAPIRequestTimeoutError");
             break;
         case OFFlickrAPIRequestFaultyXMLResponseError:
-            // NSLog(@"OFFlickrAPIRequestFaultyXMLResponseError");
+            DDLogError(@"OFFlickrAPIRequestFaultyXMLResponseError");
             break;
         case OFFlickrAPIRequestOAuthError:
-            // NSLog(@"OFFlickrAPIRequestOAuthError");
+            DDLogError(@"OFFlickrAPIRequestOAuthError");
             return NO; /* We return because retrying this one isn't going to fix anything. */
             break;
         default:
@@ -295,5 +298,22 @@ long                retryCount;
 - (NSURL *) urlFromDictionary: (NSDictionary *) photoDict
 {
     return [_flickrContext photoSourceURLFromDictionary: photoDict size: OFFlickrSmallSize];
+}
+
+- (void) releaseStrongPointers
+{
+    if (_library)
+    {
+        [_library close];
+    }
+    _accessSecret = nil;
+    _accessToken = nil;
+    _currentPhoto = nil;
+    _flickrContext = nil;
+    _handle = nil;
+    _library = nil;
+    _photoDictionary = nil;
+    _requestPool = nil;
+    _streamQueue = nil;
 }
 @end

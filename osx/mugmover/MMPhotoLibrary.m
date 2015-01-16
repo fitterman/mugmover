@@ -26,7 +26,7 @@ NSString *photosPath;
         photosPath = [NSString stringWithFormat: @"%@/%@", value, @"Library.apdb"];
         _photosDatabase = [FMDatabase databaseWithPath: photosPath];
         
-        NSLog(@"Opening _photosPath=%@", photosPath);
+        DDLogInfo(@"Opening _photosPath=%@", photosPath);
         if (self.facesDatabase && self.photosDatabase &&
             [self.facesDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE] &&
             [self.photosDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE])
@@ -51,15 +51,15 @@ NSString *photosPath;
         {
             if (_facesDatabase)
             {
-                NSLog(@"ERROR facesDatabase at %@ failed to with error %d (%@).", facesPath,
+                DDLogError(@"facesDatabase at %@ failed to open with error %d (%@).", facesPath,
                       _facesDatabase.lastErrorCode, _facesDatabase.lastErrorMessage);
-                [_facesDatabase close];
+                [self close];
             }
             if (_photosDatabase)
             {
-                NSLog(@"ERROR photosDatabase at %@ failed to with error %d (%@).", photosPath,
+                DDLogError(@"photosDatabase at %@ failed to open with error %d (%@).", photosPath,
                       _photosDatabase.lastErrorCode, _photosDatabase.lastErrorMessage);
-                [_photosDatabase close];
+                [self close];
             }
             return nil;
         }
@@ -117,7 +117,7 @@ NSString *photosPath;
     NSString *fullMasterPath = [pathPieces componentsJoinedByString: @"/"];
     if (fullMasterPath)
     {
-        NSLog(@"           fullMasterPath=%@", fullMasterPath);
+        DDLogInfo(@"           fullMasterPath=%@", fullMasterPath);
         return [MMPhotoLibrary getImageExif: fullMasterPath];
     }
     return nil;
@@ -140,7 +140,7 @@ NSString *photosPath;
     NSString *versionPath = [pathPieces componentsJoinedByString: @"/"];
     if (versionPath)
     {
-        NSLog(@"           versionPath=%@", versionPath);
+        DDLogInfo(@"VERSION EXIF  versionPath=%@", versionPath);
         return [MMPhotoLibrary getImageExif: versionPath];
     }
     return nil;
@@ -176,7 +176,7 @@ NSString *photosPath;
                     {
                         NSString *digitalCreationDate = [iptcDictionary objectForKey: @"DigitalCreationDate"];
                         NSString *digitalCreationTime = [iptcDictionary objectForKey: @"DigitalCreationTime"];
-                        NSLog(@"IPTC TIMESTAMP  %@ %@", digitalCreationDate, digitalCreationTime);
+                        DDLogInfo(@"IPTC TIMESTAMP  %@ %@", digitalCreationDate, digitalCreationTime);
                     }
                 }
             }
@@ -187,10 +187,27 @@ NSString *photosPath;
     }
     else
     {
-        NSLog ( @"Error in reading file");
+        DDLogError(@"Error in reading local image file %@", filePath);
     }
     
     return exifDictionary;
+}
+
+- (void) close
+{
+    if (_facesDatabase)
+    {
+        [_facesDatabase close];
+    }
+    if (_photosDatabase)
+    {
+        [_photosDatabase close];
+    }
+    _databaseAppId = nil;
+    _databaseUuid = nil;
+    _databaseVersion = nil;
+    _facesDatabase = nil;
+    _photosDatabase = nil;
 }
 
 @end

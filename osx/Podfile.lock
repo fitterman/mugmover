@@ -1,4 +1,12 @@
 PODS:
+  - CocoaLumberjack (2.0.0-rc):
+    - CocoaLumberjack/Default
+    - CocoaLumberjack/Extensions
+  - CocoaLumberjack/Core (2.0.0-rc)
+  - CocoaLumberjack/Default (2.0.0-rc):
+    - CocoaLumberjack/Core
+  - CocoaLumberjack/Extensions (2.0.0-rc):
+    - CocoaLumberjack/Default
   - FMDB (2.4):
     - FMDB/standard
   - FMDB/common (2.4)
@@ -7,10 +15,12 @@ PODS:
   - objectiveflickr (2.0.4)
 
 DEPENDENCIES:
+  - CocoaLumberjack
   - FMDB (~> 2.4)
   - objectiveflickr
 
 SPEC CHECKSUMS:
+  CocoaLumberjack: 6186e27827fc574b50b16c10102fcc591437f06c
   FMDB: 0b2fa25e5264ef177973c0cb8c02c711107979aa
   objectiveflickr: 39b43d8db58c75c82295d1babe4596f3e9b4493b
 

@@ -33,7 +33,7 @@ static NSString *kDefaultSite = @"http://google.com";
 static NSTimeInterval kDefaultTimeoutInterval = 15.0;
 
 #define LFSRDebug(format, ...)
-// #define LFSRDebug NSLog
+// #define LFSRDebug DDLog
 
 NSString *const LFSiteReachabilityConnectionTypeWiFi = @"LFSiteReachabilityConnectionTypeWiFi";
 NSString *const LFSiteReachabilityConnectionTypeWWAN = @"LFSiteReachabilityConnectionTypeWWAN";
