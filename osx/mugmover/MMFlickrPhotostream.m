@@ -31,13 +31,14 @@ long                retryCount;
         _library = [[MMPhotoLibrary alloc] initWithPath: (NSString *) libraryPath];
         if (!_library)
         {
+            [self releaseStrongPointers];
             return nil;
         }
         
         _photoDictionary = [[NSMutableDictionary alloc] init];
         if (!_photoDictionary)
         {
-            _library = nil;
+            [self releaseStrongPointers];
             return nil;
         }
         self.handle = flickrHandle;
@@ -187,7 +188,6 @@ long                retryCount;
 {
     NSString *photoKey = [NSString stringWithFormat: @"%lx", (NSInteger)(photo)];
     [_photoDictionary removeObjectForKey: photoKey];
-    DDLogInfo(@"REMAINING  %lu", (unsigned long)[_photoDictionary count]);
     if ([_photoDictionary count] == 0)
     {
         _page++;

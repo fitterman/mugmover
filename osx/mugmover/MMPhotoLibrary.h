@@ -14,18 +14,19 @@
 @property (strong, readonly)    NSString *          databaseAppId;
 @property (strong, readonly)    NSString *          databaseUuid;
 @property (strong, readonly)    NSString *          databaseVersion;
+@property (strong, readonly)    NSString *          libraryBasePath;
 @property (strong)              FMDatabase *        facesDatabase;
 @property (strong)              FMDatabase *        photosDatabase;
 
-- (id) initWithPath: (NSString *) value;
+- (id) initWithPath: (NSString *) path;
 
 - (void) close;
 
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 
-+ (NSDictionary *) versionExifFromMasterPath: masterPath;
+- (NSDictionary *) versionExifFromMasterPath: masterPath;
 
-+ (NSDictionary *) versionExifFromMasterPath: masterPath
+- (NSDictionary *) versionExifFromMasterPath: masterPath
                                  versionUuid: versionUuid
                              versionFilename: versionFilename;
 

@@ -211,11 +211,14 @@
             ;
     
     // TODO: See notes here
-    // TODO ## Make sure the originalFilename is used only when it is available;
-    // TODO ## Use the width/height only when those are available. (Flickr users may restrict their availability.)
     
     NSString *width = [_flickrDictionary objectForKey: @"width"];
     NSString *height = [_flickrDictionary objectForKey: @"height"];
+    if ((!_originalFilename) || (!width) || (!height))
+    {
+        // TODO Research in what cases these are unavailable.
+        return NO;
+    }
     NSArray *args = @[_originalFilename, width, height];
     FMResultSet *resultSet = [_stream.library.photosDatabase executeQuery: query
                                              withArgumentsInArray: args];
@@ -235,14 +238,14 @@
 
             if ([resultSet boolForColumn: @"isOriginal"])
             {
-                exif = [MMPhotoLibrary versionExifFromMasterPath: masterPath];
+                exif = [_stream.library versionExifFromMasterPath: masterPath];
             }
             else
             {
                 
-                exif = [MMPhotoLibrary versionExifFromMasterPath: masterPath
-                                                     versionUuid: versionUuid
-                                                 versionFilename: versionFilename];
+                exif = [_stream.library versionExifFromMasterPath: masterPath
+                                                      versionUuid: versionUuid
+                                                  versionFilename: versionFilename];
             }
             
             if (exif)

@@ -13,17 +13,23 @@
 
 @implementation MMPhotoLibrary
 
-NSString *facesPath;
+
 NSString *photosPath;
 
-- (id) initWithPath: (NSString *) value
+- (id) initWithPath: (NSString *) path
 {
     self = [self init];
     if (self)
     {
-        facesPath = [NSString stringWithFormat: @"%@/%@", value, @"Faces.db"];
+        _libraryBasePath = path;
+        NSString *facesPath = [path stringByAppendingPathComponent: @"Database/apdb/Faces.db"];
+        NSString *photosPath = [path stringByAppendingPathComponent: @"Database/apdb/Library.apdb"];
+        if ((!facesPath) || (!photosPath))
+        {
+            return nil;
+        }
+        
         _facesDatabase = [FMDatabase databaseWithPath: facesPath];
-        photosPath = [NSString stringWithFormat: @"%@/%@", value, @"Library.apdb"];
         _photosDatabase = [FMDatabase databaseWithPath: photosPath];
         
         DDLogInfo(@"Opening _photosPath=%@", photosPath);
@@ -105,14 +111,14 @@ NSString *photosPath;
     NSString *versionUuid = [versionRecord stringForColumn: @"versionUuid"];
     NSString *masterPath = [versionRecord stringForColumn: @"imagePath"];
     
-    return [MMPhotoLibrary versionExifFromMasterPath: masterPath
-                                         versionUuid: versionUuid
-                                     versionFilename: versionFilename];
+    return [self versionExifFromMasterPath: masterPath
+                               versionUuid: versionUuid
+                           versionFilename: versionFilename];
 }
 
-+ (NSDictionary *) versionExifFromMasterPath: (NSString *) masterPath
+- (NSDictionary *) versionExifFromMasterPath: (NSString *) masterPath
 {
-    NSArray *pathPieces = @[@"/Users/Bob/Pictures/Jay Phillips", @"Masters", masterPath];
+    NSArray *pathPieces = @[_libraryBasePath, @"Masters", masterPath];
     
     NSString *fullMasterPath = [pathPieces componentsJoinedByString: @"/"];
     if (fullMasterPath)
@@ -123,12 +129,12 @@ NSString *photosPath;
     return nil;
 }
 
-+ (NSDictionary *) versionExifFromMasterPath: (NSString *) masterPath
+- (NSDictionary *) versionExifFromMasterPath: (NSString *) masterPath
                                  versionUuid: (NSString *) versionUuid
                              versionFilename: (NSString *) versionFilename
 {
     NSArray *masterPathPieces = [masterPath componentsSeparatedByString: @"/"];
-    NSArray *pathPieces = @[@"/Users/Bob/Pictures/Jay Phillips",
+    NSArray *pathPieces = @[_libraryBasePath,
                             @"Previews",
                             [masterPathPieces objectAtIndex: 0],
                             [masterPathPieces objectAtIndex: 1],
@@ -208,6 +214,7 @@ NSString *photosPath;
     _databaseVersion = nil;
     _facesDatabase = nil;
     _photosDatabase = nil;
+    _libraryBasePath = nil;
 }
 
 @end

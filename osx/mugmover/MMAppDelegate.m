@@ -30,7 +30,8 @@ BOOL const MMdebugLevel;
     [self updateUserInterface];
     
     stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
-                                             libraryPath: @"/Users/Bob/Pictures/Jay Phillips/Database/apdb"];
+                                             libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
+//                                             libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
     if (stream)
     {
         // Register for KVO on some network-associated values
