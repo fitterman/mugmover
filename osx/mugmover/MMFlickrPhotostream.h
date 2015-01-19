@@ -37,6 +37,8 @@
 
 - (void) getPhotos;
 
+- (NSInteger) inQueue;
+
 - (void) removeFromPhotoDictionary: (MMPhoto *) photo;
 
 - (BOOL) trackFailedAPIRequest: (OFFlickrAPIRequest *) inRequest

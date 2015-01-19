@@ -26,10 +26,10 @@
 @property (assign, readonly)    BOOL                        didFetchExif;
 @property (assign, readonly)    BOOL                        didFetchInfo;
 @property (assign, readonly)    BOOL                        didFetchSizes;
-@property (assign, readonly)    BOOL                        didProcessPhoto;
 @property (strong)              NSMutableArray *            faceArray;
 @property (strong)              NSMutableDictionary *       flickrDictionary;
 @property (strong)              OFFlickrAPIRequest *        flickrRequest;
+@property (assign)              NSInteger                   index;
 @property (assign)              Float64                     masterHeight;
 @property (strong)              NSString *                  masterUuid;
 @property (assign)              Float64                     masterWidth;
@@ -45,7 +45,8 @@
 @property (strong)              NSString *                  versionUuid;
 
 - (MMPhoto *) initWithFlickrDictionary: (NSDictionary *) flickrDictionary
-                                stream: (MMFlickrPhotostream *) stream;
+                                stream: (MMFlickrPhotostream *) stream
+                                 index: (NSInteger) index;
 
 - (void) adjustForStraightenCropAndGetFaces;
 

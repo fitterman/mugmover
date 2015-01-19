@@ -154,6 +154,11 @@ long                retryCount;
 
 }
 
+-(NSInteger)inQueue
+{
+    return [_photoDictionary count];
+}
+
 - (void) getPhotos
 {
     NSString *userId = @"127850168@N06"; // TODO Don't hardcode this
@@ -182,6 +187,7 @@ long                retryCount;
 {
     NSString *photoKey = [NSString stringWithFormat: @"%lx", (NSInteger)(photo)];
     [_photoDictionary removeObjectForKey: photoKey];
+    DDLogInfo(@"REMAINING  %lu", (unsigned long)[_photoDictionary count]);
     if ([_photoDictionary count] == 0)
     {
         _page++;
@@ -213,15 +219,15 @@ long                retryCount;
         for (NSDictionary *photoToBeReturned in photos)
         {
             MMPhoto *photo = [[MMPhoto alloc] initWithFlickrDictionary: photoToBeReturned
-                                                                stream: self];
+                                                                stream: self
+                                                                 index: ++_currentPhotoIndex];
             NSString *photoKey = [NSString stringWithFormat: @"%lx", (NSInteger)(photo)];
             [_photoDictionary setObject: photo forKey: photoKey];
 
             NSBlockOperation *returnPhoto = [NSBlockOperation blockOperationWithBlock:^
                                                  {
-                                                     _currentPhotoIndex++;
                                                      DDLogInfo(@"QUEUEING      %lu/%lu",
-                                                                (long)_currentPhotoIndex,
+                                                                photo.index,
                                                                 (long)_photosInStream);
                                                      [photo performNextStep];
                                                  }

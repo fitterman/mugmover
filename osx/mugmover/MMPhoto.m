@@ -27,10 +27,12 @@
 
 - (MMPhoto *) initWithFlickrDictionary: (NSDictionary *) flickrDictionary
                                 stream: (MMFlickrPhotostream *) stream
+                                 index: (NSInteger) index
 {
     self = [self init];
     if (self)
     {
+        _index = index;
         _flickrDictionary = [[NSMutableDictionary alloc] init];
         if (_flickrDictionary && stream && flickrDictionary)
         {
@@ -66,7 +68,6 @@
             _didFetchInfo = NO;
             _didFetchOriginalByteSize = NO;
             _didFetchSizes = NO;
-            _didProcessPhoto = NO;
         }
         else
         {
@@ -110,7 +111,7 @@
                           }];
         [_stream.streamQueue addOperation: blockOperation];
     }
-    else if (!_didProcessPhoto)                                    // FINALLY, process the image
+    else
     {
         if ([self findMatchingInIphotoLibraryByVersionUuidAndVersion] ||
             [self findMatchingVersionInIphotoLibraryByAttributes])
@@ -119,16 +120,13 @@
         }
         else
         {
-            DDLogError(@"ORPHAN PHOTO    "); // TODO Figure out what to do with this.
+            [self releaseStrongPointers];
+            DDLogError(@"ORPHAN PHOTO  index=%ld, remaining=%ld", (long)_index, [_stream inQueue]);
+
             // TODO May want to start deleting any mugmover comments as a cleanup step.
             // If so, call [self updateNotesOnFlickr]] but not sure about that.
             // If you call it, remember that it still adds and deletes notes, with NO optimization.
         }
-        _didProcessPhoto = YES;
-    }
-    else
-    {
-        DDLogError(@"processPhoto was called an extra time!");
     }
 }
 
@@ -143,7 +141,6 @@
             blockOperation = [NSBlockOperation blockOperationWithBlock:^
                               {
                                 [self releaseStrongPointers];
-                                [_stream removeFromPhotoDictionary: self];
                               }];
         }
         else
@@ -663,7 +660,7 @@
     } else {
         NSString *jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
         NSDictionary *postData = @{@"data": jsonString};
-        DDLogInfo(@"TO MUGMOVER");
+        DDLogInfo(@"TO MUGMOVER   index=%ld, remaining=%ld", (long)_index, [_stream inQueue]);
         _apiRequest = [[MMApiRequest alloc] initUploadForApiVersion: 1
                                                            bodyData: postData];
     }
@@ -689,6 +686,7 @@
     _originalUrl = nil;
     _request = nil;
     _versionUuid = nil;
+    [_stream removeFromPhotoDictionary: self];
 }
 
 - (NSString *) title
@@ -965,7 +963,6 @@
     {
         if ([pieces[0] isEqualToString: @"fetchSizes"])
         {
-            DDLogError(@" Failed @");
             [self fetchFlickrSizes];
         }
         else if ([pieces[0] isEqualToString: @"fetchExif"])
@@ -1019,6 +1016,10 @@
             [self updateNotesOnFlickr];
         }
         // Need to do all the release stuff you do on the corresponding success event.
+        else
+        {
+            [self releaseStrongPointers];
+        }
     }
 }
 
