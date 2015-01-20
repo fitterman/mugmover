@@ -32,6 +32,8 @@
               background-image: url('<%- photo.get('thumb') %>');
               top: 27px;
               left: <%- i2x(photo.get('index')) %>px;" 
+              phw="<%- photo.get('id') %>px"
+              phh="<%- photo.get('id') %>px"
               phid="<%- photo.get('id') %>">
           </div>
       <% }; %>

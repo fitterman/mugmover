@@ -24,6 +24,22 @@ class Face < ActiveRecord::Base
     center_y - (height / 2)
   end
 
+  def left_scaled(scale_factor)
+    left * scale_factor
+  end
+
+  def top_scaled(scale_factor)
+    top * scale_factor
+  end
+
+  def width_scaled(scale_factor)
+    width * scale_factor
+  end
+
+  def height_scaled(scale_factor)
+    height * scale_factor
+  end
+
   # This is the core of the face upload code, invoked by the UploadsController
   # When it is successful, it will return an array of Face objects and and a hash
   # of errors (the keys are the UUID of the face that had the problem and the 

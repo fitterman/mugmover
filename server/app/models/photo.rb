@@ -1,5 +1,7 @@
 class Photo < ActiveRecord::Base
 
+  MAX_PREVIEW_DIMENSION = 500.0 # pixels
+
   belongs_to  :hosting_service_account
   has_many    :faces
 
@@ -48,4 +50,7 @@ class Photo < ActiveRecord::Base
     end
   end
 
+  def scale_factor
+    @sf ||= (MAX_PREVIEW_DIMENSION / [self.width, self.height].max)
+  end
 end
