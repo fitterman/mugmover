@@ -1,17 +1,22 @@
 class Photo < ActiveRecord::Base
 
+  belongs_to  :hosting_service_account
+  has_many    :faces
+
   #validates   :database_uuid,       presence: true
   validates   :master_uuid,         presence: true
   validates   :version_uuid,        presence: true
   validates   :width,     inclusion: 50..20000
   validates   :height,    inclusion: 50..20000
-  validates   :name,                presence: {allow_nil: true}
+  validates     :name,               presence: {allow_nil: true}
   #validates   :filename,            presence: true
   #validates   :format,              inclusion: %w{jpeg png gif tiff raw}
 
-  serialize :request, JSON
+  serialize     :request, JSON
 
-  def self.from_request(hosting_service_account, database_uuid, service_hash, photo_hash)
+  before_save   :populate_urls
+
+  def self.from_hash(hosting_service_account, database_uuid, service_hash, photo_hash, full_hash)
     service_photo_id = service_hash['id']
     photo = Photo.find_or_create_by(hosting_service_account_id: hosting_service_account.id,
                                     hosting_service_photo_id: service_photo_id) do |new_user|
@@ -24,9 +29,23 @@ class Photo < ActiveRecord::Base
     photo.original_date = photo_hash['originalDate']
     photo.date_uploaded = service_hash['dateUploaded']
     photo.original_format = service_hash['originalFormat']
-    photo.request = photo_hash
+    photo.request = full_hash
     photo.save
     return photo
+  end
+
+  def populate_urls
+    hash = request['service']
+    if hash['name'] == 'flickr'
+      farm = hash['farm']
+      server = hash['server']
+      phid = hash['id']
+      secret = hash['secret']
+      self.thumbnail_url = "https://farm#{farm}.staticflickr.com/#{server}/#{phid}_#{secret}_t.jpg"
+      self.big_url = "https://farm#{farm}.staticflickr.com/#{server}/#{phid}_#{secret}_b.jpg"
+    else
+      raise StandardError.new("Unexpected service (name=#{hash['name']}")
+    end
   end
 
 end

@@ -1,5 +1,7 @@
 class Face < ActiveRecord::Base
 
+  belongs_to  :photo
+
   validates   :photo_id,            presence: true
   validates   :face_uuid,           presence: true
   validates   :center_x,            numericality: { only_integer: true } # could be negative after cropping
@@ -12,6 +14,15 @@ class Face < ActiveRecord::Base
   ## Also add the facekey which associates a face to a name. Add the facekey in the person table
   ## (then add the name in the display_names table)
 
+  # returns a float value
+  def left
+    center_x - (width / 2)
+  end
+
+  # returns a float value
+  def top
+    center_y - (height / 2)
+  end
 
   # This is the core of the face upload code, invoked by the UploadsController
   # When it is successful, it will return an array of Face objects and and a hash
@@ -22,7 +33,7 @@ class Face < ActiveRecord::Base
   # that may have been created, including _some_ of the faces, will be left 
   # hanging around.
 
-  def self.from_request(hosting_service_account, database_uuid, photo, face_hash)
+  def self.from_hash(hosting_service_account, database_uuid, photo, face_hash)
     face_errors = {}
     faces = face_hash.map do |face_params|
       ## face_key is filled in for every face, but face_name_uuid is only present if the 

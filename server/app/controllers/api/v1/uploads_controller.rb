@@ -17,8 +17,8 @@ module Api
 
     private
       def store_uploaded_objects(request)
-        # Create an untainted copy of the request, as we're going to save it with the photo
-        pristine_request = request.dup
+        # Create an untainted copy of the uploaded hash, as we're going to save it with the photo
+        pristine_hash = request.deep_dup
 
         errors = {} # Give it scope
 
@@ -29,16 +29,16 @@ module Api
           service_hash = request.delete('service')
           database_uuid = request['source']['databaseUuid']
 
-          hosting_service_account = HostingServiceAccount.from_request(service_hash)
+          hosting_service_account = HostingServiceAccount.from_hash(service_hash)
           if hosting_service_account.errors.present?
             errors[:service] = hosting_service_account.errors.full_messages
           else
-            photo = Photo.from_request(hosting_service_account, database_uuid, service_hash, photo_hash)
+            photo = Photo.from_hash(hosting_service_account, database_uuid, service_hash, photo_hash, pristine_hash)
             if photo.errors.present?
               errors[:photo] = photo.errors.full_messages
             else
               # This creates the face and its associated objects, unless it finds existing ones
-              faces, face_errors = Face.from_request(hosting_service_account, database_uuid, photo, request['faces'])
+              faces, face_errors = Face.from_hash(hosting_service_account, database_uuid, photo, request['faces'])
               if face_errors.present?
                 errors[:face] = face_errors
               end

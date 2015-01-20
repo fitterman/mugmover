@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150116213125) do
+ActiveRecord::Schema.define(version: 20150119222536) do
 
   create_table "display_names", force: true do |t|
     t.integer  "named_face_id"
@@ -71,6 +71,8 @@ ActiveRecord::Schema.define(version: 20150116213125) do
     t.text     "request"
     t.datetime "date_uploaded"
     t.string   "original_format"
+    t.string   "thumbnail_url"
+    t.string   "big_url"
   end
 
   create_table "service_collections", force: true do |t|
