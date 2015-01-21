@@ -27,6 +27,12 @@ module Api
         @photo = @hsa.photos.find(params[:id])
       end
 
+      # GET /photos/1.json
+      def details
+        @hsa = HostingServiceAccount.find(params[:a_id])
+        @photo = @hsa.photos.find(params[:id])
+      end
+
       # Set the flag in the record
       def flag
         @hsa = HostingServiceAccount.find(params[:a_id])

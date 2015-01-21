@@ -20,15 +20,14 @@
 .row
   %p#notice= notice
 
-.row
-  #picturebar-container{style: 'height: 114px; overflow-y: scroll; white-space: nowrap; margin-bottom: 1em;'}
-    #picturebar{style: "position:relative;" }
+.row#picturebar-container{style: 'height: 114px; overflow-y: scroll; white-space: nowrap;'}
+  #picturebar{style: "position:relative;" }
 
-.row
+.row{style: 'margin: 1em;'}
   .col-md-4
-    %button.btn.btn-primary{type: "button", style: "position:relative;"}
-      Report Problem
-    %button.btn.btn-primary{type: "button", style: "position:relative;"}
+    %button.btn.btn-primary{id: 'photoButton' }
+      Photo
+    %button.btn.btn-primary{id: 'detailsButton' }
       Details
   .col-md-4
   .col-md-4
@@ -71,6 +70,10 @@
             data-caption="<%- notes[i].text %>"></div>
     <% }; %>
     </img>
+  </script>
+
+  <script type="text/template" id="photo-details-template-text">
+    <pre><%- JSON.stringify(photo.get('request'), null, 4) %></pre> 
   </script>
 
 :javascript
@@ -122,6 +125,8 @@
            });   
   }
 
+  $('button#photoButton').on('click', function() {  router.navigate('show/' + currentPhoto.id , {trigger: true}); });
+  $('button#detailsButton').on('click', function() {  router.navigate('details/' + currentPhoto.id , {trigger: true}); });
   $('.glyphicon-flag').on('click', function() {
     var newState = toggleFlagSetting();
     setFlagAtServer(newState);
@@ -167,10 +172,13 @@
   });
 
   var Photos = Backbone.Collection.extend({
-    url: '/api/v1/pics.json'
+    url: "#{api_v1_pics_path(format: 'json')}"
   });
   var Photo = Backbone.Model.extend({
-    url: function() {return "/api/v1/pics/" + this.attributes.id + '.json?a_id=' + this.attributes.a_id},
+    url: function() {return "#{api_v1_pics_path}/" + this.attributes.id + '.json?a_id=' + this.attributes.a_id},
+  });
+  var PhotoDetails = Backbone.Model.extend({
+    url: function() {return "#{details_api_v1_pics_path}" + '.json?a_id=' + this.attributes.a_id + '&id=' + this.attributes.id},
   });
 
   var PhotoList = Backbone.View.extend({
@@ -209,7 +217,31 @@
           setFlagColor(currentPhoto.attributes.flag);
           if ($('#picturebar').html() == "")
           {
-            photoList.render({a_id: #{params[:a_id]}, n: 0});
+            photoList.render({a_id: options.a_id, n: 0});
+          }
+          return this;
+        }        
+      })
+    }
+  });
+
+  var ShowPhotoDetails = Backbone.View.extend({
+    el: '#picture-container',
+    render: function(options) {
+      var photoDetails = new PhotoDetails({a_id: options.a_id, id: options.id});
+      var that = this;
+      photoDetails.fetch({
+        error: function(photos) {
+          alert('An unexpected error occurred. Please try again.');
+        },
+        success: function(photo) {
+          var template = _.template($('#photo-details-template-text').html());
+          var html = template({photo: photo});
+          that.$el.html(html);
+          //          setFlagColor(currentPhoto.attributes.flag);
+          if ($('#picturebar').html() == "")
+          {
+            photoList.render({a_id: options.a_id, n: 0});
           }
           return this;
         }        
@@ -221,17 +253,22 @@
     routes: {
       '':         'home',
       'show/:id': 'show',
+      'details/:id': 'details',
     }
   });
 
   var router = new Router();
   var photoList = new PhotoList();
   var showPhoto = new ShowPhoto();
+  var showPhotoDetails = new ShowPhotoDetails();
 
   router.on('route:home', function() {
     photoList.render({a_id: #{params[:a_id]}, n: 0});
   });
   router.on('route:show', function(id) {
     showPhoto.render({a_id: #{params[:a_id]}, id: id})
+  });
+  router.on('route:details', function(id) {
+    showPhotoDetails.render({a_id: #{params[:a_id]}, id: id})
   });
   Backbone.history.start();

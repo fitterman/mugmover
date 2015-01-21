@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       resources :photos, only: [:index, :show]
       resources :pics, only: [:index, :show] do
         post 'flag', on: :collection
+        get 'details', on: :collection
       end
 
 #      resources :display_names

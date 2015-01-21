@@ -17,6 +17,7 @@ class Photo < ActiveRecord::Base
   serialize     :request, JSON
 
   before_save   :populate_urls
+  before_save   :normalize_flag
 
   def self.from_hash(hosting_service_account, database_uuid, service_hash, photo_hash, full_hash)
     service_photo_id = service_hash['id']
@@ -34,6 +35,13 @@ class Photo < ActiveRecord::Base
     photo.request = full_hash
     photo.save
     return photo
+  end
+
+  # Ensure it has a valid value
+  def normalize_flag
+    if self.flag.nil?
+      self.flag = 0
+    end
   end
 
   def populate_urls
