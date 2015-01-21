@@ -33,7 +33,7 @@
     %span.glyphicon.glyphicon-flag.pull-right{style: 'font-size: 140%;', 'aria-label' => 'not flagged'}
 
 .jumbotron
-  #picture-container{style: 'position:relative;'}
+  #picture-container{style: 'position: relative; margin-left: auto; margin-right: auto;'}
     
 :plain
   <script type="text/template" id="photos-template-text">
@@ -162,6 +162,7 @@
     // TODO Fill in with the image you have. Requires knowing the AR of the photo 
       $('#picture-container').html('&nbsp;').css({'background-image': $(this).css('background-image'), 
                                                   "background-size": 'contain', 
+                                                  "background-repeat": 'none',
                                                   "background-color": 'white',
                                                   'width': $(this).attr('phw'),
                                                   'height': $(this).attr('phh')});
