@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150119222536) do
+ActiveRecord::Schema.define(version: 20150121161343) do
 
   create_table "display_names", force: true do |t|
     t.integer  "named_face_id"
@@ -73,6 +73,7 @@ ActiveRecord::Schema.define(version: 20150119222536) do
     t.string   "original_format"
     t.string   "thumbnail_url"
     t.string   "big_url"
+    t.integer  "flag"
   end
 
   create_table "service_collections", force: true do |t|

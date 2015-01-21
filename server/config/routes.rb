@@ -4,7 +4,9 @@ Rails.application.routes.draw do
     namespace :v1 do
       resource :upload, only: [:create]
       resources :photos, only: [:index, :show]
-      resources :pics, only: [:index, :show]
+      resources :pics, only: [:index, :show] do
+        post 'flag', on: :collection
+      end
 
 #      resources :display_names
 #      resources :faces

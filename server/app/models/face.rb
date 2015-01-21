@@ -40,6 +40,10 @@ class Face < ActiveRecord::Base
     height * scale_factor
   end
 
+  def primary_name
+    self.face_uuid
+  end
+
   # This is the core of the face upload code, invoked by the UploadsController
   # When it is successful, it will return an array of Face objects and and a hash
   # of errors (the keys are the UUID of the face that had the problem and the 

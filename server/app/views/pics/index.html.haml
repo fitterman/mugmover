@@ -1,11 +1,12 @@
 - thumbsize = 50
-- thumbsizeWithBorder = 52
+- thumbsizeWithBorder = thumbsize + 2
 
 :css
   .picturethumb { z-index: 2; display: inline-flex; 
                   width: #{thumbsizeWithBorder}px; height: #{thumbsizeWithBorder}px; 
                   background-size: contain; background-color: white;
-                  border: 2px solid white; }
+                  border: 2px solid white; 
+                }
   .unselected   { opacity: 0.5; }
   .selected     { background-color: red; border: 2px solid red; opacity: 1.0; }
   .enlarged     { z-index: 3; opacity: 1.0; 
@@ -16,19 +17,25 @@
                                                    border-radius: 10px; }
   #picturebar-container::-webkit-scrollbar-thumb { border-radius: 8px; background-color: rgba(0, 0, 0, .4); }
 
-%p#notice= notice
+.row
+  %p#notice= notice
 
-- content_for :title do
-  picsf / 
-  = params[:a_id]
+.row
+  #picturebar-container{style: 'height: 114px; overflow-y: scroll; white-space: nowrap; margin-bottom: 1em;'}
+    #picturebar{style: "position:relative;" }
 
-#caption
-  &nbsp;
+.row
+  .col-md-4
+    %button.btn.btn-primary{type: "button", style: "position:relative;"}
+      Report Problem
+    %button.btn.btn-primary{type: "button", style: "position:relative;"}
+      Details
+  .col-md-4
+  .col-md-4
+    %span.glyphicon.glyphicon-flag.pull-right{style: 'font-size: 140%;', 'aria-label' => 'not flagged'}
 
-#picturebar-container{style: 'height: 114px; overflow-y: scroll; white-space: nowrap; margin-bottom: 1em;'}
-  #picturebar{style: "position:relative;" }
-
-#picture-container{style: 'position:relative;'}
+.jumbotron
+  #picture-container{style: 'position:relative;'}
     
 :plain
   <script type="text/template" id="photos-template-text">
@@ -55,7 +62,7 @@
 
   <script type="text/template" id="photo-template-text">
     <img src=<%- photo.get('url') %> 
-         style="position:relative; z-index: 1; position: absolute; top: 0; left: 0; max-width:500px; max-height:500px;">
+         style="z-index: 1; position: absolute; top: 0; left: 0; max-width:500px; max-height:500px;">
     <% var notes = photo.get('notes'); %>
     <% for (var i = 0, len = notes.length; i < len; i++) { %>
         <div class="floating" style="z-index: 100; position: absolute; border: 2px solid blue;
@@ -72,19 +79,63 @@
   var totalPhotos = #{@total_photos};
   var photosPerRequest = #{Api::V1::PicsController::PAGESIZE};
   var lastRequestN = Math.floor(totalPhotos  / photosPerRequest);
-
+  var currentPhoto;
+  
   // functions to convert a zero-based index to a horizontal pixel offset and back.
   var i2x = function(i) { return endGap + (i * photoWidth) };
   var x2i = function(x) { return Math.floor(Math.max(0, x - endGap) / photoWidth) };
 
+  // function to align the flag color with its current state
+  var setFlagColor = function(newState) {
+    var obj = $('.glyphicon-flag');
+    $(obj).css({color:  newState ? 'purple' : 'gray' })
+          .attr('aria-label', newState ? 'flagged' : 'not flagged');
+  }
+  // function to align the flag state and set its color
+  var toggleFlagSetting = function()
+  {
+    var currentState = $.inArray(currentPhoto.attributes.flag, [1, true]) != -1;
+    setFlagColor(!currentState);
+    return !currentState;
+  }
+
+  var setFlagAtServer = function(newValue)
+  {
+    $.ajax({
+             url: "#{flag_api_v1_pics_url}",
+             data: {a_id: '#{params[:a_id]}', id: currentPhoto.attributes.id, flag: newValue ? 1 : 0},
+             type: 'POST',
+             error: function()
+             {
+               alert("The mugmover server failed to mark the request");
+             },
+             success: function(data)
+             {
+               currentPhoto.attributes.flag = data.photo.flag
+             },
+             complete: function()
+             {
+               var currentState = currentPhoto.attributes.flag; // restore the flag state
+               setFlagColor(currentState);
+             }
+
+           });   
+  }
+
+  $('.glyphicon-flag').on('click', function() {
+    var newState = toggleFlagSetting();
+    setFlagAtServer(newState);
+  });
   $('#picturebar').width(i2x(totalPhotos) + endGap); // that is the endGap on the RHS
   $('#picture-container').on('mouseover', '.floating', function() {
-    $(this).css('border-color', 'red');
-    $('#caption').html($(this).data('caption'));
+    $(this).css({'border-color': 'red', 'z-index': '101' });
+    $('.caption').remove();
+    $('<div class="caption" style="position: absolute; bottom: -2em; z-index: 104; background-color: beige;' + 
+         'padding-left: 0.5em; padding-right: 0.5em;  border-radius: 3px;"></div>').html($(this).data('caption')).appendTo(this);
   })
   $('#picture-container').on('mouseout', '.floating', function() {
-    $(this).css('border-color', 'blue');
-    $('#caption').html('&nbsp;');
+    $(this).css({'border-color': 'blue', 'z-index': '100' });
+    $('.caption').remove();
   });
 
   var scrollingDone = function() {
@@ -145,9 +196,9 @@
   var ShowPhoto = Backbone.View.extend({
     el: '#picture-container',
     render: function(options) {
-      var photo = new Photo({a_id: options.a_id, id: options.id});
+      currentPhoto = new Photo({a_id: options.a_id, id: options.id});
       var that = this;
-      photo.fetch({
+      currentPhoto.fetch({
         error: function(photos) {
           alert('An unexpected error occurred. Please try again.');
         },
@@ -155,6 +206,7 @@
           var template = _.template($('#photo-template-text').html());
           var html = template({photo: photo});
           that.$el.html(html);
+          setFlagColor(currentPhoto.attributes.flag);
           if ($('#picturebar').html() == "")
           {
             photoList.render({a_id: #{params[:a_id]}, n: 0});

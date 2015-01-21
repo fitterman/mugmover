@@ -27,6 +27,22 @@ module Api
         @photo = @hsa.photos.find(params[:id])
       end
 
+      # Set the flag in the record
+      def flag
+        @hsa = HostingServiceAccount.find(params[:a_id])
+        @photo = @hsa.photos.find(params[:id])
+        @photo.flag = params[:flag]
+        if @photo.save
+          result = {status: 'ok', photo: {flag: @photo.flag}}
+          render json: result 
+        else
+          result = {status: 'fail', errors: @photo.errors.full_messages}
+          render json: result, status: :bad_request
+        end
+
+        @photo.update_column(:flag, params[:flag])
+      end
+
     private
         # TODO Get back to using this...
         # Only allow the white list through.
