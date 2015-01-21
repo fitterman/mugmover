@@ -392,15 +392,24 @@
                         }
                         if ([operationName isEqualToString: @"RKCropOperation"])
                         {
-                            hasCrop = YES;
-                            _croppedWidth = [[parameters valueForKeyPath: @"inputKeys.inputWidth"] intValue];
-                            _croppedHeight = [[parameters valueForKeyPath: @"inputKeys.inputHeight"] intValue];
-                            Float64 x = (Float64) [[parameters valueForKeyPath: @"inputKeys.inputXOrigin"] intValue];
-                            Float64 y = (Float64) [[parameters valueForKeyPath: @"inputKeys.inputYOrigin"] intValue];
-                            _cropOrigin.x += x;
-                            _cropOrigin.y += y;
+                            NSInteger cw = [[parameters valueForKeyPath: @"inputKeys.inputWidth"] intValue];
+                            NSInteger ch = [[parameters valueForKeyPath: @"inputKeys.inputHeight"] intValue];
+                            
+                            // I had a single occurrence of a crop operation coming through with settings of
+                            // height=0 and width=0. Since apparently that might happen, this is a safety net
+                            // to make sure there is no recurrence.
+                            if ((cw > 0) && (ch > 0))
+                            {
+                                hasCrop = YES;
+                                _croppedWidth =  cw;
+                                _croppedHeight = ch;
+                                Float64 x = (Float64) [[parameters valueForKeyPath: @"inputKeys.inputXOrigin"] intValue];
+                                Float64 y = (Float64) [[parameters valueForKeyPath: @"inputKeys.inputYOrigin"] intValue];
+                                _cropOrigin.x += x;
+                                _cropOrigin.y += y;
 
-                            DDLogInfo(@"SET CROP TO   cropOrigin=%@ %3.1fWx%3.1fH", _cropOrigin, _croppedWidth, _croppedHeight);
+                                DDLogInfo(@"SET CROP TO   cropOrigin=%@ %3.1fWx%3.1fH", _cropOrigin, _croppedWidth, _croppedHeight);
+                            }
                         }
                         else if ([operationName isEqualToString: @"RKStraightenCropOperation"])
                         {
