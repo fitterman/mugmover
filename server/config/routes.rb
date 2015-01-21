@@ -8,12 +8,6 @@ Rails.application.routes.draw do
         post 'flag', on: :collection
         get 'details', on: :collection
       end
-
-#      resources :display_names
-#      resources :faces
-#      resources :hosting_service_accounts
-#      resources :people
-#      resources :service_collections
     end
   end
 

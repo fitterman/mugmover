@@ -6,6 +6,6 @@ notes = @photo.faces.map do |face|
             y: face.top_scaled(@photo.scale_factor),
             w: face.width_scaled(@photo.scale_factor),
             h: face.height_scaled(@photo.scale_factor), 
-            text: face.face_uuid }
+            text: face.named_face.present? ? face.named_face.public_name : face.face_uuid }
         end
 json.notes notes 

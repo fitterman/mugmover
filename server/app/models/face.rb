@@ -1,6 +1,7 @@
 class Face < ActiveRecord::Base
 
   belongs_to  :photo
+  belongs_to  :named_face
 
   validates   :photo_id,            presence: true
   validates   :face_uuid,           presence: true
@@ -15,8 +16,7 @@ class Face < ActiveRecord::Base
 
   ## TODO Add rejected and figure out how manually-added faces are treated (vs automatic and rejected).
   ## Also add the facekey which associates a face to a name. Add the facekey in the person table
-  ## (then add the name in the display_names table)
-
+  
   # returns a float value
   def left
     center_x - (width / 2)
@@ -74,24 +74,12 @@ class Face < ActiveRecord::Base
           new_named_face.face_key = face_params['faceKey']
           new_named_face.face_name_uuid = face_params['faceNameUuid']
 
+          # IMPORTANT: If the face exists already, we do not update the name from the upload information
+          new_named_face.public_name = face_params['name']
+          new_named_face.private_name = face_params['name']
           if !new_named_face.save
             face_errors[face_uuid] ||= []
             face_errors[face_uuid] += new_named_face.errors.full_messages
-          end
-        end
-        display_name = DisplayName.find_or_create_by(name: face_params['name'],
-                                                     named_face_id: named_face.id) do |new_face_name|
-          if !new_face_name.save
-            face_errors[face_uuid] ||= []
-            face_errors[face_uuid] += new_face_name.errors.full_messages
-          end
-        end
-        # We do not attempt the next step if we failed to create the named_face above
-        if (!named_face.new_record?) && named_face.primary_display_name_id.nil?
-          named_face.primary_display_name_id = display_name.id
-          if !named_face.save
-            face_errors[face_uuid] ||= []
-            face_errors[face_uuid] += named_face.errors.full_messages
           end
         end
       end

@@ -24,13 +24,12 @@
   #picturebar{style: "position:relative;" }
 
 .row{style: 'margin: 1em;'}
-  .col-md-4
+  .col-xs-8
     %button.btn.btn-primary{id: 'photoButton' }
       Photo
     %button.btn.btn-primary{id: 'detailsButton' }
       Details
-  .col-md-4
-  .col-md-4
+  .col-xs-4
     %span.glyphicon.glyphicon-flag.pull-right{style: 'font-size: 140%;', 'aria-label' => 'not flagged'}
 
 .jumbotron
@@ -135,7 +134,7 @@
   $('#picture-container').on('mouseover', '.floating', function() {
     $(this).css({'border-color': 'red', 'z-index': '101' });
     $('.caption').remove();
-    $('<div class="caption" style="position: absolute; bottom: -2em; z-index: 104; background-color: beige;' + 
+    $('<div class="caption" style="white-space: nowrap; position: absolute; bottom: -2em; z-index: 104; background-color: beige;' + 
          'padding-left: 0.5em; padding-right: 0.5em;  border-radius: 3px;"></div>').html($(this).data('caption')).appendTo(this);
   })
   $('#picture-container').on('mouseout', '.floating', function() {

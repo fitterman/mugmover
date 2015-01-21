@@ -11,14 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150121161343) do
-
-  create_table "display_names", force: true do |t|
-    t.integer  "named_face_id"
-    t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
+ActiveRecord::Schema.define(version: 20150121201827) do
 
   create_table "faces", force: true do |t|
     t.integer  "photo_id"
@@ -48,10 +41,11 @@ ActiveRecord::Schema.define(version: 20150121161343) do
     t.integer  "hosting_service_account_id"
     t.string   "database_uuid"
     t.string   "face_name_uuid"
-    t.integer  "primary_display_name_id"
     t.integer  "face_key"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "public_name"
+    t.string   "private_name"
   end
 
   create_table "photos", force: true do |t|
