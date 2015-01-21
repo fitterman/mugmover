@@ -17,10 +17,11 @@
 
 @interface MMPhoto : NSObject <OFFlickrAPIRequestDelegate>
 
+@property (strong, readonly)    NSMutableArray *            adjustmentsArray;
 @property (strong)              MMApiRequest *              apiRequest;
 @property (strong)              MMPoint *                   cropOrigin;
-@property (assign)              Float64                     croppedHeight;
-@property (assign)              Float64                     croppedWidth;
+@property (assign, readonly)    Float64                     croppedHeight;
+@property (assign, readonly)    Float64                     croppedWidth;
 @property (strong)              NSMutableDictionary *       exifDictionary;
 @property (assign, readonly)    BOOL                        didFetchOriginalByteSize;
 @property (assign, readonly)    BOOL                        didFetchExif;
@@ -30,15 +31,17 @@
 @property (strong)              NSMutableDictionary *       flickrDictionary;
 @property (strong)              OFFlickrAPIRequest *        flickrRequest;
 @property (assign)              NSInteger                   index;
-@property (assign)              Float64                     masterHeight;
+@property (assign, readonly)    Float64                     masterHeight;
 @property (strong)              NSString *                  masterUuid;
-@property (assign)              Float64                     masterWidth;
+@property (assign, readonly)    Float64                     masterWidth;
 @property (strong)              NSMutableArray *            oldNotesToDelete;
 @property (strong)              NSString *                  originalDate;
 @property (strong)              NSString *                  originalFilename;
 @property (strong)              NSString *                  originalUrl;
+@property (assign, readonly)    Float64                     processedHeight;
+@property (assign, readonly)    Float64                     processedWidth;
 @property (strong)              MMNetworkRequest *          request;
-@property (assign)              Float64                     rotationAngle;
+@property (assign, readonly)    Float64                     rotationAngle;
 @property (assign, readonly)    Float64                     straightenAngle;
 @property (weak)                MMFlickrPhotostream *       stream;
 @property (assign)              NSInteger                   version;

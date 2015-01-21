@@ -14,6 +14,9 @@
 
 @implementation MMFlickrPhotostream
 
+
+#define PHOTOS_PER_REQUEST (10)
+
 NSDictionary       *photoResponseDictionary;
 long                retryCount;
 
@@ -42,7 +45,7 @@ long                retryCount;
             return nil;
         }
         self.handle = flickrHandle;
-        _page = 1;
+        _currentPhotoIndex = (_page - 1) * PHOTOS_PER_REQUEST;
         self.initializationProgress = 0.0;
      
         [[NSAppleEventManager sharedAppleEventManager] setEventHandler: self
@@ -176,7 +179,7 @@ long                retryCount;
                                             {
                                                 flickrRequest.sessionInfo = @"getPhotos";
                                                 [flickrRequest callAPIMethodWithGET: @"flickr.people.getPhotos"
-                                                                          arguments: @{@"per_page": @"16",
+                                                                          arguments: @{@"per_page": [NSString stringWithFormat: @"%d", PHOTOS_PER_REQUEST],
                                                                                        @"page": [NSString stringWithFormat: @"%ld", _page],
                                                                                        @"user_id": userId
                                                                                        }];

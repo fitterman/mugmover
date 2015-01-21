@@ -42,7 +42,7 @@
             _cropOrigin = [[MMPoint alloc] initWithX: 0.0 y: 0.0];
             if (!_cropOrigin)
             {
-                _flickrDictionary = nil;
+                [self releaseStrongPointers];
                 return nil;
             }
             
@@ -61,7 +61,23 @@
             }
             [_flickrDictionary setValue: @"flickr" forKey: @"name"];
             _exifDictionary = [NSMutableDictionary new];
+            if (!_exifDictionary)
+            {
+                [self releaseStrongPointers];
+                return nil;
+            }
             _oldNotesToDelete = [[NSMutableArray alloc] init];
+            if (!_oldNotesToDelete)
+            {
+                [self releaseStrongPointers];
+                return nil;
+            }
+            _adjustmentsArray = [[NSMutableArray alloc] init];
+            if (!_adjustmentsArray)
+            {
+                [self releaseStrongPointers];
+                return nil;
+            }
             _flickrRequest = [_stream.requestPool getRequestFromPoolSettingDelegate: self];
 
             _didFetchExif = NO;
@@ -203,14 +219,15 @@
     // which is the best match.
 
     NSString *query = @"SELECT v.versionNumber version, v.uuid versionUuid, m.uuid, imagePath, v.filename filename, "
-                             "masterUuid, masterHeight, masterWidth, rotation, isOriginal "
+                             "masterUuid, masterHeight, masterWidth, processedHeight, processedWidth, "
+                              "rotation, isOriginal "
                        "FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid "
                        "WHERE m.isInTrash != 1 AND m.originalVersionName  = ? AND "
                              "v.processedWidth = ? AND v.processedHeight = ? "
                        "ORDER BY v.versionNumber DESC ";
             ;
     
-    // TODO: See notes here
+    // TODO  See notes here
     
     NSString *width = [_flickrDictionary objectForKey: @"width"];
     NSString *height = [_flickrDictionary objectForKey: @"height"];
@@ -309,10 +326,12 @@
 {
     if (resultSet)
     {
-        _masterUuid   = [resultSet stringForColumn: @"masterUuid"];
-        _masterHeight = (Float64)[resultSet intForColumn: @"masterHeight"];
-        _masterWidth  = (Float64)[resultSet intForColumn: @"masterWidth"];
-        _rotationAngle = (Float64)[resultSet intForColumn: @"rotation"];
+        _masterUuid      = [resultSet stringForColumn: @"masterUuid"];
+        _masterHeight    = (Float64)[resultSet intForColumn: @"masterHeight"];
+        _masterWidth     = (Float64)[resultSet intForColumn: @"masterWidth"];
+        _processedHeight = (Float64)[resultSet intForColumn: @"processedHeight"];
+        _processedWidth  = (Float64)[resultSet intForColumn: @"processedWidth"];
+        _rotationAngle   = (Float64)[resultSet intForColumn: @"rotation"];
     }
 }
 
@@ -320,8 +339,8 @@
 {
     /* Be sure these are initialized each time */
 
-    _croppedWidth = _masterWidth;
-    _croppedHeight = _masterHeight;
+    _croppedWidth = _processedWidth;
+    _croppedHeight = _processedHeight;
     if (!self.versionUuid)
     {
         return nil;
@@ -345,6 +364,8 @@
             return nil;
         }
 
+        BOOL hasCrop = NO;
+        BOOL hasStraighten = NO;
         while ([adjustments next])
         {
             NSString *operationName = [adjustments stringForColumn: @"name"];
@@ -361,6 +382,7 @@
                     NSDictionary *parameters = (NSDictionary *)[unarchiver decodeObjectForKey: @"root"];
                     if (parameters)
                     {
+                        [_adjustmentsArray addObject: parameters];
                         NSNumber *operationVersion = [parameters valueForKey: @"DGOperationVersionNumber"];
                         if ([operationVersion intValue] != 0)
                         {
@@ -370,27 +392,60 @@
                         }
                         if ([operationName isEqualToString: @"RKCropOperation"])
                         {
+                            hasCrop = YES;
                             _croppedWidth = [[parameters valueForKeyPath: @"inputKeys.inputWidth"] intValue];
                             _croppedHeight = [[parameters valueForKeyPath: @"inputKeys.inputHeight"] intValue];
                             Float64 x = (Float64) [[parameters valueForKeyPath: @"inputKeys.inputXOrigin"] intValue];
                             Float64 y = (Float64) [[parameters valueForKeyPath: @"inputKeys.inputYOrigin"] intValue];
                             _cropOrigin.x += x;
                             _cropOrigin.y += y;
-                            {
-                                DDLogInfo(@"SET CROP TO   cropOrigin=%@ %3.1fWx%3.1fH", _cropOrigin, _croppedWidth, _croppedHeight);
-                            }
+
+                            DDLogInfo(@"SET CROP TO   cropOrigin=%@ %3.1fWx%3.1fH", _cropOrigin, _croppedWidth, _croppedHeight);
                         }
                         else if ([operationName isEqualToString: @"RKStraightenCropOperation"])
                         {
+                            hasStraighten = YES;
                             NSString *angle = [parameters valueForKeyPath: @"inputKeys.inputRotation"];
                             _straightenAngle += [angle floatValue];
-                            {
-                                DDLogInfo(@"SET ROTATION  straigtenAngle=%3.1f", _straightenAngle);
-                            }
+
+                            DDLogInfo(@"SET ROTATION  straigtenAngle=%3.1f", _straightenAngle);
                         }
                     }
                 }
             }
+        }
+        
+        // In the following case, the StraghtenCrop operation will have to do a crop, and it is
+        // determined by measuring back from the center in each direction (by half).
+        if (hasStraighten && !hasCrop)
+        {
+            DDLogInfo(@">>> BEFORE  cropOrigin=%@", _cropOrigin);
+            Float64 absStraightenAngleInRadians = fabs(_straightenAngle) / DEGREES_PER_RADIAN;
+            Float64 adjFactor = sin(absStraightenAngleInRadians) / 2.0;
+
+         /*  What follows ia bit of a mystery to my challenged brain
+          
+            When there is only a straighten operation, it's up to us to figure out where the 
+            crop origin falls. For some reason, it's like we rotate the x one way and the y
+            the other direction. , and from there we know where the origin is. This probably 
+            relates to the fact that we're cropping to the minimum rectangle that fits. I suspect
+            there is a more efficient way to get this done (much more, in fact) but at this point
+            it is working and I'm going to bail.
+          */
+            
+            MMPoint *rotateCenterPoint = [[MMPoint alloc] initWithX: (_masterWidth / 2.0) y: (_masterHeight / 2.0)];
+            _cropOrigin.x =  (_masterWidth - _croppedWidth) / 2.0;
+            _cropOrigin.y = (_masterHeight - _croppedHeight) / 2.0;
+            [_cropOrigin rotate: fabs(_straightenAngle) relativeTo: rotateCenterPoint];
+            Float64 correctX = _cropOrigin.x;
+
+            _cropOrigin.x =  (_masterWidth - _croppedWidth) / 2.0;
+            _cropOrigin.y = (_masterHeight - _croppedHeight) / 2.0;
+            [_cropOrigin rotate: -fabs(_straightenAngle) relativeTo: rotateCenterPoint];
+            _cropOrigin.x = correctX;
+
+            DDLogInfo(@">>> AFTER   cropOrigin=%@", _cropOrigin);
+            
         }
         return  nil;
     }
@@ -634,6 +689,7 @@
                                        @"width":                [NSNumber numberWithLong: _masterWidth],
                                     },
                                  @"service":                     _flickrDictionary,
+                                 @"adjustments":                 _adjustmentsArray,
                                };
     
 
@@ -676,6 +732,7 @@
     {
         [_stream.requestPool returnRequestToPool: _flickrRequest];
     }
+    _adjustmentsArray = nil;
     _apiRequest = nil;
     _cropOrigin = nil;
     _exifDictionary = nil;
