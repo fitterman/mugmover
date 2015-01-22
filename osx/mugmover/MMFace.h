@@ -23,6 +23,7 @@
 @property (assign)              Float64     faceWidth;
 @property (assign, readonly)    BOOL        ignore;
 @property (strong, readonly)    NSString *  keyVersionUuid;
+@property (assign, readonly)    BOOL        manual;
 @property (strong)              NSString *  masterUuid;
 @property (strong, readonly)    NSString *  name;
 @property (weak)                MMPhoto *   photo;
@@ -60,7 +61,8 @@
 - (void) setName: (NSString *) name
     faceNameUuid: (NSString *) faceNameUuid
          faceKey: (NSInteger) faceKey
-  keyVersionUuid: (NSString *) keyVersionUuid;
+  keyVersionUuid: (NSString *) keyVersionUuid
+          manual: (BOOL) manual;
 
 - (BOOL) visibleWithCroppedWidth: (Float64) width
                    croppedHeight: (Float64) height;

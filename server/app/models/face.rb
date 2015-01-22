@@ -98,6 +98,7 @@ class Face < ActiveRecord::Base
       face.rejected = face_params['rejected']
       face.visible = face_params['visible']
       face.face_key = face_params['faceKey']
+      face.manual = [true, 1].include?(face_params['manual']) ? 1 : 0
       if !face.save
         face_errors[face_uuid] ||= []
         face_errors[face_uuid] += face.errors.full_messages

@@ -429,8 +429,6 @@
         if (hasStraighten && !hasCrop)
         {
             DDLogInfo(@">>> BEFORE  cropOrigin=%@", _cropOrigin);
-            Float64 absStraightenAngleInRadians = fabs(_straightenAngle) / DEGREES_PER_RADIAN;
-            Float64 adjFactor = sin(absStraightenAngleInRadians) / 2.0;
 
          /*  What follows ia bit of a mystery to my challenged brain
           
@@ -552,7 +550,8 @@
                     [face setName: [resultSet stringForColumn: @"name"]
                      faceNameUuid: [resultSet stringForColumn: @"faceNameUuid"]
                           faceKey: [resultSet intForColumn: @"faceKey"]
-                   keyVersionUuid: [resultSet stringForColumn: @"keyVersionUuid"]];
+                   keyVersionUuid: [resultSet stringForColumn: @"keyVersionUuid"]
+                           manual: [resultSet columnIsNull: @"faceFlags"]];
 
                     {
                         DDLogInfo(@"FACE DIMS     %3.1fWx%3.1fH", face.faceWidth, face.faceHeight);

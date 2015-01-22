@@ -63,10 +63,16 @@
          style="z-index: 1; position: absolute; top: 0; left: 0; max-width:500px; max-height:500px;">
     <% var notes = photo.get('notes'); %>
     <% for (var i = 0, len = notes.length; i < len; i++) { %>
-        <div class="floating" style="z-index: 100; position: absolute; border: 2px solid blue;
+        <div class="floating" style="z-index: 110; position: absolute; border: 2px solid blue;
             left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
             width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
-            data-caption="<%- notes[i].text %>"></div>
+            data-caption="<%- notes[i].text %>">
+          <div class="caption" style="opacity: 0.6; z-index: 108; white-space: nowrap; position: absolute; bottom: -2em; background-color: beige;
+                                      padding-left: 0.5em; padding-right: 0.5em;  border-radius: 3px; ">
+            <%- notes[i].known ? notes[i].text : 'unknown' %>
+          </div>
+        </div>
+
     <% }; %>
     </img>
   </script>
@@ -132,14 +138,10 @@
   });
   $('#picturebar').width(i2x(totalPhotos) + endGap); // that is the endGap on the RHS
   $('#picture-container').on('mouseover', '.floating', function() {
-    $(this).css({'border-color': 'red', 'z-index': '101' });
-    $('.caption').remove();
-    $('<div class="caption" style="white-space: nowrap; position: absolute; bottom: -2em; z-index: 104; background-color: beige;' + 
-         'padding-left: 0.5em; padding-right: 0.5em;  border-radius: 3px;"></div>').html($(this).data('caption')).appendTo(this);
+    $(this).css({'border-color': 'red', 'z-index': '112' }).children('.caption').css({opacity: 1.0, 'z-index': '112'});
   })
   $('#picture-container').on('mouseout', '.floating', function() {
-    $(this).css({'border-color': 'blue', 'z-index': '100' });
-    $('.caption').remove();
+    $(this).css({'border-color': 'blue', 'z-index': '110' }).children('.caption').css({opacity: 0.6, 'z-index': '108'});
   });
 
   var scrollingDone = function() {
@@ -237,7 +239,7 @@
         success: function(photo) {
           var template = _.template($('#photo-details-template-text').html());
           var html = template({photo: photo});
-          that.$el.html(html);
+          that.$el.html(html).css({width: '100%'});
           //          setFlagColor(currentPhoto.attributes.flag);
           if ($('#picturebar').html() == "")
           {

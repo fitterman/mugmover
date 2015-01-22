@@ -74,7 +74,7 @@
         _visible = YES;
 
         {
-            DDLogInfo(@"CREATED       centerPoint=%@ %3.1fWx%3.1fH", 
+            DDLogInfo(@"x       centerPoint=%@ %3.1fWx%3.1fH",
                     _centerPoint, _photo.masterWidth, _photo.masterHeight);
         }
     }
@@ -101,12 +101,14 @@
 - (void) setName: (NSString *) name
     faceNameUuid: (NSString *) faceNameUuid
          faceKey: (NSInteger) faceKey
-  keyVersionUuid: (NSString *) keyVersionUuid;
+  keyVersionUuid: (NSString *) keyVersionUuid
+          manual: (BOOL) manual
 {
     _name = name ? name : @"";
     _faceNameUuid = faceNameUuid ? faceNameUuid : @"";
     _faceKey = faceKey;
     _keyVersionUuid = keyVersionUuid ? keyVersionUuid : @"";
+    _manual = manual;
 }
 
 - (NSDictionary *) properties
@@ -123,6 +125,7 @@
              @"faceKey":           @(_faceKey),
              @"name":              _name,
              @"keyVersionUuid":    _keyVersionUuid,
+             @"manual":            @(_manual),
              };
 }
 
