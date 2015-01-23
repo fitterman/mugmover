@@ -7,8 +7,16 @@
                   background-size: contain; background-color: white;
                   border: 2px solid white; 
                 }
+  .handle       { position: absolute;
+                  background-color: #39f;
+                  width: 10px;
+                  height: 10px;
+                  border-radius: 5px;
+                  z-index: 125;
+                  cursor: 'pointer'
+                }
   .unselected   { opacity: 0.5; }
-  .selected     { background-color: red; border: 2px solid red; opacity: 1.0; }
+  .selected     { background-color: #33f; border: 2px solid red; opacity: 1.0; }
   .enlarged     { z-index: 3; opacity: 1.0; 
                   width: #{2 * thumbsizeWithBorder}px; height: #{2 * thumbsizeWithBorder}px; }
   #picturebar-container::-webkit-scrollbar { -webkit-appearance: none; height: 10px; width: 0px; }
@@ -25,12 +33,15 @@
 
 .row{style: 'margin: 1em;'}
   .col-xs-8
-    %button.btn.btn-primary{id: 'photoButton' }
-      Photo
-    %button.btn.btn-primary{id: 'detailsButton' }
-      Details
+    .btn-group{role: :group, 'aria-label' => 'display control'}
+      %button.btn.btn-default{id: :photoButton }
+        Photo
+      %button.btn.btn-default{id: :detailsButton }
+        Details
   .col-xs-4
-    %span.glyphicon.glyphicon-flag.pull-right{style: 'font-size: 140%;', 'aria-label' => 'not flagged'}
+    %span.glyphicon.glyphicon-flag.pull-right{style: 'font-size: 140%;', 
+                                              title: 'Mark this photo for later attention',
+                                              'aria-label' => 'not flagged'}
 
 .jumbotron
   #picture-container{style: 'position: relative; margin-left: auto; margin-right: auto;'}
@@ -59,26 +70,28 @@
   </script>
 
   <script type="text/template" id="photo-template-text">
-    <img src=<%- photo.get('url') %> 
-         style="z-index: 1; position: absolute; top: 0; left: 0; max-width:500px; max-height:500px;">
-    <% var notes = photo.get('notes'); %>
-    <% for (var i = 0, len = notes.length; i < len; i++) { %>
-        <div class="shadow-frame" style="z-index: 116; position: absolute;
-            left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
-            width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
-            data-caption="<%- notes[i].text %>">&nbsp;</div>
-        <div class="floating" style="z-index: 110; position: absolute; border: 2px solid blue;
-            left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
-            width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
-            data-caption="<%- notes[i].text %>">
-          <div class="caption" style="opacity: 0.0; z-index: 108; white-space: nowrap; position: absolute; height: 1.7em; bottom: -2em; background-color: beige;
-                                      padding-left: 0.5em; padding-right: 0.5em;  border-radius: 3px; ">
-            <%- notes[i].known ? notes[i].text : 'unknown' %>
+      <img id="photo-img" src=<%- photo.get('url') %> 
+           style="z-index: 1; position: absolute; top: 0; left: 0; background-color: tan; max-width:500px; max-height:500px;" />
+      <% var notes = photo.get('notes'); %>
+      <% for (var i = 0, len = notes.length; i < len; i++) { %>
+          <div class="shadow-frame" style="z-index: 116; position: absolute;
+              left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
+              width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
+              data-caption="<%- notes[i].text %>" data-phid="<%- notes[i].faceId %>"
+              data-manual="<%- notes[i].manual %>" data-known="<%- notes[i].known %>">
+            &nbsp;</div>
+          <div class="floating" style="z-index: 110; position: absolute; border: 2px solid #39f;
+              left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
+              width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
+              data-caption="<%- notes[i].text %>" data-phid="<%- notes[i].faceId %>"
+              data-manual="<%- notes[i].manual %>" data-known="<%- notes[i].known %>">
+            <div class="caption" style="opacity: 0.0; z-index: 108; white-space: nowrap; position: absolute; height: 1.8em; bottom: -1.95em; background-color: beige;
+                                        padding-left: 0.5em; padding-right: 0.5em;  margin-left: -2px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; ">
+              <%- notes[i].known ? notes[i].text : 'unknown' %>
+            </div>
           </div>
-        </div>
 
-    <% }; %>
-    </img>
+      <% }; %>
   </script>
 
   <script type="text/template" id="photo-details-template-text">
@@ -97,21 +110,130 @@
   var i2x = function(i) { return endGap + (i * photoWidth) };
   var x2i = function(x) { return Math.floor(Math.max(0, x - endGap) / photoWidth) };
 
-  // function to align the flag color with its current state
-  var setFlagColor = function(newState) {
+
+  // ***** This code supports interacting with a single face *****
+  
+  $('#picture-container').on('mouseover', '.shadow-frame', function() {
+    $(this).next('.floating').css({'z-index': '112' }).children('.caption').css({opacity: 1.0, 'z-index': '112'});
+  })
+  $('#picture-container').on('mouseout', '.shadow-frame', function() {
+    $(this).next('.floating').css({'z-index': '110' }).children('.caption').css({opacity: 0.0, 'z-index': '108'});
+  });
+  $('#picture-container').on('click', '.shadow-frame', function(ev) {
+    if (!$(this).data('manual'))
+    {
+      return false;
+    }
+
+    $('.floating').hide();
+    var face = this;
+    var faceOriginalPosition;
+    var faceOriginalW;
+    var faceOriginalH;
+    var relPos;
+
+    var setRelPos = function()
+    {
+      faceOriginalW = $(face).width();
+      faceOriginalH = $(face).height();
+      faceOriginalPosition = $(face).position();
+      relPos = {top: faceOriginalPosition.top + faceOriginalH - 5, 
+                left: faceOriginalPosition.left + faceOriginalW - 5};
+    }
+    setRelPos();
+
+    var setHandleContainmentRectangle = function(target)
+    {
+      var containerPosition = $('#picture-container').position();
+      var facePosition = $(face).position();
+      var faceCenterX = containerPosition.left + facePosition.left + (faceOriginalW / 2);
+      var faceCenterY = containerPosition.top + facePosition.top + (faceOriginalH / 2);
+      var distanceToEachEdge = [faceCenterX - containerPosition.left, 
+                                containerPosition.left + $('#picture-container > img').width() - faceCenterX];
+      var maxDeltaX = Math.min.apply(null, distanceToEachEdge);
+      distanceToEachEdge = [faceCenterY - containerPosition.top, 
+                            containerPosition.top + $('#picture-container > img').height() - faceCenterY];
+      var maxDeltaY = Math.min.apply(null, distanceToEachEdge);
+      var handleContainment = [faceCenterX, /* Do not adjust because handle is positioned from its left edge */ 
+                               faceCenterY,
+                               faceCenterX + maxDeltaX - 10,
+                               faceCenterY + maxDeltaY - 10
+                              ];
+      $(target).draggable('option', 'containment', handleContainment); 
+    }
+    var setFaceContainmentRectangle = function(target)
+    {
+      var imgPosition = $('#picture-container').position();
+      var faceContainmentRectangle = [imgPosition.left + 5, 
+                                      imgPosition.top + 5,
+                                      imgPosition.left + $('#picture-container > img').width() - ($(face).width() + 5),
+                                      imgPosition.top + $('#picture-container > img').height() - ($(face).width() + 5)];
+      $(target).draggable('option', 'containment', faceContainmentRectangle)
+    }
+
+    //    $('<div class="handle" style="top: -5px; left: -5px;     cursor: nwse-resize;">&nbsp</div>')
+    var handleEle = $('<div class="handle" style="position:absolute; cursor: nwse-resize;">&nbsp</div>');
+    handleEle.offset(relPos)
+             .appendTo('#picture-container')
+             .draggable({drag: function(ev, ui)
+                                {
+                                  var deltaX = ui.position.left - relPos.left;
+                                  var deltaY = ui.position.top - relPos.top;
+                                  var newPos = {top: faceOriginalPosition.top  - deltaY,
+                                                left: faceOriginalPosition.left - deltaX };
+                                  $(face).width(faceOriginalW + (2 * deltaX));
+                                  $(face).height(faceOriginalH + (2 * deltaY));
+                                  $(face).css(newPos);
+                                },
+                          stop: function(ev, ui)
+                                {
+                                  setRelPos();
+                                  setFaceContainmentRectangle(face);
+                                }
+              });
+
+    $(this).css({border: '2px solid #39f', cursor: 'move' });
+
+    $(this).draggable({ drag: function(ev, ui)
+                        {
+                          setRelPos();
+                          $('.handle').css(relPos);
+                        },
+                        stop: function(ev, ui)
+                        {
+                          setHandleContainmentRectangle(handleEle);
+                        }
+            });
+    setHandleContainmentRectangle(handleEle);
+    setFaceContainmentRectangle(face);
+  });
+
+  // ***** This code supports the toolbar controls *****
+  
+  $('button#photoButton').on('click', function() {  router.navigate('show/' + currentPhoto.id , {trigger: true}); });
+  $('button#detailsButton').on('click', function() {  router.navigate('details/' + currentPhoto.id , {trigger: true}); });
+  $('.glyphicon-flag').on('click', function() {
+    var newState = toggleFlagSetting();
+    setFlagAtServer(newState);
+  });
+  $('#picturebar').width(i2x(totalPhotos) + endGap); // f is the endGap on the RHS
+
+  // ***** Code for supporting flag display and updates *****
+  
+  var setFlagColor = function(newState) { // function to set the displayed flag to match a given state
     var obj = $('.glyphicon-flag');
     $(obj).css({color:  newState ? 'purple' : 'gray' })
           .attr('aria-label', newState ? 'flagged' : 'not flagged');
   }
-  // function to align the flag state and set its color
-  var toggleFlagSetting = function()
+  
+  var toggleFlagSetting = function() // function to flip the flag state and display the corresponding flag
   {
     var currentState = $.inArray(currentPhoto.attributes.flag, [1, true]) != -1;
     setFlagColor(!currentState);
     return !currentState;
   }
 
-  var setFlagAtServer = function(newValue)
+  var setFlagAtServer = function(newValue) // function to set the flag state and recover the display if it fails
   {
     $.ajax({
              url: "#{flag_api_v1_pics_url}",
@@ -134,20 +256,8 @@
            });   
   }
 
-  $('button#photoButton').on('click', function() {  router.navigate('show/' + currentPhoto.id , {trigger: true}); });
-  $('button#detailsButton').on('click', function() {  router.navigate('details/' + currentPhoto.id , {trigger: true}); });
-  $('.glyphicon-flag').on('click', function() {
-    var newState = toggleFlagSetting();
-    setFlagAtServer(newState);
-  });
-  $('#picturebar').width(i2x(totalPhotos) + endGap); // that is the endGap on the RHS
-  $('#picture-container').on('mouseover', '.shadow-frame', function() {
-    $(this).next('.floating').css({'border-color': 'red', 'z-index': '112' }).children('.caption').css({opacity: 1.0, 'z-index': '112'});
-  })
-  $('#picture-container').on('mouseout', '.shadow-frame', function() {
-    $(this).next('.floating').css({'border-color': 'blue', 'z-index': '110' }).children('.caption').css({opacity: 0.0, 'z-index': '108'});
-  });
-
+  // ***** This code deals with the scroller for navigating all the photos *****
+  
   var scrollingDone = function() {
     var x = $('#picturebar-container').scrollLeft();
     var i = x2i(x);
@@ -176,6 +286,8 @@
     $(this).removeClass('unselected').addClass('selected');
     router.navigate('show/' + $(this).attr('phid') , {trigger: true});
   });
+
+  // ***** This is all the Backbone stuff *****
 
   var Photos = Backbone.Collection.extend({
     url: "#{api_v1_pics_path(format: 'json')}"
