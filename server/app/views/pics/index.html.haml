@@ -74,13 +74,7 @@
            style="z-index: 1; position: absolute; top: 0; left: 0; background-color: tan; max-width:500px; max-height:500px;" />
       <% var notes = photo.get('notes'); %>
       <% for (var i = 0, len = notes.length; i < len; i++) { %>
-          <div class="shadow-frame" style="z-index: 116; position: absolute;
-              left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
-              width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
-              data-caption="<%- notes[i].text %>" data-phid="<%- notes[i].faceId %>"
-              data-manual="<%- notes[i].manual %>" data-known="<%- notes[i].known %>">
-            &nbsp;</div>
-          <div class="floating" style="z-index: 110; position: absolute; border: 2px solid #39f;
+          <div class="face-frame" style="z-index: 110; position: absolute; border: 2px solid #39f;
               left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
               width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
               data-caption="<%- notes[i].text %>" data-phid="<%- notes[i].faceId %>"
@@ -113,19 +107,24 @@
 
   // ***** This code supports interacting with a single face *****
   
-  $('#picture-container').on('mouseover', '.shadow-frame', function() {
-    $(this).next('.floating').css({'z-index': '112' }).children('.caption').css({opacity: 1.0, 'z-index': '112'});
+  $('#picture-container').on('mouseover', '.face-frame', function() {
+    $(this).css({'z-index': '112' }).children('.caption').css({opacity: 1.0, 'z-index': '112'});
   })
-  $('#picture-container').on('mouseout', '.shadow-frame', function() {
-    $(this).next('.floating').css({'z-index': '110' }).children('.caption').css({opacity: 0.0, 'z-index': '108'});
+  $('#picture-container').on('mouseout', '.face-frame', function() {
+    $(this).css({'z-index': '110' }).children('.caption').css({opacity: 0.0, 'z-index': '108'});
   });
-  $('#picture-container').on('click', '.shadow-frame', function(ev) {
+  $('#picture-container').on('click', 'img', function(ev) {
+    // For now, clicking the image reverses the image editor activation.
+    $('.face-frame.ui-draggable').draggable('destroy').css({cursor: 'auto'});
+    $('.handle').draggable('destroy').remove();
+    console.log("image was clicked")
+  });
+  $('#picture-container').on('click', '.face-frame', function(ev) {
     if (!$(this).data('manual'))
     {
       return false;
     }
 
-    $('.floating').hide();
     var face = this;
     var faceOriginalPosition;
     var faceOriginalW;
