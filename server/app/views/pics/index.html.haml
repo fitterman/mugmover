@@ -10,7 +10,7 @@
                   background-size: contain; background-color: white;
                   border: #{borderWidth}px solid white; 
                 }
-  .caption      { opacity: 0.0; z-index: 108; white-space: nowrap; position: absolute;
+  .caption      { z-index: 108; white-space: nowrap; position: absolute;
                   background-color: beige;
                   padding-left: 0.5em; padding-right: 0.5em;
                 }
@@ -117,16 +117,25 @@
 
   // ***** This code supports interacting with a single face *****
   
-  $('#picture-container').on('mouseover', '.face-frame', function() {
-    var faceCaption = $(this).data('known') ? $(this).data('caption') : 'unknown';
-    var facePos = $(this).css({'z-index': '112'}).position();
-    facePos.top += containerPosition.top + $(this).height() + 4;
+  var showCaption = function(whichFace)
+  {
+    var faceCaption = $(whichFace).data('known') ? $(whichFace).data('caption') : 'unknown';
+    var facePos = $(whichFace).css({'z-index': '112'}).position();
+    facePos.top += containerPosition.top + $(whichFace).height() + #{2 * borderWidth}; // TODO Why add borderWidth?
     facePos.left += containerPosition.left; 
-    $('#caption').html(faceCaption).css(facePos).show().css({opacity: 1.0, 'z-index': '112'});
+    $('#caption').html(faceCaption).css(facePos).css({'z-index': '112'}).show();
+  }
+  var hideCaption = function()
+  {
+    $('#caption').hide().css({'z-index': '108'});
+  }
+
+  $('#picture-container').on('mouseover', '.face-frame', function() {
+    showCaption(this);
   })
   $('#picture-container').on('mouseout', '.face-frame', function() {
     $(this).css({'z-index': '110' });
-    $('#caption').hide().css({opacity: 0.0, 'z-index': '108'});
+    hideCaption();
   });
   $('#picture-container').on('click', 'img', function(ev) {
     // For now, clicking the image reverses the image editor activation.
@@ -186,21 +195,26 @@
     var handleEle = $('<div class="handle" style="position:absolute; cursor: nwse-resize;">&nbsp</div>');
     handleEle.offset(relPos)
              .appendTo('#picture-container')
-             .draggable({drag: function(ev, ui)
-                                {
-                                  var deltaX = ui.position.left - relPos.left;
-                                  var deltaY = ui.position.top - relPos.top;
-                                  var newPos = {top: facePosition.top  - deltaY,
-                                                left: facePosition.left - deltaX };
-                                  $(face).width(faceOriginalW + (2 * deltaX));
-                                  $(face).height(faceOriginalH + (2 * deltaY));
-                                  $(face).css(newPos);
-                                },
+             .draggable({ drag: function(ev, ui)
+                          {
+                            var deltaX = ui.position.left - relPos.left;
+                            var deltaY = ui.position.top - relPos.top;
+                            var newPos = {top: facePosition.top  - deltaY,
+                                          left: facePosition.left - deltaX };
+                            $(face).width(faceOriginalW + (2 * deltaX));
+                            $(face).height(faceOriginalH + (2 * deltaY));
+                            $(face).css(newPos);
+                          },
+                          start: function()
+                          {
+                            hideCaption();
+                          },
                           stop: function(ev, ui)
-                                {
-                                  setRelPos();
-                                  setFaceContainmentRectangle(face);
-                                }
+                          {
+                            setRelPos();
+                            setFaceContainmentRectangle(face);
+                            showCaption(face);
+                          }
               });
 
     $(this).css({border: "#{borderWidth}px solid #39f", cursor: 'move' });
@@ -210,11 +224,16 @@
                           setRelPos();
                           $('.handle').css(relPos);
                         },
+                        start: function()
+                        {
+                          hideCaption();
+                        },
                         stop: function(ev, ui)
                         {
                           setRelPos();
                           $('.handle').css(relPos);
                           setHandleContainmentRectangle(handleEle);
+                          showCaption(face);
                         }
             });
     setHandleContainmentRectangle(handleEle);
