@@ -129,6 +129,19 @@
   {
     $('#caption').hide().css({'z-index': '108'});
   }
+  showDeleteControl = function(whichFace)
+  {
+    var deleteControlPos = {top: '-2em', left: 0};
+    $('<div id="deleteControl" style="position:relative;">' + 
+        '<div style="position: absolute; background-color: red; color: white; ' + 
+                    'height: 20px; top: -#{10 + borderWidth}px; left: -#{10 + borderWidth}px;">(X)</div>' + 
+      '</div>')
+      .appendTo(whichFace).show();
+  }
+  hideDeleteControl =  function()
+  {
+    $('#deleteControl').hide().remove();
+  }
 
   $('#picture-container').on('mouseover', '.face-frame', function() {
     showCaption(this);
@@ -138,17 +151,22 @@
     hideCaption();
   });
   $('#picture-container').on('click', 'img', function(ev) {
-    // For now, clicking the image reverses the image editor activation.
+    // Deactivate the editor
     $('.face-frame.ui-draggable').draggable('destroy').css({cursor: 'auto'});
     $('.handle').draggable('destroy').remove();
+    hideDeleteControl();
   });
-  $('#picture-container').on('click', '.face-frame', function(ev) {
+  $('#picture-container').on('click', '.face-frame', function() {
+    var face = this;
+
+    hideDeleteControl(); // In case it was on another face, move it here
+    showDeleteControl(face);
+
     if (!$(this).data('manual'))
     {
       return false;
     }
 
-    var face = this;
     var faceOriginalW;
     var faceOriginalH;
     var relPos;
@@ -290,7 +308,8 @@
 
   // ***** This code deals with the scroller for navigating all the photos *****
   
-  var scrollingDone = function() {
+  var scrollingDone = function()
+  {
     var x = $('#picturebar-container').scrollLeft();
     var i = x2i(x);
     photoList.render({a_id: '#{params[:a_id]}', n: Math.floor(i / photosPerRequest)}); 
