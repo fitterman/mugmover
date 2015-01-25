@@ -1,22 +1,29 @@
+
 - thumbsize = 50
-- thumbsizeWithBorder = thumbsize + 2
+- borderWidth = 2
+- handleWidth = 10
+- thumbsizeWithBorder = thumbsize + borderWidth
 
 :css
   .picturethumb { z-index: 2; display: inline-flex; 
                   width: #{thumbsizeWithBorder}px; height: #{thumbsizeWithBorder}px; 
                   background-size: contain; background-color: white;
-                  border: 2px solid white; 
+                  border: #{borderWidth}px solid white; 
+                }
+  .caption      { opacity: 0.0; z-index: 108; white-space: nowrap; position: absolute;
+                  background-color: beige;
+                  padding-left: 0.5em; padding-right: 0.5em;
                 }
   .handle       { position: absolute;
                   background-color: #39f;
-                  width: 10px;
-                  height: 10px;
-                  border-radius: 5px;
+                  width: #{handleWidth}px;
+                  height: #{handleWidth}px;
+                  border-radius: #{handleWidth/2}px;
                   z-index: 125;
                   cursor: 'pointer'
                 }
   .unselected   { opacity: 0.5; }
-  .selected     { background-color: #33f; border: 2px solid red; opacity: 1.0; }
+  .selected     { background-color: #33f; border: #{borderWidth}px solid red; opacity: 1.0; }
   .enlarged     { z-index: 3; opacity: 1.0; 
                   width: #{2 * thumbsizeWithBorder}px; height: #{2 * thumbsizeWithBorder}px; }
   #picturebar-container::-webkit-scrollbar { -webkit-appearance: none; height: 10px; width: 0px; }
@@ -43,9 +50,12 @@
                                               title: 'Mark this photo for later attention',
                                               'aria-label' => 'not flagged'}
 
-.jumbotron
-  #picture-container{style: 'position: relative; margin-left: auto; margin-right: auto;'}
-    
+.row
+  .col-xs-12
+    #picture-container{style: 'position: relative;'}
+
+#caption.caption{style: "display: none;"}
+  
 :plain
   <script type="text/template" id="photos-template-text">
     <% _.each(photos, function(photo) { %>
@@ -71,18 +81,14 @@
 
   <script type="text/template" id="photo-template-text">
       <img id="photo-img" src=<%- photo.get('url') %> 
-           style="z-index: 1; position: absolute; top: 0; left: 0; background-color: tan; max-width:500px; max-height:500px;" />
+           class="img-responsive" style="max-height: 500px; z-index: 1; position: absolute; top: 0; left: 0; background-color: tan;" />
       <% var notes = photo.get('notes'); %>
       <% for (var i = 0, len = notes.length; i < len; i++) { %>
-          <div class="face-frame" style="z-index: 110; position: absolute; border: 2px solid #39f;
+          <div class="face-frame" style="z-index: 110; position: absolute; border: #{borderWidth}px solid #39f;
               left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
               width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
               data-caption="<%- notes[i].text %>" data-phid="<%- notes[i].faceId %>"
               data-manual="<%- notes[i].manual %>" data-known="<%- notes[i].known %>">
-            <div class="caption" style="opacity: 0.0; z-index: 108; white-space: nowrap; position: absolute; height: 1.8em; bottom: -1.95em; background-color: beige;
-                                        padding-left: 0.5em; padding-right: 0.5em;  margin-left: -2px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; ">
-              <%- notes[i].known ? notes[i].text : 'unknown' %>
-            </div>
           </div>
 
       <% }; %>
@@ -94,7 +100,7 @@
 
 :javascript
   var endGap = 400; // pixels
-  var photoWidth = #{thumbsizeWithBorder}; // pixels (2px on each side)
+  var photoWidth = #{thumbsizeWithBorder}; // pixels (borderWidth px on each side)
   var totalPhotos = #{@total_photos};
   var photosPerRequest = #{Api::V1::PicsController::PAGESIZE};
   var lastRequestN = Math.floor(totalPhotos  / photosPerRequest);
@@ -104,20 +110,28 @@
   var i2x = function(i) { return endGap + (i * photoWidth) };
   var x2i = function(x) { return Math.floor(Math.max(0, x - endGap) / photoWidth) };
 
+  // The container position will only change on a resize (later on), so we only
+  // capture it once here.
+  var containerPosition = $('#picture-container').offset();
+  var facePosition;
 
   // ***** This code supports interacting with a single face *****
   
   $('#picture-container').on('mouseover', '.face-frame', function() {
-    $(this).css({'z-index': '112' }).children('.caption').css({opacity: 1.0, 'z-index': '112'});
+    var faceCaption = $(this).data('known') ? $(this).data('caption') : 'unknown';
+    var facePos = $(this).css({'z-index': '112'}).position();
+    facePos.top += containerPosition.top + $(this).height() + 4;
+    facePos.left += containerPosition.left; 
+    $('#caption').html(faceCaption).css(facePos).show().css({opacity: 1.0, 'z-index': '112'});
   })
   $('#picture-container').on('mouseout', '.face-frame', function() {
-    $(this).css({'z-index': '110' }).children('.caption').css({opacity: 0.0, 'z-index': '108'});
+    $(this).css({'z-index': '110' });
+    $('#caption').hide().css({opacity: 0.0, 'z-index': '108'});
   });
   $('#picture-container').on('click', 'img', function(ev) {
     // For now, clicking the image reverses the image editor activation.
     $('.face-frame.ui-draggable').draggable('destroy').css({cursor: 'auto'});
     $('.handle').draggable('destroy').remove();
-    console.log("image was clicked")
   });
   $('#picture-container').on('click', '.face-frame', function(ev) {
     if (!$(this).data('manual'))
@@ -126,25 +140,23 @@
     }
 
     var face = this;
-    var faceOriginalPosition;
     var faceOriginalW;
     var faceOriginalH;
     var relPos;
 
     var setRelPos = function()
     {
-      faceOriginalW = $(face).width();
-      faceOriginalH = $(face).height();
-      faceOriginalPosition = $(face).position();
-      relPos = {top: faceOriginalPosition.top + faceOriginalH - 5, 
-                left: faceOriginalPosition.left + faceOriginalW - 5};
+      faceOriginalW = Math.floor(0.5 + $(face).width());
+      faceOriginalH = Math.floor(0.5 + $(face).height());
+      facePosition = $(face).position();
+      relPos = {top: Math.floor(0.5 + facePosition.top) + faceOriginalH - #{handleWidth/2} + #{borderWidth}, 
+                left: Math.floor(0.5 + facePosition.left) + faceOriginalW - #{handleWidth/2} + #{borderWidth}};
     }
+
     setRelPos();
 
     var setHandleContainmentRectangle = function(target)
     {
-      var containerPosition = $('#picture-container').position();
-      var facePosition = $(face).position();
       var faceCenterX = containerPosition.left + facePosition.left + (faceOriginalW / 2);
       var faceCenterY = containerPosition.top + facePosition.top + (faceOriginalH / 2);
       var distanceToEachEdge = [faceCenterX - containerPosition.left, 
@@ -155,22 +167,22 @@
       var maxDeltaY = Math.min.apply(null, distanceToEachEdge);
       var handleContainment = [faceCenterX, /* Do not adjust because handle is positioned from its left edge */ 
                                faceCenterY,
-                               faceCenterX + maxDeltaX - 10,
-                               faceCenterY + maxDeltaY - 10
+                               faceCenterX + maxDeltaX - #{handleWidth},
+                               faceCenterY + maxDeltaY - #{handleWidth}
                               ];
       $(target).draggable('option', 'containment', handleContainment); 
     }
     var setFaceContainmentRectangle = function(target)
     {
-      var imgPosition = $('#picture-container').position();
-      var faceContainmentRectangle = [imgPosition.left + 5, 
-                                      imgPosition.top + 5,
-                                      imgPosition.left + $('#picture-container > img').width() - ($(face).width() + 5),
-                                      imgPosition.top + $('#picture-container > img').height() - ($(face).width() + 5)];
+      var faceContainmentRectangle = [containerPosition.left + #{handleWidth/2}, 
+                                      containerPosition.top + #{handleWidth/2},
+                                      containerPosition.left + $('#picture-container > img').width() -
+                                        ($(face).width() + #{handleWidth}),
+                                      containerPosition.top + $('#picture-container > img').height() -
+                                        ($(face).height() + #{handleWidth})];
       $(target).draggable('option', 'containment', faceContainmentRectangle)
     }
 
-    //    $('<div class="handle" style="top: -5px; left: -5px;     cursor: nwse-resize;">&nbsp</div>')
     var handleEle = $('<div class="handle" style="position:absolute; cursor: nwse-resize;">&nbsp</div>');
     handleEle.offset(relPos)
              .appendTo('#picture-container')
@@ -178,8 +190,8 @@
                                 {
                                   var deltaX = ui.position.left - relPos.left;
                                   var deltaY = ui.position.top - relPos.top;
-                                  var newPos = {top: faceOriginalPosition.top  - deltaY,
-                                                left: faceOriginalPosition.left - deltaX };
+                                  var newPos = {top: facePosition.top  - deltaY,
+                                                left: facePosition.left - deltaX };
                                   $(face).width(faceOriginalW + (2 * deltaX));
                                   $(face).height(faceOriginalH + (2 * deltaY));
                                   $(face).css(newPos);
@@ -191,7 +203,7 @@
                                 }
               });
 
-    $(this).css({border: '2px solid #39f', cursor: 'move' });
+    $(this).css({border: "#{borderWidth}px solid #39f", cursor: 'move' });
 
     $(this).draggable({ drag: function(ev, ui)
                         {
@@ -200,6 +212,8 @@
                         },
                         stop: function(ev, ui)
                         {
+                          setRelPos();
+                          $('.handle').css(relPos);
                           setHandleContainmentRectangle(handleEle);
                         }
             });
