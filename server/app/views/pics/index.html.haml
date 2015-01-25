@@ -333,15 +333,18 @@
 
   var PhotoList = Backbone.View.extend({
     el: '#picturebar',
-    render: function(options) {
+    render: function(options)
+    {
       var photos =  new Photos();
       var that = this;
       photos.fetch({
         data: { n: options.n, a_id: options.a_id },
-        error: function(photos) {
+        error: function(photos)
+        {
           alert('An unexpected error occurred. Please try again.');
         },
-        success: function(photos) {
+        success: function(photos)
+        {
           var template = _.template($('#photos-template-text').html());
           var html = template({ photos: photos.models });
           that.$el.append(html);
@@ -353,14 +356,17 @@
   });
   var ShowPhoto = Backbone.View.extend({
     el: '#picture-container',
-    render: function(options) {
+    render: function(options)
+    {
       currentPhoto = new Photo({a_id: options.a_id, id: options.id});
       var that = this;
       currentPhoto.fetch({
-        error: function(photos) {
+        error: function(photos)
+        {
           alert('An unexpected error occurred. Please try again.');
         },
-        success: function(photo) {
+        success: function(photo)
+        {
           var template = _.template($('#photo-template-text').html());
           var html = template({photo: photo});
           that.$el.html(html);
@@ -375,16 +381,20 @@
     }
   });
 
-  var ShowPhotoDetails = Backbone.View.extend({
+  var ShowPhotoDetails = Backbone.View.extend(
+  {
     el: '#picture-container',
-    render: function(options) {
+    render: function(options)
+    {
       var photoDetails = new PhotoDetails({a_id: options.a_id, id: options.id});
       var that = this;
       photoDetails.fetch({
-        error: function(photos) {
+        error: function(photos)
+        {
           alert('An unexpected error occurred. Please try again.');
         },
-        success: function(photo) {
+        success: function(photo)
+        {
           var template = _.template($('#photo-details-template-text').html());
           var html = template({photo: photo});
           that.$el.html(html).css({width: '100%'});
@@ -399,7 +409,8 @@
     }
   });
 
-  var Router = Backbone.Router.extend({
+  var Router = Backbone.Router.extend(
+  {
     routes: {
       '':         'home',
       'show/:id': 'show',
@@ -412,13 +423,16 @@
   var showPhoto = new ShowPhoto();
   var showPhotoDetails = new ShowPhotoDetails();
 
-  router.on('route:home', function() {
+  router.on('route:home', function()
+  {
     photoList.render({a_id: #{params[:a_id]}, n: 0});
   });
-  router.on('route:show', function(id) {
+  router.on('route:show', function(id)
+  {
     showPhoto.render({a_id: #{params[:a_id]}, id: id})
   });
-  router.on('route:details', function(id) {
+  router.on('route:details', function(id)
+  {
     showPhotoDetails.render({a_id: #{params[:a_id]}, id: id})
   });
   Backbone.history.start();
