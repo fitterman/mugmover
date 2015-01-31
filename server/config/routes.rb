@@ -8,6 +8,7 @@ Rails.application.routes.draw do
         post 'flag', on: :collection
         get 'details', on: :collection
       end
+      resources :faces, only: [:destroy]
     end
   end
 
