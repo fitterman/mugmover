@@ -55,7 +55,7 @@ class Face < ActiveRecord::Base
   # that may have been created, including _some_ of the faces, will be left 
   # hanging around.
 
-  def self.from_hash(hosting_service_account, database_uuid, photo, face_array)
+  def self.from_hash(hosting_service_account, database_uuid, photo, face_array, options={force: false})
     face_errors = {}
     faces = face_array.map do |face_params|
       ## face_key is filled in for every face, but face_name_uuid is only present if the 
@@ -85,7 +85,11 @@ class Face < ActiveRecord::Base
 
 ### TODO USE             "keyVersionUuid": "fI6GK4epTPKYbC76qREiVg",
 
-      face = Face.find_or_create_by(photo_id: photo.id, face_uuid: face_uuid)
+      if options[:force] # Then you MUST create a new object
+        face = Face.create(photo_id: photo.id, face_uuid: face_uuid)
+      else
+        face = Face.find_or_create_by(photo_id: photo.id, face_uuid: face_uuid)
+      end
       if named_face.present?
         face.named_face_id = named_face.id
       end
