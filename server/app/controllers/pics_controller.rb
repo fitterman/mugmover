@@ -1,4 +1,3 @@
-
 class PicsController < ApplicationController
   # NOTE: If PAGESIZE is so small that it can't span a page with images, the
   # continuation code may leave a gap if images in the middle of the horizontal

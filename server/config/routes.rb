@@ -11,6 +11,7 @@ Rails.application.routes.draw do
       resources :faces, only: [:create, :destroy] do
         post 'undestroy', on: :member
       end
+      resources :names, only: [:index]
     end
   end
 

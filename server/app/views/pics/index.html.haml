@@ -10,9 +10,8 @@
                   background-size: contain; background-color: white;
                   border: #{borderWidth}px solid white; 
                 }
-  .caption      { z-index: 108; white-space: nowrap; position: absolute;
-                  background-color: beige;
-                  padding-left: 0.5em; padding-right: 0.5em;
+  .caption      { 
+                  z-index: 108; white-space: nowrap; position: absolute;
                 }
   .handle       { position: absolute;
                   background-color: #39f;
@@ -26,6 +25,18 @@
   .selected     { background-color: #33f; border: #{borderWidth}px solid red; opacity: 1.0; }
   .enlarged     { z-index: 3; opacity: 1.0; 
                   width: #{2 * thumbsizeWithBorder}px; height: #{2 * thumbsizeWithBorder}px; }
+  #names-container
+                {
+                  background-color: #333; 
+                  color: white; 
+                  font-size: 1.0em; 
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                }
+  .namenote     {
+                  font-size: 70%;
+                }                  
   #picturebar-container::-webkit-scrollbar { -webkit-appearance: none; height: 10px; width: 0px; }
   #picturebar-container::-webkit-scrollbar-track { background-color: rgba(0, 0, 0, .2);  
                                                    border: 1px solid silver; 
@@ -58,10 +69,15 @@
                                               'aria-label' => 'not flagged'}
 
 .row
-  .col-xs-12
+  .col-xs-8
     #picture-container{style: 'position: relative;'}
+  .col-xs-4
+    .row{style: 'border: 1px solid black;'}
+      .col-xs-12#names-container
 
-#caption.caption{style: "display: none;"}
+#caption.caption.form-group{style: "display: none;"}
+  %input.form-control.input-sm{id: :inputsm, type: :text, placeholder: 'Unknown'}
+
   
 :plain
   <script type="text/template" id="photos-template-text">
@@ -84,6 +100,22 @@
     <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>
       <% photoList.render({a_id: '#{params[:a_id]}', n: currentN + 1}); %>
     <% }; %>
+  </script>
+
+  <script type="text/template" id="names-template-text">
+    <% _.each(names, function(name) { %>
+        <div class="row" data-nid="<%- name.get('id') %>">
+          <div class="col-xs-1" style="padding-left: 4px; min-width: 38px; ">
+            <img src="https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png" style="height:30px" />
+          </div>
+          <div class="col-xs-10" style="padding-left: 0;">
+            <%- name.get('public_name') %>
+            <div class="namenote">
+              <%- name.get('note') %>
+            </div>
+          </div>
+        </div>
+    <% }); %>
   </script>
 
   <script type="text/template" id="face-template-text" TODO="repeated">
@@ -155,12 +187,12 @@
   var showCaption = function(whichFace)
   {
     ignoreHideCaption(); // In case a timer is running, kill it
-    var faceCaption = $(whichFace).data('known') ? $(whichFace).data('caption') : 'unknown';
-    faceCaption += ' ' + $(whichFace).data('fid');
+    var faceCaption = $(whichFace).data('known') ? $(whichFace).data('caption') + $(whichFace).data('fid'): '';
     var facePos = $(whichFace).css({'z-index': '112'}).position();
     facePos.top += containerPosition.top + $(whichFace).height() + #{2 * borderWidth}; // TODO Why add borderWidth?
     facePos.left += containerPosition.left; 
-    $('#caption').html(faceCaption).css(facePos).css({'z-index': '112'}).show();
+    $('#caption > input').val(faceCaption);
+    $('#caption').css(facePos).css({'z-index': '112'}).show();
   }
 
   // Calling hideCaption() causes the caption to hide instantly.
@@ -553,6 +585,9 @@
   var PhotoDetails = Backbone.Model.extend({
     url: function() {return "#{details_api_v1_pics_path}" + '.json?a_id=' + this.attributes.a_id + '&id=' + this.attributes.id},
   });
+  var Names = Backbone.Collection.extend({
+    url: "#{api_v1_names_path(format: 'json')}"
+  });
 
   var PhotoList = Backbone.View.extend({
     el: '#picturebar',
@@ -564,7 +599,7 @@
         data: { n: options.n, a_id: options.a_id },
         error: function(photos)
         {
-          alert('An unexpected error occurred. Please try again.');
+          alert('An error occurred. Please try again.');
         },
         success: function(photos)
         {
@@ -573,10 +608,33 @@
           that.$el.append(html);
           return this;
         }
-      })
-      
+      })     
     }
   });
+
+  var NameList = Backbone.View.extend({
+    el: '#names-container',
+    render: function(options)
+    {
+      var names = new Names();
+      var that = this;
+      names.fetch({
+        data: {a_id: options.a_id},
+        error: function(names)
+        {
+          alert('An error occurred fetching the name list. Please reload the page.');
+        },
+        success: function(names)
+        {
+          var template = _.template($('#names-template-text').html());
+          var html = template({ names: names.models });
+          that.$el.append(html);
+          return this;
+        }
+      })
+    }
+  });
+
   var ShowPhoto = Backbone.View.extend({
     el: '#picture-container',
     render: function(options)
@@ -586,7 +644,7 @@
       currentPhoto.fetch({
         error: function(photo)
         {
-          alert('An unexpected error occurred. Please try again.');
+          alert('An error occurred. Please try again.');
         },
         success: function(photo)
         {
@@ -608,6 +666,10 @@
           {
             photoList.render({a_id: options.a_id, n: 0});
           }
+          if ($('#names-container').html() == "")
+          {
+            nameList.render({a_id: options.a_id});
+          }
           return this;
         }        
       })
@@ -624,7 +686,7 @@
       photoDetails.fetch({
         error: function(photo)
         {
-          alert('An unexpected error occurred. Please try again.');
+          alert('An error occurred. Please try again.');
         },
         success: function(photo)
         {
@@ -654,11 +716,13 @@
   var router = new Router();
   var photoList = new PhotoList();
   var showPhoto = new ShowPhoto();
+  var nameList = new NameList();
   var showPhotoDetails = new ShowPhotoDetails();
 
   router.on('route:home', function()
   {
     photoList.render({a_id: #{params[:a_id]}, n: 0});
+    nameList.render({a_id: #{params[:a_id]} });
   });
   router.on('route:show', function(id)
   {
