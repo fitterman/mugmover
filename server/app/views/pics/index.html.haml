@@ -87,16 +87,15 @@
   </script>
 
   <script type="text/template" id="face-template-text" TODO="repeated">
-      <% var notes = photo.get('notes'); %>
-      <% var i = notes.length  %>
+  <% window.console.log(note) %>
       <div class="face-frame" style="z-index: 110; position: absolute; border: #{borderWidth}px solid #39f;
           cursor: pointer;
-          left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
-          width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
-          data-caption="<%- notes[i].text %>" data-phid="<%- notes[i].faceId %>"
-          data-fid="<%- notes[i].faceId %>"
-          data-deleted="<%- notes[i].deleted %>"
-          data-manual="<%- notes[i].manual %>" data-known="<%- notes[i].known %>">
+          left: <%- note.x %>px; top: <%- note.y %>px;
+          width: <%- note.w %>px; height: <%- note.h %>px;" 
+          data-caption="<%- note.text %>"
+          data-fid="<%- note.faceId %>"
+          data-deleted="<%- note.deleted %>"
+          data-manual="<%- note.manual %>" data-known="<%- note.known %>">
       </div>
   </script>
 
@@ -164,16 +163,18 @@
     $('#caption').html(faceCaption).css(facePos).css({'z-index': '112'}).show();
   }
 
-  // Calling hideCaption() causes the caption to hide immediately
+  // Calling hideCaption() causes the caption to hide instantly.
   // Invoking delayedHideCaption causes the caption to linger, and the hide
   //   may subsequently be canceled by calling
   // ignoreHideCaption()
 
   var hideCaption = function()
   {
-    $('#caption').fadeOut().css({'z-index': '108'});
+    $('#caption').hide().css({'z-index': '108'});
   }
   var hideCaptionTimerId;
+
+  // This one will have a fade effect always
   var delayedHideCaption = function()
   {
     hideCaptionTimerId = window.setTimeout(hideCaption, 1200);
@@ -183,9 +184,19 @@
     window.clearTimeout(hideCaptionTimerId);
   }
 
-  $('#picture-container').on('mouseover', '.face-frame', function() {
-    showCaption(this);
-  })
+  var registerFaceMouseover = function()
+  {
+    $('#picture-container').on('mouseover', '.face-frame', function() {
+      showCaption(this);
+    })
+  }
+  var unregisterFaceMouseover = function()
+  {
+    $('#picture-container').off('mouseover', '.face-frame');
+  }
+  registerFaceMouseover();
+
+
   $('#picture-container').on('mouseout', '.face-frame', function() {
     $(this).css({'z-index': '110' });
     delayedHideCaption();
@@ -199,19 +210,18 @@
   $('#picture-container').on('click', 'img', function(ev) {
     // Deactivate the editor
     $('.face-frame.ui-draggable').draggable('destroy').css({cursor: 'auto'});
-    $('.handle').draggable('destroy').remove();
-    hideDeleteControl();
+    hideDeleteControlAndRemoveHandle();
     restoreFaceFramePointer();
 
     // Now create a default face at that point
-    createNewFaceAt(currentPhoto.id, ev.offsetX, ev.offsetY);
+    createNewFaceAt(currentPhoto.id, ev.offsetX / $(this).width(), ev.offsetY / $(this).height());
   });
 
 
   $('#picture-container').on('click', '.face-frame', function() {
     var face = this;
 
-    hideDeleteControl(); // In case it was on another face, move it here
+    hideDeleteControlAndRemoveHandle(); // In case it was on another face, move it here
     showDeleteControl(face);
     $('.face-frame').css({cursor: 'pointer'}); // Reset all of them to pointer
 
@@ -275,9 +285,11 @@
                             $(face).width(faceOriginalW + (2 * deltaX));
                             $(face).height(faceOriginalH + (2 * deltaY));
                             $(face).css(newPos);
+
                           },
                           start: function()
                           {
+                            unregisterFaceMouseover();
                             hideCaption();
                           },
                           stop: function(ev, ui)
@@ -285,6 +297,7 @@
                             setRelPos();
                             setFaceContainmentRectangle(face);
                             showCaption(face);
+                            registerFaceMouseover();
                           }
               });
 
@@ -297,6 +310,7 @@
                         },
                         start: function()
                         {
+                          unregisterFaceMouseover();
                           hideCaption();
                         },
                         stop: function(ev, ui)
@@ -305,6 +319,7 @@
                           $('.handle').css(relPos);
                           setHandleContainmentRectangle(handleEle);
                           showCaption(face);
+                          registerFaceMouseover();
                         }
             });
     setHandleContainmentRectangle(handleEle);
@@ -323,10 +338,12 @@
       '</div>')
       .appendTo(whichFace).show();
   }
-  hideDeleteControl =  function()
+  hideDeleteControlAndRemoveHandle =  function()
   {
     $('#deleteControl').hide().remove();
+    $('.handle').draggable('destroy').remove();
   }
+
   var deleteFaceAtServer = function(pictureId, faceId) // function to delete a face at the server
   {
     var matchFaceId = function(obj, index) {
@@ -356,7 +373,7 @@
                // Enable the button that accesses the list of faces the user may restore
                $('#restoreButton').prop('disabled', false);
                $('#caption').hide();
-               hideDeleteControl();
+               hideDeleteControlAndRemoveHandle();
              }
            });   
   }
@@ -381,15 +398,13 @@
               $('.face-frame[data-fid=' + faceId + ']').show();
               $('#restoreFaces > li[data-fid=' + faceId + ']').remove();
               $('#restoreButton').prop('disabled', ($('#restoreFaces > li').length == 0));
-               $('#caption').hide();
-             }
-           });   
+              $('#caption').hide();
+            }
+          });   
   }
 
   var createNewFaceAt = function(pictureId, offsetX, offsetY)
   {
-    // TODO Make it more in line with Backbone
-    var that = this;
     $.ajax({
             url: "#{api_v1_faces_path}",
             data: {photo_id: pictureId, 
@@ -400,19 +415,22 @@
             {
               alert("The mugmover server failed to create the face");
             },
-            success: function(data)
+            success: function(face)
             {
               // Tack on the last photo
-              currentPhoto.notes[currentPhoto.notes.length] =  data;
+              var notes = currentPhoto.get('notes');
+              notes[notes.length] =  face;
               var template = _.template($('#face-template-text').html());
-              var html = template({face: face});
-              that.append(html);
+              var html = template({note: face});
+              var jqHtml = $(html);
+              $('#picture-container').append(jqHtml);
+              jqHtml.trigger('click').trigger('mouseover');
             }
           });   
   }
   $('#restoreFaces').on('mouseover', 'li', function()
   {
-    $('.face-frame[data-fid=' + $(this).data('fid') + ']').show();
+    $('.face-frame[data-fid=' + $(this).data('fid') + ']').show();  
   });
   $('#restoreFaces').on('mouseout', 'li', function()
   {
@@ -566,7 +584,7 @@
       currentPhoto = new Photo({a_id: options.a_id, id: options.id});
       var that = this;
       currentPhoto.fetch({
-        error: function(photos)
+        error: function(photo)
         {
           alert('An unexpected error occurred. Please try again.');
         },
@@ -604,7 +622,7 @@
       var photoDetails = new PhotoDetails({a_id: options.a_id, id: options.id});
       var that = this;
       photoDetails.fetch({
-        error: function(photos)
+        error: function(photo)
         {
           alert('An unexpected error occurred. Please try again.');
         },
