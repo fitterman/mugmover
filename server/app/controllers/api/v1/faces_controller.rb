@@ -19,7 +19,8 @@ module Api
                       "center" => {"x" => params[:x].to_i, "y" => params[:y].to_i},
                       "faceKey" => '99999999'  # TODO Fix this as well
                    }]
-            @face, face_errors = Face.from_hash(hosting_service_account, 'ffffffff', photo, data) # TODO Fix the database_uuid
+            @faces, face_errors = Face.from_hash(hosting_service_account, 'ffffffff', photo, data, force: true) # TODO Fix the database_uuid
+            pp @faces
             if face_errors.present?
               errors += face_errors.values.first
             end
@@ -30,8 +31,9 @@ module Api
           errors += ['Account not found']
         end
         if errors.empty?
-          result = {status: 'ok', face: @face}
-          render json: result 
+          face = @faces.first
+          @photo = face.photo
+          render partial: 'api/v1/faces/show', locals: {face: face}
         else
           result = {status: 'fail', errors: errors}
           render json: result, status: :bad_request
