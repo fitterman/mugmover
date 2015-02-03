@@ -560,16 +560,11 @@
           // There may be "<li>" tags rendered (for a deleted face), which
           // need to be moved to the menu to allow for restoration of said faces
           var deletedFaces = $('#picture-container > li');
-          if (deletedFaces.length == 0)
-          {
-            $('#restoreGroup').hide();
-          }
-          else
+          if (deletedFaces.length > 0)
           {
             $('#restoreFaces').empty().append(deletedFaces);
-            $('#restoreGroup').show();
           }
-
+          $('#restoreButton').prop('disabled', deletedFaces.length == 0);
 
           setFlagColor(currentPhoto.attributes.flag);
           if ($('#picturebar').html() == "")
