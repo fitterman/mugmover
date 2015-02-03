@@ -8,7 +8,9 @@ Rails.application.routes.draw do
         post 'flag', on: :collection
         get 'details', on: :collection
       end
-      resources :faces, only: [:create, :destroy]
+      resources :faces, only: [:create, :destroy] do
+        post 'undestroy', on: :member
+      end
     end
   end
 

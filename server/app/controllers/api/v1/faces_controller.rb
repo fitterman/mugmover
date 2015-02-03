@@ -62,6 +62,32 @@ module Api
           render json: result, status: :bad_request
         end
       end
+
+      # restore a logically deleted face back to the active (undeleted) state
+      def undestroy
+        errors = []
+        if (@hsa = HostingServiceAccount.find(params[:a_id]))
+          if (@photo = @hsa.photos.find(params[:photo_id]))
+            if (@face = @photo.faces.only_deleted.find(params[:id]))
+              @face.restore # undo the logical deletion (TODO Why isn't this "recover"?)
+            else
+              errors += ['Deleted face not found']
+            end
+          else
+            errors += ['Photo not found']
+          end
+        else
+          errors += ['Account not found']
+        end
+        if errors.empty?
+          result = {status: 'ok', face: @face}
+          render json: result 
+        else
+          result = {status: 'fail', errors: errors}
+          render json: result, status: :bad_request
+        end
+      end
+
     end
   end
 end

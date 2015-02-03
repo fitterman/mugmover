@@ -46,7 +46,9 @@
       %button.btn.btn-default{id: :detailsButton }
         Details
     .btn-group{id: :restoreGroup}
-      %button.btn.btn-default.dropdown-toggle{'data-toggle' => :dropdown, 'aria-expanded' => 'false'}
+      %button.btn.btn-default.dropdown-toggle{id: :restoreButton, 
+                                              'data-toggle' => :dropdown, 
+                                              'aria-expanded' => 'false'}
         Restore Face
         %span.caret
       %ul.dropdown-menu{id: :restoreFaces, role: :menu}
@@ -96,6 +98,12 @@
           data-deleted="<%- notes[i].deleted %>"
           data-manual="<%- notes[i].manual %>" data-known="<%- notes[i].known %>">
       </div>
+  </script>
+
+  <script type="text/template" id="restore-menu-template-text" TODO="repeated">
+      <li data-fid="<%- note.faceId %>">
+        <a><%- note.known ? note.text : 'unknown' %></a>
+      </li>
   </script>
 
   <script type="text/template" id="photo-template-text">
@@ -300,8 +308,11 @@
   {
     $('#deleteControl').hide().remove();
   }
-  var deleteFaceAtServer = function(pictureId, faceId) // function to set the flag state and recover the display if it fails
+  var deleteFaceAtServer = function(pictureId, faceId) // function to delete a face at the server
   {
+    var matchFaceId = function(obj, index) {
+      return obj.faceId == faceId;
+    }
     $.ajax({
              url: "#{api_v1_face_path({id: ':id'})}"
                     .replace(':id', faceId),
@@ -313,7 +324,44 @@
              },
              success: function(data)
              {
-               $('.face-frame[data-fid=' + faceId + ']').remove();
+               var matchingNoteRecord = $.grep(currentPhoto.get('notes'), matchFaceId)[0];
+               matchingNoteRecord.deleted = true;
+               $('.face-frame[data-fid=' + faceId + ']').hide();
+               // ### TODO Use Backbone subview
+
+                // Put the deleted face onto the list of faces available for restoration
+               var template = _.template($('#restore-menu-template-text').html());
+               var html = template({note: matchingNoteRecord});
+               $('#restoreFaces').append(html);
+ 
+               // Enable the button that accesses the list of faces the user may restore
+               $('#restoreButton').prop('disabled', false);
+               $('#caption').hide();
+               hideDeleteControl();
+             }
+           });   
+  }
+  var undeleteFaceAtServer = function(pictureId, faceId) // function to restore a deleted face at the server
+  {
+     var matchFaceId = function(obj, index) {
+       return obj.faceId == faceId;
+     }
+    $.ajax({
+            url: "#{undestroy_api_v1_face_path({id: ':id'})}"
+                   .replace(':id', faceId),
+            data: {photo_id: pictureId, a_id: '#{params[:a_id]}'},
+            type: 'POST',
+            error: function()
+            {
+              alert("The mugmover server failed to restore the face");
+            },
+            success: function(data)
+            {
+              var matchingNoteRecord = $.grep(currentPhoto.get('notes'), matchFaceId)[0];
+              matchingNoteRecord.deleted = false;
+              $('.face-frame[data-fid=' + faceId + ']').show();
+              $('#restoreFaces > li[data-fid=' + faceId + ']').remove();
+              $('#restoreButton').prop('disabled', ($('#restoreFaces > li').length == 0));
                $('#caption').hide();
              }
            });   
@@ -349,7 +397,25 @@
   });
   $('#restoreFaces').on('mouseout', 'li', function()
   {
-    $('.face-frame[data-fid=' + $(this).data('fid') + ']').hide();
+    var faceId = $(this).data('fid');
+    // Show or hide the particular frame based on its deleted state
+    var matchFaceId = function(obj, index) {
+      return obj.faceId == faceId;
+    }
+    var matchingNoteRecord = $.grep(currentPhoto.get('notes'), matchFaceId)[0];
+    if (matchingNoteRecord.deleted)
+    {
+      $('.face-frame[data-fid=' + faceId + ']').hide();
+    }      
+    else
+    {
+      $('.face-frame[data-fid=' + faceId + ']').show();
+    }      
+  });
+  $('#restoreFaces').on('click', 'li > a', function()
+  {
+    var faceId = $(this).parent('li').data('fid');
+    undeleteFaceAtServer(currentPhoto.id, faceId);
   });
 
 
