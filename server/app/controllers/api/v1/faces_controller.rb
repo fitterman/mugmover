@@ -14,9 +14,10 @@ module Api
                       "keyVersionUuid" => nil,
                       "manual" => true,
                       "visible" => true,
-                      "width" => 64,
-                      "height" => 63,
-                      "center" => {"x" => params[:x].to_i, "y" => params[:y].to_i},
+                      "width" => (photo.faces.average(:width) || (photo.width / 10)).to_i,
+                      "height" => (photo.faces.average(:height) || (photo.width / 10)).to_i,
+                      "center" => {"x" => (params[:x].to_f * photo.width).to_i,
+                                   "y" => (params[:y].to_f * photo.height).to_i},
                       "faceKey" => '99999999'  # TODO Fix this as well
                    }]
             @faces, face_errors = Face.from_hash(hosting_service_account, 'ffffffff', photo, data, force: true) # TODO Fix the database_uuid
