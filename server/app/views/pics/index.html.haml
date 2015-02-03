@@ -155,6 +155,7 @@
   
   var showCaption = function(whichFace)
   {
+    ignoreHideCaption(); // In case a timer is running, kill it
     var faceCaption = $(whichFace).data('known') ? $(whichFace).data('caption') : 'unknown';
     faceCaption += ' ' + $(whichFace).data('fid');
     var facePos = $(whichFace).css({'z-index': '112'}).position();
@@ -162,17 +163,35 @@
     facePos.left += containerPosition.left; 
     $('#caption').html(faceCaption).css(facePos).css({'z-index': '112'}).show();
   }
+
+  // Calling hideCaption() causes the caption to hide immediately
+  // Invoking delayedHideCaption causes the caption to linger, and the hide
+  //   may subsequently be canceled by calling
+  // ignoreHideCaption()
+
   var hideCaption = function()
   {
-    $('#caption').hide().css({'z-index': '108'});
+    $('#caption').fadeOut().css({'z-index': '108'});
   }
+  var hideCaptionTimerId;
+  var delayedHideCaption = function()
+  {
+    hideCaptionTimerId = window.setTimeout(hideCaption, 1200);
+  }
+  var ignoreHideCaption = function()
+  {
+    window.clearTimeout(hideCaptionTimerId);
+  }
+
   $('#picture-container').on('mouseover', '.face-frame', function() {
     showCaption(this);
   })
   $('#picture-container').on('mouseout', '.face-frame', function() {
     $(this).css({'z-index': '110' });
-    hideCaption();
+    delayedHideCaption();
   });
+  $('#caption').on('mouseover', ignoreHideCaption);
+
   $('#picture-container').on('click', '#deleteControl', function() {
     deleteFaceAtServer(currentPhoto.id, $(this).parents('.face-frame').data('fid'));
   })
