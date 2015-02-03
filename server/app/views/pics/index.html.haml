@@ -45,6 +45,11 @@
         Photo
       %button.btn.btn-default{id: :detailsButton }
         Details
+    .btn-group{id: :restoreGroup}
+      %button.btn.btn-default.dropdown-toggle{'data-toggle' => :dropdown, 'aria-expanded' => 'false'}
+        Restore Face
+        %span.caret
+      %ul.dropdown-menu{id: :restoreFaces, role: :menu}
   .col-xs-4
     %span.glyphicon.glyphicon-flag.pull-right{style: 'font-size: 140%;', 
                                               title: 'Mark this photo for later attention',
@@ -79,20 +84,39 @@
     <% }; %>
   </script>
 
+  <script type="text/template" id="face-template-text" TODO="repeated">
+      <% var notes = photo.get('notes'); %>
+      <% var i = notes.length  %>
+      <div class="face-frame" style="z-index: 110; position: absolute; border: #{borderWidth}px solid #39f;
+          cursor: pointer;
+          left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
+          width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
+          data-caption="<%- notes[i].text %>" data-phid="<%- notes[i].faceId %>"
+          data-fid="<%- notes[i].faceId %>"
+          data-deleted="<%- notes[i].deleted %>"
+          data-manual="<%- notes[i].manual %>" data-known="<%- notes[i].known %>">
+      </div>
+  </script>
+
   <script type="text/template" id="photo-template-text">
       <img id="photo-img" src=<%- photo.get('url') %> 
-           class="img-responsive" style="max-height: 500px; z-index: 1; position: absolute; top: 0; left: 0; background-color: tan;" />
+           class="img-responsive" style="max-height: 500px; z-index: 1; position: absolute; top: 0; left: 0;" />
       <% var notes = photo.get('notes'); %>
       <% for (var i = 0, len = notes.length; i < len; i++) { %>
+          <% if (notes[i].deleted) { %>
+              <li data-fid="<%- notes[i].faceId %>">
+                <a><%- notes[i].known ? notes[i].text : 'unknown' %></a>
+              </li>
+          <% }; %>
           <div class="face-frame" style="z-index: 110; position: absolute; border: #{borderWidth}px solid #39f;
               cursor: pointer;
+              display: <%- notes[i].deleted ? 'none' : 'block' %>;
               left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
               width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
-              data-caption="<%- notes[i].text %>" data-phid="<%- notes[i].faceId %>"
+              data-caption="<%- notes[i].text %>"
               data-fid="<%- notes[i].faceId %>"
               data-manual="<%- notes[i].manual %>" data-known="<%- notes[i].known %>">
           </div>
-
       <% }; %>
   </script>
 
@@ -117,11 +141,14 @@
   var containerPosition = $('#picture-container').offset();
   var facePosition;
 
+  var trackingMovement = false;
+
   // ***** This code supports interacting with a single face *****
   
   var showCaption = function(whichFace)
   {
     var faceCaption = $(whichFace).data('known') ? $(whichFace).data('caption') : 'unknown';
+    faceCaption += ' ' + $(whichFace).data('fid');
     var facePos = $(whichFace).css({'z-index': '112'}).position();
     facePos.top += containerPosition.top + $(whichFace).height() + #{2 * borderWidth}; // TODO Why add borderWidth?
     facePos.left += containerPosition.left; 
@@ -148,13 +175,18 @@
     $('.handle').draggable('destroy').remove();
     hideDeleteControl();
     restoreFaceFramePointer();
+
+    // Now create a default face at that point
+    createNewFaceAt(currentPhoto.id, ev.offsetX, ev.offsetY);
   });
+
 
   $('#picture-container').on('click', '.face-frame', function() {
     var face = this;
 
     hideDeleteControl(); // In case it was on another face, move it here
     showDeleteControl(face);
+    $('.face-frame').css({cursor: 'pointer'}); // Reset all of them to pointer
 
     if (!$(this).data('manual'))
     {
@@ -252,7 +284,7 @@
     setFaceContainmentRectangle(face);
   });
 
-  // ***** Deletion of face *****
+  // ***** Management of face objects *****
 
   showDeleteControl = function(whichFace)
   {
@@ -281,10 +313,45 @@
              },
              success: function(data)
              {
-               currentPhoto.attributes.flag = data.photo.flag
+               $('.face-frame[data-fid=' + faceId + ']').remove();
+               $('#caption').hide();
              }
            });   
   }
+
+  var createNewFaceAt = function(pictureId, offsetX, offsetY)
+  {
+    // TODO Make it more in line with Backbone
+    var that = this;
+    $.ajax({
+            url: "#{api_v1_faces_path}",
+            data: {photo_id: pictureId, 
+                   a_id: '#{params[:a_id]}',
+                   x: offsetX, y: offsetY},
+            type: 'POST',
+            error: function()
+            {
+              alert("The mugmover server failed to create the face");
+            },
+            success: function(data)
+            {
+              // Tack on the last photo
+              currentPhoto.notes[currentPhoto.notes.length] =  data;
+              var template = _.template($('#face-template-text').html());
+              var html = template({face: face});
+              that.append(html);
+            }
+          });   
+  }
+  $('#restoreFaces').on('mouseover', 'li', function()
+  {
+    $('.face-frame[data-fid=' + $(this).data('fid') + ']').show();
+  });
+  $('#restoreFaces').on('mouseout', 'li', function()
+  {
+    $('.face-frame[data-fid=' + $(this).data('fid') + ']').hide();
+  });
+
 
   // ***** This code supports the toolbar controls *****
   
@@ -423,6 +490,21 @@
           var template = _.template($('#photo-template-text').html());
           var html = template({photo: photo});
           that.$el.html(html);
+
+          // There may be "<li>" tags rendered (for a deleted face), which
+          // need to be moved to the menu to allow for restoration of said faces
+          var deletedFaces = $('#picture-container > li');
+          if (deletedFaces.length == 0)
+          {
+            $('#restoreGroup').hide();
+          }
+          else
+          {
+            $('#restoreFaces').empty().append(deletedFaces);
+            $('#restoreGroup').show();
+          }
+
+
           setFlagColor(currentPhoto.attributes.flag);
           if ($('#picturebar').html() == "")
           {

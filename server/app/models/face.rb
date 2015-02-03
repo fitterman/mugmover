@@ -1,5 +1,7 @@
 class Face < ActiveRecord::Base
 
+  acts_as_paranoid                  # logical deletion support
+
   belongs_to  :photo
   belongs_to  :named_face
 
@@ -10,9 +12,6 @@ class Face < ActiveRecord::Base
   validates   :width,               numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates   :height,              numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates   :face_key,            presence: true
-
-
-  default_scope -> { where(rejected: false, ignore: false) } 
 
   ## TODO Add rejected and figure out how manually-added faces are treated (vs automatic and rejected).
   ## Also add the facekey which associates a face to a name. Add the facekey in the person table
@@ -56,9 +55,9 @@ class Face < ActiveRecord::Base
   # that may have been created, including _some_ of the faces, will be left 
   # hanging around.
 
-  def self.from_hash(hosting_service_account, database_uuid, photo, face_hash)
+  def self.from_hash(hosting_service_account, database_uuid, photo, face_array)
     face_errors = {}
-    faces = face_hash.map do |face_params|
+    faces = face_array.map do |face_params|
       ## face_key is filled in for every face, but face_name_uuid is only present if the 
       ## face has a FaceName associaed with it
       face_uuid = face_params['uuid']
@@ -94,11 +93,13 @@ class Face < ActiveRecord::Base
       face.center_y = face_params['center']['y']
       face.width = face_params['width']
       face.height = face_params['height']
-      face.ignore = face_params['ignore']
-      face.rejected = face_params['rejected']
       face.visible = face_params['visible']
       face.face_key = face_params['faceKey']
-      face.manual = [true, 1].include?(face_params['manual']) ? 1 : 0
+      face.manual = face_params['manual']
+      if face_params['ignore'] || face_params['rejected']
+        # If it's marked as ignore or rejected, treat it as logically deleted
+        face.deleted_at = Time.now
+      end
       if !face.save
         face_errors[face_uuid] ||= []
         face_errors[face_uuid] += face.errors.full_messages

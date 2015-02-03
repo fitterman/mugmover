@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150121223352) do
+ActiveRecord::Schema.define(version: 20150202203521) do
 
   create_table "faces", force: true do |t|
     t.integer  "photo_id"
@@ -21,14 +21,15 @@ ActiveRecord::Schema.define(version: 20150121223352) do
     t.float    "width"
     t.float    "height"
     t.integer  "named_face_id"
-    t.boolean  "ignore"
-    t.boolean  "rejected"
     t.boolean  "visible"
     t.integer  "face_key"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "manual"
+    t.datetime "deleted_at"
   end
+
+  add_index "faces", ["deleted_at"], name: "index_faces_on_deleted_at"
 
   create_table "hosting_service_accounts", force: true do |t|
     t.string   "name"
