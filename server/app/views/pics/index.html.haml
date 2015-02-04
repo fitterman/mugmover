@@ -10,8 +10,13 @@
                   background-size: contain; background-color: white;
                   border: #{borderWidth}px solid white; 
                 }
-  .caption      { 
+  #caption      { 
                   z-index: 108; white-space: nowrap; position: absolute;
+                }
+  .ellipsis     {
+                  overflow-x: hidden; 
+                  text-overflow: ellipsis; 
+                  white-space: nowrap;
                 }
   .handle       { position: absolute;
                   background-color: #39f;
@@ -30,9 +35,17 @@
                   background-color: #333; 
                   color: white; 
                   font-size: 1.0em; 
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  white-space: nowrap;
+                  overflow-x: hidden;
+                  padding-left: 15px;
+                  padding-right: 15px;
+                }
+  #names-container .row
+                {
+                  cursor: pointer;
+                }
+  #names-container .row:hover
+                {
+                  background-color: gray  ;
                 }
   .namenote     {
                   font-size: 70%;
@@ -71,13 +84,11 @@
 .row
   .col-xs-8
     #picture-container{style: 'position: relative;'}
-  .col-xs-4
-    .row{style: 'border: 1px solid black;'}
-      .col-xs-12#names-container
+    
 
-#caption.caption.form-group{style: "display: none;"}
-  %input.form-control.input-sm{id: :inputsm, type: :text, placeholder: 'Unknown'}
-
+#caption.form-group{style: "display: none;"}
+  %input.form-control.input-sm{type: :text, placeholder: 'Unknown'}
+  #names-container{style: "width: 20em; max-height: 15em;"}
   
 :plain
   <script type="text/template" id="photos-template-text">
@@ -104,11 +115,11 @@
 
   <script type="text/template" id="names-template-text">
     <% _.each(names, function(name) { %>
-        <div class="row" data-nid="<%- name.get('id') %>">
+        <div class="row" data-nid="<%- name.get('id') %>" data-public-name="<%- name.get('public_name') %>">
           <div class="col-xs-1" style="padding-left: 4px; min-width: 38px; ">
             <img src="https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png" style="height:30px" />
           </div>
-          <div class="col-xs-10" style="padding-left: 0;">
+          <div class="col-xs-10 ellipsis" style="padding: 0;">
             <%- name.get('public_name') %>
             <div class="namenote">
               <%- name.get('note') %>
@@ -404,7 +415,7 @@
  
                // Enable the button that accesses the list of faces the user may restore
                $('#restoreButton').prop('disabled', false);
-               $('#caption').hide();
+               hideCaption();
                hideDeleteControlAndRemoveHandle();
              }
            });   
@@ -430,7 +441,7 @@
               $('.face-frame[data-fid=' + faceId + ']').show();
               $('#restoreFaces > li[data-fid=' + faceId + ']').remove();
               $('#restoreButton').prop('disabled', ($('#restoreFaces > li').length == 0));
-              $('#caption').hide();
+              hideCaption();
             }
           });   
   }
@@ -487,6 +498,25 @@
     undeleteFaceAtServer(currentPhoto.id, faceId);
   });
 
+  // ***** Code supporting the caption entry *****
+  $('#caption').on('input', 'input', function() {
+    var substring = $(this).val().toLowerCase();
+    $('#names-container .row').each(function() {
+      window.console.log($(this).data('public-name'),$(this).data('public-name').indexOf(substring));
+      if ($(this).data('public-name').toLowerCase().indexOf(substring) > -1)
+      {
+        $(this).show();
+      }
+      else
+      {
+        $(this).hide();
+      }
+    });
+  })
+  $('#names-container').on('click', '.row', function() {
+    window.console.log($(this).data('nid'));
+    $('#caption input').val($(this).data('public-name'));
+  })
 
   // ***** This code supports the toolbar controls *****
   
