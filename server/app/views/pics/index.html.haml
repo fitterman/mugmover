@@ -87,8 +87,8 @@
     
 
 #name.form-group{style: "display: none;"}
-  %input.form-control.input-sm{type: :text, placeholder: 'Unknown'}
-  #names-container{style: "width: 20em; max-height: 15em;"}
+  %input#name-entry-box.form-control.input-sm{type: :text, placeholder: 'Unknown'}
+  #names-container{style: "width: 20em; max-height: 15em; display: none;"}
   
 :plain
   <script type="text/template" id="photos-template-text">
@@ -202,7 +202,7 @@
     var facePos = $(whichFace).css({'z-index': '112'}).position();
     facePos.top += containerPosition.top + $(whichFace).height() + #{2 * borderWidth}; // TODO Why add borderWidth?
     facePos.left += containerPosition.left; 
-    $('#name > input').val(faceName);
+    $('#name-entry-box').val(faceName);
     $('#name').css(facePos).css({'z-index': '112'}).show();
   }
 
@@ -499,7 +499,14 @@
   });
 
   // ***** Code supporting the name entry *****
-  $('#name').on('input', 'input', function() {
+  $('#name').on('focus', 'input#name-entry-box', function() {
+    $('#names-container .row').show(); // Make all the rows visible
+    $('#names-container').show();
+  });
+  $('#name').on('blur', 'input#name-entry-box', function() {
+    $('#names-container').hide();
+  });
+  $('#name').on('input', 'input#name-entry-box', function() {
     var substring = $(this).val().toLowerCase();
     $('#names-container .row').each(function() {
       window.console.log($(this).data('public-name'),$(this).data('public-name').indexOf(substring));
@@ -512,11 +519,11 @@
         $(this).hide();
       }
     });
-  })
+  });
   $('#names-container').on('click', '.row', function() {
     window.console.log($(this).data('nid'));
-    $('#name input').val($(this).data('public-name'));
-  })
+    $('input#name-entry-box').val($(this).data('public-name'));
+  });
 
   // ***** This code supports the toolbar controls *****
   
