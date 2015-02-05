@@ -46,11 +46,11 @@
                 }
   #names-container .row.withfocus
                 {
-                  background-color: orange;
+                  color:  #39f;
                 }
   #names-container .row:hover
                 {
-                  background-color: gray;
+                  color:  #39f;
                 }
   .namenote     {
                   font-size: 70%;
@@ -278,6 +278,9 @@
     {
       return false;
     }
+
+    // ***** Everything from this point down has to do with resizing/moving faces ***** //
+    // ***** Only faces that were manually created are allowed to perform these functions ***** //
 
     var faceOriginalW;
     var faceOriginalH;
