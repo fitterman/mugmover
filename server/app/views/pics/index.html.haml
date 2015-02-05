@@ -32,6 +32,10 @@
   .selected     { background-color: #33f; border: #{borderWidth}px solid red; opacity: 1.0; }
   .enlarged     { z-index: 3; opacity: 1.0; 
                   width: #{2 * thumbsizeWithBorder}px; height: #{2 * thumbsizeWithBorder}px; }
+  #name-display-box:hover
+                {
+                  cursor: pointer;
+                }
   #names-container
                 {
                   background-color: #333; 
@@ -97,10 +101,10 @@
   %form#name-display-form
     %input#name-display-box.form-control.input-sm{type: :text, placeholder: 'Unknown', readonly: 'readonly', value: 'John Doe'}
   %form#name-entry-form{style: "width: 20em;"}
-  .input-group
-    %input#name-entry-box.form-control.input-sm{type: :text, placeholder: 'Unknown'}
-    %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{'aria-label' => 'clear input', style: 'top: 0;'}
-  #names-container{style: "width: 20em; max-height: 15em; display: none;"}
+    .input-group
+      %input#name-entry-box.form-control.input-sm{type: :text, placeholder: 'Unknown'}
+      %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{'aria-label' => 'clear input', style: 'top: 0;'}
+    #names-container{style: "width: 20em; max-height: 15em; display: none;"}
   
 :plain
   <script type="text/template" id="photos-template-text">
@@ -263,7 +267,8 @@
   var registerFaceMouseover = function()
   {
     $('#picture-container').on('mouseover', '.face-frame', function() {
-      showName(this);
+      // ## TODO The state of this needs to be the same as what it was
+      showName(this, false);
     })
   }
   var unregisterFaceMouseover = function()
@@ -541,6 +546,12 @@
 
   // ***** Code supporting the name entry *****
 
+  $('input#name-display-box').on('click', function (){
+    // Switch from the display mode to the entry mode
+    $('#name-display-form').hide();
+    $('#name-entry-form').show();
+    $('#name-entry-box').focus()
+  });
   $('input#name-entry-box').on('focus', function() {
     $('#names-container .row').hide(); // Hide all the rows
     $('#names-container .row.hasfocus').removeClass('hasfocus');
@@ -578,14 +589,23 @@
     if (ev.keyCode == 13) /* return/enter */
     {
       var withFocus = $('#names-container .row.withfocus').first();
-      if (withFocus)
+      if (withFocus.length == 1)
       {
         $('input#name-entry-box').val($(withFocus).data('public-name'));
+        $(withFocus).removeClass('withfocus');
         $('#names-container .row').hide();
       }
+      else
+      {
+        // Nothing is highlighted in the list, so save the result and lose the focus
+        // First, copy the value to the display box and give it focus
+        $('input#name-display-box').val($('input#name-entry-box').val());
+        $('#name-entry-form').hide();
+        $('#name-display-form').show();
+        // setFaceNameAtServer('faceId', {faceNameId: faceNameId}); // Use an existing name
+        // setFaceNameAtServer('faceId', {name: 'John Doe'}); // Create a new face name
 
-      // setFaceNameAtServer('faceId', {faceNameId: faceNameId}); // Use an existing name
-      // setFaceNameAtServer('faceId', {name: 'John Doe'}); // Create a new face name
+      }
       return false;
     }
     if ((ev.keyCode == 38) /* up-arrow */ || (ev.keyCode == 40)) /* down-arrow */
@@ -597,7 +617,7 @@
         {
           withFocus = $(withFocus).removeClass('withfocus').nextAll(':visible').first().addClass('withfocus');
         }
-        else
+        else // up
         {
           withFocus = $(withFocus).removeClass('withfocus').prevAll(':visible').first().addClass('withfocus');
         }
@@ -608,12 +628,13 @@
         {
           withFocus = $('#names-container .row:visible').first().addClass('withfocus');
         }
-        else
+        else // up
         {
           withFocus = $('#names-container .row:visible').last().addClass('withfocus');         
         }
       }
 
+      // We repeat the test because something might now be selected (and wasn't before)
       // If something is selected (.hasfocus), scroll it into view
       if (withFocus.length != 0)
       {
@@ -643,7 +664,7 @@
     $('#names-container .row.withfocus').removeClass('withfocus');
     $(this).addClass('withfocus');
     $('#names-container .row').hide();
-    $('input#name-entry-box').val($(this).data('public-name'));
+    $('input#name-entry-box').val($(this).data('public-name')).focus();
     // setFaceNameAtServer('faceId', {faceNameId: faceNameId}); // Use an existing name
     // setFaceNameAtServer('faceId', {name: 'John Doe'}); // Create a new face name
 
