@@ -36,16 +36,21 @@
                   color: white; 
                   font-size: 1.0em; 
                   overflow-x: hidden;
-                  padding-left: 15px;
+                  padding-left: 15px; /* Because this contains a ".row" or the floating image, it seems to be needed for the alignment */
                   padding-right: 15px;
+                  position: relative; /* This causes the offset reporting for the names to be relative to 0. */
                 }
   #names-container .row
                 {
                   cursor: pointer;
                 }
+  #names-container .row.withfocus
+                {
+                  background-color: orange;
+                }
   #names-container .row:hover
                 {
-                  background-color: gray  ;
+                  background-color: gray;
                 }
   .namenote     {
                   font-size: 70%;
@@ -86,8 +91,10 @@
     #picture-container{style: 'position: relative;'}
     
 
-#name.form-group{style: "display: none;"}
-  %input#name-entry-box.form-control.input-sm{type: :text, placeholder: 'Unknown'}
+%form#name{style: "display: none; width: 20em;"}
+  .input-group
+    %input#name-entry-box.form-control.input-sm{type: :text, placeholder: 'Unknown'}
+    %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{'aria-label' => 'clear input', style: 'top: 0;'}
   #names-container{style: "width: 20em; max-height: 15em; display: none;"}
   
 :plain
@@ -130,7 +137,6 @@
   </script>
 
   <script type="text/template" id="face-template-text" TODO="repeated">
-  <% window.console.log(note) %>
       <div class="face-frame" style="z-index: 110; position: absolute; border: #{borderWidth}px solid #39f;
           cursor: pointer;
           left: <%- note.x %>px; top: <%- note.y %>px;
@@ -499,32 +505,118 @@
   });
 
   // ***** Code supporting the name entry *****
-  $('#name').on('focus', 'input#name-entry-box', function() {
-    $('#names-container .row').show(); // Make all the rows visible
+
+  $('input#name-entry-box').on('focus', function() {
+    $('#names-container .row').hide(); // Hide all the rows
+    $('#names-container .row.hasfocus').removeClass('hasfocus');
     $('#names-container').show();
   });
-  $('#name').on('blur', 'input#name-entry-box', function() {
+  /*  $('input#name-entry-box').on('blur', function() {
+    alert('blur');
     $('#names-container').hide();
+  }); */
+  $('input#name-entry-box').on('input', function() {
+    var substring = $.trim($(this).val().toLowerCase());
+    if (substring == '')
+    {
+      $('#names-container .row').hide();
+    }
+    else
+    {
+      $('#names-container .row').each(function() {
+        if ($(this).data('public-name').toLowerCase().indexOf(substring) > -1)
+        {
+          $(this).show();
+        }
+        else
+        {
+          $(this).hide();
+        }
+      });
+    }
+    $('#names-container .row.withfocus').removeClass('withfocus');
   });
-  $('#name').on('input', 'input#name-entry-box', function() {
-    var substring = $(this).val().toLowerCase();
-    $('#names-container .row').each(function() {
-      window.console.log($(this).data('public-name'),$(this).data('public-name').indexOf(substring));
-      if ($(this).data('public-name').toLowerCase().indexOf(substring) > -1)
+  $('input#name-entry-box').on('keydown', function(ev) {
+    // We intercept keydown (vs keyup) to inhibit some home/end cursor
+    // behavior in the text input box.
+    // 38 is up, 40 is down
+    if (ev.keyCode == 13) /* return/enter */
+    {
+      var withFocus = $('#names-container .row.withfocus').first();
+      if (withFocus)
       {
-        $(this).show();
+        $('input#name-entry-box').val($(withFocus).data('public-name'));
+        $('#names-container .row').hide();
+      }
+
+      // setFaceNameAtServer('faceId', {faceNameId: faceNameId}); // Use an existing name
+      // setFaceNameAtServer('faceId', {name: 'John Doe'}); // Create a new face name
+      return false;
+    }
+    if ((ev.keyCode == 38) /* up-arrow */ || (ev.keyCode == 40)) /* down-arrow */
+    {
+      var withFocus = $('#names-container .row.withfocus');
+      if (withFocus.length != 0)
+      {
+        if (ev.keyCode == 40) // down
+        {
+          withFocus = $(withFocus).removeClass('withfocus').nextAll(':visible').first().addClass('withfocus');
+        }
+        else
+        {
+          withFocus = $(withFocus).removeClass('withfocus').prevAll(':visible').first().addClass('withfocus');
+        }
       }
       else
       {
-        $(this).hide();
+        if (ev.keyCode == 40) // down
+        {
+          withFocus = $('#names-container .row:visible').first().addClass('withfocus');
+        }
+        else
+        {
+          withFocus = $('#names-container .row:visible').last().addClass('withfocus');         
+        }
       }
-    });
+
+      // If something is selected (.hasfocus), scroll it into view and assign it to the name entry box
+      if (withFocus.length != 0)
+      {
+        $('input#name-entry-box').val(($(withFocus).data('public-name')));
+        var index = withFocus.index('#names-container .row:visible');
+        var cellHeight = withFocus.height();
+        // Now make sure the item with focus is in view
+        var topOfWithFocus = index * cellHeight;
+        var bottomOfWithFocus = (index + 1) * cellHeight - 1;
+        var startOfVisible = $('#names-container').scrollTop();
+        var endOfVisible = startOfVisible + $('#names-container').height() - 1;
+
+        if (bottomOfWithFocus > endOfVisible)
+        {
+          // If the bottom of the one with focus is beyond what's in view, move it into place
+          $('#names-container').scrollTop(bottomOfWithFocus + 1 - $('#names-container').height());
+        }
+        else if (topOfWithFocus < startOfVisible)
+        {
+          // If the top of the visible item is above the top of the scroller, move it into place
+          $('#names-container').scrollTop(topOfWithFocus);
+        }
+      }
+      return false; // blocks the home/end action
+    }
   });
   $('#names-container').on('click', '.row', function() {
-    window.console.log($(this).data('nid'));
+    $('#names-container .row.withfocus').removeClass('withfocus');
+    $(this).addClass('withfocus');
+    $('#names-container .row').hide();
     $('input#name-entry-box').val($(this).data('public-name'));
-  });
+    // setFaceNameAtServer('faceId', {faceNameId: faceNameId}); // Use an existing name
+    // setFaceNameAtServer('faceId', {name: 'John Doe'}); // Create a new face name
 
+  });
+  $('#name-clear').on('click', function() {
+    $('input#name-entry-box').val('').focus();
+  });
   // ***** This code supports the toolbar controls *****
   
   $('button#photoButton').on('click', function() {  router.navigate('show/' + currentPhoto.id , {trigger: true}); });
