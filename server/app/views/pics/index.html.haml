@@ -1,6 +1,8 @@
 
 - thumbsize = 50
+- blueish = '#39f'
 - borderWidth = 2
+- iconPixelDim = 16
 - handleWidth = 10
 - thumbsizeWithBorder = thumbsize + borderWidth
 
@@ -19,7 +21,7 @@
                   white-space: nowrap;
                 }
   .handle       { position: absolute;
-                  background-color: #39f;
+                  background-color: #{blueish};
                   width: #{handleWidth}px;
                   height: #{handleWidth}px;
                   border-radius: #{handleWidth/2}px;
@@ -46,11 +48,11 @@
                 }
   #names-container .row.withfocus
                 {
-                  color:  #39f;
+                  color:  #{blueish};
                 }
   #names-container .row:hover
                 {
-                  color:  #39f;
+                  color:  #{blueish};
                 }
   .namenote     {
                   font-size: 70%;
@@ -91,7 +93,10 @@
     #picture-container{style: 'position: relative;'}
     
 
-%form#name{style: "display: none; width: 20em;"}
+#name{style: "display: none;" }
+  %form#name-display-form
+    %input#name-display-box.form-control.input-sm{type: :text, placeholder: 'Unknown', readonly: 'readonly', value: 'John Doe'}
+  %form#name-entry-form{style: "width: 20em;"}
   .input-group
     %input#name-entry-box.form-control.input-sm{type: :text, placeholder: 'Unknown'}
     %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{'aria-label' => 'clear input', style: 'top: 0;'}
@@ -137,7 +142,7 @@
   </script>
 
   <script type="text/template" id="face-template-text" TODO="repeated">
-      <div class="face-frame" style="z-index: 110; position: absolute; border: #{borderWidth}px solid #39f;
+      <div class="face-frame" style="z-index: 110; position: absolute; border: #{borderWidth}px solid #{blueish};
           cursor: pointer;
           left: <%- note.x %>px; top: <%- note.y %>px;
           width: <%- note.w %>px; height: <%- note.h %>px;" 
@@ -164,7 +169,7 @@
                 <a><%- notes[i].known ? notes[i].text : 'unknown' %></a>
               </li>
           <% }; %>
-          <div class="face-frame" style="z-index: 110; position: absolute; border: #{borderWidth}px solid #39f;
+          <div class="face-frame" style="z-index: 110; position: absolute; border: #{borderWidth}px solid #{blueish};
               cursor: pointer;
               display: <%- notes[i].deleted ? 'none' : 'block' %>;
               left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
@@ -201,14 +206,36 @@
 
   // ***** This code supports interacting with a single face *****
   
-  var showName = function(whichFace)
+  // When +canEdit+ is true, the name is shown in a text box, otherwise
+  // it appears in a div.
+  var nameDisplayState = false;
+  var showName = function(whichFace, editbox)
   {
+    if (editbox === undefined)
+    {
+      editbox = nameDisplayState;
+    }
+    window.console.log(editbox);
     ignoreHideName(); // In case a timer is running, kill it
-    var faceName = $(whichFace).data('known') ? $(whichFace).data('name') + $(whichFace).data('fid'): '';
+    var faceName = $(whichFace).data('known') ? $(whichFace).data('name') : '';
     var facePos = $(whichFace).css({'z-index': '112'}).position();
     facePos.top += containerPosition.top + $(whichFace).height() + #{2 * borderWidth}; // TODO Why add borderWidth?
     facePos.left += containerPosition.left; 
     $('#name-entry-box').val(faceName);
+    $('#name-display-box').val(faceName);
+    if (editbox)
+    {
+      $('#name-display-form').hide();
+      $('#name-entry-form').show();
+      $('#name-entry-box').focus();
+      nameDisplayState = true;
+    }
+    else
+    {
+      $('#name-display-form').show();
+      $('#name-entry-form').hide();
+      nameDisplayState = false;
+    }
     $('#name').css(facePos).css({'z-index': '112'}).show();
   }
 
@@ -273,7 +300,7 @@
     hideDeleteControlAndRemoveHandle(); // In case it was on another face, move it here
     showDeleteControl(face);
     $('.face-frame').css({cursor: 'pointer'}); // Reset all of them to pointer
-
+    showName(face, true);
     if (!$(this).data('manual'))
     {
       return false;
@@ -348,12 +375,12 @@
                           {
                             setRelPos();
                             setFaceContainmentRectangle(face);
-                            showName(face);
+                            showName(face, true);
                             registerFaceMouseover();
                           }
               });
 
-    $(this).css({border: "#{borderWidth}px solid #39f", cursor: 'move' });
+    $(this).css({border: "#{borderWidth}px solid #{blueish}", cursor: 'move' });
 
     $(this).draggable({ drag: function(ev, ui)
                         {
@@ -370,7 +397,7 @@
                           setRelPos();
                           $('.handle').css(relPos);
                           setHandleContainmentRectangle(handleEle);
-                          showName(face);
+                          showName(face, true);
                           registerFaceMouseover();
                         }
             });
@@ -382,11 +409,16 @@
 
   showDeleteControl = function(whichFace)
   {
-    var deleteControlPos = {top: '-2em', left: 0};
     $('<div id="deleteControl" style="position:relative;">' + 
-        '<div style="position: absolute; background-color: red; color: white; ' + 
+          '<span style="font-size: #{0.75 * iconPixelDim}px; ' + 
+                    'height: #{iconPixelDim}px; width: #{iconPixelDim}px; position: absolute; ' +
+                    'background-color: #{blueish}; color: white;' + 
                     'cursor: pointer; ' +
-                    'height: 20px; top: -#{10 + borderWidth}px; left: -#{10 + borderWidth}px;">(X)</div>' + 
+                    'border: #{0.14 * iconPixelDim}px solid rgba(0, 0, 0, 0);' +
+                    'border-radius: 50%;' + 
+                    'margin-top: (iconPixelDim / 2)px;' + 
+                    'top: -#{(iconPixelDim / 2) + borderWidth}px; left: -#{(iconPixelDim / 2) + borderWidth}px;" ' + 
+                    'class="glyphicon glyphicon-remove" aria-label="Delete Face" title="Delete Face"></span>' + 
       '</div>')
       .appendTo(whichFace).show();
   }
@@ -582,10 +614,9 @@
         }
       }
 
-      // If something is selected (.hasfocus), scroll it into view and assign it to the name entry box
+      // If something is selected (.hasfocus), scroll it into view
       if (withFocus.length != 0)
       {
-        $('input#name-entry-box').val(($(withFocus).data('public-name')));
         var index = withFocus.index('#names-container .row:visible');
         var cellHeight = withFocus.height();
         // Now make sure the item with focus is in view
