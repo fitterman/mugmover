@@ -6,13 +6,15 @@
 - thumbsizeWithBorder = thumbsize + borderWidth
 
 - language = :ia
-- translations = { en: { deleteFace: 'Delete face',
+- translations = { en: { confirmDeleteFace: 'Do you really want to delete this face?',
+                         deleteFace: 'Delete face',
                          detailsButton: 'Details', 
                          photoButton: 'Photo', 
                          markPhoto: 'Mark this photo for later attention',
                          restoreButton: 'Restore Faces',
                          tryAgain: 'An error occurred. Please try again.' }, 
-                   ia: { deleteFace: 'eleteDay acefay',
+                   ia: { confirmDeleteFace: 'oDay youway eallyray antway otay eleteday isthay acefay?',
+                         deleteFace: 'eleteDay acefay',
                          detailsButton: 'etailsDay', 
                          photoButton: 'otoPhay',
                          markPhoto: 'arkMay isthay otophay orfay aterlay attentionway',
@@ -330,7 +332,10 @@
   $('#name').on('mouseover', ignoreHideName);
 
   $('#picture-container').on('click', '#deleteControl', function() {
-    deleteFaceAtServer(currentPhoto.id, $(this).parents('.face-frame').data('fid'));
+    if (confirm('#{translations[language][:confirmDeleteFace]}'))
+    {
+      deleteFaceAtServer(currentPhoto.id, $(this).parents('.face-frame').data('fid'));
+    }
   })
 
   $('#picture-container').on('click', 'img', function(ev) {
