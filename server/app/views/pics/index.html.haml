@@ -1,4 +1,3 @@
-
 - thumbsize = 50
 - blueish = '#39f'
 - borderWidth = 2
@@ -20,7 +19,8 @@
                   text-overflow: ellipsis; 
                   white-space: nowrap;
                 }
-  .handle       { position: absolute;
+  .handle       {
+                  position: absolute;
                   background-color: #{blueish};
                   width: #{handleWidth}px;
                   height: #{handleWidth}px;
@@ -32,6 +32,24 @@
   .selected     { background-color: #33f; border: #{borderWidth}px solid red; opacity: 1.0; }
   .enlarged     { z-index: 3; opacity: 1.0; 
                   width: #{2 * thumbsizeWithBorder}px; height: #{2 * thumbsizeWithBorder}px; }
+  #deleteControl span
+                {
+                  background-color: #{blueish};
+                  border: #{0.14 * iconPixelDim}px solid rgba(0, 0, 0, 0);
+                  border-radius: 50%; 
+                  color: white; 
+                  cursor: pointer;
+                  font-size: #{0.75 * iconPixelDim}px; 
+                  height: #{iconPixelDim}px;
+                  left: -#{(iconPixelDim / 2) + borderWidth}px;
+                  position: absolute;
+                  top: -#{(iconPixelDim / 2) + borderWidth}px; 
+                  width: #{iconPixelDim}px;
+                }
+  #deleteControl span:hover
+                {
+                  background-color: #c00;
+                }
   #name-display-box:hover
                 {
                   cursor: pointer;
@@ -210,16 +228,20 @@
 
   // ***** This code supports interacting with a single face *****
   
-  // When +canEdit+ is true, the name is shown in a text box, otherwise
-  // it appears in a div.
+  // When +canEdit+ is true, the name is shown in a text box, if it is false,
+  // then the name shows as a read-only value and +canEdit+ is undefined
+  // (the case you omit the argument), then it retains its current state.
   var nameDisplayState = false;
   var showName = function(whichFace, editbox)
   {
+    if (editbox === true)
+    {
+      $('input#name-entry-box').data('fid', $(whichFace).data('fid'));
+    }
     if (editbox === undefined)
     {
       editbox = nameDisplayState;
     }
-    window.console.log(editbox);
     ignoreHideName(); // In case a timer is running, kill it
     var faceName = $(whichFace).data('known') ? $(whichFace).data('name') : '';
     var facePos = $(whichFace).css({'z-index': '112'}).position();
@@ -415,15 +437,7 @@
   showDeleteControl = function(whichFace)
   {
     $('<div id="deleteControl" style="position:relative;">' + 
-          '<span style="font-size: #{0.75 * iconPixelDim}px; ' + 
-                    'height: #{iconPixelDim}px; width: #{iconPixelDim}px; position: absolute; ' +
-                    'background-color: #{blueish}; color: white;' + 
-                    'cursor: pointer; ' +
-                    'border: #{0.14 * iconPixelDim}px solid rgba(0, 0, 0, 0);' +
-                    'border-radius: 50%;' + 
-                    'margin-top: (iconPixelDim / 2)px;' + 
-                    'top: -#{(iconPixelDim / 2) + borderWidth}px; left: -#{(iconPixelDim / 2) + borderWidth}px;" ' + 
-                    'class="glyphicon glyphicon-remove" aria-label="Delete Face" title="Delete Face"></span>' + 
+          '<span class="glyphicon glyphicon-remove" aria-label="Delete Face" title="Delete Face"></span>' + 
       '</div>')
       .appendTo(whichFace).show();
   }
@@ -582,6 +596,21 @@
     }
     $('#names-container .row.withfocus').removeClass('withfocus');
   });
+
+  var assignNameToCurrentFace = function(targetRow) {
+    $('#names-container .row.withfocus').removeClass('withfocus');
+    $('#names-container .row').hide();
+    $('input#name-entry-box').val($(targetRow).data('public-name'));
+    window.console.log($('input#name-entry-box').data('fid'), $(targetRow).data('nid'))
+    // setFaceNameAtServer(faceId, nameId); // Use an existing name
+  }
+  var transitionFromNameEntryToDisplay = function() {
+    // Copy the value to the display
+    $('input#name-display-box').val($('input#name-entry-box').val());
+    $('#name-entry-form').hide();
+    $('#name-display-form').show();     
+  }
+
   $('input#name-entry-box').on('keydown', function(ev) {
     // We intercept keydown (vs keyup) to inhibit some home/end cursor
     // behavior in the text input box.
@@ -591,21 +620,16 @@
       var withFocus = $('#names-container .row.withfocus').first();
       if (withFocus.length == 1)
       {
-        $('input#name-entry-box').val($(withFocus).data('public-name'));
-        $(withFocus).removeClass('withfocus');
-        $('#names-container .row').hide();
+        assignNameToCurrentFace(withFocus);
       }
       else
       {
-        // Nothing is highlighted in the list, so save the result and lose the focus
-        // First, copy the value to the display box and give it focus
-        $('input#name-display-box').val($('input#name-entry-box').val());
-        $('#name-entry-form').hide();
-        $('#name-display-form').show();
-        // setFaceNameAtServer('faceId', {faceNameId: faceNameId}); // Use an existing name
-        // setFaceNameAtServer('faceId', {name: 'John Doe'}); // Create a new face name
+        // Nothing is highlighted in the list, so save the result as a new name
+        window.console.log($('input#name-entry-box').data('fid'), $('input#name-entry-box').val())
+        // createFaceNameAtServer(faceId, 'John Doe'); // Create a new face name
 
       }
+      transitionFromNameEntryToDisplay();
       return false;
     }
     if ((ev.keyCode == 38) /* up-arrow */ || (ev.keyCode == 40)) /* down-arrow */
@@ -661,12 +685,8 @@
     }
   });
   $('#names-container').on('click', '.row', function() {
-    $('#names-container .row.withfocus').removeClass('withfocus');
-    $(this).addClass('withfocus');
-    $('#names-container .row').hide();
-    $('input#name-entry-box').val($(this).data('public-name')).focus();
-    // setFaceNameAtServer('faceId', {faceNameId: faceNameId}); // Use an existing name
-    // setFaceNameAtServer('faceId', {name: 'John Doe'}); // Create a new face name
+    assignNameToCurrentFace(this);
+    transitionFromNameEntryToDisplay();
 
   });
   $('#name-clear').on('click', function() {
