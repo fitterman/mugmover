@@ -5,6 +5,20 @@
 - handleWidth = 10
 - thumbsizeWithBorder = thumbsize + borderWidth
 
+- language = :ia
+- translations = { en: { deleteFace: 'Delete face',
+                         detailsButton: 'Details', 
+                         photoButton: 'Photo', 
+                         markPhoto: 'Mark this photo for later attention',
+                         restoreButton: 'Restore Faces',
+                         tryAgain: 'An error occurred. Please try again.' }, 
+                   ia: { deleteFace: 'eleteDay acefay',
+                         detailsButton: 'etailsDay', 
+                         photoButton: 'otoPhay',
+                         markPhoto: 'arkMay isthay otophay orfay aterlay attentionway',
+                         restoreButton: 'estoreRay acesFay',
+                         tryAgain: 'Anway errorway occurredway. easePlay ytray againway.' } }
+
 :css
   .picturethumb { z-index: 2; display: inline-flex; 
                   width: #{thumbsizeWithBorder}px; height: #{thumbsizeWithBorder}px; 
@@ -87,6 +101,7 @@
                                                    border-radius: 10px; }
   #picturebar-container::-webkit-scrollbar-thumb { border-radius: 8px; background-color: rgba(0, 0, 0, .4); }
 
+-# // ***** This is all the markup for the page *****
 .row
   %p#notice= notice
 
@@ -97,19 +112,19 @@
   .col-xs-8
     .btn-group{role: :group, 'aria-label' => 'display control'}
       %button.btn.btn-default{id: :photoButton }
-        Photo
+        #{translations[language][:photoButton]}
       %button.btn.btn-default{id: :detailsButton }
-        Details
+        #{translations[language][:detailsButton]}
     .btn-group{id: :restoreGroup}
       %button.btn.btn-default.dropdown-toggle{id: :restoreButton, 
                                               'data-toggle' => :dropdown, 
                                               'aria-expanded' => 'false'}
-        Restore Face
+        #{translations[language][:restoreButton]}
         %span.caret
       %ul.dropdown-menu{id: :restoreFaces, role: :menu}
   .col-xs-4
     %span.glyphicon.glyphicon-flag.pull-right{style: 'font-size: 140%;', 
-                                              title: 'Mark this photo for later attention',
+                                              title: translations[language][:markPhoto],
                                               'aria-label' => 'not flagged'}
 
 .row
@@ -125,7 +140,8 @@
       %input#name-entry-box.form-control.input-sm{type: :text, placeholder: 'Unknown'}
       %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{'aria-label' => 'clear input', style: 'top: 0;'}
     #names-container{style: "width: 20em; max-height: 170px; display: none;"}
-  
+ 
+-# // ***** These are all the underscore.js templates ***** 
 :plain
   <script type="text/template" id="photos-template-text">
     <% _.each(photos, function(photo) { %>
@@ -214,6 +230,7 @@
   </script>
 
 :javascript
+  // Some "constants"
   var endGap = 400; // pixels
   var photoWidth = #{thumbsizeWithBorder}; // pixels (borderWidth px on each side)
   var totalPhotos = #{@total_photos};
@@ -443,7 +460,7 @@
   showDeleteControl = function(whichFace)
   {
     $('<div id="deleteControl" style="position:relative;">' + 
-          '<span class="glyphicon glyphicon-remove" aria-label="Delete Face" title="Delete Face"></span>' + 
+          '<span class="glyphicon glyphicon-remove" aria-label="#{translations[language][:deleteFace]}" title="#{translations[language][:deleteFace]}"></span>' + 
       '</div>')
       .appendTo(whichFace).show();
   }
@@ -805,7 +822,7 @@
         data: { n: options.n, a_id: options.a_id },
         error: function(photos)
         {
-          alert('An error occurred. Please try again.');
+          alert('#{translations[language][:tryAgain]}');
         },
         success: function(photos)
         {
@@ -850,7 +867,7 @@
       currentPhoto.fetch({
         error: function(photo)
         {
-          alert('An error occurred. Please try again.');
+          alert('#{translations[language][:tryAgain]}');
         },
         success: function(photo)
         {
