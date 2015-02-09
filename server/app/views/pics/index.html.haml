@@ -76,7 +76,7 @@
                   color: white; 
                   font-size: 1.0em; 
                   overflow-x: hidden;
-                  padding-left: 15px; /* Because this contains a ".row" or the floating image, it seems to be needed for the alignment */
+                  padding-left: 15px; /* Something about Bootstrap requires this explicit setting */
                   padding-right: 15px;
                   position: relative; /* This causes the offset reporting for the names to be relative to 0. */
                 }
@@ -112,7 +112,7 @@
 
 .row{style: 'margin: 1em;'}
   .col-xs-8
-    .btn-group{role: :group, 'aria-label' => 'display control'}
+    .btn-group{role: :group, 'aria-label' => 'Control what is displayed'}
       %button.btn.btn-default{id: :photoButton }
         #{translations[language][:photoButton]}
       %button.btn.btn-default{id: :detailsButton }
@@ -136,12 +136,17 @@
 
 #name{style: "display: none;" }
   %form#name-display-form
-    %input#name-display-box.form-control.input-sm.ellipsis{type: :text, placeholder: 'Unknown', readonly: 'readonly', value: 'John Doe'}
+    %input#name-display-box.form-control.input-sm.ellipsis{type: :text, 
+                                                           placeholder: 'Unknown',
+                                                           readonly: 'readonly',
+                                                           value: 'John Doe'}
   %form#name-entry-form{style: "width: 20em;"}
     .input-group
       %input#name-entry-box.form-control.input-sm{type: :text, placeholder: 'Unknown'}
-      %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{'aria-label' => 'clear input', style: 'top: 0;'}
+      %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{'aria-label' => 'Clear the name input field', 
+                                                                            style: 'top: 0;'}
     #names-container{style: "width: 20em; max-height: 170px; display: none;"}
+ 
  
 -# // ***** These are all the underscore.js templates ***** 
 :plain
@@ -187,19 +192,26 @@
     <% }); %>
   </script>
 
-  <script type="text/template" id="face-template-text" TODO="repeated">
+  <script type="text/template" id="face-template-text" TODO="DRY IT UP">
       <div class="face-frame" style="z-index: 110; position: absolute; border: #{borderWidth}px solid #{blueish};
           cursor: pointer;
-          left: <%- note.x %>px; top: <%- note.y %>px;
-          width: <%- note.w %>px; height: <%- note.h %>px;" 
-          data-name="<%- note.text %>"
-          data-fid="<%- note.faceId %>"
-          data-deleted="<%- note.deleted %>"
-          data-manual="<%- note.manual %>" data-known="<%- note.known %>">
+          left: <%- x %>px; top: <%- y %>px;
+          display: <%- deleted ? 'none' : 'block' %>;
+          width: <%- w %>px; height: <%- h %>px;" 
+          data-name="<%- text %>"
+          data-fid="<%- faceId %>"
+          data-deleted="<%- deleted %>"
+          data-manual="<%- manual %>" data-known="<%- known %>">
       </div>
   </script>
 
-  <script type="text/template" id="restore-menu-template-text" TODO="repeated">
+  <script type="text/template" id="deleted-face-template-text">
+    <li data-fid="<%- faceId %>">
+      <a><%- known ? text : 'unknown' %></a>
+    </li>
+  </script>
+
+  <script type="text/template" id="restore-menu-template-text" TODO="repeated above as deleted-face-template-text">
       <li data-fid="<%- note.faceId %>">
         <a><%- note.known ? note.text : 'unknown' %></a>
       </li>
@@ -259,9 +271,9 @@
   var nameDisplayState = false;
   var showName = function(whichFace, editbox)
   {
+    $('input#name-entry-box').data('fid', $(whichFace).data('fid'));
     if (editbox === true)
     {
-      $('input#name-entry-box').data('fid', $(whichFace).data('fid'));
     }
     if (editbox === undefined)
     {
@@ -311,19 +323,10 @@
     window.clearTimeout(hideNameTimerId);
   }
 
-  var registerFaceMouseover = function()
-  {
-    $('#picture-container').on('mouseover', '.face-frame', function() {
-      // ## TODO The state of this needs to be the same as what it was
-      showName(this, false);
-    })
-  }
   var unregisterFaceMouseover = function()
   {
     $('#picture-container').off('mouseover', '.face-frame');
   }
-  registerFaceMouseover();
-
 
   $('#picture-container').on('mouseout', '.face-frame', function() {
     $(this).css({'z-index': '110' });
@@ -465,7 +468,9 @@
   showDeleteControl = function(whichFace)
   {
     $('<div id="deleteControl" style="position:relative;">' + 
-          '<span class="glyphicon glyphicon-remove" aria-label="#{translations[language][:deleteFace]}" title="#{translations[language][:deleteFace]}"></span>' + 
+          '<span class="glyphicon glyphicon-remove" ' +
+                 'aria-label="#{translations[language][:deleteFace]}" ' +
+                 'title="#{translations[language][:deleteFace]}"></span>' + 
       '</div>')
       .appendTo(whichFace).show();
   }
@@ -475,6 +480,23 @@
     $('.handle').draggable('destroy').remove();
   }
 
+  var setFaceNameAtServer = function(photoId, faceId, nameId) // function to link a name to an existing face
+  {
+    $.ajax({
+             url: "#{link_api_v1_face_path({id: ':id'})}"
+               .replace(':id', faceId),
+             data: {photo_id: photoId, name_id: nameId, a_id: '#{params[:a_id]}'},
+             type: 'POST',
+             error: function(data)
+             {
+               alert('The mugmover server failed to update the name for this face');
+             },
+             success: function(data)
+             {
+               currentPhoto.set('notes', data.notes);
+             }
+           });   
+  }
   var deleteFaceAtServer = function(pictureId, faceId) // function to delete a face at the server
   {
     var matchFaceId = function(obj, index) {
@@ -625,8 +647,8 @@
     $('#names-container .row.withfocus').removeClass('withfocus');
     $('#names-container .row').hide();
     $('input#name-entry-box').val($(targetRow).data('public-name'));
-    window.console.log($('input#name-entry-box').data('fid'), $(targetRow).data('nid'))
-    // setFaceNameAtServer(faceId, nameId); // Use an existing name
+    window.console.log(currentPhoto.get('id'), $('input#name-entry-box').data('fid'), $(targetRow).data('nid'));
+    setFaceNameAtServer(currentPhoto.get('id'), $('input#name-entry-box').data('fid'), $(targetRow).data('nid'));
   }
   var transitionFromNameEntryToDisplay = function() {
     // Copy the value to the display
@@ -650,7 +672,7 @@
       {
         // Nothing is highlighted in the list, so save the result as a new name
         window.console.log($('input#name-entry-box').data('fid'), $('input#name-entry-box').val())
-        // createFaceNameAtServer(faceId, 'John Doe'); // Create a new face name
+        // createFaceNameAtServer(photoId, faceId, 'John Doe'); // Create a new face name
 
       }
       transitionFromNameEntryToDisplay();
@@ -880,24 +902,29 @@
           var html = template({photo: photo});
           that.$el.html(html);
 
-          // There may be "<li>" tags rendered (for a deleted face), which
-          // need to be moved to the menu to allow for restoration of said faces
-          var deletedFaces = $('#picture-container > li');
-          if (deletedFaces.length > 0)
-          {
-            $('#restoreFaces').empty().append(deletedFaces);
-          }
-          $('#restoreButton').prop('disabled', deletedFaces.length == 0);
-
           setFlagColor(currentPhoto.attributes.flag);
           if ($('#picturebar').html() == "")
           {
             photoList.render({a_id: options.a_id, n: 0});
           }
+
+          $('#face-frame-container').empty();
+          var faces = [];
+          var faceFames = [];
+          $.each(photo.get('notes'), function(index, face) {
+            var f = new Face(face);
+            var ff = new FaceFrame({model: face});
+            faces.push(f);
+            ff.render();
+          });
+
+          $('#restoreButton').prop('disabled', $('#restoreFaces').is(':empty'));
+
           if ($('#names-container').html() == "")
           {
             nameList.render({a_id: options.a_id});
           }
+
           return this;
         }        
       })

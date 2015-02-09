@@ -41,6 +41,37 @@ module Api
         end
       end
 
+      # link an existing facename to a face
+      def link
+        errors = []
+        named_face = nil
+        if (hsa = HostingServiceAccount.find(params[:a_id]))
+          if (@photo = hsa.photos.find(params[:photo_id]))
+            if (@face = @photo.faces.find(params[:id]))
+              named_face = hsa.named_faces.find(params[:name_id])
+              if (named_face)
+                @face.named_face_id = named_face.id
+                if !@face.save
+                  errors += @face.errors.full_messages
+                end
+              else
+                errors += ['Named face not found']
+              end
+            else
+              errors += ['Face not found']
+            end
+          else
+            errors += ['Photo not found']
+          end
+        else
+          errors += ['Account not found']
+        end
+        if errors.any?
+          result = {status: 'fail', errors: errors}
+          render json: result, status: :bad_request
+        end
+      end
+
       # mark the face as logically deleted
       def destroy
         errors = []

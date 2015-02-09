@@ -11,7 +11,7 @@ module Api
     private
 
       # Only allow the white list through.
-      def pame_params
+      def name_params
         params.require(:name).permit(:a_id)
       end
     end
