@@ -3,6 +3,7 @@
   %head
     %title Mugmarker
     = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
+    = javascript_include_tag 'http://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js'
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
     - if Rails.env.development? || Rails.env.test?
       = javascript_include_tag 'jquery.ba-throttle-debounce.min-1.1.js'
