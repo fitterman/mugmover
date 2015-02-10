@@ -7,4 +7,4 @@ Rails.application.config.assets.version = '1.0'
 # application.js, application.css, and all non-JS/CSS in app/assets folder are already added.
 # Rails.application.config.assets.precompile += %w( search.js )
 
-Rails.application.config.assets.precompile += %w{ jquery.ba-throttle-debounce.min-1.1.js underscore-min-1.7.0.js backbone-min-1.1.2.js}
+Rails.application.config.assets.precompile += %w{ jquery.ba-throttle-debounce.min-1.1.js}
