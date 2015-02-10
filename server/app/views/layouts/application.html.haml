@@ -1,10 +1,10 @@
 !!!
-%html
+%html{'ng-app' => 'mugmarker'}
   %head
     %title Mugmarker
-    = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
+    = stylesheet_link_tag    'application', media: 'all'
     = javascript_include_tag 'http://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js'
-    = javascript_include_tag 'application', 'data-turbolinks-track' => true
+    = javascript_include_tag 'application'
     - if Rails.env.development? || Rails.env.test?
       = javascript_include_tag 'jquery.ba-throttle-debounce.min-1.1.js'
       = javascript_include_tag 'underscore-min-1.7.0.js'
@@ -22,5 +22,5 @@
       $(document).on( 'page:load', window_load_ready_function );
   %body
     .container
-      .page
+      .page{'ng-view' => 'ng-view'}
         = yield

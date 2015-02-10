@@ -103,6 +103,23 @@
                                                    border-radius: 10px; }
   #picturebar-container::-webkit-scrollbar-thumb { border-radius: 8px; background-color: rgba(0, 0, 0, .4); }
 
+:javascript
+  var app = angular.module('mugmarker', []);
+  app.controller('NamesController', ['$scope', '$http', function NamesController ($scope, $http) {
+      $http.get("#{api_v1_names_path}.json?a_id=1")
+        .success(function(response) { 
+                  $scope.names = response;
+                });
+  }]);
+
+  app.filter('matchesNameNeedle', function () {
+    return function (name) {
+        return name.publicName.toUpperCase();
+    };
+  });
+
+  
+  
 -# // ***** This is all the markup for the page *****
 .row
   %p#notice= notice
@@ -331,6 +348,9 @@
   $('#picture-container').on('mouseout', '.face-frame', function() {
     $(this).css({'z-index': '110' });
     delayedHideName();
+  });
+  $('#picture-container').on('click', '.face-frame', function() {
+    showName(this, false);
   });
   $('#name').on('mouseover', ignoreHideName);
 

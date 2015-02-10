@@ -1,0 +1,105 @@
+// For now, these must by synchronized with their counterparts in the haml/erb world.
+$thumbsize:     50;
+$blueish:       #39f;
+$borderWidth:   2px;
+$iconPixelDim:  16px;
+$handleWidth:   10px;
+$thumbsizeWithBorder:  $thumbsize + $borderWidth;
+
+
+.picturethumb { 
+                z-index: 2; display: 
+                inline-flex; 
+                width: $thumbsizeWithBorder;
+                height: $thumbsizeWithBorder;
+                background-size: contain; background-color: white;
+                border: $borderWidth solid white; 
+              }
+#name         { 
+                z-index: 108; white-space: nowrap; position: absolute;
+              }
+.ellipsis     {
+                overflow-x: hidden; 
+                text-overflow: ellipsis; 
+                white-space: nowrap;
+              }
+.handle       {
+                position: absolute;
+                background-color: $blueish;
+                width: $handleWidth;
+                height: $handleWidth;
+                border-radius: $handleWidth / 2;
+                z-index: 125;
+                cursor: 'pointer'
+              }
+.unselected   { opacity: 0.5; }
+.selected     { background-color: #33f; border: $borderWidth solid red; opacity: 1.0; }
+.enlarged     { z-index: 3; opacity: 1.0; 
+                width: 2 * $thumbsizeWithBorder;
+                height: 2 * $thumbsizeWithBorder;
+              }
+#deleteControl span
+              {
+                background-color: $blueish;
+                border: 0.14 * $iconPixelDim solid rgba(0, 0, 0, 0);
+                border-radius: 50%; 
+                color: white; 
+                cursor: pointer;
+                font-size: 0.75 * $iconPixelDim;
+                height: $iconPixelDim;
+                left: -(($iconPixelDim / 2) + $borderWidth);
+                position: absolute;
+                top: -(($iconPixelDim / 2) + $borderWidth);
+                width: $iconPixelDim;
+              }
+#deleteControl span:hover
+              {
+                background-color: #c00;
+              }
+#name-display-box:hover
+              {
+                cursor: pointer;
+              }
+#names-container
+              {
+                background-color: #444; 
+                color: white; 
+                font-size: 1.0em; 
+                overflow-x: hidden;
+                padding-left: 15px; /* Something about Bootstrap requires this explicit setting */
+                padding-right: 15px;
+                position: relative; /* This causes the offset reporting for the names to be relative to 0. */
+              }
+#names-container .row
+              {
+                cursor: pointer;
+              }
+#names-container .row.withfocus
+              {
+                background-color: black;
+                color:  $blueish;
+              }
+#names-container .row:hover
+              {
+                background-color: red;
+                color:  $blueish;
+              }
+.namenote     {
+                font-size: 70%;
+              }                  
+#picturebar-container::-webkit-scrollbar 
+              {
+                -webkit-appearance: none; 
+                height: 10px; 
+                width: 0px; 
+              }
+#picturebar-container::-webkit-scrollbar-track 
+              {
+                background-color: rgba(0, 0, 0, .2);  
+                border: 10px solid silver; 
+              }
+#picturebar-container::-webkit-scrollbar-thumb 
+              { 
+                border-radius: 8px; 
+                background-color: rgba(0, 0, 0, 0.4); 
+              }
