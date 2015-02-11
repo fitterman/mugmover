@@ -1,0 +1,1031 @@
+- thumbsize = 50
+- blueish = '#39f'
+- borderWidth = 2
+- iconPixelDim = 16
+- handleWidth = 10
+- thumbsizeWithBorder = thumbsize + borderWidth
+
+- language = :ia
+- translations = { en: { confirmDeleteFace: 'Do you really want to delete this face?',
+                         deleteFace: 'Delete face',
+                         detailsButton: 'Details', 
+                         photoButton: 'Photo', 
+                         markPhoto: 'Mark this photo for later attention',
+                         restoreButton: 'Restore Faces',
+                         tryAgain: 'An error occurred. Please try again.' }, 
+                   ia: { confirmDeleteFace: 'oDay youway eallyray antway otay eleteday isthay acefay?',
+                         deleteFace: 'eleteDay acefay',
+                         detailsButton: 'etailsDay', 
+                         photoButton: 'otoPhay',
+                         markPhoto: 'arkMay isthay otophay orfay aterlay attentionway',
+                         restoreButton: 'estoreRay acesFay',
+                         tryAgain: 'Anway errorway occurredway. easePlay ytray againway.' } }
+
+:css
+  .picturethumb { z-index: 2; display: inline-flex; 
+                  width: #{thumbsizeWithBorder}px; height: #{thumbsizeWithBorder}px; 
+                  background-size: contain; background-color: white;
+                  border: #{borderWidth}px solid white; 
+                }
+  #name      { 
+                  z-index: 108; white-space: nowrap; position: absolute;
+                }
+  .ellipsis     {
+                  overflow-x: hidden; 
+                  text-overflow: ellipsis; 
+                  white-space: nowrap;
+                }
+  .handle       {
+                  position: absolute;
+                  background-color: #{blueish};
+                  width: #{handleWidth}px;
+                  height: #{handleWidth}px;
+                  border-radius: #{handleWidth/2}px;
+                  z-index: 125;
+                  cursor: 'pointer'
+                }
+  .unselected   { opacity: 0.5; }
+  .selected     { background-color: #33f; border: #{borderWidth}px solid red; opacity: 1.0; }
+  .enlarged     { z-index: 3; opacity: 1.0; 
+                  width: #{2 * thumbsizeWithBorder}px; height: #{2 * thumbsizeWithBorder}px; }
+  #deleteControl span
+                {
+                  background-color: #{blueish};
+                  border: #{0.14 * iconPixelDim}px solid rgba(0, 0, 0, 0);
+                  border-radius: 50%; 
+                  color: white; 
+                  cursor: pointer;
+                  font-size: #{0.75 * iconPixelDim}px; 
+                  height: #{iconPixelDim}px;
+                  left: -#{(iconPixelDim / 2) + borderWidth}px;
+                  position: absolute;
+                  top: -#{(iconPixelDim / 2) + borderWidth}px; 
+                  width: #{iconPixelDim}px;
+                }
+  #deleteControl span:hover
+                {
+                  background-color: #c00;
+                }
+  #name-display-box:hover
+                {
+                  cursor: pointer;
+                }
+  #names-container
+                {
+                  background-color: #444; 
+                  color: white; 
+                  font-size: 1.0em; 
+                  overflow-x: hidden;
+                  padding-left: 15px; /* Something about Bootstrap requires this explicit setting */
+                  padding-right: 15px;
+                  position: relative; /* This causes the offset reporting for the names to be relative to 0. */
+                }
+  #names-container .row
+                {
+                  cursor: pointer;
+                }
+  #names-container .row.withfocus
+                {
+                  background-color: black;
+                  color:  #{blueish};
+                }
+  #names-container .row:hover
+                {
+                  background-color: red;
+                  color:  #{blueish};
+                }
+  .namenote     {
+                  font-size: 70%;
+                }                  
+  #picturebar-container::-webkit-scrollbar { -webkit-appearance: none; height: 10px; width: 0px; }
+  #picturebar-container::-webkit-scrollbar-track { background-color: rgba(0, 0, 0, .2);  
+                                                   border: 1px solid silver; 
+                                                   border-radius: 10px; }
+  #picturebar-container::-webkit-scrollbar-thumb { border-radius: 8px; background-color: rgba(0, 0, 0, .4); }
+
+:javascript
+  var app = angular.module('mugmarker', []);
+  app.controller('NamesController', ['$scope', '$http', function NamesController ($scope, $http) {
+      $http.get("#{api_v1_names_path}.json?a_id=1")
+           .success(function(response) { 
+                     $scope.names = response;
+                    });
+      $scope.toggle = function() {
+          alert("clicked");
+      }
+  }]);
+
+  app.filter('matchesNameNeedle', function () {
+    return function (name) {
+        return name.publicName.toUpperCase();
+    };
+  });
+
+  
+  
+-# // ***** This is all the markup for the page *****
+.row
+  %p#notice= notice
+
+.row#picturebar-container{style: 'height: 114px; overflow-y: scroll; white-space: nowrap;'}
+  #picturebar{style: "position:relative;" }
+
+.row{style: 'margin: 1em;'}
+  .col-xs-8
+    .btn-group{role: :group, 'aria-label' => 'Control what is displayed'}
+      %button.btn.btn-default{id: :photoButton }
+        #{translations[language][:photoButton]}
+      %button.btn.btn-default{id: :detailsButton }
+        #{translations[language][:detailsButton]}
+    .btn-group{id: :restoreGroup}
+      %button.btn.btn-default.dropdown-toggle{id: :restoreButton, 
+                                              'data-toggle' => :dropdown, 
+                                              'aria-expanded' => 'false'}
+        #{translations[language][:restoreButton]}
+        %span.caret
+      %ul.dropdown-menu{id: :restoreFaces, role: :menu}
+  .col-xs-4
+    %span.glyphicon.glyphicon-flag.pull-right{style: 'font-size: 140%;', 
+                                              title: translations[language][:markPhoto],
+                                              'aria-label' => 'not flagged'}
+
+.row
+  .col-xs-8
+    #picture-container{style: 'position: relative;'}
+    
+
+%div{"ng-controller" => "NamesController"}
+  #name{style: "display: none;" , 'ng-click' => "toggle()"}
+    %form#name-display-form{}
+      %input#name-display-box.form-control.input-sm.ellipsis{'ng-model' => 'nameFromFace',
+                                                             type: :text, 
+                                                             placeholder: 'Unknown',
+                                                             readonly: 'readonly'}
+    %form#name-entry-form{novalidate: :novalidate, :style => "width: 20em;"}
+      .input-group
+        %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",
+                                                    :placeholder => "Enter Name",
+                                                    :type => "text"}/
+        %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{"aria-label" => "Clear the name input field", :style => "top: 0;"}
+      #names-container{:style => "width: 20em; max-height: 170px; display: block;", 'ng-click' => "toggle()"}
+        .row{'ng-repeat' => "name in names", 
+             'ng-click' => "toggle()",
+             'ng-show' => 'name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1'}
+          .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
+            %img{:src => "https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png", :style => "height:30px"}/
+          .col-xs-10.ellipsis{:style => "padding: 0;", 'ng-click' => "toggle()"}
+            {{ name.publicName }}
+            .namenote
+              {{ name.note ? name.note : ' ' }} {{name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1 }}
+
+
+-# // ***** These are all the underscore.js templates ***** 
+:plain
+
+  <script type="text/template" id="photos-template-text">
+    <% _.each(photos, function(photo) { %>
+      <% if ($('.picturethumb[phid=' + photo.get('id') + ']').length == 0) { %>
+          <div class="picturethumb unselected" style="position: absolute; 
+              background-repeat: no-repeat; background-position: center; 
+              background-image: url('<%- photo.get('thumb') %>');
+              top: 27px;
+              left: <%- i2x(photo.get('index')) %>px;" 
+              phw="<%- photo.get('scaled_w') %>"
+              phh="<%- photo.get('scaled_h') %>"
+              phid="<%- photo.get('id') %>">
+          </div>
+      <% }; %>
+    <% }); %>
+    <% var rightX = $('#picturebar-container').scrollLeft() + $('#picturebar-container').width(); %>
+    <% var rightN = Math.floor(x2i(rightX) / photosPerRequest); %>
+    <% var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); %>
+    <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>
+      <% photoList.render({a_id: '#{params[:a_id]}', n: currentN + 1}); %>
+    <% }; %>
+  </script>
+
+  <script type="text/template" id="names-template-text">
+    <% _.each(names, function(name) { %>
+        <div class="row" data-nid="<%- name.get('id') %>" data-public-name="<%- name.get('publicName') %>">
+          <div class="col-xs-1" style="padding-left: 4px; min-width: 38px; ">
+            <img src="https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png" style="height:30px" />
+          </div>
+          <div class="col-xs-10 ellipsis" style="padding: 0;">
+            <%- name.get('publicName') %>
+            <div class="namenote">
+              <% if (name.get('note')) { %>
+               <%- name.get('note') %>
+              <% } else { %>
+                &nbsp;
+              <% } %>
+            </div>
+          </div>
+        </div>
+    <% }); %>
+  </script>
+
+  <script type="text/template" id="face-template-text" TODO="DRY IT UP">
+      <div class="face-frame" style="z-index: 110; position: absolute; border: #{borderWidth}px solid #{blueish};
+          cursor: pointer;
+          left: <%- x %>px; top: <%- y %>px;
+          display: <%- deleted ? 'none' : 'block' %>;
+          width: <%- w %>px; height: <%- h %>px;" 
+          data-name="<%- text %>"
+          data-fid="<%- faceId %>"
+          data-deleted="<%- deleted %>"
+          data-manual="<%- manual %>" data-known="<%- known %>">
+      </div>
+  </script>
+
+  <script type="text/template" id="deleted-face-template-text">
+    <li data-fid="<%- faceId %>">
+      <a><%- known ? text : 'unknown' %></a>
+    </li>
+  </script>
+
+  <script type="text/template" id="restore-menu-template-text" TODO="repeated above as deleted-face-template-text">
+      <li data-fid="<%- note.faceId %>">
+        <a><%- note.known ? note.text : 'unknown' %></a>
+      </li>
+  </script>
+
+  <script type="text/template" id="photo-template-text">
+      <img id="photo-img" src=<%- photo.get('url') %> 
+           class="img-responsive" style="cursor: crosshair; max-height: 500px; z-index: 1; position: absolute; top: 0; left: 0;" />
+      <div id="face-frame-container">
+      </div>
+  </script>
+
+  <script type="text/template" id="photo-details-template-text">
+    <pre><%- JSON.stringify(photo.get('request'), null, 4) %></pre> 
+  </script>
+
+:javascript
+  // Some "constants"
+  var endGap = 400; // pixels
+  var photoWidth = #{thumbsizeWithBorder}; // pixels (borderWidth px on each side)
+  var totalPhotos = #{@total_photos};
+  var photosPerRequest = #{Api::V1::PicsController::PAGESIZE};
+  var lastRequestN = Math.floor(totalPhotos  / photosPerRequest);
+  var currentPhoto;
+  
+  // functions to convert a zero-based index to a horizontal pixel offset and back.
+  var i2x = function(i) { return endGap + (i * photoWidth) };
+  var x2i = function(x) { return Math.floor(Math.max(0, x - endGap) / photoWidth) };
+
+  // The container position will only change on a resize (later on), so we only
+  // capture it once here.
+  var containerPosition = $('#picture-container').offset();
+  var facePosition;
+
+  var trackingMovement = false;
+
+  // ***** This code supports interacting with a single face *****
+  
+  // When +canEdit+ is true, the name is shown in a text box, if it is false,
+  // then the name shows as a read-only value and +canEdit+ is undefined
+  // (the case you omit the argument), then it retains its current state.
+  var nameDisplayState = false;
+  var showName = function(whichFace, editbox)
+  {
+    $('input#name-entry-box').data('fid', $(whichFace).data('fid'));
+    if (editbox === true)
+    {
+    }
+    if (editbox === undefined)
+    {
+      editbox = nameDisplayState;
+    }
+    ignoreHideName(); // In case a timer is running, kill it
+    var faceName = $(whichFace).data('known') ? $(whichFace).data('name') : '';
+    var facePos = $(whichFace).css({'z-index': '112'}).position();
+    facePos.top += containerPosition.top + $(whichFace).height() + #{2 * borderWidth}; // TODO Why add borderWidth?
+    facePos.left += containerPosition.left; 
+    $('#name-entry-box').val(faceName);
+    $('#name-display-box').val(faceName);
+    if (editbox)
+    {
+      $('#name-display-form').hide();
+      $('#name-entry-form').show();
+      $('#name-entry-box').focus();
+      nameDisplayState = true;
+    }
+    else
+    {
+      $('#name-display-form').show();
+      //      $('#name-entry-form').hide();
+      nameDisplayState = false;
+    }
+    $('#name').css(facePos).css({'z-index': '112'}).show();
+  }
+
+  // Calling hideName() causes the name to hide instantly.
+  // Invoking delayedHideName causes the name to linger, and the hide
+  //   may subsequently be canceled by calling
+  // ignoreHideName()
+
+  var hideName = function()
+  {
+    $('#name').hide().css({'z-index': '108'});
+  }
+  var hideNameTimerId;
+
+  // This one will have a fade effect always
+  var delayedHideName = function()
+  {
+    hideNameTimerId = window.setTimeout(hideName, 1200);
+  }
+  var ignoreHideName = function()
+  {
+    window.clearTimeout(hideNameTimerId);
+  }
+
+  var unregisterFaceMouseover = function()
+  {
+    $('#picture-container').off('mouseover', '.face-frame');
+  }
+
+  $('#picture-container').on('mouseout', '.face-frame', function() {
+    $(this).css({'z-index': '110' });
+    delayedHideName();
+  });
+  $('#picture-container').on('click', '.face-frame', function() {
+    showName(this, false);
+  });
+  $('#name').on('mouseover', ignoreHideName);
+
+  $('#picture-container').on('click', '#deleteControl', function() {
+    if (confirm('#{translations[language][:confirmDeleteFace]}'))
+    {
+      deleteFaceAtServer(currentPhoto.id, $(this).parents('.face-frame').data('fid'));
+    }
+  })
+
+  $('#picture-container').on('click', 'img', function(ev) {
+    // Deactivate the editor
+    $('.face-frame.ui-draggable').draggable('destroy').css({cursor: 'auto'});
+    hideDeleteControlAndRemoveHandle();
+    restoreFaceFramePointer();
+
+    // Now create a default face at that point
+    createNewFaceAt(currentPhoto.id, ev.offsetX / $(this).width(), ev.offsetY / $(this).height());
+  });
+
+
+  $('#picture-container').on('clickISH', '.face-frame', function() {
+    var face = this;
+
+    hideDeleteControlAndRemoveHandle(); // In case it was on another face, move it here
+    showDeleteControl(face);
+    $('.face-frame').css({cursor: 'pointer'}); // Reset all of them to pointer
+    showName(face, true);
+    if (!$(this).data('manual'))
+    {
+      return false;
+    }
+
+    // ***** Everything from this point down has to do with resizing/moving faces ***** //
+    // ***** Only faces that were manually created are allowed to perform these functions ***** //
+
+    var faceOriginalW;
+    var faceOriginalH;
+    var relPos;
+
+    var setRelPos = function()
+    {
+      faceOriginalW = Math.floor(0.5 + $(face).width());
+      faceOriginalH = Math.floor(0.5 + $(face).height());
+      facePosition = $(face).position();
+      relPos = {top: Math.floor(0.5 + facePosition.top) + faceOriginalH - #{handleWidth/2} + #{borderWidth}, 
+                left: Math.floor(0.5 + facePosition.left) + faceOriginalW - #{handleWidth/2} + #{borderWidth}};
+    }
+
+    setRelPos();
+
+    var setHandleContainmentRectangle = function(target)
+    {
+      var faceCenterX = containerPosition.left + facePosition.left + (faceOriginalW / 2);
+      var faceCenterY = containerPosition.top + facePosition.top + (faceOriginalH / 2);
+      var distanceToEachEdge = [faceCenterX - containerPosition.left, 
+                                containerPosition.left + $('#picture-container > img').width() - faceCenterX];
+      var maxDeltaX = Math.min.apply(null, distanceToEachEdge);
+      distanceToEachEdge = [faceCenterY - containerPosition.top, 
+                            containerPosition.top + $('#picture-container > img').height() - faceCenterY];
+      var maxDeltaY = Math.min.apply(null, distanceToEachEdge);
+      var handleContainment = [faceCenterX, /* Do not adjust because handle is positioned from its left edge */ 
+                               faceCenterY,
+                               faceCenterX + maxDeltaX - #{handleWidth},
+                               faceCenterY + maxDeltaY - #{handleWidth}
+                              ];
+      $(target).draggable('option', 'containment', handleContainment); 
+    }
+    var setFaceContainmentRectangle = function(target)
+    {
+      var faceContainmentRectangle = [containerPosition.left + #{handleWidth/2}, 
+                                      containerPosition.top + #{handleWidth/2},
+                                      containerPosition.left + $('#picture-container > img').width() -
+                                        ($(face).width() + #{handleWidth}),
+                                      containerPosition.top + $('#picture-container > img').height() -
+                                        ($(face).height() + #{handleWidth})];
+      $(target).draggable('option', 'containment', faceContainmentRectangle)
+    }
+
+    var handleEle = $('<div class="handle" style="position:absolute; cursor: nwse-resize;">&nbsp</div>');
+    handleEle.offset(relPos)
+             .appendTo('#picture-container')
+             .draggable({ drag: function(ev, ui)
+                          {
+                            var deltaX = ui.position.left - relPos.left;
+                            var deltaY = ui.position.top - relPos.top;
+                            var newPos = {top: facePosition.top  - deltaY,
+                                          left: facePosition.left - deltaX };
+                            $(face).width(faceOriginalW + (2 * deltaX));
+                            $(face).height(faceOriginalH + (2 * deltaY));
+                            $(face).css(newPos);
+
+                          },
+                          start: function()
+                          {
+                            unregisterFaceMouseover();
+                            hideName();
+                          },
+                          stop: function(ev, ui)
+                          {
+                            setRelPos();
+                            setFaceContainmentRectangle(face);
+                            showName(face, true);
+                            registerFaceMouseover();
+                          }
+              });
+
+    $(this).css({border: "#{borderWidth}px solid #{blueish}", cursor: 'move' });
+
+    $(this).draggable({ drag: function(ev, ui)
+                        {
+                          setRelPos();
+                          $('.handle').css(relPos);
+                        },
+                        start: function()
+                        {
+                          unregisterFaceMouseover();
+                          hideName();
+                        },
+                        stop: function(ev, ui)
+                        {
+                          setRelPos();
+                          $('.handle').css(relPos);
+                          setHandleContainmentRectangle(handleEle);
+                          showName(face, true);
+                          registerFaceMouseover();
+                        }
+            });
+    setHandleContainmentRectangle(handleEle);
+    setFaceContainmentRectangle(face);
+  });
+
+  // ***** Management of face objects *****
+
+  showDeleteControl = function(whichFace)
+  {
+    $('<div id="deleteControl" style="position:relative;">' + 
+          '<span class="glyphicon glyphicon-remove" ' +
+                 'aria-label="#{translations[language][:deleteFace]}" ' +
+                 'title="#{translations[language][:deleteFace]}"></span>' + 
+      '</div>')
+      .appendTo(whichFace).show();
+  }
+  hideDeleteControlAndRemoveHandle =  function()
+  {
+    $('#deleteControl').hide().remove();
+    $('.handle').draggable('destroy').remove();
+  }
+
+  var setFaceNameAtServer = function(photoId, faceId, nameId) // function to link a name to an existing face
+  {
+    $.ajax({
+             url: "#{link_api_v1_face_path({id: ':id'})}"
+               .replace(':id', faceId),
+             data: {photo_id: photoId, name_id: nameId, a_id: '#{params[:a_id]}'},
+             type: 'POST',
+             error: function(data)
+             {
+               alert('The mugmover server failed to update the name for this face');
+             },
+             success: function(data)
+             {
+               currentPhoto.set('notes', data.notes);
+             }
+           });   
+  }
+  var deleteFaceAtServer = function(pictureId, faceId) // function to delete a face at the server
+  {
+    var matchFaceId = function(obj, index) {
+      return obj.faceId == faceId;
+    }
+    $.ajax({
+             url: "#{api_v1_face_path({id: ':id'})}"
+                    .replace(':id', faceId),
+             data: {photo_id: pictureId, a_id: '#{params[:a_id]}'},
+             type: 'DELETE',
+             error: function()
+             {
+               alert("The mugmover server failed to delete the face");
+             },
+             success: function(data)
+             {
+               var matchingNoteRecord = $.grep(currentPhoto.get('notes'), matchFaceId)[0];
+               matchingNoteRecord.deleted = true;
+               $('.face-frame[data-fid=' + faceId + ']').hide();
+               // ### TODO Use Backbone subview
+
+                // Put the deleted face onto the list of faces available for restoration
+               var template = _.template($('#restore-menu-template-text').html());
+               var html = template({note: matchingNoteRecord});
+               $('#restoreFaces').append(html);
+ 
+               // Enable the button that accesses the list of faces the user may restore
+               $('#restoreButton').prop('disabled', false);
+               hideName();
+               hideDeleteControlAndRemoveHandle();
+             }
+           });   
+  }
+  var undeleteFaceAtServer = function(pictureId, faceId) // function to restore a deleted face at the server
+  {
+     var matchFaceId = function(obj, index) {
+       return obj.faceId == faceId;
+     }
+    $.ajax({
+            url: "#{undestroy_api_v1_face_path({id: ':id'})}"
+                   .replace(':id', faceId),
+            data: {photo_id: pictureId, a_id: '#{params[:a_id]}'},
+            type: 'POST',
+            error: function()
+            {
+              alert("The mugmover server failed to restore the face");
+            },
+            success: function(data)
+            {
+              var matchingNoteRecord = $.grep(currentPhoto.get('notes'), matchFaceId)[0];
+              matchingNoteRecord.deleted = false;
+              $('.face-frame[data-fid=' + faceId + ']').show();
+              $('#restoreFaces > li[data-fid=' + faceId + ']').remove();
+              $('#restoreButton').prop('disabled', ($('#restoreFaces > li').length == 0));
+              hideName();
+            }
+          });   
+  }
+
+  var createNewFaceAt = function(pictureId, offsetX, offsetY)
+  {
+    alert('createNewFaceAt');
+    $.ajax({
+            url: "#{api_v1_faces_path}",
+            data: {photo_id: pictureId, 
+                   a_id: '#{params[:a_id]}',
+                   x: offsetX, y: offsetY},
+            type: 'POST',
+            error: function()
+            {
+              alert("The mugmover server failed to create the face");
+            },
+            success: function(face)
+            {
+              // Tack on the last photo
+              var notes = currentPhoto.get('notes');
+              notes[notes.length] =  face;
+              var template = _.template($('#face-template-text').html());
+              var html = template({note: face});
+              var jqHtml = $(html);
+              $('#picture-container').append(jqHtml);
+              jqHtml.trigger('click').trigger('mouseover');
+            }
+          });   
+  }
+  $('#restoreFaces').on('mouseover', 'li', function()
+  {
+    $('.face-frame[data-fid=' + $(this).data('fid') + ']').show();  
+  });
+  $('#restoreFaces').on('mouseout', 'li', function()
+  {
+    var faceId = $(this).data('fid');
+    // Show or hide the particular frame based on its deleted state
+    var matchFaceId = function(obj, index) {
+      return obj.faceId == faceId;
+    }
+    var matchingNoteRecord = $.grep(currentPhoto.get('notes'), matchFaceId)[0];
+    if (matchingNoteRecord.deleted)
+    {
+      $('.face-frame[data-fid=' + faceId + ']').hide();
+    }      
+    else
+    {
+      $('.face-frame[data-fid=' + faceId + ']').show();
+    }      
+  });
+  $('#restoreFaces').on('click', 'li > a', function()
+  {
+    var faceId = $(this).parent('li').data('fid');
+    undeleteFaceAtServer(currentPhoto.id, faceId);
+  });
+
+  // ***** Code supporting the name entry *****
+
+  $('input#name-display-box').on('click', function (){
+    // Switch from the display mode to the entry mode
+    $('#name-display-form').hide();
+    $('#name-entry-form').show();
+    $('#name-entry-box').focus()
+  });
+  $('input#name-entry-box').on('focus', function() {
+    //X $('#names-container .row').hide(); // Hide all the rows
+    $('#names-container .row.hasfocus').removeClass('hasfocus');
+    $('#names-container').show();
+  });
+  $('input#name-entry-box').on('OLDinput', function() {
+    var substring = $.trim($(this).val().toLowerCase());
+    if (substring == '')
+    {
+      $('#names-container .row').hide();
+    }
+    else
+    {
+      $('#names-container .row').each(function() {
+        if ($(this).data('public-name').toLowerCase().indexOf(substring) > -1)
+        {
+          $(this).show();
+        }
+        else
+        {
+          $(this).hide();
+        }
+      });
+    }
+    $('#names-container .row.withfocus').removeClass('withfocus');
+  });
+
+  var assignNameToCurrentFace = function(targetRow) {
+    $('#names-container .row.withfocus').removeClass('withfocus');
+    $('#names-container .row').hide();
+    $('input#name-entry-box').val($(targetRow).data('public-name'));
+    window.console.log(currentPhoto.get('id'), $('input#name-entry-box').data('fid'), $(targetRow).data('nid'));
+    setFaceNameAtServer(currentPhoto.get('id'), $('input#name-entry-box').data('fid'), $(targetRow).data('nid'));
+  }
+  var transitionFromNameEntryToDisplay = function() {
+    // Copy the value to the display
+    $('input#name-display-box').val($('input#name-entry-box').val());
+    $('#name-entry-form').hide();
+    $('#name-display-form').show();     
+  }
+
+  $('input#name-entry-box').on('keydownISH', function(ev) {
+    // We intercept keydown (vs keyup) to inhibit some home/end cursor
+    // behavior in the text input box.
+    // 38 is up, 40 is down
+    if (ev.keyCode == 13) /* return/enter */
+    {
+      var withFocus = $('#names-container .row.withfocus').first();
+      if (withFocus.length == 1)
+      {
+        assignNameToCurrentFace(withFocus);
+      }
+      else
+      {
+        // Nothing is highlighted in the list, so save the result as a new name
+        window.console.log($('input#name-entry-box').data('fid'), $('input#name-entry-box').val())
+        // createFaceNameAtServer(photoId, faceId, 'John Doe'); // Create a new face name
+
+      }
+      transitionFromNameEntryToDisplay();
+      return false;
+    }
+    if ((ev.keyCode == 38) /* up-arrow */ || (ev.keyCode == 40)) /* down-arrow */
+    {
+      var withFocus = $('#names-container .row.withfocus');
+      if (withFocus.length != 0)
+      {
+        if (ev.keyCode == 40) // down
+        {
+          withFocus = $(withFocus).removeClass('withfocus').nextAll(':visible').first().addClass('withfocus');
+        }
+        else // up
+        {
+          withFocus = $(withFocus).removeClass('withfocus').prevAll(':visible').first().addClass('withfocus');
+        }
+      }
+      else
+      {
+        if (ev.keyCode == 40) // down
+        {
+          withFocus = $('#names-container .row:visible').first().addClass('withfocus');
+        }
+        else // up
+        {
+          withFocus = $('#names-container .row:visible').last().addClass('withfocus');         
+        }
+      }
+
+      // We repeat the test because something might now be selected (and wasn't before)
+      // If something is selected (.hasfocus), scroll it into view
+      if (withFocus.length != 0)
+      {
+        var index = withFocus.index('#names-container .row:visible');
+        var cellHeight = withFocus.height();
+        // Now make sure the item with focus is in view
+        var topOfWithFocus = index * cellHeight;
+        var bottomOfWithFocus = (index + 1) * cellHeight - 1;
+        var startOfVisible = $('#names-container').scrollTop();
+        var endOfVisible = startOfVisible + $('#names-container').height() - 1;
+
+        if (bottomOfWithFocus > endOfVisible)
+        {
+          // If the bottom of the one with focus is beyond what's in view, move it into place
+          $('#names-container').scrollTop(bottomOfWithFocus + 1 - $('#names-container').height());
+        }
+        else if (topOfWithFocus < startOfVisible)
+        {
+          // If the top of the visible item is above the top of the scroller, move it into place
+          $('#names-container').scrollTop(topOfWithFocus);
+        }
+      }
+      return false; // blocks the home/end action
+    }
+  });
+  $('#name-clear').on('click', function() {
+    $('input#name-entry-box').val('').focus();
+  });
+  // ***** This code supports the toolbar controls *****
+  
+  $('button#photoButton').on('click', function() {  router.navigate('show/' + currentPhoto.id , {trigger: true}); });
+  $('button#detailsButton').on('click', function() {  router.navigate('details/' + currentPhoto.id , {trigger: true}); });
+  $('.glyphicon-flag').on('click', function() {
+    var newState = toggleFlagSetting();
+    setFlagAtServer(newState);
+  });
+  $('#picturebar').width(i2x(totalPhotos) + endGap); // f is the endGap on the RHS
+
+  // ***** Code for supporting flag display and updates *****
+  
+  var setFlagColor = function(newState) { // function to set the displayed flag to match a given state
+    var obj = $('.glyphicon-flag');
+    $(obj).css({color:  newState ? 'purple' : 'gray' })
+          .attr('aria-label', newState ? 'flagged' : 'not flagged');
+  }
+  
+  var toggleFlagSetting = function() // function to flip the flag state and display the corresponding flag
+  {
+    var currentState = $.inArray(currentPhoto.attributes.flag, [1, true]) != -1;
+    setFlagColor(!currentState);
+    return !currentState;
+  }
+
+  var setFlagAtServer = function(newValue) // function to set the flag state and recover the display if it fails
+  {
+    $.ajax({
+             url: "#{flag_api_v1_pics_url}",
+             data: {a_id: '#{params[:a_id]}', id: currentPhoto.attributes.id, flag: newValue ? 1 : 0},
+             type: 'POST',
+             error: function()
+             {
+               alert("The mugmover server failed to flag the photo");
+             },
+             success: function(data)
+             {
+               currentPhoto.attributes.flag = data.photo.flag
+             },
+             complete: function()
+             {
+               var currentState = currentPhoto.attributes.flag; // restore the flag state
+               setFlagColor(currentState);
+             }
+
+           });   
+  }
+
+  // ***** This code deals with the scroller for navigating all the photos *****
+  
+  var scrollingDone = function()
+  {
+    var x = $('#picturebar-container').scrollLeft();
+    var i = x2i(x);
+    photoList.render({a_id: '#{params[:a_id]}', n: Math.floor(i / photosPerRequest)}); 
+  };
+  $('#picturebar-container').scroll( $.debounce( 250, scrollingDone) );
+
+  $('#picturebar').on('mouseover', '.picturethumb', function() {
+    $(this).addClass('enlarged').css({ top: $(this).position().top - #{thumbsizeWithBorder / 2},
+                                       left: $(this).position().left - #{thumbsizeWithBorder / 2}});
+                                     });
+  $('#picturebar').on('mouseout', '.picturethumb', function() {
+    $(this).removeClass('enlarged').css({ top: $(this).position().top + #{thumbsizeWithBorder / 2},
+                                          left: $(this).position().left + #{thumbsizeWithBorder / 2}});
+                                        });
+  $('#picturebar').on('click', '.picturethumb', function() {
+    $('#picturebar > .selected').removeClass('selected').addClass('unselected');
+    // TODO Fill in with the image you have. Requires knowing the AR of the photo 
+      $('#picture-container').html('&nbsp;').css({'background-image': $(this).css('background-image'), 
+                                                  "background-size": 'contain', 
+                                                  "background-repeat": 'none',
+                                                  "background-color": 'white',
+                                                  'width': $(this).attr('phw'),
+                                                  'height': $(this).attr('phh')});
+    //                                      .css(parseFloat($(this).attr("ar")) > 1.0 ? 'width' : 'height', "500px");
+    $(this).removeClass('unselected').addClass('selected');
+    router.navigate('show/' + $(this).attr('phid') , {trigger: true});
+  });
+
+  // ***** waiting to be categorized *****
+  var restoreFaceFramePointer = function()
+  {
+    $('.face-frame').css({cursor: 'pointer'});
+  }
+
+  // ***** This is all the Backbone stuff *****
+
+  var Photos = Backbone.Collection.extend({
+    url: "#{api_v1_pics_path(format: 'json')}"
+  });
+  var Photo = Backbone.Model.extend({
+    url: function() {return "#{api_v1_pics_path}/" + this.attributes.id + '.json?a_id=' + this.attributes.a_id},
+  });
+  var PhotoDetails = Backbone.Model.extend({
+    url: function() {return "#{details_api_v1_pics_path}" + '.json?a_id=' + this.attributes.a_id + '&id=' + this.attributes.id},
+  });
+  var Names = Backbone.Collection.extend({
+    url: "#{api_v1_names_path(format: 'json')}"
+  });
+  var Face = Backbone.Model.extend({});
+
+  var FaceFrame = Backbone.View.extend({
+    el: function() {
+      return '.face-frame[data-fid="' + this.model.faceId + '"]';
+    },
+    render: function(options)
+    {
+      var deletedFaceTemplate = _.template($('#deleted-face-template-text').html());
+      var deletedFaceContainer = $('#restoreFaces');
+      deletedFaceContainer.empty();
+      var activeFaceTemplate = _.template($('#face-template-text').html());
+      var activeFaceContainer =  $('#face-frame-container');
+
+      // This is a little odd: alwasys have an activeFace (even if it's deleted, it's just hidden)
+      // And if the face is deleted, then we have a menu <li> item as well.
+      if (this.model.deleted)
+      {
+        var html = deletedFaceTemplate(this.model);
+        deletedFaceContainer.append(html);
+      }
+      var html = activeFaceTemplate(this.model);
+      $(activeFaceContainer).append(html);  
+    },
+  });
+
+  var PhotoList = Backbone.View.extend({
+    el: '#picturebar',
+    render: function(options)
+    {
+      var photos =  new Photos();
+      var that = this;
+      photos.fetch({
+        data: { n: options.n, a_id: options.a_id },
+        error: function(photos)
+        {
+          alert('#{translations[language][:tryAgain]}');
+        },
+        success: function(photos)
+        {
+          var template = _.template($('#photos-template-text').html());
+          var html = template({ photos: photos.models });
+          that.$el.append(html);
+          return this;
+        }
+      })     
+    }
+  });
+
+  var NameList = Backbone.View.extend({
+    el: '#names-container',
+    render: function(options)
+    {
+      var names = new Names();
+      var that = this;
+      names.fetch({
+        data: {a_id: options.a_id},
+        error: function(names)
+        {
+          alert('An error occurred fetching the name list. Please reload the page.');
+        },
+        success: function(names)
+        {
+          var template = _.template($('#names-template-text').html());
+          var html = template({ names: names.models });
+          that.$el.append(html);
+          return this;
+        }
+      })
+    }
+  });
+
+  var ShowPhoto = Backbone.View.extend({
+    el: '#picture-container',
+    render: function(options)
+    {
+      currentPhoto = new Photo({a_id: options.a_id, id: options.id});
+      var that = this;
+      currentPhoto.fetch({
+        error: function(photo)
+        {
+          alert('#{translations[language][:tryAgain]}');
+        },
+        success: function(photo)
+        {
+          var template = _.template($('#photo-template-text').html());
+          var html = template({photo: photo});
+          that.$el.html(html);
+
+          setFlagColor(currentPhoto.attributes.flag);
+          if ($('#picturebar').html() == "")
+          {
+            photoList.render({a_id: options.a_id, n: 0});
+          }
+
+          $('#face-frame-container').empty();
+          var faces = [];
+          var faceFames = [];
+          $.each(photo.get('notes'), function(index, face) {
+            var f = new Face(face);
+            var ff = new FaceFrame({model: face});
+            faces.push(f);
+            ff.render();
+          });
+
+          $('#restoreButton').prop('disabled', $('#restoreFaces').is(':empty'));
+
+          if ($('#names-container').html() == "")
+          {
+            nameList.render({a_id: options.a_id});
+          }
+
+          return this;
+        }        
+      })
+    }
+  });
+
+  var ShowPhotoDetails = Backbone.View.extend(
+  {
+    el: '#picture-container',
+    render: function(options)
+    {
+      var photoDetails = new PhotoDetails({a_id: options.a_id, id: options.id});
+      var that = this;
+      photoDetails.fetch({
+        error: function(photo)
+        {
+          alert('An error occurred. Please try again.');
+        },
+        success: function(photo)
+        {
+          var template = _.template($('#photo-details-template-text').html());
+          var html = template({photo: photo});
+          that.$el.html(html).css({width: '100%'});
+          //          setFlagColor(currentPhoto.attributes.flag);
+          if ($('#picturebar').html() == "")
+          {
+            photoList.render({a_id: options.a_id, n: 0});
+          }
+          return this;
+        }        
+      })
+    }
+  });
+
+  var Router = Backbone.Router.extend(
+  {
+    routes: {
+      '':         'home',
+      'show/:id': 'show',
+      'details/:id': 'details',
+    }
+  });
+
+  var router = new Router();
+  var photoList = new PhotoList();
+  var showPhoto = new ShowPhoto();
+  var nameList = new NameList();
+  var showPhotoDetails = new ShowPhotoDetails();
+
+  router.on('route:home', function()
+  {
+    photoList.render({a_id: #{params[:a_id]}, n: 0});
+    nameList.render({a_id: #{params[:a_id]} });
+  });
+  router.on('route:show', function(id)
+  {
+    showPhoto.render({a_id: #{params[:a_id]}, id: id})
+  });
+  router.on('route:details', function(id)
+  {
+    showPhotoDetails.render({a_id: #{params[:a_id]}, id: id})
+  });
+  Backbone.history.start();

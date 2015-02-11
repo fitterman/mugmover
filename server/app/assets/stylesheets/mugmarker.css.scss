@@ -24,13 +24,15 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 white-space: nowrap;
               }
 .handle       {
-                position: absolute;
                 background-color: $blueish;
-                width: $handleWidth;
-                height: $handleWidth;
                 border-radius: $handleWidth / 2;
-                z-index: 125;
-                cursor: 'pointer'
+                cursor: nwse-resize;
+                position: absolute;
+                height: $handleWidth;
+                width: $handleWidth;
+                z-index: 150;
+                height: 10px;
+                width: 10px;
               }
 .unselected   { opacity: 0.5; }
 .selected     { background-color: #33f; border: $borderWidth solid red; opacity: 1.0; }
@@ -38,7 +40,7 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 width: 2 * $thumbsizeWithBorder;
                 height: 2 * $thumbsizeWithBorder;
               }
-#deleteControl span
+.deleteControl span
               {
                 background-color: $blueish;
                 border: 0.14 * $iconPixelDim solid rgba(0, 0, 0, 0);
@@ -52,13 +54,24 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 top: -(($iconPixelDim / 2) + $borderWidth);
                 width: $iconPixelDim;
               }
-#deleteControl span:hover
+.deleteControl span:hover
               {
                 background-color: #c00;
+              }
+.face-frame   {
+                cursor: pointer;
+                z-index: 110; 
+                position: absolute; 
+                border: 2px solid $blueish; 
               }
 #name-display-box:hover
               {
                 cursor: pointer;
+              }
+.name-display-form
+              {
+                  position: relative;
+                  width:  20em;
               }
 #names-container
               {
@@ -86,7 +99,15 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
               }
 .namenote     {
                 font-size: 70%;
-              }                  
+              }    
+#photo-img    {
+                cursor: crosshair;
+                max-height: 500px;
+                z-index: 1;
+                position: absolute;
+                top: 0;
+                left: 0;
+              }
 #picturebar-container::-webkit-scrollbar 
               {
                 -webkit-appearance: none; 

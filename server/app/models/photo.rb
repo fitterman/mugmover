@@ -61,4 +61,12 @@ class Photo < ActiveRecord::Base
   def scale_factor
     @sf ||= (MAX_PREVIEW_DIMENSION / [self.width, self.height].max)
   end
+
+  def scaled_h
+    Integer(self.height * scale_factor)
+  end
+  def scaled_w
+    Integer(self.width * scale_factor)
+  end
+
 end
