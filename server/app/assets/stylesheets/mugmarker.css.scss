@@ -7,7 +7,7 @@ $handleWidth:   10px;
 $thumbsizeWithBorder:  $thumbsize + $borderWidth;
 
 
-.picturethumb { 
+.photothumb { 
                 z-index: 2;
                 display: inline-flex; 
                 width: $thumbsizeWithBorder;
@@ -112,27 +112,27 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 top: 0;
                 left: 0;
               }
-#picturebar   {
+#photobar   {
                 position:relative;
               }
-#picturebar-container
+#photobar-container
               {
                 height: 114px; 
                 overflow-y: scroll;
                 white-space: nowrap;
               }
-#picturebar-container::-webkit-scrollbar 
+#photobar-container::-webkit-scrollbar 
               {
                 -webkit-appearance: none; 
                 height: 10px; 
                 width: 0px; 
               }
-#picturebar-container::-webkit-scrollbar-track 
+#photobar-container::-webkit-scrollbar-track 
               {
                 background-color: rgba(0, 0, 0, .2);  
                 border: 10px solid silver; 
               }
-#picturebar-container::-webkit-scrollbar-thumb 
+#photobar-container::-webkit-scrollbar-thumb 
               { 
                 border-radius: 8px; 
                 background-color: rgba(0, 0, 0, 0.4); 

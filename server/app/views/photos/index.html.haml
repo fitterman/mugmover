@@ -1,7 +1,7 @@
 - thumbsize = 50
 
 :css
-  .picturethumb { z-index: 2; display: inline-flex; 
+  .photothumb { z-index: 2; display: inline-flex; 
                   width: #{thumbsize}px; height: #{thumbsize}px; 
                   background-size: contain; background-color: white;
                   border: 2px solid white; }
@@ -18,16 +18,16 @@
 #caption
   &nbsp;
 
-#picturebar-container{style: 'height: 120px; overflow-y: scroll; white-space: nowrap;'}
-  #picturebar{style: "position:relative;" }
+#photobar-container{style: 'height: 120px; overflow-y: scroll; white-space: nowrap;'}
+  #photobar{style: "position:relative;" }
 
-#picture-container{style: 'position:relative;'}
+#photo-container{style: 'position:relative;'}
     
 :plain
   <script type="text/template" id="photos-template-text">
     <% _.each(photos, function(photo) { %>
-      <% if ($('.picturethumb[phid=' + photo.get('id') + ']').length == 0) { %>
-          <div class="picturethumb unselected" style="position: absolute; 
+      <% if ($('.photothumb[phid=' + photo.get('id') + ']').length == 0) { %>
+          <div class="photothumb unselected" style="position: absolute; 
               background-repeat: no-repeat; background-position: center; 
               background-image: url('<%- photo.get('thumb') %>');
               top: 27px;
@@ -38,7 +38,7 @@
           </div>
       <% }; %>
     <% }); %>
-    <% var rightX = $('#picturebar-container').scrollLeft() + $('#picturebar-container').width(); %>
+    <% var rightX = $('#photobar-container').scrollLeft() + $('#photobar-container').width(); %>
     <% var rightN = Math.floor(x2i(rightX) / photosPerRequest); %>
     <% var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); %>
     <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>
@@ -69,35 +69,35 @@
   var i2x = function(i) { return endGap + (i * photoWidth) };
   var x2i = function(x) { return Math.floor(Math.max(0, x - endGap) / photoWidth) };
 
-  $('#picturebar').width(i2x(totalPhotos) + endGap); // that is the endGap on the RHS
-  $('#picture-container').on('mouseover', '.floating', function() {
+  $('#photobar').width(i2x(totalPhotos) + endGap); // that is the endGap on the RHS
+  $('#photo-container').on('mouseover', '.floating', function() {
     $(this).css('border-color', 'red');
     $('#caption').html($(this).data('caption'));
   })
-  $('#picture-container').on('mouseout', '.floating', function() {
+  $('#photo-container').on('mouseout', '.floating', function() {
     $(this).css('border-color', 'silver');
     $('#caption').html('&nbsp;');
   });
 
   var scrollingDone = function() {
-    var x = $('#picturebar-container').scrollLeft();
+    var x = $('#photobar-container').scrollLeft();
     var i = x2i(x);
     photoList.render({flickr_id: '#{params[:flickr_id]}', n: Math.floor(i / photosPerRequest)}); 
   };
-  $('#picturebar-container').scroll( $.debounce( 250, scrollingDone) );
+  $('#photobar-container').scroll( $.debounce( 250, scrollingDone) );
 
-  $('#picturebar').on('mouseover', '.picturethumb', function() {
+  $('#photobar').on('mouseover', '.photothumb', function() {
     $(this).addClass('enlarged').css({ top: $(this).position().top - #{thumbsize / 2},
                                        left: $(this).position().left - #{thumbsize / 2}});
                                      });
-  $('#picturebar').on('mouseout', '.picturethumb', function() {
+  $('#photobar').on('mouseout', '.photothumb', function() {
     $(this).removeClass('enlarged').css({ top: $(this).position().top + #{thumbsize / 2},
                                           left: $(this).position().left + #{thumbsize / 2}});
                                         });
-  $('#picturebar').on('click', '.picturethumb', function() {
-    $('#picturebar > .selected').removeClass('selected').addClass('unselected');
+  $('#photobar').on('click', '.photothumb', function() {
+    $('#photobar > .selected').removeClass('selected').addClass('unselected');
     // TODO Fill in with the image you have. Requires knowing the AR of the photo 
-    //$('#picture-container').html('&nbsp;').css({'background-image': $(this).css('background-image'), 
+    //$('#photo-container').html('&nbsp;').css({'background-image': $(this).css('background-image'), 
     //                                            "background-size": "contain", 
     //                                            "background-color": "white"})
     //                                      .css(parseFloat($(this).attr("ar")) > 1.0 ? 'width' : 'height', "500px");
@@ -113,7 +113,7 @@
   });
 
   var PhotoList = Backbone.View.extend({
-    el: '#picturebar',
+    el: '#photobar',
     render: function(options) {
       var photos =  new Photos();
       var that = this;
@@ -133,7 +133,7 @@
     }
   });
   var ShowPhoto = Backbone.View.extend({
-    el: '#picture-container',
+    el: '#photo-container',
     render: function(options) {
       var photo = new Photo({id: options.id});
       var that = this;

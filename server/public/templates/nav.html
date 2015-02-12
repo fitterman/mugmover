@@ -1,7 +1,7 @@
-<div id="picturebar-container" class="row">
-  <div id="picturebar">
+<div id="photobar-container" class="row">
+  <div id="photobar">
     <a ng-repeat="photo in photos" ui-sref="photo.edit({id: photo.id})">
-      <div class="picturethumb unselected" ng-style="{'background-image': 'url(\'' + photo.thumb + '\')', top: '27px', 
+      <div class="photothumb unselected" ng-style="{'background-image': 'url(\'' + photo.thumb + '\')', top: '27px', 
         left: indexX(photo) + 'px'}">
       </div>
     </a>
@@ -9,9 +9,9 @@
 </div>
 <div style="display:none">
       -# TODO  There was code here to make sure it doesn't show the same photo twice:
-      -#  <% if ($('.picturethumb[phid=' + photo.get('id') + ']').length == 0) { %>
+      -#  <% if ($('.photothumb[phid=' + photo.get('id') + ']').length == 0) { %>
       -#     phw="<%- photo.get('scaled_w') %>" phh="<%- photo.get('scaled_h') %>"  phid="<%- photo.get('id') %>">
-      -# <% var rightX = $('#picturebar-container').scrollLeft() + $('#picturebar-container').width(); %>
+      -# <% var rightX = $('#photobar-container').scrollLeft() + $('#photobar-container').width(); %>
       -# <% var rightN = Math.floor(x2i(rightX) / photosPerRequest); %>
       -# <% var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); %>
       -# <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>

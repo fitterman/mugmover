@@ -503,7 +503,7 @@
             DDLogError(@"ERROR   No result returned by FMDatabase");
             return nil;
         }
-        // TODO By counting rejected faces you can spot pictures with large crowds where only one person matters
+        // TODO By counting rejected faces you can spot photos with large crowds where only one person matters
         FMResultSet *resultSet = [faceDb executeQuery: @"SELECT f.*, "
                                   "fn.name, fn.uuid faceNameUuid, fn.fullName, fn.keyVersionUuid FROM RKDetectedFace f "
                                   "LEFT JOIN RKFaceName fn ON f.faceKey = fn.faceKey "

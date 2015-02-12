@@ -162,26 +162,26 @@
 
   var appServices = angular.module('phonecatServices', ['ngResource']);
 
-  appServices.factory('Photo',  ['$resource',
-                                        function($resource)
-                                        { // TODO HOW DO YOU DEAL WITH ERRORS?
-                                          return $resource('#{api_v1_pics_path}/:photoId.json', 
-                                                           {}, 
-                                                           {
-                                                              query: 
-                                                                {
-                                                                  method:'GET', 
-                                                                  params:
-                                                                  {
-                                                                    photoId: 200, 
-                                                                    aId: 1
-                                                                  },
-                                                                  isArray: true
-                                                              }
-                                                            }
-                                          );
-                                        }
-                                      ]
+  appServices.factory('Photo', ['$resource',
+                                function($resource)
+                                { // TODO HOW DO YOU DEAL WITH ERRORS?
+                                  return $resource('#{api_v1_pics_path}/:photoId.json', 
+                                                   {}, 
+                                                   {
+                                                      query: 
+                                                        {
+                                                          method:'GET', 
+                                                          params:
+                                                          {
+                                                            photoId: 200, 
+                                                            aId: 1
+                                                          },
+                                                          isArray: true
+                                                      }
+                                                    }
+                                  );
+                                }
+                              ]
   );
   /*
 
@@ -208,10 +208,10 @@
       var faceCenterX = containerPosition.left + facePosition.left + (faceOriginalW / 2);
       var faceCenterY = containerPosition.top + facePosition.top + (faceOriginalH / 2);
       var distanceToEachEdge = [faceCenterX - containerPosition.left, 
-                                containerPosition.left + $('#picture-container > img').width() - faceCenterX];
+                                containerPosition.left + $('#photo-container > img').width() - faceCenterX];
       var maxDeltaX = Math.min.apply(null, distanceToEachEdge);
       distanceToEachEdge = [faceCenterY - containerPosition.top, 
-                            containerPosition.top + $('#picture-container > img').height() - faceCenterY];
+                            containerPosition.top + $('#photo-container > img').height() - faceCenterY];
       var maxDeltaY = Math.min.apply(null, distanceToEachEdge);
       var handleContainment = [faceCenterX, // Do not adjust because handle is positioned from its left edge
                                faceCenterY,
@@ -224,9 +224,9 @@
     {
       var faceContainmentRectangle = [containerPosition.left + #{handleWidth/2}, 
                                       containerPosition.top + #{handleWidth/2},
-                                      containerPosition.left + $('#picture-container > img').width() -
+                                      containerPosition.left + $('#photo-container > img').width() -
                                         ($(face).width() + #{handleWidth}),
-                                      containerPosition.top + $('#picture-container > img').height() -
+                                      containerPosition.top + $('#photo-container > img').height() -
                                         ($(face).height() + #{handleWidth})];
       $(target).draggable('option', 'containment', faceContainmentRectangle)
     }
