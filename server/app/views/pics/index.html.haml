@@ -35,17 +35,17 @@
   app.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
     $urlRouterProvider.otherwise('/');
     $stateProvider
-      .state('home',
+      .state('photo',
              {
-               url:'/',
+               url:'/photo/:id',
                templateUrl: '/templates/photo.html',
                controller: 'PhotoController'
              })
-      .state('about', 
+      .state('detail', 
              {
-               url:'/about',
-               templateUrl: '/templates/about.html',
-               controller: 'AboutController'
+               url:'/detail/:id',
+               templateUrl: '/templates/detail.html',
+               controller: 'DetailController'
              })
   }]);
 
@@ -186,9 +186,24 @@
       $(target).draggable('option', 'containment', faceContainmentRectangle)
     }
   */
+  app.controller('DetailController', ['$scope',
+                                      '$http',
+                                      function($scope, $http)
+                                      {
+                                        $http.get('#{details_api_v1_pics_path(a_id: 1, id: 3, format: :json)}')
+                                             .success(function(response)
+                                                      {
+                                                        $scope.details = response
+                                                      })
+                                        $scope.detailsAsJson = function()
+                                        {
+                                          return angular.toJson($scope.details, true);
+                                        }
+                                      }
+  ])
   app.controller('PhotoController', ['$scope', 
                                       '$http', 
-                                      function ($scope, $http)
+                                      function($scope, $http)
                                       {
                                         $http.get("#{api_v1_pics_path}/3.json?a_id=1") // TODO Add actual photo id
                                              .success(function(response)
@@ -266,6 +281,7 @@
                                             '$http', 
                                             function($scope, $http)
                                             {
+                                              $scope.currentPhotoId = 4;
                                               $http.get("#{api_v1_pics_path(format: :json)}?a_id=1&n=1")
                                                    .success(function(response)
                                                             { 
@@ -319,42 +335,42 @@
 .row
   %p#notice= notice
 
-.row#picturebar-container{style: 'height: 114px; overflow-y: scroll; white-space: nowrap;',
-                          'ng-controller' => 'NavigationController'}
-  #picturebar{style: 'position:relative;' }
-    .picturethumb.unselected{'ng-repeat' => 'photo in photos', |
-                             'ng-style' => '{position: "absolute", "background-repeat": "no-repeat", |
-                                             "background-position": "center", |
-                                             "background-image": "url(\"" + photo.thumb + "\")", top: "27px", |
-                                             left: indexX(photo) + "px"}' } 
-    -#  There was code here to make sure it doesn't show the same photo twice:
-    -#  <% if ($('.picturethumb[phid=' + photo.get('id') + ']').length == 0) { %>
-    -#     phw="<%- photo.get('scaled_w') %>" phh="<%- photo.get('scaled_h') %>"  phid="<%- photo.get('id') %>">
-    -# <% var rightX = $('#picturebar-container').scrollLeft() + $('#picturebar-container').width(); %>
-    -# <% var rightN = Math.floor(x2i(rightX) / photosPerRequest); %>
-    -# <% var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); %>
-    -# <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>
-    -# <% photoList.render({a_id: '#{params[:a_id]}', n: currentN + 1}); %>
-    -# <% }; %>
+.div{'ng-controller' => 'NavigationController'}
+  .row#picturebar-container{style: 'height: 114px; overflow-y: scroll; white-space: nowrap;'}
+    #picturebar{style: 'position:relative;' }
+      .picturethumb.unselected{'ng-repeat' => 'photo in photos', |
+                               'ng-style' => '{position: "absolute", "background-repeat": "no-repeat", |
+                                               "background-position": "center", |
+                                               "background-image": "url(\"" + photo.thumb + "\")", top: "27px", |
+                                               left: indexX(photo) + "px"}' } 
+      -#  There was code here to make sure it doesn't show the same photo twice:
+      -#  <% if ($('.picturethumb[phid=' + photo.get('id') + ']').length == 0) { %>
+      -#     phw="<%- photo.get('scaled_w') %>" phh="<%- photo.get('scaled_h') %>"  phid="<%- photo.get('id') %>">
+      -# <% var rightX = $('#picturebar-container').scrollLeft() + $('#picturebar-container').width(); %>
+      -# <% var rightN = Math.floor(x2i(rightX) / photosPerRequest); %>
+      -# <% var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); %>
+      -# <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>
+      -# <% photoList.render({a_id: '#{params[:a_id]}', n: currentN + 1}); %>
+      -# <% }; %>
 
-.row{style: 'margin: 1em;'}
-  .col-xs-8
-    .btn-group{role: :group, 'aria-label' => 'Control what is displayed'}
-      %button.btn.btn-default{id: :photoButton }
-        #{translations[language][:photoButton]}
-      %a.btn.btn-default{id: :detailsButton, 'ui-sref' => 'about'}
-        #{translations[language][:detailsButton]}
-    .btn-group{id: :restoreGroup}
-      %button.btn.btn-default.dropdown-toggle{id: :restoreButton, 
-                                              'data-toggle' => :dropdown, 
-                                              'aria-expanded' => 'false'}
-        #{translations[language][:restoreButton]}
-        %span.caret
-      %ul.dropdown-menu{id: :restoreFaces, role: :menu}
-  .col-xs-4
-    %span.glyphicon.glyphicon-flag.pull-right{style: 'font-size: 140%;', 
-                                              title: translations[language][:markPhoto],
-                                              'aria-label' => 'not flagged'}
+  .row{style: 'margin: 1em;'}
+    .col-xs-8
+      .btn-group{role: :group, 'aria-label' => 'Control what is displayed'}
+        %button.btn.btn-default{id: :photoButton, 'ui-sref' => 'photo({id: currentPhotoId})' }
+          #{translations[language][:photoButton]}
+        %a.btn.btn-default{id: :detailsButton, 'ui-sref' => 'detail({id: currentPhotoId})' }
+          #{translations[language][:detailsButton]}
+      .btn-group{id: :restoreGroup}
+        %button.btn.btn-default.dropdown-toggle{id: :restoreButton, 
+                                                'data-toggle' => :dropdown, 
+                                                'aria-expanded' => 'false'}
+          #{translations[language][:restoreButton]}
+          %span.caret
+        %ul.dropdown-menu{id: :restoreFaces, role: :menu}
+    .col-xs-4
+      %span.glyphicon.glyphicon-flag.pull-right{style: 'font-size: 140%;', 
+                                                title: translations[language][:markPhoto],
+                                                'aria-label' => 'not flagged'}
 
 .row{'ui-view' => true, 'ng-controller' => 'PhotoController'}
 
