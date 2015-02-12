@@ -102,6 +102,7 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
 #photo-img    {
                 cursor: crosshair;
                 max-height: 500px;
+                max-width: 500px;
                 z-index: 1;
                 position: absolute;
                 top: 0;
