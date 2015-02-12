@@ -187,10 +187,11 @@
     }
   */
   app.controller('DetailController', ['$scope',
+                                      '$stateParams',
                                       '$http',
-                                      function($scope, $http)
+                                      function($scope, $stateParams, $http)
                                       {
-                                        $http.get('#{details_api_v1_pics_path(a_id: 1, id: 3, format: :json)}')
+                                        $http.get('#{details_api_v1_pics_path(format: :json)}?a_id=1&id=' + $stateParams.id )
                                              .success(function(response)
                                                       {
                                                         $scope.details = response
@@ -201,11 +202,12 @@
                                         }
                                       }
   ])
-  app.controller('PhotoController', ['$scope', 
+  app.controller('PhotoController', ['$scope',
+                                      '$stateParams',
                                       '$http', 
-                                      function($scope, $http)
+                                      function($scope, $stateParams, $http)
                                       {
-                                        $http.get("#{api_v1_pics_path}/3.json?a_id=1") // TODO Add actual photo id
+                                        $http.get("#{api_v1_pics_path}/" + $stateParams.id + ".json?a_id=1") // TODO Add actual photo id
                                              .success(function(response)
                                                       { 
                                                          $scope.photo = response;
@@ -277,11 +279,11 @@
                                     ]
   );
 
-   app.controller('NavigationController', [ '$scope', 
+   app.controller('NavigationController', [ '$scope',
+                                            '$stateParams',
                                             '$http', 
-                                            function($scope, $http)
+                                            function($scope, $stateParams, $http)
                                             {
-                                              $scope.currentPhotoId = 4;
                                               $http.get("#{api_v1_pics_path(format: :json)}?a_id=1&n=1")
                                                    .success(function(response)
                                                             { 
@@ -292,6 +294,10 @@
                                                               {
                                                                 return endGap + (item.index * photoWidth);
                                                               }
+                                              $scope.currentPhotoIndex = function()
+                                                                         {
+                                                                           return $stateParams.id;
+                                                                         }
                                             }
                                           ]
   );
@@ -313,15 +319,7 @@
                                       }
                                     ]
   );
-  app.factory( 'musicPlayer', function() {
-    var currentSongId;
 
-    // public API
-    return {
-      getCurrentSong: function () { return currentSongId; },
-      setCurrentSong: function ( id ) { currentSongId = id; }
-    };
-  });
   app.filter('matchesNameNeedle', function ()
                                   {
                                     return function (name) {
@@ -342,7 +340,9 @@
                                'ng-style' => '{position: "absolute", "background-repeat": "no-repeat", |
                                                "background-position": "center", |
                                                "background-image": "url(\"" + photo.thumb + "\")", top: "27px", |
-                                               left: indexX(photo) + "px"}' } 
+                                               left: indexX(photo) + "px"}'}
+        %a{'ui-sref' => 'photo({id: photo.id})'}
+          x
       -#  There was code here to make sure it doesn't show the same photo twice:
       -#  <% if ($('.picturethumb[phid=' + photo.get('id') + ']').length == 0) { %>
       -#     phw="<%- photo.get('scaled_w') %>" phh="<%- photo.get('scaled_h') %>"  phid="<%- photo.get('id') %>">
@@ -356,9 +356,9 @@
   .row{style: 'margin: 1em;'}
     .col-xs-8
       .btn-group{role: :group, 'aria-label' => 'Control what is displayed'}
-        %button.btn.btn-default{id: :photoButton, 'ui-sref' => 'photo({id: currentPhotoId})' }
+        %button.btn.btn-default{id: :photoButton, 'ui-sref' => 'photo({id: currentPhotoIndex()})' }
           #{translations[language][:photoButton]}
-        %a.btn.btn-default{id: :detailsButton, 'ui-sref' => 'detail({id: currentPhotoId})' }
+        %a.btn.btn-default{id: :detailsButton, 'ui-sref' => 'detail({id: currentPhotoIndex()})' }
           #{translations[language][:detailsButton]}
       .btn-group{id: :restoreGroup}
         %button.btn.btn-default.dropdown-toggle{id: :restoreButton, 
@@ -372,7 +372,7 @@
                                                 title: translations[language][:markPhoto],
                                                 'aria-label' => 'not flagged'}
 
-.row{'ui-view' => true, 'ng-controller' => 'PhotoController'}
+.row{'ui-view' => true}
 
 %div{'ng-controller' => 'NamesController'}
   #name{style: "display: block;"}
