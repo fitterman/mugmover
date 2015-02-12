@@ -1,6 +1,6 @@
 <div id="picturebar-container" class="row">
   <div id="picturebar">
-    <a ng-repeat="photo in photos" ui-sref="photo({id: photo.id})">
+    <a ng-repeat="photo in photos" ui-sref="photo.edit({id: photo.id})">
       <div class="picturethumb unselected" ng-style="{'background-image': 'url(\'' + photo.thumb + '\')', top: '27px', 
         left: indexX(photo) + 'px'}">
       </div>
@@ -18,29 +18,6 @@
       -# <% photoList.render({a_id: '#{params[:a_id]}', n: currentN + 1}); %>
       -# <% }; %>
 </div>
-<div class="row" style="margin: 1em;">
-  <div class="col-xs-8">
-    <div class="btn-group" role="gorup" aria-label="Control what is displayed">
-      <a id="photoButton" class="btn btn-default" ui-sref="photo({id: currentPhotoIndex()})">
-        {{xlate('photoButton')}}
-      </a>
-      <a id="detailsButton" class="btn btn-default" ui-sref="detail({id: currentPhotoIndex()})">
-        {{xlate('detailsButton')}}
-      </a>
-    </div>
-    <div id="restoreGroup" class="btn-group">
-      <button id="restoreButton" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-              aria-expanded="false">
-        {{xlate('restoreButton')}}
-        <span class="caret"></span>
-      </button>
-      <ul id="restoreFaces" class="dropdown-menu" role="menu"></ul>
-    </div>
-  </div>
-  <div class="col-xs-4">
-    <span class="glyphicon glyphicon-flag pull-right" 
-          style="font-size: 140%;" 
-          title="{{xlate('markPhoto')}}"
-          aria-label="not flagged"></span>
-  </div>
+
+<div ui-view="display">
 </div>

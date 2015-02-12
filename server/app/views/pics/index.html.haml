@@ -20,18 +20,25 @@
 
   // Configure the router (ui-router)
   app.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
-    $urlRouterProvider.otherwise('/');
+    $urlRouterProvider.otherwise('/photos');
     $stateProvider
       .state('photo',
               {
-                url:'/photo/:id',
+                url:'/photos',
                 views:
                 {
                   navigation: 
                   {
                     templateUrl: '/templates/nav.html',
                     controller: 'NavigationController'
-                  },
+                  }
+                }
+             })
+      .state('photo.edit',
+              {
+                url:'/edit/:id',
+                views:
+                {
                   display:
                   {
                     templateUrl: '/templates/photo.html',
@@ -40,16 +47,11 @@
 
                 }
              })
-      .state('detail', 
+      .state('photo.detail', 
               {
                 url:'/detail/:id',
                 views:
                 {
-                  navigation: 
-                  {
-                    templateUrl: '/templates/nav.html',
-                    controller: 'NavigationController'
-                  },
                   display:
                   {
                     templateUrl: '/templates/detail.html',
@@ -235,11 +237,11 @@
                                       'translations', 
                                       function($scope, $stateParams, $http, translations)
                                       {
-                                        console.log('#{details_api_v1_pics_path(format: :json)}?a_id=1&id=' + $stateParams.id );
                                         $http.get('#{details_api_v1_pics_path(format: :json)}?a_id=1&id=' + $stateParams.id )
                                              .success(function(response)
                                                       {
-                                                        $scope.details = response
+                                                        $scope.photo = {id: $stateParams.id}; // To support navigation in partial
+                                                        $scope.details = response;
                                                       })
                                         $scope.detailsAsJson = function()
                                         {
@@ -343,10 +345,6 @@
                                                               {
                                                                 return endGap + (item.index * photoWidth);
                                                               }
-                                              $scope.currentPhotoIndex = function()
-                                                                         {
-                                                                           return $stateParams.id;
-                                                                         }
                                               $scope.xlate = translations.translate;
                                             }
                                           ]
@@ -386,8 +384,6 @@
   %p#notice= notice
 
 .div{'ui-view' => 'navigation'}
-
-.row{'ui-view' => 'display'}
 
 %div{'ng-controller' => 'NamesController'}
   #name{style: "display: block;"}
