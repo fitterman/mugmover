@@ -23,7 +23,31 @@
                          tryAgain: 'Anway errorway occurredway. easePlay ytray againway.' } }
 
 :javascript
-  var app = angular.module('mugmarker', []);
+  var endGap = 400; // pixels
+  var photoWidth = #{thumbsizeWithBorder}; // pixels (borderWidth px on each side)
+  var totalPhotos = #{@total_photos};
+  var photosPerRequest = #{Api::V1::PicsController::PAGESIZE};
+  var lastRequestN = Math.floor(totalPhotos  / photosPerRequest);
+
+  var app = angular.module('mugmarker', ['ui.router']);
+
+  // Configure the router (ui-router)
+  app.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
+    $urlRouterProvider.otherwise('/');
+    $stateProvider
+      .state('home',
+             {
+               url:'/',
+               templateUrl: '/templates/photo.html',
+               controller: 'PhotoController'
+             })
+      .state('about', 
+             {
+               url:'/about',
+               templateUrl: '/templates/about.html',
+               controller: 'AboutController'
+             })
+  }]);
 
   // mmMovable: not really draggable (no drop needed), with a containment rectangle specified
   // derived from https://docs.angularjs.org/guide/directive (see "Creating a Directive that Adds Event Listeners")
@@ -39,6 +63,7 @@
       link: function(scope, element, attr, ctrl) 
       {
         var ele = element[0]; // extract the actual element
+
         var top = scope.containment.top - (ele.offsetHeight / 2);
         var bottom = scope.containment.top + scope.containment.height - (ele.offsetHeight / 2);
 
@@ -161,9 +186,9 @@
       $(target).draggable('option', 'containment', faceContainmentRectangle)
     }
   */
-  app.controller('PhotosController', ['$scope', 
+  app.controller('PhotoController', ['$scope', 
                                       '$http', 
-                                      function PhotosController($scope, $http)
+                                      function ($scope, $http)
                                       {
                                         $http.get("#{api_v1_pics_path}/3.json?a_id=1") // TODO Add actual photo id
                                              .success(function(response)
@@ -237,9 +262,27 @@
                                     ]
   );
 
+   app.controller('NavigationController', [ '$scope', 
+                                            '$http', 
+                                            function($scope, $http)
+                                            {
+                                              $http.get("#{api_v1_pics_path(format: :json)}?a_id=1&n=1")
+                                                   .success(function(response)
+                                                            { 
+                                                               $scope.photos = response;
+                                                            }
+                                                   );
+                                              $scope.indexX = function(item)
+                                                              {
+                                                                return endGap + (item.index * photoWidth);
+                                                              }
+                                            }
+                                          ]
+  );
+
   app.controller('NamesController', [ '$scope', 
                                       '$http', 
-                                      function NamesController($scope, $http)
+                                      function($scope, $http)
                                       {
                                         $http.get("#{api_v1_names_path}.json?a_id=1")
                                              .success(function(response)
@@ -271,20 +314,35 @@
                                   }
   );
 
-  
+
 -# // ***** This is all the markup for the page *****
 .row
   %p#notice= notice
 
-.row#picturebar-container{style: 'height: 114px; overflow-y: scroll; white-space: nowrap;'}
-  #picturebar{style: "position:relative;" }
+.row#picturebar-container{style: 'height: 114px; overflow-y: scroll; white-space: nowrap;',
+                          'ng-controller' => 'NavigationController'}
+  #picturebar{style: 'position:relative;' }
+    .picturethumb.unselected{'ng-repeat' => 'photo in photos', |
+                             'ng-style' => '{position: "absolute", "background-repeat": "no-repeat", |
+                                             "background-position": "center", |
+                                             "background-image": "url(\"" + photo.thumb + "\")", top: "27px", |
+                                             left: indexX(photo) + "px"}' } 
+    -#  There was code here to make sure it doesn't show the same photo twice:
+    -#  <% if ($('.picturethumb[phid=' + photo.get('id') + ']').length == 0) { %>
+    -#     phw="<%- photo.get('scaled_w') %>" phh="<%- photo.get('scaled_h') %>"  phid="<%- photo.get('id') %>">
+    -# <% var rightX = $('#picturebar-container').scrollLeft() + $('#picturebar-container').width(); %>
+    -# <% var rightN = Math.floor(x2i(rightX) / photosPerRequest); %>
+    -# <% var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); %>
+    -# <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>
+    -# <% photoList.render({a_id: '#{params[:a_id]}', n: currentN + 1}); %>
+    -# <% }; %>
 
 .row{style: 'margin: 1em;'}
   .col-xs-8
     .btn-group{role: :group, 'aria-label' => 'Control what is displayed'}
       %button.btn.btn-default{id: :photoButton }
         #{translations[language][:photoButton]}
-      %button.btn.btn-default{id: :detailsButton }
+      %a.btn.btn-default{id: :detailsButton, 'ui-sref' => 'about'}
         #{translations[language][:detailsButton]}
     .btn-group{id: :restoreGroup}
       %button.btn.btn-default.dropdown-toggle{id: :restoreButton, 
@@ -298,38 +356,7 @@
                                               title: translations[language][:markPhoto],
                                               'aria-label' => 'not flagged'}
 
-.row{'ng-controller' => 'PhotosController'}
-  .col-xs-8
-    #picture-container{style: 'position: relative;'}
-      %img#photo-img.img-responsive{src: '{{photo.url}}',
-                                    'ng-click' => 'addFaceAt($event.offsetX, $event.offsetY)'}
-      #face-frame-container
-        .face-frame{'ng-repeat' => 'face in photo.notes',
-                    'ng-hide' => 'face.deleted',
-                    'mm-movable' => 'face',
-                    'mm-movable-behavior' => 'move',
-                    'mm-movable-containment' => '{top: -8 , left:  -15.5, width: 1000, height: 1000}',
-                    'ng-mouseenter' => 'setHoverFace(face)',
-                    'ng-mouseleave' => 'setHoverFace(null)',
-                    'ng-style' => '{width: face.w + "px", height: face.h + "px", left: face.x + "px", top: face.y + "px", cursor: (face.manual ? "move" : "default")}'}
-          .deleteControl{'ng-style' => '{position: "relative"}',
-                         'ng-click' => 'confirmFaceDelection(face)'}
-            %span.glyphicon.glyphicon-remove{'aria-label'=> "#{translations[language][:deleteFace]}", 
-                                             'title'=>"#{translations[language][:deleteFace]}"}
-          %form.name-display-form{'ng-style' => '{top: face.h  - 2 + "px"}'}
-            %input.name-display-box.form-control.input-sm.ellipsis{'ng-model' => 'face.text',
-                                                                   'ng-show' => '(face === hoverFace)',
-                                                                   type: :text, 
-                                                                   placeholder: 'Unknown',
-                                                                   readonly: 'readonly'}
-          .handle{'ng-show' => '{{face.manual}}', 
-                  'mm-movable' => 'face',
-                  'mm-movable-behavior' => 'resize',
-                  'mm-movable-containment' => '{top: (face.w / 2) + 10, left: (face.h / 2) + 10, width: 100, height: 100}',
-                  'mm-comment' => '8 in the next line is the "magic_adjustment_factor"',
-                  'ng-style' => '{position: relative, top: face.h - 8 + "px", left: face.w  - 8 + "px"}' }
-            &nbsp;
-
+.row{'ui-view' => true, 'ng-controller' => 'PhotoController'}
 
 %div{'ng-controller' => 'NamesController'}
   #name{style: "display: block;"}
@@ -338,7 +365,8 @@
         %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",
                                                     :placeholder => "Enter Name",
                                                     :type => "text"}/
-        %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{"aria-label" => "Clear the name input field", :style => "top: 0;"}
+        %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{"aria-label" => "Clear the name input field", |
+                                                                             :style => "top: 0;"}
       #names-container{:style => "width: 20em; max-height: 170px; display: block;"}
         .row{'ng-repeat' => 'name in names', 
              'ng-click' => 'setSelectedName(name)',
