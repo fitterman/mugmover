@@ -19,8 +19,8 @@
             ng-style="{position: relative}"
             ng-click="confirmFaceDelection(face)">
         <span class="glyphicon glyphicon-remove"
-              aria-label="#{translations[language][:deleteFace]}"
-              title="#{translations[language][:deleteFace]}"></span>
+              aria-label="{{xlate('deleteFace')}}"
+              title="{{xlate('deleteFace')}}"></span>
       </div>
       <form class="name-display-form"
             ng-style="{top: face.h  - 2 + 'px'}">

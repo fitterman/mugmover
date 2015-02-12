@@ -8,12 +8,16 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
 
 
 .picturethumb { 
-                z-index: 2; display: 
-                inline-flex; 
+                z-index: 2;
+                display: inline-flex; 
                 width: $thumbsizeWithBorder;
                 height: $thumbsizeWithBorder;
-                background-size: contain; background-color: white;
+                background-size: contain; 
+                background-color: white;
                 border: $borderWidth solid white; 
+                position: absolute;
+                background-repeat: no-repeat;
+                background-position: center; 
               }
 #name         { 
                 z-index: 108; white-space: nowrap; position: absolute;
@@ -107,6 +111,15 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 position: absolute;
                 top: 0;
                 left: 0;
+              }
+#picturebar   {
+                position:relative;
+              }
+#picturebar-container
+              {
+                height: 114px; 
+                overflow-y: scroll;
+                white-space: nowrap;
               }
 #picturebar-container::-webkit-scrollbar 
               {

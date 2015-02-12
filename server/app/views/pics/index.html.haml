@@ -6,23 +6,10 @@
 - thumbsizeWithBorder = thumbsize + borderWidth
 - magic_adjustment_factor = 8
 
-- language = :ia
-- translations = { en: { confirmDeleteFace: 'Do you really want to delete this face?',
-                         deleteFace: 'Delete face',
-                         detailsButton: 'Details', 
-                         photoButton: 'Photo', 
-                         markPhoto: 'Mark this photo for later attention',
-                         restoreButton: 'Restore Faces',
-                         tryAgain: 'An error occurred. Please try again.' }, 
-                   ia: { confirmDeleteFace: 'oDay youway eallyray antway otay eleteday isthay acefay?',
-                         deleteFace: 'eleteDay acefay',
-                         detailsButton: 'etailsDay', 
-                         photoButton: 'otoPhay',
-                         markPhoto: 'arkMay isthay otophay orfay aterlay attentionway',
-                         restoreButton: 'estoreRay acesFay',
-                         tryAgain: 'Anway errorway occurredway. easePlay ytray againway.' } }
-
 :javascript
+
+  var language = 'ia';
+
   var endGap = 400; // pixels
   var photoWidth = #{thumbsizeWithBorder}; // pixels (borderWidth px on each side)
   var totalPhotos = #{@total_photos};
@@ -36,18 +23,73 @@
     $urlRouterProvider.otherwise('/');
     $stateProvider
       .state('photo',
-             {
-               url:'/photo/:id',
-               templateUrl: '/templates/photo.html',
-               controller: 'PhotoController'
+              {
+                url:'/photo/:id',
+                views:
+                {
+                  navigation: 
+                  {
+                    templateUrl: '/templates/nav.html',
+                    controller: 'NavigationController'
+                  },
+                  display:
+                  {
+                    templateUrl: '/templates/photo.html',
+                    controller: 'PhotoController'
+                  }
+
+                }
              })
       .state('detail', 
-             {
-               url:'/detail/:id',
-               templateUrl: '/templates/detail.html',
-               controller: 'DetailController'
+              {
+                url:'/detail/:id',
+                views:
+                {
+                  navigation: 
+                  {
+                    templateUrl: '/templates/nav.html',
+                    controller: 'NavigationController'
+                  },
+                  display:
+                  {
+                    templateUrl: '/templates/detail.html',
+                    controller: 'DetailController'
+                  }
+
+                }
              })
   }]);
+
+
+  app.factory('translations', function() 
+  {
+    var translations = { en: { confirmDeleteFace: 'Do you really want to delete this face?',
+                               deleteFace: 'Delete face',
+                               detailsButton: 'Details', 
+                               photoButton: 'Photo', 
+                               markPhoto: 'Mark this photo for later attention',
+                               restoreButton: 'Restore Faces',
+                               tryAgain: 'An error occurred. Please try again.' }, 
+                         ia: { confirmDeleteFace: 'oDay youway eallyray antway otay eleteday isthay acefay?',
+                               deleteFace: 'eleteDay acefay',
+                               detailsButton: 'etailsDay', 
+                               photoButton: 'otoPhay',
+                               markPhoto: 'arkMay isthay otophay orfay aterlay attentionway',
+                               restoreButton: 'estoreRay acesFay',
+                               tryAgain: 'Anway errorway occurredway. easePlay ytray againway.' } }
+    var language = 'ia';
+
+    return {
+      setLanguage: function(newLang)
+      {
+        language = newLang;
+      },
+      translate: function(key)
+      {
+        return translations[language][key];
+      }
+    };
+  });
 
   // mmMovable: not really draggable (no drop needed), with a containment rectangle specified
   // derived from https://docs.angularjs.org/guide/directive (see "Creating a Directive that Adds Event Listeners")
@@ -114,6 +156,7 @@
       }
     };
   }]);
+
 
   var appServices = angular.module('phonecatServices', ['ngResource']);
 
@@ -189,8 +232,10 @@
   app.controller('DetailController', ['$scope',
                                       '$stateParams',
                                       '$http',
-                                      function($scope, $stateParams, $http)
+                                      'translations', 
+                                      function($scope, $stateParams, $http, translations)
                                       {
+                                        console.log('#{details_api_v1_pics_path(format: :json)}?a_id=1&id=' + $stateParams.id );
                                         $http.get('#{details_api_v1_pics_path(format: :json)}?a_id=1&id=' + $stateParams.id )
                                              .success(function(response)
                                                       {
@@ -200,12 +245,14 @@
                                         {
                                           return angular.toJson($scope.details, true);
                                         }
+                                        $scope.xlate = translations.translate;
                                       }
   ])
   app.controller('PhotoController', ['$scope',
                                       '$stateParams',
                                       '$http', 
-                                      function($scope, $stateParams, $http)
+                                      'translations', 
+                                      function($scope, $stateParams, $http, translations)
                                       {
                                         $http.get("#{api_v1_pics_path}/" + $stateParams.id + ".json?a_id=1") // TODO Add actual photo id
                                              .success(function(response)
@@ -260,7 +307,7 @@
                                         }
                                         $scope.confirmFaceDelection = function(face)
                                                                       {
-                                                                        if (confirm('#{translations[language][:confirmDeleteFace]}'))
+                                                                        if (confirm($scope.xlate('confirmDeleteFace')))
                                                                         {
                                                                           face.deleted = true;
                                                                           $scope.setHoverFace(null);
@@ -275,14 +322,16 @@
                                                                 $scope.hoverFace = face;
                                                               }
                                         $scope.setHoverFace(null);
+                                        $scope.xlate = translations.translate;
                                       }
                                     ]
   );
 
    app.controller('NavigationController', [ '$scope',
                                             '$stateParams',
-                                            '$http', 
-                                            function($scope, $stateParams, $http)
+                                            '$http',
+                                            'translations',  
+                                            function($scope, $stateParams, $http, translations)
                                             {
                                               $http.get("#{api_v1_pics_path(format: :json)}?a_id=1&n=1")
                                                    .success(function(response)
@@ -298,13 +347,15 @@
                                                                          {
                                                                            return $stateParams.id;
                                                                          }
+                                              $scope.xlate = translations.translate;
                                             }
                                           ]
   );
 
   app.controller('NamesController', [ '$scope', 
                                       '$http', 
-                                      function($scope, $http)
+                                      'translations', 
+                                      function($scope, $http, translations)
                                       {
                                         $http.get("#{api_v1_names_path}.json?a_id=1")
                                              .success(function(response)
@@ -316,6 +367,7 @@
                                                                    {
                                                                      selectedName = name
                                                                    }
+                                          $scope.xlate = translations.translate;
                                       }
                                     ]
   );
@@ -333,46 +385,9 @@
 .row
   %p#notice= notice
 
-.div{'ng-controller' => 'NavigationController'}
-  .row#picturebar-container{style: 'height: 114px; overflow-y: scroll; white-space: nowrap;'}
-    #picturebar{style: 'position:relative;' }
-      .picturethumb.unselected{'ng-repeat' => 'photo in photos', |
-                               'ng-style' => '{position: "absolute", "background-repeat": "no-repeat", |
-                                               "background-position": "center", |
-                                               "background-image": "url(\"" + photo.thumb + "\")", top: "27px", |
-                                               left: indexX(photo) + "px"}'}
-        %a{'ui-sref' => 'photo({id: photo.id})'}
-          x
-      -#  There was code here to make sure it doesn't show the same photo twice:
-      -#  <% if ($('.picturethumb[phid=' + photo.get('id') + ']').length == 0) { %>
-      -#     phw="<%- photo.get('scaled_w') %>" phh="<%- photo.get('scaled_h') %>"  phid="<%- photo.get('id') %>">
-      -# <% var rightX = $('#picturebar-container').scrollLeft() + $('#picturebar-container').width(); %>
-      -# <% var rightN = Math.floor(x2i(rightX) / photosPerRequest); %>
-      -# <% var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); %>
-      -# <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>
-      -# <% photoList.render({a_id: '#{params[:a_id]}', n: currentN + 1}); %>
-      -# <% }; %>
+.div{'ui-view' => 'navigation'}
 
-  .row{style: 'margin: 1em;'}
-    .col-xs-8
-      .btn-group{role: :group, 'aria-label' => 'Control what is displayed'}
-        %button.btn.btn-default{id: :photoButton, 'ui-sref' => 'photo({id: currentPhotoIndex()})' }
-          #{translations[language][:photoButton]}
-        %a.btn.btn-default{id: :detailsButton, 'ui-sref' => 'detail({id: currentPhotoIndex()})' }
-          #{translations[language][:detailsButton]}
-      .btn-group{id: :restoreGroup}
-        %button.btn.btn-default.dropdown-toggle{id: :restoreButton, 
-                                                'data-toggle' => :dropdown, 
-                                                'aria-expanded' => 'false'}
-          #{translations[language][:restoreButton]}
-          %span.caret
-        %ul.dropdown-menu{id: :restoreFaces, role: :menu}
-    .col-xs-4
-      %span.glyphicon.glyphicon-flag.pull-right{style: 'font-size: 140%;', 
-                                                title: translations[language][:markPhoto],
-                                                'aria-label' => 'not flagged'}
-
-.row{'ui-view' => true}
+.row{'ui-view' => 'display'}
 
 %div{'ng-controller' => 'NamesController'}
   #name{style: "display: block;"}

@@ -1,0 +1,46 @@
+<div id="picturebar-container" class="row"}
+  <div id="picturebar">
+    <a ng-repeat="photo in photos" ui-sref="photo({id: photo.id})">
+      <div class="picturethumb unselected" ng-style="{'background-image': 'url(\'' + photo.thumb + '\')', top: '27px', 
+        left: indexX(photo) + 'px'}">
+      </div>
+    </a>
+  </div>
+</div>
+<div style="display:none">
+      -# TODO  There was code here to make sure it doesn't show the same photo twice:
+      -#  <% if ($('.picturethumb[phid=' + photo.get('id') + ']').length == 0) { %>
+      -#     phw="<%- photo.get('scaled_w') %>" phh="<%- photo.get('scaled_h') %>"  phid="<%- photo.get('id') %>">
+      -# <% var rightX = $('#picturebar-container').scrollLeft() + $('#picturebar-container').width(); %>
+      -# <% var rightN = Math.floor(x2i(rightX) / photosPerRequest); %>
+      -# <% var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); %>
+      -# <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>
+      -# <% photoList.render({a_id: '#{params[:a_id]}', n: currentN + 1}); %>
+      -# <% }; %>
+</div>
+<div class="row" style="margin: 1em;">
+  <div class="col-xs-8">
+    <div class="btn-group" role="gorup" aria-label="Control what is displayed">
+      <a id="photoButton" class="btn btn-default" ui-sref="photo({id: currentPhotoIndex()})">
+        {{xlate('photoButton')}}
+      </a>
+      <a id="detailsButton" class="btn btn-default" ui-sref="detail({id: currentPhotoIndex()})">
+        {{xlate('detailsButton')}}
+      </a>
+    </div>
+    <div id="restoreGroup" class="btn-group">
+      <button id="restoreButton" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+              aria-expanded="false">
+        {{xlate('restoreButton')}}
+        <span class="caret"></span>
+      </button>
+      <ul id="restoreFaces" class="dropdown-menu" role="menu"></ul>
+    </div>
+  </div>
+  <div class="col-xs-4">
+    <span class="glyphicon glyphicon-flag pull-right" 
+          style="font-size: 140%;" 
+          title="{{xlate('markPhoto')}}"
+          aria-label="not flagged"></span>
+  </div>
+</div>
