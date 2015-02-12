@@ -32,26 +32,26 @@
     return {
       scope:
       {
-        mmMovable: '&',
-        mmMovableContainment: '&' // the containment is specified in the argument
+        face: '=mmMovable',
+        behavior: '@mmMovableBehavior',
+        containment: '=mmMovableContainment'
       },
-      link: function(scope, element, attr) 
+      link: function(scope, element, attr, ctrl) 
       {
-        var containment = scope.mmMovableContainment();
-        var face = scope.mmMovable();
-
         var ele = element[0]; // extract the actual element
-        var top = containment.top - (ele.offsetHeight / 2);
-        var bottom = containment.top + containment.height - (ele.offsetHeight / 2);
+        var top = scope.containment.top - (ele.offsetHeight / 2);
+        var bottom = scope.containment.top + scope.containment.height - (ele.offsetHeight / 2);
 
-        var left = containment.left - (ele.offsetWidth / 2);
-        var right = containment.left + containment.width - (ele.offsetWidth / 2);
+        var left = scope.containment.left - (ele.offsetWidth / 2);
+        var right = scope.containment.left + scope.containment.width - (ele.offsetWidth / 2);
         
-        var startX = 0, startY = 0, x = face.h - #{magic_adjustment_factor}, y = face.w - #{magic_adjustment_factor};
+        var startX = 0, startY = 0;
+        var x = scope.face.h - #{magic_adjustment_factor};
+        var y = scope.face.w - #{magic_adjustment_factor};
 
         element.on('mousedown', function(event) {
-          // Prevent default dragging of selected content
-          event.preventDefault();
+          event.preventDefault(); // Prevent default dragging of selected content
+          event.stopPropagation(); // The handle is nested in the frame, so it fires 2x
           startX = event.pageX - x;
           startY = event.pageY - y;
           $document.on('mousemove', mousemove);
@@ -66,10 +66,19 @@
           deltaX = x - deltaX;
           deltaY = y - deltaY;
 
-          face.x -= deltaX;
-          face.y -= deltaY;
-          face.h += deltaY * 2;
-          face.w += deltaX * 2;
+          if (scope.behavior == 'resize')
+          {
+            scope.face.x -= deltaX;
+            scope.face.y -= deltaY;
+            scope.face.h += deltaY * 2;
+            scope.face.w += deltaX * 2;
+          }
+          else if (scope.behavior == 'move')
+          {
+            scope.face.x += deltaX;
+            scope.face.y += deltaY;
+          }
+
           scope.$apply();
         }
 
@@ -104,6 +113,54 @@
                                         }
                                       ]
   );
+  /*
+
+    // ***** Everything from this point down has to do with resizing/moving faces ***** //
+    // ***** Only faces that were manually created are allowed to perform these functions ***** //
+
+    var faceOriginalW;
+    var faceOriginalH;
+    var relPos;
+
+    var setRelPos = function()
+    {
+      faceOriginalW = Math.floor(0.5 + $(face).width()); // round it up/down
+      faceOriginalH = Math.floor(0.5 + $(face).height()); // round it up/down
+      facePosition = $(face).position();
+      relPos = {top: Math.floor(0.5 + facePosition.top) + faceOriginalH - #{handleWidth/2} + #{borderWidth}, 
+                left: Math.floor(0.5 + facePosition.left) + faceOriginalW - #{handleWidth/2} + #{borderWidth}};
+    }
+
+    setRelPos();
+
+    var setHandleContainmentRectangle = function(target)
+    {
+      var faceCenterX = containerPosition.left + facePosition.left + (faceOriginalW / 2);
+      var faceCenterY = containerPosition.top + facePosition.top + (faceOriginalH / 2);
+      var distanceToEachEdge = [faceCenterX - containerPosition.left, 
+                                containerPosition.left + $('#picture-container > img').width() - faceCenterX];
+      var maxDeltaX = Math.min.apply(null, distanceToEachEdge);
+      distanceToEachEdge = [faceCenterY - containerPosition.top, 
+                            containerPosition.top + $('#picture-container > img').height() - faceCenterY];
+      var maxDeltaY = Math.min.apply(null, distanceToEachEdge);
+      var handleContainment = [faceCenterX, // Do not adjust because handle is positioned from its left edge
+                               faceCenterY,
+                               faceCenterX + maxDeltaX - #{handleWidth},
+                               faceCenterY + maxDeltaY - #{handleWidth}
+                              ];
+      $(target).draggable('option', 'containment', handleContainment); 
+    }
+    var setFaceContainmentRectangle = function(target)
+    {
+      var faceContainmentRectangle = [containerPosition.left + #{handleWidth/2}, 
+                                      containerPosition.top + #{handleWidth/2},
+                                      containerPosition.left + $('#picture-container > img').width() -
+                                        ($(face).width() + #{handleWidth}),
+                                      containerPosition.top + $('#picture-container > img').height() -
+                                        ($(face).height() + #{handleWidth})];
+      $(target).draggable('option', 'containment', faceContainmentRectangle)
+    }
+  */
   app.controller('PhotosController', ['$scope', 
                                       '$http', 
                                       function PhotosController($scope, $http)
@@ -165,32 +222,17 @@
                                                                         {
                                                                           face.deleted = true;
                                                                           $scope.setHoverFace(null);
-                                                                          $scope.setSelectedFace(null);
                                                                         }
                                                                       }
                                         $scope.handleVisible = function()
                                                                {
-                                                                 return $scope.selectedFace && ($scope.selectedFace.known);
+                                                                 return true;
                                                                }
                                         $scope.setHoverFace = function(face)
                                                               {
                                                                 $scope.hoverFace = face;
                                                               }
-                                        $scope.setSelectedFace = function(face)
-                                                                 {
-                                                                   // If the face is deleted, don't set it. (there's a race condition)
-                                                                   if (face && face.deleted)
-                                                                   {
-                                                                     $scope.selectedFace = null;
-                                                                   }
-                                                                   else
-                                                                   {
-                                                                     $scope.selectedFace = face;
-
-                                                                   }
-                                                                 }
                                         $scope.setHoverFace(null);
-                                        $scope.setSelectedFace(null);
                                       }
                                     ]
   );
@@ -264,10 +306,12 @@
       #face-frame-container
         .face-frame{'ng-repeat' => 'face in photo.notes',
                     'ng-hide' => 'face.deleted',
+                    'mm-movable' => 'face',
+                    'mm-movable-behavior' => 'move',
+                    'mm-movable-containment' => '{top: -8 , left:  -15.5, width: 1000, height: 1000}',
                     'ng-mouseenter' => 'setHoverFace(face)',
                     'ng-mouseleave' => 'setHoverFace(null)',
-                    'ng-click' => 'setSelectedFace(face)',
-                    'ng-style' => '{width: face.w + "px", height: face.h + "px", left: face.x + "px", top: face.y + "px", "background-color": (face === selectedFace ? "green" : "orange")}'}
+                    'ng-style' => '{width: face.w + "px", height: face.h + "px", left: face.x + "px", top: face.y + "px", cursor: (face.manual ? "move" : "default")}'}
           .deleteControl{'ng-style' => '{position: "relative"}',
                          'ng-click' => 'confirmFaceDelection(face)'}
             %span.glyphicon.glyphicon-remove{'aria-label'=> "#{translations[language][:deleteFace]}", 
@@ -278,8 +322,9 @@
                                                                    type: :text, 
                                                                    placeholder: 'Unknown',
                                                                    readonly: 'readonly'}
-          .handle{'ng-show' => 'handleVisible() && (face === selectedFace)', 
+          .handle{'ng-show' => '{{face.manual}}', 
                   'mm-movable' => 'face',
+                  'mm-movable-behavior' => 'resize',
                   'mm-movable-containment' => '{top: (face.w / 2) + 10, left: (face.h / 2) + 10, width: 100, height: 100}',
                   'mm-comment' => '8 in the next line is the "magic_adjustment_factor"',
                   'ng-style' => '{position: relative, top: face.h - 8 + "px", left: face.w  - 8 + "px"}' }
