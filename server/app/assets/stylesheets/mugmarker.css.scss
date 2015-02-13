@@ -8,17 +8,17 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
 
 
 .photothumb { 
-                z-index: 2;
-                display: inline-flex; 
-                width: $thumbsizeWithBorder;
-                height: $thumbsizeWithBorder;
-                background-size: contain; 
                 background-color: white;
-                border: $borderWidth solid white; 
-                position: absolute;
-                background-repeat: no-repeat;
                 background-position: center; 
+                background-repeat: no-repeat;
+                background-size: contain; 
+                border: $borderWidth solid white; 
+                display: inline-flex; 
+                height: $thumbsizeWithBorder;
+                position: absolute;
                 top: 27px;
+                width: $thumbsizeWithBorder;
+                z-index: 2;
               }
 .photothumb:hover
               {
@@ -36,18 +36,18 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 background-color: $blueish;
                 border-radius: $handleWidth / 2;
                 cursor: nwse-resize;
-                position: absolute;
                 height: $handleWidth;
+                position: absolute;
                 width: $handleWidth;
                 z-index: 150;
-                height: 10px;
-                width: 10px;
               }
 .unselected   { opacity: 0.5; }
 .selected     { background-color: #33f; border: $borderWidth solid red; opacity: 1.0; }
-.enlarged     { z-index: 3; opacity: 1.0; 
-                width: 2 * $thumbsizeWithBorder;
+.enlarged     {
                 height: 2 * $thumbsizeWithBorder;
+                opacity: 1.0; 
+                width: 2 * $thumbsizeWithBorder;
+                z-index: 3; 
               }
 .deleteControl span
               {
@@ -68,9 +68,9 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 background-color: #c00;
               }
 .face-frame   {
-                z-index: 110; 
-                position: absolute; 
                 border: 2px solid $blueish; 
+                position: absolute; 
+                z-index: 110; 
               }
 #name-display-box:hover
               {
@@ -78,8 +78,8 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
               }
 .name-display-form
               {
-                  position: relative;
-                  width:  20em;
+                position: relative;
+                width:  20em;
               }
 #names-container
               {
@@ -110,14 +110,14 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
               }    
 #photo-img    {
                 cursor: crosshair;
+                left: 0;
                 max-height: 500px;
                 max-width: 500px;
-                z-index: 1;
                 position: absolute;
                 top: 0;
-                left: 0;
+                z-index: 1;
               }
-#photobar   {
+#photobar     {
                 position:relative;
               }
 #photobar-container
@@ -128,9 +128,9 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
               }
 #photobar-container::-webkit-scrollbar 
               {
-                -webkit-appearance: none; 
                 height: 10px; 
                 width: 0px; 
+                -webkit-appearance: none; 
               }
 #photobar-container::-webkit-scrollbar-track 
               {
