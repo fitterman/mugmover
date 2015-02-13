@@ -18,6 +18,11 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 position: absolute;
                 background-repeat: no-repeat;
                 background-position: center; 
+                top: 27px;
+              }
+.photothumb:hover
+              {
+                  opacity: 1.0;
               }
 #name         { 
                 z-index: 108; white-space: nowrap; position: absolute;

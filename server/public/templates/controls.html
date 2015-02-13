@@ -1,10 +1,10 @@
 <div class="row" style="margin: 1em;" ng-show="photo.id">
   <div class="col-xs-8">
     <div class="btn-group" role="gorup" aria-label="Control what is displayed">
-      <a id="photoButton" class="btn btn-default" ui-sref="photo.edit({id: photo.id})">
+      <a id="photoButton" class="btn btn-default" ui-sref="edit({id: photo.id})">
         {{xlate('photoButton')}}
       </a>
-      <a id="detailsButton" class="btn btn-default" ui-sref="photo.detail({id: photo.id})">
+      <a id="detailsButton" class="btn btn-default" ui-sref="detail({id: photo.id})">
         {{xlate('detailsButton')}}
       </a>
     </div>

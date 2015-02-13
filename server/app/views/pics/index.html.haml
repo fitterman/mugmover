@@ -8,33 +8,64 @@
 
 :javascript
 
+  $('#photobar').css({width: '200000px', 'background-color': 'green'});
+
   var language = 'ia';
 
   var endGap = 400; // pixels
   var photoWidth = #{thumbsizeWithBorder}; // pixels (borderWidth px on each side)
-  var totalPhotos = #{@total_photos};
-  var photosPerRequest = #{Api::V1::PicsController::PAGESIZE};
-  var lastRequestN = Math.floor(totalPhotos  / photosPerRequest);
+
 
   var app = angular.module('mugmarker', ['ui.router']);
 
+  var i2x = function(i) { return endGap + (i * photoWidth) };
+  var x2i = function(x) { return Math.floor(Math.max(0, x - endGap) / photoWidth) };
+
+      /*
+      // functions to convert a zero-based index to a horizontal pixel offset and back.
+
+      var rightX = $('#picturebar-container').scrollLeft() + $('#picturebar-container').width(); 
+      var rightN = Math.floor(x2i(rightX) / photosPerRequest); 
+      var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); 
+      if ((currentN < rightN) && (currentN < lastRequestN)) { 
+        photoList.render({a_id: '#{params[:a_id]}', n: currentN + 1}); 
+      }; 
+    */
+
+  var getNavImages = function(n)
+  {
+    jQuery.ajax({
+      url: 'http://localhost:3000/api/v1/pics.json?a_id=1&n=' + n,
+      success: function(response)
+               {
+                 jQuery('#photobar').width(i2x(response.totalPhotos));
+                 for (var i = 0; i < response.photos.length ; i++) 
+                 {
+                   var photo = response.photos[i];
+                   var match = document.getElementById('thumb_' + photo.id);
+                   if (!match)
+                   {
+                     jQuery('<div id="thumb_' + photo.id + '" ' +
+                                 'class="photothumb unselected" ' +
+                                 'style="left:' + i2x(photo.index) + 'px; ' + 
+                                        'background-image: url(' +  photo.thumb + ');" ' +
+                                 'data-id="' + photo.id + '">')
+                       .appendTo('#photobar');
+                   }
+                 }
+               },
+        error: function(jqXhr, status) {
+            alert('An unexpected error occurred (' + status + '). Please try again.');
+          },
+        dataType: 'json'
+    });
+  }
+  
   // Configure the router (ui-router)
   app.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
-    $urlRouterProvider.otherwise('/photos');
+    $urlRouterProvider.otherwise('/');
     $stateProvider
-      .state('photo',
-              {
-                url:'/photos',
-                views:
-                {
-                  navigation: 
-                  {
-                    templateUrl: '/templates/nav.html',
-                    controller: 'NavigationController'
-                  }
-                }
-             })
-      .state('photo.edit',
+      .state('edit',
               {
                 url:'/edit/:id',
                 views:
@@ -47,7 +78,7 @@
 
                 }
              })
-      .state('photo.detail', 
+      .state('detail', 
               {
                 url:'/detail/:id',
                 views:
@@ -231,10 +262,7 @@
       $(target).draggable('option', 'containment', faceContainmentRectangle)
     }
   */
-  app.controller('DetailController', ['$scope',
-                                      '$stateParams',
-                                      '$http',
-                                      'translations', 
+  app.controller('DetailController', ['$scope', '$stateParams', '$http', 'translations', 
                                       function($scope, $stateParams, $http, translations)
                                       {
                                         $http.get('#{details_api_v1_pics_path(format: :json)}?a_id=1&id=' + $stateParams.id )
@@ -250,19 +278,20 @@
                                         $scope.xlate = translations.translate;
                                       }
   ])
-  app.controller('PhotoController', ['$scope',
-                                      '$stateParams',
-                                      '$http', 
-                                      'translations', 
+
+  app.controller('PhotoController', ['$scope', '$stateParams', '$http', 'translations', 
                                       function($scope, $stateParams, $http, translations)
                                       {
-                                        $http.get("#{api_v1_pics_path}/" + $stateParams.id + ".json?a_id=1") // TODO Add actual photo id
-                                             .success(function(response)
-                                                      { 
-                                                         $scope.photo = response;
-                                                      }
-                                             );
-                                             // TODO ERROR HANDLING
+                                        console.log($stateParams);
+                                        if ($stateParams && $stateParams.id)
+                                        {
+                                          $http.get("#{api_v1_pics_path}/" + $stateParams.id + ".json?a_id=1") // TODO Add actual photo id
+                                               .success(function(response)
+                                                        { 
+                                                           $scope.photo = response;
+                                                        }
+                                               );
+                                        }
                                         $scope.addFaceAt = function(x, y)
                                         {
                                           // We calculate the average width and height of visible faces
@@ -271,7 +300,7 @@
                                           var sumH = 0;
                                           var meanWidth = 0;
                                           var meanHeight = 0;
-                                          var minFaceDimension = 50; /* Pixels */
+                                          var minFaceDimension = 50; // Pixels
                                           var n = 0;
                                           for (var i = 0; i < faces.length; i++)
                                           {
@@ -329,30 +358,22 @@
                                     ]
   );
 
-   app.controller('NavigationController', [ '$scope',
-                                            '$stateParams',
-                                            '$http',
-                                            'translations',  
+   app.controller('NavigationController', [ '$scope', '$stateParams', '$http', 'translations',  
                                             function($scope, $stateParams, $http, translations)
                                             {
-                                              $http.get("#{api_v1_pics_path(format: :json)}?a_id=1&n=1")
-                                                   .success(function(response)
-                                                            { 
-                                                               $scope.photos = response;
-                                                            }
-                                                   );
-                                              $scope.indexX = function(item)
-                                                              {
-                                                                return endGap + (item.index * photoWidth);
-                                                              }
-                                              $scope.xlate = translations.translate;
+
+                                                            /*
+                                                              $scope.photos = ($scope.photos || []).concat(response.photos);
+                                                              $scope.totalPhotos = response.totalPhotos;
+                                                              $scope.photosPerRequest = response.photosPerRequest;
+                                                              $scope.lastRequestN = Math.floor($scope.totalPhotos / $scope.photosPerRequest);
+                                                              document.getElementById('photobar').style.width = i2x($scope.totalPhotos) + endGap + 'px'; // the endGap on the RHS
+                                                            */
                                             }
                                           ]
   );
 
-  app.controller('NamesController', [ '$scope', 
-                                      '$http', 
-                                      'translations', 
+  app.controller('NamesController', [ '$scope', '$http', 'translations', 
                                       function($scope, $http, translations)
                                       {
                                         $http.get("#{api_v1_names_path}.json?a_id=1")
@@ -380,13 +401,27 @@
 
 
 -# // ***** This is all the markup for the page *****
+
+      -# TODO  There was code here to make sure it doesn't show the same photo twice:
+      -#  <% if ($('.photothumb[phid=' + photo.get('id') + ']').length == 0) { %>
+      -#     phw="<%- photo.get('scaled_w') %>" phh="<%- photo.get('scaled_h') %>"  phid="<%- photo.get('id') %>">
+      -# <% var rightX = $('#photobar-container').scrollLeft() + $('#photobar-container').width(); %>
+      -# <% var rightN = Math.floor(x2i(rightX) / photosPerRequest); %>
+      -# <% var currentN = Math.floor(photos[photos.length-1].get('index') / photosPerRequest); %>
+      -# <% if ((currentN < rightN) && (currentN < lastRequestN)) { %>
+      -# <% photoList.render({a_id: '#{params[:a_id]}', n: currentN + 1}); %>
+      -# <% }; %>
+
 .row
   %p#notice= notice
 
-.div{'ui-view' => 'navigation'}
+.row#photobar-container
+  #photobar
+  
+%div{'ui-view' => 'display'}
 
 %div{'ng-controller' => 'NamesController'}
-  #name{style: "display: block;"}
+  #name{style: "display: none;"}
     %form#name-entry-form{novalidate: :novalidate, :style => "width: 20em;"}
       .input-group
         %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",
@@ -404,4 +439,29 @@
             {{ name.publicName }}
             .namenote
               {{ name.note ? name.note : ' ' }} {{name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1 }}
+
+:javascript
+
+  $('#photobar').on('mouseover', '.photothumb', function() {
+      $(this).addClass('enlarged').css({ top: $(this).position().top - #{thumbsize / 2},
+                                         left: $(this).position().left - #{thumbsize / 2}});
+                                       });
+    $('#photobar').on('mouseout', '.photothumb', function() {
+      $(this).removeClass('enlarged').css({ top: $(this).position().top + #{thumbsize / 2},
+                                            left: $(this).position().left + #{thumbsize / 2}});
+                                          });
+    $('#photobar').on('click', '.photothumb', function() {
+      $('#photobar > .selected').removeClass('selected').addClass('unselected');
+      // TODO Fill in with the image you have. Requires knowing the AR of the photo 
+      //$('#photo-container').html('&nbsp;').css({'background-image': $(this).css('background-image'), 
+      //                                            "background-size": "contain", 
+      //                                            "background-color": "white"})
+      //                                      .css(parseFloat($(this).attr("ar")) > 1.0 ? 'width' : 'height', "500px");
+      $(this).removeClass('unselected').addClass('selected');
+      window.location = "#/edit/" + $(this).data('id');
+    });
+
+    getNavImages(0);
+    getNavImages(1);
+    getNavImages(2);
 
