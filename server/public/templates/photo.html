@@ -10,7 +10,7 @@
             ng-click="addFaceAt($event.offsetX, $event.offsetY)" />
       <div id="face-frame-container">
         <div  class="face-frame"
-              ng-repeat="face in photo.notes"
+              ng-repeat="face in photo.faces"
               ng-hide="face.deleted"
               mm-movable="face"
               mm-movable-behavior="move"

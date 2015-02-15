@@ -235,12 +235,40 @@
                                         }
                                         $scope.xlate = translations.translate;
                                       }
-  ])
+  ]);
 
+
+
+  (function() {
+
+    var id_counter = 1;
+    Object.defineProperty(Object.prototype, "__uniqueId", {
+        writable: true
+    });
+    Object.defineProperty(Object.prototype, "mmuid", {
+        get: function() {
+            if (this.__uniqueId == undefined)
+                this.__uniqueId = id_counter++;
+            return this.__uniqueId;
+        }
+    });
+  })();
+
+  var timers = {};
+  debounce = function(obj, milliseconds, func)
+  {
+    var args = arguments;
+    clearTimeout(timers[obj.mmuid]);
+    timers[obj.mmuid] = setTimeout(function()
+                             {
+                               func.apply(obj, args);
+                               timers[obj.mmuid] = null;
+                             }, 
+                             milliseconds);
+  }
   app.controller('PhotoController', ['$scope', '$stateParams', '$http', 'translations', 
                                       function($scope, $stateParams, $http, translations)
                                       {
-                                        console.log($stateParams);
                                         if ($stateParams && $stateParams.id)
                                         {
                                           $http.get("#{api_v1_pics_path}/" + $stateParams.id + ".json?a_id=1") // TODO Add actual photo id
@@ -253,7 +281,7 @@
                                         $scope.addFaceAt = function(x, y)
                                         {
                                           // We calculate the average width and height of visible faces
-                                          var faces = $scope.photo.notes;
+                                          var faces = $scope.photo.faces;
                                           var sumW = 0;
                                           var sumH = 0;
                                           var meanWidth = 0;
@@ -312,6 +340,18 @@
                                                               }
                                         $scope.setHoverFace(null);
                                         $scope.xlate = translations.translate;
+                                        var reportThis = function(target) { console.log(target) };
+                                        var report = function(newValue, oldValue)
+                                        {
+                                          // Apparently this comes up "undefined"
+                                          if ($scope.photo)
+                                          {
+                                            debounce($scope.photo, 1000, reportThis);
+                                          }
+                                        }
+                                        // The following calls toJson to perform a deep watch without
+                                        // having a lot of effort to do it.
+                                        $scope.$watch(function(scope) { return angular.toJson(scope.photo) }, report);
                                       }
                                     ]
   );
@@ -431,7 +471,7 @@
     }
   };
   scrollingDone();
-  $('#photobar-container').on('scroll', $.debounce( 250, scrollingDone) );
+  $('#photobar-container').on('scroll', debounce(this, 250, scrollingDone) );
 
   $('#photobar').on('mouseover', '.photothumb', function() {
       $(this).addClass('enlarged').css({ top: $(this).position().top - #{thumbsize / 2},
