@@ -13,7 +13,7 @@
                         'background-image': 'url(' + photo.thumb + ')' }" />
       <div id="face-frame-container">
         <div  class="face-frame"
-              ng-repeat="face in photo.faces"
+              ng-repeat="face in faces"
               ng-hide="face.deleted"
               mm-movable="face"
               mm-movable-behavior="move"

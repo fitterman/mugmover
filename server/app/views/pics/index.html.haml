@@ -298,8 +298,10 @@
                                                           $scope.photo = response;
                                                           scaleFactor = maxDim / Math.max($scope.photo.width, $scope.photo.height);
                                                           $scope.photo.unscaled = function(rawValue) {return Math.floor(rawValue / scaleFactor);}
-                                                          $scope.faces = response.faces;
+                                                          $scope.faces = response.faces;  // A convenience
                                                           angular.forEach($scope.faces, defineScaledMethods);
+                                                          $scope.photo.mmuid; // Assign a unique ID so the first debounce doesn't trigger an update
+                                                          $scope.$watch('photo', report, true);
                                                         }
                                                );
                                         }
@@ -310,20 +312,19 @@
                                           var unscaledY = $scope.photo.unscaled(y);
 
                                           // We calculate the average width and height of visible faces
-                                          var faces = $scope.photo.faces;
                                           var sumW = 0;
                                           var sumH = 0;
                                           var meanWidth = 0;
                                           var meanHeight = 0;
                                           var minFaceDimension = 50; // Pixels
                                           var n = 0;
-                                          for (var i = 0; i < faces.length; i++)
+                                          for (var i = 0; i < $scope.faces.length; i++)
                                           {
                                             // Skip the deleted faces
-                                            if (!faces[i].deleted)
+                                            if (!$scope.faces[i].deleted)
                                             {
-                                              sumW += faces[i].w;
-                                              sumH += faces[i].h;
+                                              sumW += $scope.faces[i].w;
+                                              sumH += $scope.faces[i].h;
                                               n += 1;
                                             }
                                           }
@@ -349,7 +350,7 @@
                                           if ((0 < face.x) && (face.x < ($scope.photo.width - (meanWidth / 2))) &&
                                               (0 < face.y) && (face.y < ($scope.photo.height - (meanHeight / 2))))
                                           {
-                                            faces.push(face);
+                                            $scope.faces.push(face);
                                           }
                                         }
                                         $scope.confirmFaceDelection = function(face)
@@ -370,18 +371,14 @@
                                                               }
                                         $scope.setHoverFace(null);
                                         $scope.xlate = translations.translate;
-                                        var reportThis = function(target) { console.log(target) };
+                                        var reportThis = function(target) { console.log(new Date().getSeconds(), target) };
                                         var report = function(newValue, oldValue)
                                         {
-                                          // Apparently this comes up "undefined"
-                                          if ($scope.photo)
+                                          if (newValue !== oldValue)
                                           {
-                                            debounce($scope.photo, 1000, reportThis);
+                                            debounce(newValue, 1000, reportThis);
                                           }
                                         }
-                                        // The following calls toJson to perform a deep watch without
-                                        // having a lot of effort to do it.
-                                        $scope.$watch(function(scope) { return angular.toJson(scope.photo) }, report);
                                       }
                                     ]
   );
