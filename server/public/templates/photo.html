@@ -15,6 +15,7 @@
               mm-movable="face"
               mm-movable-behavior="move"
               mm-movable-containment="{top: -8 , left:  -15.5, width: 1000, height: 1000}"
+              mm-movable-photo="photo"
               ng-mouseenter="setHoverFace(face)"
               ng-mouseleave="setHoverFace(null)"
               ng-style="{ width: face.scaledW(), height: face.scaledH(), 
@@ -34,15 +35,16 @@
                   readonly
                   placeholder="Unknown"
                   ng-model="face.text"
-                  ng-show="(face === hoverFace)">,
+                  ng-show="(face === hoverFace)" />
         </form>
         <div class="handle"
              ng-if="face.manual"
              mm-movable="face"
              mm-movable-behavior="resize"
-             mm-movable-containment="{top: (face.w / 2) + 10, left: (face.h / 2) + 10, width: 100, height: 100}"
+             mm-movable-photo="photo"
+             mm-movable-containment="{top: (face.w / 2) + 10, left: (face.h / 2) + 10, width: 400, height: 400}"
              mm-comment="8 in the next line is the 'magic_adjustment_factor'"
-             ng-style="{position: relative, top: face.h - 8 + 'px', left: face.w  - 8 + 'px'}"
+             ng-style="{position: relative, top: face.handleY(), left: face.handleX()}"
            &nbsp;
         </div>
 

@@ -1,7 +1,5 @@
 class Photo < ActiveRecord::Base
 
-  MAX_PREVIEW_DIMENSION = 500.0 # pixels
-
   belongs_to  :hosting_service_account
   has_many    :faces
 
@@ -56,17 +54,6 @@ class Photo < ActiveRecord::Base
     else
       raise StandardError.new("Unexpected service (name=#{hash['name']}")
     end
-  end
-
-  def scale_factor
-    @sf ||= (MAX_PREVIEW_DIMENSION / [self.width, self.height].max)
-  end
-
-  def scaled_h
-    Integer(self.height * scale_factor)
-  end
-  def scaled_w
-    Integer(self.width * scale_factor)
   end
 
 end

@@ -91,7 +91,8 @@
       {
         face: '=mmMovable',
         behavior: '@mmMovableBehavior',
-        containment: '=mmMovableContainment'
+        containment: '=mmMovableContainment',
+        photo: '=mmMovablePhoto'
       },
       link: function(scope, element, attr, ctrl) 
       {
@@ -107,20 +108,26 @@
         var x = scope.face.h - #{magic_adjustment_factor};
         var y = scope.face.w - #{magic_adjustment_factor};
 
+        var p = scope.photo; 
         element.on('mousedown', function(event) {
           event.preventDefault(); // Prevent default dragging of selected content
           event.stopPropagation(); // The handle is nested in the frame, so it fires 2x
-          startX = event.pageX - x;
-          startY = event.pageY - y;
-          $document.on('mousemove', mousemove);
-          $document.on('mouseup', mouseup);
+          if (scope.face.manual) // Otherwise the "move" option remains available to all faces
+          {
+            startX = scope.photo.unscaled(event.pageX) - x;
+            startY = scope.photo.unscaled(event.pageY)- y;
+            $document.on('mousemove', mousemove);
+            $document.on('mouseup', mouseup);           
+          }
         });
 
         function mousemove(event) {
           var deltaX = x;
           var deltaY = y;
-          y = Math.min(Math.max(event.pageY - startY, top), bottom);
-          x = Math.min(Math.max(event.pageX - startX, left), right);
+          var unscaledX = scope.photo.unscaled(event.pageX);
+          var unscaledY = scope.photo.unscaled(event.pageY);
+          x = Math.min(Math.max(unscaledX - startX, left), right);
+          y = Math.min(Math.max(unscaledY - startY, top), bottom);
           deltaX = x - deltaX;
           deltaY = y - deltaY;
 
@@ -275,6 +282,9 @@
     whichFace.scaledY = function() {return (this.y * scaleFactor) + 'px';};
     whichFace.scaledW = function() {return (this.w * scaleFactor) + 'px';};
     whichFace.scaledH = function() {return (this.h * scaleFactor) + 'px';};
+    // 8 in the following has to do with the diameter of the handle
+    whichFace.handleY = function() {return (this.h * scaleFactor - 8) + 'px';};
+    whichFace.handleX = function() {return (this.w * scaleFactor - 8) + 'px';};
   };
 
   app.controller('PhotoController', ['$scope', '$stateParams', '$http', 'translations', 
@@ -286,14 +296,19 @@
                                                .success(function(response)
                                                         { 
                                                           $scope.photo = response;
-                                                          $scope.faces = response.faces;
                                                           scaleFactor = maxDim / Math.max($scope.photo.width, $scope.photo.height);
+                                                          $scope.photo.unscaled = function(rawValue) {return Math.floor(rawValue / scaleFactor);}
+                                                          $scope.faces = response.faces;
                                                           angular.forEach($scope.faces, defineScaledMethods);
                                                         }
                                                );
                                         }
                                         $scope.addFaceAt = function(x, y)
                                         {
+                                          // We must convert the coordinates back to that of the original photo
+                                          var unscaledX = $scope.photo.unscaled(x);
+                                          var unscaledY = $scope.photo.unscaled(y);
+
                                           // We calculate the average width and height of visible faces
                                           var faces = $scope.photo.faces;
                                           var sumW = 0;
@@ -321,8 +336,8 @@
                                           meanWidth = Math.max(meanWidth, minFaceDimension);
                                           meanHeight = Math.max(meanHeight, minFaceDimension);
 
-                                          var face = {x: x - (meanWidth / 2), 
-                                                      y: y - (meanHeight / 2), 
+                                          var face = {x: unscaledX - (meanWidth / 2), 
+                                                      y: unscaledY - (meanHeight / 2), 
                                                       w: meanWidth, 
                                                       h: meanHeight, 
                                                       deleted: false,
@@ -331,8 +346,8 @@
                                                       faceId: null,
                                                     };
                                           defineScaledMethods(face);
-                                          if ((0 < face.x) && (face.x < ($scope.photo.scaled_w - (meanWidth / 2))) &&
-                                              (0 < face.y) && (face.y < ($scope.photo.scaled_h - (meanHeight / 2))))
+                                          if ((0 < face.x) && (face.x < ($scope.photo.width - (meanWidth / 2))) &&
+                                              (0 < face.y) && (face.y < ($scope.photo.height - (meanHeight / 2))))
                                           {
                                             faces.push(face);
                                           }
@@ -444,7 +459,6 @@
 
       // TODO  There was code here to make sure it doesn't show the same photo twice:
       //  <% if ($('.photothumb[phid=' + photo.get('id') + ']').length == 0) { %>
-      //     phw="<%- photo.get('scaled_w') %>" phh="<%- photo.get('scaled_h') %>"  phid="<%- photo.get('id') %>">
 
   var jqLite = angular.element;
   var jqLiteFind = function(sel) { angular.element(document.querySelector(sel)) };
