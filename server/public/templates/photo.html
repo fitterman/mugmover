@@ -17,8 +17,9 @@
               mm-movable-containment="{top: -8 , left:  -15.5, width: 1000, height: 1000}"
               ng-mouseenter="setHoverFace(face)"
               ng-mouseleave="setHoverFace(null)"
-              ng-style="{ width: face.w + 'px', height: face.h + 'px', left: face.x + 'px', 
-                          top: face.y + 'px', cursor: (face.manual ? 'move' : 'default')}">
+              ng-style="{ width: face.scaledW(), height: face.scaledH(), 
+                          left: face.scaledX(), top: face.scaledY(), 
+                          cursor: (face.manual ? 'move' : 'default')}">
         <div  class="deleteControl"
               ng-style="{position: relative}"
               ng-click="confirmFaceDelection(face)">
@@ -27,7 +28,7 @@
                 title="{{xlate('deleteFace')}}"></span>
         </div>
         <form class="name-display-form"
-              ng-style="{top: face.h  - 2 + 'px'}">
+              ng-style="{top: face.scaledH()}">
           <input  class="name-display-box form-control input-sm ellipsis"
                   type="text"
                   readonly

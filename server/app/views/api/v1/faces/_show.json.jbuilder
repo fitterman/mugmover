@@ -1,7 +1,7 @@
-json.x face.left_scaled(@photo.scale_factor)
-json.y face.top_scaled(@photo.scale_factor)
-json.w face.width_scaled(@photo.scale_factor)
-json.h face.height_scaled(@photo.scale_factor)
+json.x face.left
+json.y face.top
+json.w face.width
+json.h face.height
 json.known face.named_face.present?
 json.deleted face.deleted_at.present?
 json.manual face.manual?

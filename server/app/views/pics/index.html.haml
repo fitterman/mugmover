@@ -266,6 +266,17 @@
                              }, 
                              milliseconds);
   }
+
+  var maxDim = 500; // pixels
+  var scaleFactor; // updated when the Photo object is loaded
+  var defineScaledMethods = function(whichFace)
+  {
+    whichFace.scaledX = function() {return (this.x * scaleFactor) + 'px';};
+    whichFace.scaledY = function() {return (this.y * scaleFactor) + 'px';};
+    whichFace.scaledW = function() {return (this.w * scaleFactor) + 'px';};
+    whichFace.scaledH = function() {return (this.h * scaleFactor) + 'px';};
+  };
+
   app.controller('PhotoController', ['$scope', '$stateParams', '$http', 'translations', 
                                       function($scope, $stateParams, $http, translations)
                                       {
@@ -274,7 +285,10 @@
                                           $http.get("#{api_v1_pics_path}/" + $stateParams.id + ".json?a_id=1") // TODO Add actual photo id
                                                .success(function(response)
                                                         { 
-                                                           $scope.photo = response;
+                                                          $scope.photo = response;
+                                                          $scope.faces = response.faces;
+                                                          scaleFactor = maxDim / Math.max($scope.photo.width, $scope.photo.height);
+                                                          angular.forEach($scope.faces, defineScaledMethods);
                                                         }
                                                );
                                         }
@@ -316,6 +330,7 @@
                                                       text: null,
                                                       faceId: null,
                                                     };
+                                          defineScaledMethods(face);
                                           if ((0 < face.x) && (face.x < ($scope.photo.scaled_w - (meanWidth / 2))) &&
                                               (0 < face.y) && (face.y < ($scope.photo.scaled_h - (meanHeight / 2))))
                                           {
@@ -471,7 +486,7 @@
     }
   };
   scrollingDone();
-  $('#photobar-container').on('scroll', debounce(this, 250, scrollingDone) );
+  $('#photobar-container').on('scroll', function() {debounce(this, 250, scrollingDone)} );
 
   $('#photobar').on('mouseover', '.photothumb', function() {
       $(this).addClass('enlarged').css({ top: $(this).position().top - #{thumbsize / 2},
