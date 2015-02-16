@@ -7,7 +7,11 @@ $handleWidth:   10px;
 $thumbsizeWithBorder:  $thumbsize + $borderWidth;
 
 
-.photothumb { 
+#photo-container
+              {
+                position: relative;
+              }
+.photothumb   { 
                 background-color: white;
                 background-position: center; 
                 background-repeat: no-repeat;

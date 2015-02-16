@@ -3,11 +3,14 @@
 
 <div class="row"
   <div class="col-xs-8">
-    <div id="photo-container" style="position: relative;">
+    <div id="photo-container">
       <img  id="photo-img" 
             class="img-responsive" 
             ng-src="{{photo.url}}"
-            ng-click="addFaceAt($event.offsetX, $event.offsetY)" />
+            ng-click="addFaceAt($event.offsetX, $event.offsetY)"
+            ng-style="{ 'background-repeat': 'no-repeat', 
+                        'background-size' : 'contain',
+                        'background-image': 'url(' + photo.thumb + ')' }" />
       <div id="face-frame-container">
         <div  class="face-frame"
               ng-repeat="face in photo.faces"
