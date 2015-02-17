@@ -19,8 +19,7 @@
   var mugmarkerServices = angular.module('mugmarkerServices', ['ngResource']);
 
   mugmarkerServices.factory('Photo', ['$resource',
-                                      '$http',
-                                      function($resource, $http)
+                                      function($resource)
                                       { // TODO HOW DO YOU DEAL WITH ERRORS?
                                         return $resource('/api/v1/pics/:id.json', 
                                                          {a_id: 1 }, 
@@ -36,8 +35,7 @@
                                      ]
   );
   mugmarkerServices.factory('Face',  ['$resource',
-                                      '$http',
-                                      function($resource, $http)
+                                      function($resource)
                                       { // TODO HOW DO YOU DEAL WITH ERRORS?
                                         return $resource('/api/v1/faces/:id.json', 
                                                          {a_id: 1}, 
@@ -95,14 +93,21 @@
                                photoButton: 'Photo', 
                                markPhoto: 'Mark this photo for later attention',
                                restoreButton: 'Restore Faces',
-                               tryAgain: 'An error occurred. Please try again.' }, 
+                               tryAgain: 'An error occurred. Please try again.',
+                               unableToAddFace: 'An error occurred and the face could not be added.',
+                               unableToDeleteFace: 'An error occurred and the face could not be deleted.', 
+                             },
                          ia: { confirmDeleteFace: 'oDay youway eallyray antway otay eleteday isthay acefay?',
                                deleteFace: 'eleteDay acefay',
                                detailsButton: 'etailsDay', 
                                photoButton: 'otoPhay',
                                markPhoto: 'arkMay isthay otophay orfay aterlay attentionway',
                                restoreButton: 'estoreRay acesFay',
-                               tryAgain: 'Anway errorway occurredway. easePlay ytray againway.' } }
+                               tryAgain: 'Anway errorway occurredway. easePlay ytray againway.',
+                               unableToAddFace: 'Anway errorway occurredway andway ethay acefay ouldcay otnay ebay addedway.',
+                               unableToDeleteFace: 'Anway errorway occurredway andway ethay acefay ouldcay otnay ebay eletedday.', 
+                             },
+                        };
     var language = 'ia';
 
     return {
@@ -112,6 +117,14 @@
       },
       translate: function(key)
       {
+        if (!translations[language])
+        {
+          return 'Missing language "' + language + '"';
+        }
+        if (!translations[language][key])
+        {
+          return 'Missing translation for "' + key + '"';
+        }
         return translations[language][key];
       }
     };
@@ -266,7 +279,7 @@
     });
     Object.defineProperty(Object.prototype, "mmuid", {
         get: function() {
-            if (this.__uniqueId == undefined)
+            if (this && (this.__uniqueId == undefined))
                 this.__uniqueId = id_counter++;
             return this.__uniqueId;
         }
@@ -286,9 +299,9 @@
                              milliseconds);
   }
 
-  app.controller('PhotoController', ['$scope', '$stateParams', '$http', 'Photo', 'Face', 'translations', 
+  app.controller('PhotoController', ['$scope', '$stateParams', '$window', 'Photo', 'Face', 'translations', 
 
-                                      function($scope, $stateParams, $http, Photo, Face, translations)
+                                      function($scope, $stateParams, $window, Photo, Face, translations)
                                       {
                                         var maxDim = 500; // pixels
                                         var scaleFactor; // updated when the Photo object is loaded
@@ -378,14 +391,56 @@
                                               (0 < face.y) && (face.y < ($scope.photo.height - (meanHeight / 2))))
                                           {
                                             $scope.faces.push(face);
-                                            Face.save(face);
+                                            Face.save(face, function(data)
+                                                            {
+                                                              face.id = data.id;
+                                                            },
+                                                            function(err)
+                                                            {
+                                                              $scope.removeFaceWithId(null);
+                                                              $window.alert($scope.xlate('unableToAddFace'));
+                                                            });
+                                          }
+                                          else
+                                          {
+                                            // TODO ...
                                           }
                                         }
-                                        $scope.confirmFaceDelection = function(face)
+                                        $scope.removeFaceWithId = function(targetId)
+                                                                  {
+                                                                    var matchingIndex;
+                                                                    angular.forEach($scope.faces, function(f, index)
+                                                                    {
+                                                                      if (f.id == targetId)
+                                                                      {
+                                                                        matchingIndex = index;
+                                                                      }
+                                                                    });
+                                                                    if (matchingIndex)
+                                                                    {                                                                                            
+                                                                      $scope.faces.splice(matchingIndex, 1);
+                                                                    }
+                                                                  }
+                                        $scope.confirmFaceDeletion = function(face)
                                                                       {
                                                                         if (confirm($scope.xlate('confirmDeleteFace')))
                                                                         {
-                                                                          face.deleted = true;
+                                                                          if (face.manual && !face.name_id)
+                                                                          {
+                                                                            Face.delete({photo_id: face.photo_id, id: face.id},
+                                                                                        function(data)
+                                                                                        {
+                                                                                          $scope.removeFaceWithId(face.id);
+                                                                                        },
+                                                                                        function(err)
+                                                                                        {
+                                                                                          $window.alert($scope.xlate('unableToDeleteFace'));
+                                                                                        });
+                                                                          }
+                                                                          else
+                                                                          {
+                                                                            face.deleted = true;
+                                                                          }
                                                                           $scope.setHoverFace(null);
                                                                         }
                                                                       }
