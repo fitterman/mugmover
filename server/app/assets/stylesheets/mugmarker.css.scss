@@ -1,15 +1,15 @@
 // For now, these must by synchronized with their counterparts in the haml/erb world.
-$thumbsize:     50;
-$blueish:       #39f;
-$borderWidth:   2px;
-$iconPixelDim:  16px;
-$handleWidth:   10px;
-$thumbsizeWithBorder:  $thumbsize + $borderWidth;
+$thumbsize:                   50;
+$faceFrameBorderColor:        #39f;
+$borderWidth:                 2px;
+$iconPixelDim:                16px;
+$handleWidth:                 10px;
+$thumbsizeWithBorder:         $thumbsize + $borderWidth;
 
 
 .deleteControl span
               {
-                background-color: $blueish;
+                background-color: $faceFrameBorderColor;
                 border: 0.14 * $iconPixelDim solid rgba(0, 0, 0, 0);
                 border-radius: 50%; 
                 color: white; 
@@ -36,12 +36,12 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 z-index: 3; 
               }
 .face-frame   {
-                border: 2px solid $blueish; 
+                border: 2px solid $faceFrameBorderColor; 
                 position: absolute; 
                 z-index: 110; 
               }
 .handle       {
-                background-color: $blueish;
+                background-color: $faceFrameBorderColor;
                 border-radius: $handleWidth / 2;
                 cursor: nwse-resize;
                 height: $handleWidth;
@@ -81,12 +81,12 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
 #names-container .row.withfocus
               {
                 background-color: black;
-                color:  $blueish;
+                color:  $faceFrameBorderColor;
               }
 #names-container .row:hover
               {
                 background-color: red;
-                color:  $blueish;
+                color:  $faceFrameBorderColor;
               }
 #photo-container
               {
