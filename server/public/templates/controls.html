@@ -14,9 +14,9 @@
         {{xlate('restoreButton')}}
         <span class="caret"></span>
       </button>
-      <ul id="restoreFaces" class="dropdown-menu" role="menu" style="opacity: 0.6;">
+      <ul id="restore-faces" class="dropdown-menu" role="menu">
         <li role="presentation" 
-            ng-repeat="face in faces" 
+            ng-repeat="face in faces | orderBy:'text' " 
             ng-mouseenter="face.hovering = true"
             ng-mouseleave="face.hovering = false"
             ng-if="face.deleted==true" >

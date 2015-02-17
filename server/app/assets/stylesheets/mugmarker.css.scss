@@ -153,5 +153,13 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
                 margin: auto;
                 border: 2px solid white;
               }
+#restore-faces 
+              {
+                background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6));
+              }
+#restore-faces a:hover
+              {
+                background-color: rgba(255, 255, 255, 0.6);
+              }
 .selected     { background-color: black; opacity: 1.0; }
 .unselected   { opacity: 0.6; }
