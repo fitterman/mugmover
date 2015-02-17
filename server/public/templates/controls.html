@@ -9,17 +9,19 @@
       </a>
     </div>
     <div id="restoreGroup" class="btn-group">
-      <button id="restoreButton" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+      <button id="restoreButton"
+              class="btn btn-default dropdown-toggle"
+              data-toggle="dropdown"
+              ng-disabled="(faces | filter:{deleted: true}).length == 0"
               aria-expanded="false">
         {{xlate('restoreButton')}}
         <span class="caret"></span>
       </button>
       <ul id="restore-faces" class="dropdown-menu" role="menu">
         <li role="presentation" 
-            ng-repeat="face in faces | orderBy:'text' " 
+            ng-repeat="face in filteredFaces = faces|filter:{deleted: true} | orderBy:'text' " 
             ng-mouseenter="face.hovering = true"
-            ng-mouseleave="face.hovering = false"
-            ng-if="face.deleted==true" >
+            ng-mouseleave="face.hovering = false">
           <a role="menuitem" 
              ng-click="restoreFace(face)" 
              tabindex="-1" href="#">{{face.text || '(' + xlate('unknown') + ')'}}</a>
