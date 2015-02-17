@@ -205,8 +205,8 @@
       faceOriginalW = Math.floor(0.5 + $(face).width()); // round it up/down
       faceOriginalH = Math.floor(0.5 + $(face).height()); // round it up/down
       facePosition = $(face).position();
-      relPos = {top: Math.floor(0.5 + facePosition.top) + faceOriginalH - handleRadius + #{borderWidth}, 
-                left: Math.floor(0.5 + facePosition.left) + faceOriginalW - handleRadius + #{borderWidth}};
+      relPos = {top: Math.floor(0.5 + facePosition.top) + faceOriginalH - handleRadius + borderWidth, 
+                left: Math.floor(0.5 + facePosition.left) + faceOriginalW - handleRadius + borderWidth};
     }
 
     setRelPos();
@@ -233,9 +233,9 @@
       var faceContainmentRectangle = [containerPosition.left + handleRadius, 
                                       containerPosition.top + handleRadius,
                                       containerPosition.left + $('#photo-container > img').width() -
-                                        ($(face).width() + #{handleWidth}),
+                                        ($(face).width() + handleWidth),
                                       containerPosition.top + $('#photo-container > img').height() -
-                                        ($(face).height() + #{handleWidth})];
+                                        ($(face).height() + handleWidth)];
       $(target).draggable('option', 'containment', faceContainmentRectangle)
     }
   */

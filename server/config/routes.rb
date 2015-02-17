@@ -7,7 +7,8 @@ Rails.application.routes.draw do
       resources :pics, only: [:index, :show, :update] do
         get 'details', on: :collection
       end
-      resources :faces, only: [:create, :update, :destroy] do
+      resources :faces, only: [:create, :update] do
+        delete :destroy, on: :collection
       end
       resources :names, only: [:index]
     end
