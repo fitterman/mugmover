@@ -474,7 +474,7 @@
             %img{:src => "https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png", :style => "height:30px"}/
           .col-xs-10.ellipsis{:style => "padding: 0;"}
             {{ name.publicName }}
-            .namenote
+            .name-note
               {{ name.note ? name.note : ' ' }} {{name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1 }}
 
 :javascript

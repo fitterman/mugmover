@@ -7,52 +7,6 @@ $handleWidth:   10px;
 $thumbsizeWithBorder:  $thumbsize + $borderWidth;
 
 
-#photo-container
-              {
-                position: relative;
-              }
-.photothumb   { 
-                background-color: white;
-                background-position: center; 
-                background-repeat: no-repeat;
-                background-size: contain; 
-                border: $borderWidth solid white; 
-                display: inline-flex; 
-                height: $thumbsizeWithBorder;
-                position: absolute;
-                top: 27px;
-                width: $thumbsizeWithBorder;
-                z-index: 2;
-              }
-.photothumb:hover
-              {
-                  opacity: 1.0;
-              }
-#name         { 
-                z-index: 108; white-space: nowrap; position: absolute;
-              }
-.ellipsis     {
-                overflow-x: hidden; 
-                text-overflow: ellipsis; 
-                white-space: nowrap;
-              }
-.handle       {
-                background-color: $blueish;
-                border-radius: $handleWidth / 2;
-                cursor: nwse-resize;
-                height: $handleWidth;
-                position: absolute;
-                width: $handleWidth;
-                z-index: 150;
-              }
-.unselected   { opacity: 0.5; }
-.selected     { background-color: #33f; border: $borderWidth solid red; opacity: 1.0; }
-.enlarged     {
-                height: 2 * $thumbsizeWithBorder;
-                opacity: 1.0; 
-                width: 2 * $thumbsizeWithBorder;
-                z-index: 3; 
-              }
 .deleteControl span
               {
                 background-color: $blueish;
@@ -70,11 +24,33 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
 .deleteControl span:hover
               {
                 background-color: #c00;
+              }.ellipsis     {
+                overflow-x: hidden; 
+                text-overflow: ellipsis; 
+                white-space: nowrap;
+              }
+.enlarged     {
+                height: 2 * $thumbsizeWithBorder;
+                opacity: 1.0; 
+                width: 2 * $thumbsizeWithBorder;
+                z-index: 3; 
               }
 .face-frame   {
                 border: 2px solid $blueish; 
                 position: absolute; 
                 z-index: 110; 
+              }
+.handle       {
+                background-color: $blueish;
+                border-radius: $handleWidth / 2;
+                cursor: nwse-resize;
+                height: $handleWidth;
+                position: absolute;
+                width: $handleWidth;
+                z-index: 150;
+              }
+#name         { 
+                z-index: 108; white-space: nowrap; position: absolute;
               }
 #name-display-box:hover
               {
@@ -85,6 +61,9 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 position: relative;
                 width:  20em;
               }
+.name-note    {
+                font-size: 70%;
+              }    
 #names-container
               {
                 background-color: #444; 
@@ -109,9 +88,10 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 background-color: red;
                 color:  $blueish;
               }
-.namenote     {
-                font-size: 70%;
-              }    
+#photo-container
+              {
+                position: relative;
+              }
 #photo-img    {
                 cursor: crosshair;
                 left: 0;
@@ -146,3 +126,22 @@ $thumbsizeWithBorder:  $thumbsize + $borderWidth;
                 border-radius: 8px; 
                 background-color: rgba(0, 0, 0, 0.4); 
               }
+.photothumb   { 
+                background-color: white;
+                background-position: center; 
+                background-repeat: no-repeat;
+                background-size: contain; 
+                border: $borderWidth solid white; 
+                display: inline-flex; 
+                height: $thumbsizeWithBorder;
+                position: absolute;
+                top: 27px;
+                width: $thumbsizeWithBorder;
+                z-index: 2;
+              }
+.photothumb:hover
+              {
+                  opacity: 1.0;
+              }
+.selected     { background-color: #33f; border: $borderWidth solid red; opacity: 1.0; }
+.unselected   { opacity: 0.5; }
