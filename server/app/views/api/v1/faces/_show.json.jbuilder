@@ -1,5 +1,5 @@
-json.x face.left
-json.y face.top
+json.x face.x # left
+json.y face.y # top
 json.w face.width
 json.h face.height
 json.known face.named_face.present?

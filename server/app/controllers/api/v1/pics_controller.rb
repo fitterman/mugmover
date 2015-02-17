@@ -2,10 +2,8 @@ module Api
   module V1
     # TODO Get this back to using ApiController
     class PicsController < ApplicationController
-      # NOTE: If PAGESIZE is so small that it can't span a page with images, the
-      # continuation code may leave a gap if images in the middle of the horizontal
-      # scroller. Yes, it does handle getting more, but not well enough to handle
-      # this one case.
+      skip_before_action :verify_authenticity_token
+
       PAGESIZE = 10
 
       # GET /photos.json
@@ -24,11 +22,17 @@ module Api
       # GET /photos/1.json
       def show
         @hsa = HostingServiceAccount.find(params[:a_id])
-        @photo = @hsa.photos.find(params[:id])
+        @photo = @hsa.photos.includes(:faces).find(params[:id])
       end
 
       # GET /photos/1.json
       def details
+        @hsa = HostingServiceAccount.find(params[:a_id])
+        @photo = @hsa.photos.find(params[:id])
+      end
+
+      # Effectively, this can only be used to update the flag at the moment
+      def update
         @hsa = HostingServiceAccount.find(params[:a_id])
         @photo = @hsa.photos.find(params[:id])
       end

@@ -17,7 +17,43 @@
   var photoWidth = #{thumbsizeWithBorder}; // pixels (borderWidth px on each side)
 
 
-  var app = angular.module('mugmarker', ['ui.router']);
+  var mugmarkerServices = angular.module('mugmarkerServices', ['ngResource']);
+
+  mugmarkerServices.factory('Photo', ['$resource',
+                                      '$http',
+                                      function($resource, $http)
+                                      { // TODO HOW DO YOU DEAL WITH ERRORS?
+                                        return $resource('/api/v1/pics/:id.json', 
+                                                         {a_id: 1 }, 
+                                                         {
+                                                            update: 
+                                                            {
+                                                              method: "PUT",
+                                                              params: {id: "@id"}
+                                                            }
+                                                          } 
+                                        );
+                                      }
+                                     ]
+  );
+  mugmarkerServices.factory('Face',  ['$resource',
+                                      '$http',
+                                      function($resource, $http)
+                                      { // TODO HOW DO YOU DEAL WITH ERRORS?
+                                        return $resource('/api/v1/faces/:id.json', 
+                                                         {a_id: 1}, 
+                                                         {
+                                                            update: 
+                                                            {
+                                                              method: "PUT",
+                                                              params: {id: "@id"} // The face Id
+                                                            }
+                                                          } 
+                                        );
+                                      }
+                                     ]
+  );
+  var app = angular.module('mugmarker', ['ui.router', 'mugmarkerServices']);
 
   // Configure the router (ui-router)
   app.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
@@ -156,29 +192,6 @@
   }]);
 
 
-  var appServices = angular.module('phonecatServices', ['ngResource']);
-
-  appServices.factory('Photo', ['$resource',
-                                function($resource)
-                                { // TODO HOW DO YOU DEAL WITH ERRORS?
-                                  return $resource('#{api_v1_pics_path}/:photoId.json', 
-                                                   {}, 
-                                                   {
-                                                      query: 
-                                                        {
-                                                          method:'GET', 
-                                                          params:
-                                                          {
-                                                            photoId: 200, 
-                                                            aId: 1
-                                                          },
-                                                          isArray: true
-                                                      }
-                                                    }
-                                  );
-                                }
-                              ]
-  );
   /*
 
     // ***** Everything from this point down has to do with resizing/moving faces ***** //
@@ -274,37 +287,51 @@
                              milliseconds);
   }
 
-  var maxDim = 500; // pixels
-  var scaleFactor; // updated when the Photo object is loaded
-  var defineScaledMethods = function(whichFace)
-  {
-    whichFace.scaledX = function() {return (this.x * scaleFactor) + 'px';};
-    whichFace.scaledY = function() {return (this.y * scaleFactor) + 'px';};
-    whichFace.scaledW = function() {return (this.w * scaleFactor) + 'px';};
-    whichFace.scaledH = function() {return (this.h * scaleFactor) + 'px';};
-    // 8 in the following has to do with the diameter of the handle
-    whichFace.handleY = function() {return (this.h * scaleFactor - 8) + 'px';};
-    whichFace.handleX = function() {return (this.w * scaleFactor - 8) + 'px';};
-  };
+  app.controller('PhotoController', ['$scope', '$stateParams', '$http', 'Photo', 'Face', 'translations', 
 
-  app.controller('PhotoController', ['$scope', '$stateParams', '$http', 'translations', 
-                                      function($scope, $stateParams, $http, translations)
+                                      function($scope, $stateParams, $http, Photo, Face, translations)
                                       {
-                                        if ($stateParams && $stateParams.id)
+                                        var maxDim = 500; // pixels
+                                        var scaleFactor; // updated when the Photo object is loaded
+                                        var defineScaledMethods = function(whichFace)
                                         {
-                                          $http.get("#{api_v1_pics_path}/" + $stateParams.id + ".json?a_id=1") // TODO Add actual photo id
-                                               .success(function(response)
-                                                        { 
-                                                          $scope.photo = response;
-                                                          scaleFactor = maxDim / Math.max($scope.photo.width, $scope.photo.height);
-                                                          $scope.photo.unscaled = function(rawValue) {return Math.floor(rawValue / scaleFactor);}
-                                                          $scope.faces = response.faces;  // A convenience
-                                                          angular.forEach($scope.faces, defineScaledMethods);
-                                                          $scope.photo.mmuid; // Assign a unique ID so the first debounce doesn't trigger an update
-                                                          $scope.$watch('photo', report, true);
-                                                        }
-                                               );
-                                        }
+                                          whichFace.scaledX = function() {return (this.x * scaleFactor) + 'px';};
+                                          whichFace.scaledY = function() {return (this.y * scaleFactor) + 'px';};
+                                          whichFace.scaledW = function() {return (this.w * scaleFactor) + 'px';};
+                                          whichFace.scaledH = function() {return (this.h * scaleFactor) + 'px';};
+                                          // 8 in the following has to do with the diameter of the handle
+                                          whichFace.handleY = function() {return (this.h * scaleFactor - 8) + 'px';};
+                                          whichFace.handleX = function() {return (this.w * scaleFactor - 8) + 'px';};
+                                          whichFace.photo_id = photo.id;
+                                        };
+
+                                        var photo = Photo.get({ id: $stateParams.id }, function() {
+                                          scaleFactor = maxDim / Math.max(photo.width, photo.height);
+                                          photo.unscaled = function(rawValue) {return Math.floor(rawValue / scaleFactor);}
+                                          photo.mmuid; // Assign a unique ID so the first debounce doesn't trigger an update
+                                          angular.forEach(photo.faces, defineScaledMethods);                              
+                                          $scope.photo = photo;
+                                          $scope.faces = photo.faces;
+                                          angular.forEach(photo.faces, function(value, key, obj) 
+                                                                       {
+                                                                         $scope.$watch('faces[' + key + ']', report, true); 
+                                                                       });
+                                          photo.faces = undefined;
+                                          $scope.$watch('photo', report, true);
+                                        }); // get() returns a single photo
+                                       
+                                      /*  var photos = Photo.query(function() {
+                                            console.log(photos);
+                                          }); //query() returns all the entries
+                                       */
+                                       
+                                      /* $scope.photo.data = 'some data'; */
+                                       
+                                       /* Photo.save($scope.photo, function() {
+                                          //data saved. do something here.
+                                        }); //saves an photo. Assuming $scope.photo is the Photo object  
+                                      */
+
                                         $scope.addFaceAt = function(x, y)
                                         {
                                           // We must convert the coordinates back to that of the original photo
@@ -341,16 +368,18 @@
                                                       y: unscaledY - (meanHeight / 2), 
                                                       w: meanWidth, 
                                                       h: meanHeight, 
+                                                      photo_id: $scope.photo.id,
                                                       deleted: false,
                                                       manual: true, 
                                                       text: null,
-                                                      faceId: null,
+                                                      id: null,
                                                     };
                                           defineScaledMethods(face);
                                           if ((0 < face.x) && (face.x < ($scope.photo.width - (meanWidth / 2))) &&
                                               (0 < face.y) && (face.y < ($scope.photo.height - (meanHeight / 2))))
                                           {
                                             $scope.faces.push(face);
+                                            Face.save(face);
                                           }
                                         }
                                         $scope.confirmFaceDelection = function(face)
@@ -371,12 +400,19 @@
                                                               }
                                         $scope.setHoverFace(null);
                                         $scope.xlate = translations.translate;
-                                        var reportThis = function(target) { console.log(new Date().getSeconds(), target) };
+                                        var updatePhoto = function(target) 
+                                                          {
+                                                            console.log(new Date().getSeconds(), target);
+                                                            Photo.update(target, function(a, b, c)
+                                                              {
+                                                                console.log('abc', a, b, c);
+                                                              });
+                                                          };
                                         var report = function(newValue, oldValue)
                                         {
                                           if (newValue !== oldValue)
                                           {
-                                            debounce(newValue, 1000, reportThis);
+                                            debounce(newValue, 1000, updatePhoto);
                                           }
                                         }
                                       }

@@ -11,13 +11,13 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150202203521) do
+ActiveRecord::Schema.define(version: 20150217111202) do
 
   create_table "faces", force: true do |t|
     t.integer  "photo_id"
     t.string   "face_uuid"
-    t.float    "center_x"
-    t.float    "center_y"
+    t.float    "x"
+    t.float    "y"
     t.float    "width"
     t.float    "height"
     t.integer  "named_face_id"

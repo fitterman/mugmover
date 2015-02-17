@@ -4,13 +4,10 @@ Rails.application.routes.draw do
     namespace :v1 do
       resource :upload, only: [:create]
       resources :photos, only: [:index, :show]
-      resources :pics, only: [:index, :show] do
-        post 'flag', on: :collection
+      resources :pics, only: [:index, :show, :update] do
         get 'details', on: :collection
       end
-      resources :faces, only: [:create, :destroy] do
-        post 'undestroy', on: :member
-        post 'link', on: :member
+      resources :faces, only: [:create, :update, :destroy] do
       end
       resources :names, only: [:index]
     end

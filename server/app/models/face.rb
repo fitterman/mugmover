@@ -7,41 +7,22 @@ class Face < ActiveRecord::Base
 
   validates   :photo_id,            presence: true
   validates   :face_uuid,           presence: true
-  validates   :center_x,            presence: true # could be negative after cropping
-  validates   :center_y,            presence: true # could be negative after cropping
+  validates   :x,                   presence: true # could be negative after cropping
+  validates   :y,                   presence: true # could be negative after cropping
   validates   :width,               numericality: { greater_than_or_equal_to: 0 }
   validates   :height,              numericality: { greater_than_or_equal_to: 0 }
   validates   :face_key,            presence: true
 
+      #   #  ###  ##### ####   
+      ##  # #   #   #   #       While the source data works with the center
+      # # # #   #   #   ###     X and Y coordinates of the face, in the
+      #  ## #   #   #   #       server, we track X and Y as the top left corner.
+      #   #  ###    #   ####
+
+
   ## TODO Add rejected and figure out how manually-added faces are treated (vs automatic and rejected).
   ## Also add the facekey which associates a face to a name. Add the facekey in the person table
   
-  # returns a float value
-  def left
-    center_x - (width / 2)
-  end
-
-  # returns a float value
-  def top
-    center_y - (height / 2)
-  end
-
-  def left_scaled(scale_factor)
-    left * scale_factor
-  end
-
-  def top_scaled(scale_factor)
-    top * scale_factor
-  end
-
-  def width_scaled(scale_factor)
-    width * scale_factor
-  end
-
-  def height_scaled(scale_factor)
-    height * scale_factor
-  end
-
   def primary_name
     self.face_uuid
   end
@@ -93,8 +74,9 @@ class Face < ActiveRecord::Base
       if named_face.present?
         face.named_face_id = named_face.id
       end
-      face.center_x = face_params['center']['x']
-      face.center_y = face_params['center']['y']
+
+      face.x = face_params['center']['x'] - (face_params['width'] / 2)
+      face.y = face_params['center']['y'] - (face_params['height'] / 2)
       face.width = face_params['width']
       face.height = face_params['height']
       face.visible = face_params['visible']
