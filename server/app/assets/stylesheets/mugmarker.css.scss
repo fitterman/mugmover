@@ -24,16 +24,11 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
 .deleteControl span:hover
               {
                 background-color: #c00;
-              }.ellipsis     {
+              }
+.ellipsis     {
                 overflow-x: hidden; 
                 text-overflow: ellipsis; 
                 white-space: nowrap;
-              }
-.enlarged     {
-                height: 2 * $thumbsizeWithBorder;
-                opacity: 1.0; 
-                width: 2 * $thumbsizeWithBorder;
-                z-index: 3; 
               }
 .face-frame   {
                 border: 2px solid $faceFrameBorderColor; 
@@ -106,9 +101,10 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
               }
 #photobar-container
               {
-                height: 114px; 
+                height: 118px; 
                 overflow-y: scroll;
                 white-space: nowrap;
+                background: black;
               }
 #photobar-container::-webkit-scrollbar 
               {
@@ -127,11 +123,9 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
                 background-color: rgba(0, 0, 0, 0.4); 
               }
 .photothumb   { 
-                background-color: white;
                 background-position: center; 
                 background-repeat: no-repeat;
                 background-size: contain; 
-                border: $borderWidth solid white; 
                 display: inline-flex; 
                 height: $thumbsizeWithBorder;
                 position: absolute;
@@ -141,7 +135,23 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
               }
 .photothumb:hover
               {
-                  opacity: 1.0;
+                width: 2 * $thumbsizeWithBorder;
+                height: 2 * $thumbsizeWithBorder;
+                opacity: 1.0;
+                z-index: 3;
               }
-.selected     { background-color: #33f; border: $borderWidth solid red; opacity: 1.0; }
+.photothumb:hover > img
+              {
+                position: relative;
+                max-height: 2 * $thumbsizeWithBorder;
+                max-width: 2 * $thumbsizeWithBorder;
+              }
+.photothumb > img
+              {
+                max-height: $thumbsizeWithBorder;
+                max-width: $thumbsizeWithBorder;
+                margin: auto;
+                border: 2px solid white;
+              }
+.selected     { background-color: black; opacity: 1.0; }
 .unselected   { opacity: 0.5; }

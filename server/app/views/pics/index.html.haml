@@ -1,8 +1,3 @@
-- thumbsize = 50
-- borderWidth = 2
-- handleWidth = 10
-- thumbsizeWithBorder = thumbsize + borderWidth
-- magic_adjustment_factor = 8
 - photos_per_request = Api::V1::PicsController::PAGESIZE
 
 :javascript
@@ -12,8 +7,14 @@
   var language = 'ia';
 
   var endGap = 400; // pixels
-  var photoWidth = #{thumbsizeWithBorder}; // pixels (borderWidth px on each side)
+  var fullThumbSize = 50;
+  var halfThumbSize = fullThumbSize / 2;
+  var borderWidth = 2; // px
+  var photoWidth = fullThumbSize + (2 * borderWidth); // pixels (borderWidth px on each side)
 
+  var handleRadius = 5; // px
+  var handleWidth = 2 * handleRadius; // px
+  var magicAdjustmentFactor = 8
 
   var mugmarkerServices = angular.module('mugmarkerServices', ['ngResource']);
 
@@ -139,8 +140,8 @@
         var right = scope.containment.left + scope.containment.width - (ele.offsetWidth / 2);
         
         var startX = 0, startY = 0;
-        var x = scope.face.h - #{magic_adjustment_factor};
-        var y = scope.face.w - #{magic_adjustment_factor};
+        var x = scope.face.h - magicAdjustmentFactor;
+        var y = scope.face.w - magicAdjustmentFactor;
 
         var p = scope.photo; 
         element.on('mousedown', function(event) {
@@ -204,8 +205,8 @@
       faceOriginalW = Math.floor(0.5 + $(face).width()); // round it up/down
       faceOriginalH = Math.floor(0.5 + $(face).height()); // round it up/down
       facePosition = $(face).position();
-      relPos = {top: Math.floor(0.5 + facePosition.top) + faceOriginalH - #{handleWidth/2} + #{borderWidth}, 
-                left: Math.floor(0.5 + facePosition.left) + faceOriginalW - #{handleWidth/2} + #{borderWidth}};
+      relPos = {top: Math.floor(0.5 + facePosition.top) + faceOriginalH - handleRadius + #{borderWidth}, 
+                left: Math.floor(0.5 + facePosition.left) + faceOriginalW - handleRadius + #{borderWidth}};
     }
 
     setRelPos();
@@ -222,15 +223,15 @@
       var maxDeltaY = Math.min.apply(null, distanceToEachEdge);
       var handleContainment = [faceCenterX, // Do not adjust because handle is positioned from its left edge
                                faceCenterY,
-                               faceCenterX + maxDeltaX - #{handleWidth},
-                               faceCenterY + maxDeltaY - #{handleWidth}
+                               faceCenterX + maxDeltaX - handleWidth,
+                               faceCenterY + maxDeltaY - handleWidth
                               ];
       $(target).draggable('option', 'containment', handleContainment); 
     }
     var setFaceContainmentRectangle = function(target)
     {
-      var faceContainmentRectangle = [containerPosition.left + #{handleWidth/2}, 
-                                      containerPosition.top + #{handleWidth/2},
+      var faceContainmentRectangle = [containerPosition.left + handleRadius, 
+                                      containerPosition.top + handleRadius,
                                       containerPosition.left + $('#photo-container > img').width() -
                                         ($(face).width() + #{handleWidth}),
                                       containerPosition.top + $('#photo-container > img').height() -
@@ -508,9 +509,8 @@
                    {
                      $('<div id="thumb_' + photo.id + '" ' +
                                  'class="photothumb unselected" ' +
-                                 'style="left:' + i2x(photo.index) + 'px; ' + 
-                                        'background-image: url(' +  photo.thumb + ');" ' +
-                                 'data-id="' + photo.id + '">')
+                                 'style="left:' + i2x(photo.index) + 'px;" '  +
+                                 'data-id="' + photo.id + '"><img src="'+ photo.thumb + '" /></div>')
                        .appendTo('#photobar');
                    }
                  }
@@ -534,13 +534,15 @@
   $('#photobar-container').on('scroll', function() {debounce(this, 250, scrollingDone)} );
 
   $('#photobar').on('mouseover', '.photothumb', function() {
-      $(this).addClass('enlarged').css({ top: $(this).position().top - #{thumbsize / 2},
-                                         left: $(this).position().left - #{thumbsize / 2}});
-                                       });
+      $(this).css({ top: $(this).position().top - halfThumbSize,
+                    left: $(this).position().left - halfThumbSize
+                  });
+  });
   $('#photobar').on('mouseout', '.photothumb', function() {
-    $(this).removeClass('enlarged').css({ top: $(this).position().top + #{thumbsize / 2},
-                                          left: $(this).position().left + #{thumbsize / 2}});
-                                        });
+    $(this).css({ top:  $(this).position().top + halfThumbSize,
+                  left: $(this).position().left + halfThumbSize
+                 });
+  });
   $('#photobar').on('click', '.photothumb', function() {
     $('#photobar > .selected').removeClass('selected').addClass('unselected');
     // TODO Fill in with the image you have. Requires knowing the AR of the photo 
