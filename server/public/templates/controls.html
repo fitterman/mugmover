@@ -1,6 +1,6 @@
 <div class="row" style="margin: 1em;" ng-show="photo.id">
   <div class="col-xs-8">
-    <div class="btn-group" role="gorup" aria-label="Control what is displayed">
+    <div class="btn-group" role="group" aria-label="Control what is displayed">
       <a id="photoButton" class="btn btn-default" ui-sref="edit({id: photo.id})">
         {{xlate('photoButton')}}
       </a>
@@ -14,7 +14,11 @@
         {{xlate('restoreButton')}}
         <span class="caret"></span>
       </button>
-      <ul id="restoreFaces" class="dropdown-menu" role="menu"></ul>
+      <ul id="restoreFaces" class="dropdown-menu" role="menu">
+        <li role="presentation" ng-repeat="face in faces" ng-if="face.deleted==true" >
+          <a role="menuitem" ng-click="restoreFace(face)" tabindex="-1" href="#">{{face.text || '(' + xlate('unknown') + ')'}}</a>
+        </li>
+      </ul>
     </div>
   </div>
   <div class="col-xs-4">

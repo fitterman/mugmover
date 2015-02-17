@@ -18,96 +18,116 @@
 
   var mugmarkerServices = angular.module('mugmarkerServices', ['ngResource']);
 
-  mugmarkerServices.factory('Photo', ['$resource',
-                                      function($resource)
-                                      { // TODO HOW DO YOU DEAL WITH ERRORS?
-                                        return $resource('/api/v1/pics/:id.json', 
-                                                         {a_id: 1 }, 
-                                                         {
-                                                            update: 
-                                                            {
-                                                              method: "PUT",
-                                                              params: {id: "@id"}
-                                                            }
-                                                          } 
-                                        );
-                                      }
-                                     ]
+  mugmarkerServices.factory('Photo', 
+                            ['$resource',
+                              function($resource)
+                              {
+                                return $resource('/api/v1/pics/:id.json', 
+                                                 {a_id: 1 }, 
+                                                 {
+                                                    update: 
+                                                    {
+                                                      method: "PUT",
+                                                      params: {id: "@id"}
+                                                    }
+                                                  } 
+                                );
+                              }
+                             ]
   );
-  mugmarkerServices.factory('Face',  ['$resource',
-                                      function($resource)
-                                      { // TODO HOW DO YOU DEAL WITH ERRORS?
-                                        return $resource('/api/v1/faces/:id.json', 
-                                                         {a_id: 1}, 
-                                                         {
-                                                            update: 
-                                                            {
-                                                              method: "PUT",
-                                                              params: {id: "@id"} // The face Id
-                                                            }
-                                                          } 
-                                        );
-                                      }
-                                     ]
+  mugmarkerServices.factory('Face',  
+                            ['$resource',
+                              function($resource)
+                              {
+                                return $resource('/api/v1/faces/:id.json', 
+                                                 {a_id: 1}, 
+                                                 {
+                                                    update: 
+                                                    {
+                                                      method: "PUT",
+                                                      params: {id: "@id"} // The face Id
+                                                    },
+                                                    restore: 
+                                                    {
+                                                      url: "/api/v1/faces/:id/restore.json",
+                                                      method: "POST",
+                                                      params: {id: "@id"} // The face Id
+                                                    }
+
+                                                  } 
+                                );
+                              }
+                             ]
   );
   var app = angular.module('mugmarker', ['ui.router', 'mugmarkerServices']);
 
   // Configure the router (ui-router)
-  app.config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
-    $urlRouterProvider.otherwise('/');
-    $stateProvider
-      .state('edit',
-              {
-                url:'/edit/:id',
-                views:
+  app.config(['$stateProvider', '$urlRouterProvider', 
+    function($stateProvider, $urlRouterProvider)
+    {
+      $urlRouterProvider.otherwise('/');
+      $stateProvider
+        .state('edit',
                 {
-                  display:
+                  url:'/edit/:id',
+                  views:
                   {
-                    templateUrl: '/templates/photo.html',
-                    controller: 'PhotoController'
-                  }
+                    display:
+                    {
+                      templateUrl: '/templates/photo.html',
+                      controller: 'PhotoController'
+                    }
 
-                }
-             })
-      .state('detail', 
-              {
-                url:'/detail/:id',
-                views:
+                  }
+               })
+        .state('detail', 
                 {
-                  display:
+                  url:'/detail/:id',
+                  views:
                   {
-                    templateUrl: '/templates/detail.html',
-                    controller: 'DetailController'
-                  }
+                    display:
+                    {
+                      templateUrl: '/templates/detail.html',
+                      controller: 'DetailController'
+                    }
 
-                }
-             })
-  }]);
+                  }
+               })
+    }
+  ]);
 
 
   app.factory('translations', function() 
   {
-    var translations = { en: { confirmDeleteFace: 'Do you really want to delete this face?',
-                               deleteFace: 'Delete face',
-                               detailsButton: 'Details', 
-                               photoButton: 'Photo', 
-                               markPhoto: 'Mark this photo for later attention',
-                               restoreButton: 'Restore Faces',
-                               tryAgain: 'An error occurred. Please try again.',
-                               unableToAddFace: 'An error occurred and the face could not be added.',
-                               unableToDeleteFace: 'An error occurred and the face could not be deleted.', 
-                             },
-                         ia: { confirmDeleteFace: 'oDay youway eallyray antway otay eleteday isthay acefay?',
-                               deleteFace: 'eleteDay acefay',
-                               detailsButton: 'etailsDay', 
-                               photoButton: 'otoPhay',
-                               markPhoto: 'arkMay isthay otophay orfay aterlay attentionway',
-                               restoreButton: 'estoreRay acesFay',
-                               tryAgain: 'Anway errorway occurredway. easePlay ytray againway.',
-                               unableToAddFace: 'Anway errorway occurredway andway ethay acefay ouldcay otnay ebay addedway.',
-                               unableToDeleteFace: 'Anway errorway occurredway andway ethay acefay ouldcay otnay ebay eletedday.', 
-                             },
-                        };
+    var translations = 
+    { 
+      en: { 
+            confirmDeleteFace: 'Do you really want to delete this face?',
+            deleteFace: 'Delete face',
+            detailsButton: 'Details', 
+            photoButton: 'Photo', 
+            markPhoto: 'Mark this photo for later attention',
+            restoreButton: 'Restore Faces',
+            tryAgain: 'An error occurred. Please try again.',
+            unableToAddFace: 'An error occurred and the face could not be added.',
+            unableToDeleteFace: 'An error occurred and the face could not be deleted.',
+            unableToRestoreFace: 'An error occured and the face could not be restored.',
+            unknown: 'Unknown', 
+          },
+      ia: { 
+            confirmDeleteFace: 'Oday youway eallyray antway otay eleteday isthay acefay?',
+            deleteFace: 'Eleteday Acefay',
+            detailsButton: 'Etailsday', 
+            photoButton: 'Otophay',
+            markPhoto: 'Arkmay isthay otophay orfay aterlay attentionway',
+            restoreButton: 'Estoreray Acesfay',
+            tryAgain: 'Anway errorway occurredway. Easeplay ytray againway.',
+            unableToAddFace: 'Anway errorway occurredway andway ethay acefay ouldcay otnay ebay addedway.',
+            unableToDeleteFace: 'Anway errorway occurredway andway ethay acefay ouldcay otnay ebay eletedday.', 
+            unableToRestoreFace: 'Anway errorway occurredway andway ethay acefay ouldcay otnay ebay estoredray.', 
+            unknown: 'Otnay Ownknay', 
+          },
+      };
     var language = 'ia';
 
     return {
@@ -252,21 +272,22 @@
       $(target).draggable('option', 'containment', faceContainmentRectangle)
     }
   */
-  app.controller('DetailController', ['$scope', '$stateParams', '$http', 'translations', 
-                                      function($scope, $stateParams, $http, translations)
-                                      {
-                                        $http.get('#{details_api_v1_pics_path(format: :json)}?a_id=1&id=' + $stateParams.id )
-                                             .success(function(response)
-                                                      {
-                                                        $scope.photo = {id: $stateParams.id}; // To support navigation in partial
-                                                        $scope.details = response;
-                                                      })
-                                        $scope.detailsAsJson = function()
-                                        {
-                                          return angular.toJson($scope.details, true);
-                                        }
-                                        $scope.xlate = translations.translate;
-                                      }
+  app.controller('DetailController', 
+                  ['$scope', '$stateParams', '$http', 'translations', 
+                    function($scope, $stateParams, $http, translations)
+                    {
+                      $http.get('#{details_api_v1_pics_path(format: :json)}?a_id=1&id=' + $stateParams.id )
+                           .success(function(response)
+                                    {
+                                      $scope.photo = {id: $stateParams.id}; // To support navigation in partial
+                                      $scope.details = response;
+                                    })
+                      $scope.detailsAsJson = function()
+                      {
+                        return angular.toJson($scope.details, true);
+                      }
+                      $scope.xlate = translations.translate;
+                    }
   ]);
 
 
@@ -299,204 +320,219 @@
                              milliseconds);
   }
 
-  app.controller('PhotoController', ['$scope', '$stateParams', '$window', 'Photo', 'Face', 'translations', 
+  app.controller('PhotoController',
+                 ['$scope', '$stateParams', '$window', 'Photo', 'Face', 'translations', 
+                  function($scope, $stateParams, $window, Photo, Face, translations)
+                  {
+                    var maxDim = 500; // pixels
+                    var scaleFactor; // updated when the Photo object is loaded
+                    var defineScaledMethods = function(whichFace)
+                    {
+                      whichFace.scaledX = function() {return (this.x * scaleFactor) + 'px';};
+                      whichFace.scaledY = function() {return (this.y * scaleFactor) + 'px';};
+                      whichFace.scaledW = function() {return (this.w * scaleFactor) + 'px';};
+                      whichFace.scaledH = function() {return (this.h * scaleFactor) + 'px';};
+                      // "8" in the following has to do with the diameter of the handle
+                      whichFace.handleY = function() {return (this.h * scaleFactor - 8) + 'px';};
+                      whichFace.handleX = function() {return (this.w * scaleFactor - 8) + 'px';};
+                      whichFace.photo_id = photo.id;
+                    };
 
-                                      function($scope, $stateParams, $window, Photo, Face, translations)
-                                      {
-                                        var maxDim = 500; // pixels
-                                        var scaleFactor; // updated when the Photo object is loaded
-                                        var defineScaledMethods = function(whichFace)
+                    var photo = Photo.get({ id: $stateParams.id }, function() {
+                      scaleFactor = maxDim / Math.max(photo.width, photo.height);
+                      photo.unscaled = function(rawValue) {return Math.floor(rawValue / scaleFactor);}
+                      photo.mmuid; // Assign a unique ID so the first debounce doesn't trigger an update
+                      angular.forEach(photo.faces, defineScaledMethods);                              
+                      $scope.photo = photo;
+                      $scope.faces = photo.faces;
+                      angular.forEach(photo.faces, function(value, key, obj) 
+                                                   {
+                                                     $scope.$watch('faces[' + key + ']', report, true); 
+                                                   });
+                      photo.faces = undefined;
+                      $scope.$watch('photo', report, true);
+                    }); // get() returns a single photo
+                   
+                  /*  var photos = Photo.query(function() {
+                        console.log(photos);
+                      }); //query() returns all the entries
+                   */
+                   
+                  /* $scope.photo.data = 'some data'; */
+                   
+                   /* Photo.save($scope.photo, function() {
+                      //data saved. do something here.
+                    }); //saves an photo. Assuming $scope.photo is the Photo object  
+                  */
+
+                    $scope.addFaceAt = function(x, y)
+                    {
+                      // We must convert the coordinates back to that of the original photo
+                      var unscaledX = $scope.photo.unscaled(x);
+                      var unscaledY = $scope.photo.unscaled(y);
+
+                      // We calculate the average width and height of visible faces
+                      var sumW = 0;
+                      var sumH = 0;
+                      var meanWidth = 0;
+                      var meanHeight = 0;
+                      var minFaceDimension = 200; // Pixels TODO Scale to photo
+                      var n = 0;
+                      for (var i = 0; i < $scope.faces.length; i++)
+                      {
+                        // Skip the logically deleted faces
+                        if (!$scope.faces[i].deleted)
+                        {
+                          sumW += $scope.faces[i].w;
+                          sumH += $scope.faces[i].h;
+                          n += 1;
+                        }
+                      }
+                      if (n > 0)
+                      {
+                        meanWidth = sumW / n;
+                        meanHeight = sumH / n;
+                      }
+
+                      meanWidth = Math.max(meanWidth, minFaceDimension);
+                      meanHeight = Math.max(meanHeight, minFaceDimension);
+                      var face = {
+                                  x: unscaledX - (meanWidth / 2), 
+                                  y: unscaledY - (meanHeight / 2), 
+                                  w: meanWidth, 
+                                  h: meanHeight, 
+                                  photo_id: $scope.photo.id,
+                                  deleted: false,
+                                  manual: true, 
+                                  text: null,
+                                  id: null,
+                                };
+                      defineScaledMethods(face);
+                      if ((0 < face.x) && (face.x < ($scope.photo.width - (meanWidth / 2))) &&
+                          (0 < face.y) && (face.y < ($scope.photo.height - (meanHeight / 2))))
+                      {
+                        $scope.faces.push(face);
+                        Face.save(face, function(data)
                                         {
-                                          whichFace.scaledX = function() {return (this.x * scaleFactor) + 'px';};
-                                          whichFace.scaledY = function() {return (this.y * scaleFactor) + 'px';};
-                                          whichFace.scaledW = function() {return (this.w * scaleFactor) + 'px';};
-                                          whichFace.scaledH = function() {return (this.h * scaleFactor) + 'px';};
-                                          // 8 in the following has to do with the diameter of the handle
-                                          whichFace.handleY = function() {return (this.h * scaleFactor - 8) + 'px';};
-                                          whichFace.handleX = function() {return (this.w * scaleFactor - 8) + 'px';};
-                                          whichFace.photo_id = photo.id;
-                                        };
-
-                                        var photo = Photo.get({ id: $stateParams.id }, function() {
-                                          scaleFactor = maxDim / Math.max(photo.width, photo.height);
-                                          photo.unscaled = function(rawValue) {return Math.floor(rawValue / scaleFactor);}
-                                          photo.mmuid; // Assign a unique ID so the first debounce doesn't trigger an update
-                                          angular.forEach(photo.faces, defineScaledMethods);                              
-                                          $scope.photo = photo;
-                                          $scope.faces = photo.faces;
-                                          angular.forEach(photo.faces, function(value, key, obj) 
-                                                                       {
-                                                                         $scope.$watch('faces[' + key + ']', report, true); 
-                                                                       });
-                                          photo.faces = undefined;
-                                          $scope.$watch('photo', report, true);
-                                        }); // get() returns a single photo
-                                       
-                                      /*  var photos = Photo.query(function() {
-                                            console.log(photos);
-                                          }); //query() returns all the entries
-                                       */
-                                       
-                                      /* $scope.photo.data = 'some data'; */
-                                       
-                                       /* Photo.save($scope.photo, function() {
-                                          //data saved. do something here.
-                                        }); //saves an photo. Assuming $scope.photo is the Photo object  
-                                      */
-
-                                        $scope.addFaceAt = function(x, y)
+                                          face.id = data.id;
+                                        },
+                                        function(err)
                                         {
-                                          // We must convert the coordinates back to that of the original photo
-                                          var unscaledX = $scope.photo.unscaled(x);
-                                          var unscaledY = $scope.photo.unscaled(y);
-
-                                          // We calculate the average width and height of visible faces
-                                          var sumW = 0;
-                                          var sumH = 0;
-                                          var meanWidth = 0;
-                                          var meanHeight = 0;
-                                          var minFaceDimension = 50; // Pixels
-                                          var n = 0;
-                                          for (var i = 0; i < $scope.faces.length; i++)
-                                          {
-                                            // Skip the deleted faces
-                                            if (!$scope.faces[i].deleted)
-                                            {
-                                              sumW += $scope.faces[i].w;
-                                              sumH += $scope.faces[i].h;
-                                              n += 1;
-                                            }
-                                          }
-                                          if (n > 0)
-                                          {
-                                            meanWidth = sumW / n;
-                                            meanHeight = sumH / n;
-                                          }
-
-                                          meanWidth = Math.max(meanWidth, minFaceDimension);
-                                          meanHeight = Math.max(meanHeight, minFaceDimension);
-
-                                          var face = {x: unscaledX - (meanWidth / 2), 
-                                                      y: unscaledY - (meanHeight / 2), 
-                                                      w: meanWidth, 
-                                                      h: meanHeight, 
-                                                      photo_id: $scope.photo.id,
-                                                      deleted: false,
-                                                      manual: true, 
-                                                      text: null,
-                                                      id: null,
-                                                    };
-                                          defineScaledMethods(face);
-                                          if ((0 < face.x) && (face.x < ($scope.photo.width - (meanWidth / 2))) &&
-                                              (0 < face.y) && (face.y < ($scope.photo.height - (meanHeight / 2))))
-                                          {
-                                            $scope.faces.push(face);
-                                            Face.save(face, function(data)
-                                                            {
-                                                              face.id = data.id;
-                                                            },
-                                                            function(err)
-                                                            {
-                                                              $scope.removeFaceWithId(null);
-                                                              $window.alert($scope.xlate('unableToAddFace'));
-                                                            });
-                                          }
-                                          else
-                                          {
-                                            // TODO ...
-                                          }
-                                        }
-                                        $scope.removeFaceWithId = function(targetId)
+                                          $scope.removeFaceWithId(null);
+                                          $window.alert($scope.xlate('unableToAddFace'));
+                                        });
+                      }
+                      else
+                      {
+                        // TODO ...
+                      }
+                    }
+                    $scope.removeFaceWithId = function(targetId)
+                                              {
+                                                var matchingIndex;
+                                                angular.forEach($scope.faces, function(f, index)
+                                                {
+                                                  if (f.id == targetId)
+                                                  {
+                                                    matchingIndex = index;
+                                                  }
+                                                });
+                                                if (matchingIndex)
+                                                {                                                                                            
+                                                  $scope.faces.splice(matchingIndex, 1);
+                                                }
+                                              }
+                    $scope.restoreFace = function(face)
+                                         {
+                                           Face.restore({photo_id: face.photo_id, id: face.id},
+                                                        function(data)
+                                                        {
+                                                          face.deleted = data.deleted; // FALSE
+                                                        },
+                                                        function(err)
+                                                        {
+                                                          $window.alert($scope.xlate('unableToRestoreFace'));
+                                                        });
+                                           console.log(face.id);
+                                         };
+                    $scope.confirmFaceDeletion = function(face)
+                                                  {
+                                                    if (confirm($scope.xlate('confirmDeleteFace')))
+                                                    {
+                                                      Face.delete({photo_id: face.photo_id, id: face.id},
+                                                                  function(data)
                                                                   {
-                                                                    var matchingIndex;
-                                                                    angular.forEach($scope.faces, function(f, index)
+                                                                    if (data.destroyed) // true deletion
                                                                     {
-                                                                      if (f.id == targetId)
-                                                                      {
-                                                                        matchingIndex = index;
-                                                                      }
-                                                                    });
-                                                                    if (matchingIndex)
-                                                                    {                                                                                            
-                                                                      $scope.faces.splice(matchingIndex, 1);
+                                                                      $scope.removeFaceWithId(face.id);
                                                                     }
-                                                                  }
-                                        $scope.confirmFaceDeletion = function(face)
-                                                                      {
-                                                                        if (confirm($scope.xlate('confirmDeleteFace')))
-                                                                        {
-                                                                          if (face.manual && !face.name_id)
-                                                                          {
-                                                                            Face.delete({photo_id: face.photo_id, id: face.id},
-                                                                                        function(data)
-                                                                                        {
-                                                                                          $scope.removeFaceWithId(face.id);
-                                                                                        },
-                                                                                        function(err)
-                                                                                        {
-                                                                                          $window.alert($scope.xlate('unableToDeleteFace'));
-                                                                                        });
-                                                                          }
-                                                                          else
-                                                                          {
-                                                                            face.deleted = true;
-                                                                          }
-                                                                          $scope.setHoverFace(null);
-                                                                        }
-                                                                      }
-                                        $scope.handleVisible = function()
-                                                               {
-                                                                 return true;
-                                                               }
-                                        $scope.setHoverFace = function(face)
-                                                              {
-                                                                $scope.hoverFace = face;
-                                                              }
-                                        $scope.setHoverFace(null);
-                                        $scope.xlate = translations.translate;
-                                        var updatePhoto = function(target) 
-                                                          {
-                                                            console.log(new Date().getSeconds(), target);
-                                                            Photo.update(target, function(a, b, c)
-                                                              {
-                                                                console.log('abc', a, b, c);
-                                                              });
-                                                          };
-                                        var report = function(newValue, oldValue)
-                                        {
-                                          if (newValue !== oldValue)
+                                                                    else
+                                                                    {
+                                                                      face.deleted = data.deleted; // TRUE
+                                                                    }
+                                                                  },
+                                                                  function(err)
+                                                                  {
+                                                                    $window.alert($scope.xlate('unableToDeleteFace'));
+                                                                  });
+                                                      $scope.setHoverFace(null);
+                                                    }
+                                                  }
+                    $scope.handleVisible = function()
+                                           {
+                                             return true;
+                                           }
+                    $scope.setHoverFace = function(face)
                                           {
-                                            debounce(newValue, 1000, updatePhoto);
+                                            $scope.hoverFace = face;
                                           }
-                                        }
-                                      }
-                                    ]
-  );
-
-  app.controller('NamesController', [ '$scope', '$http', 'translations', 
-                                      function($scope, $http, translations)
+                    $scope.setHoverFace(null);
+                    $scope.xlate = translations.translate;
+                    var updatePhoto = function(target) 
                                       {
-                                        $http.get("#{api_v1_names_path}.json?a_id=1")
-                                             .success(function(response)
-                                                      { 
-                                                         $scope.names = response;
-                                                      }
-                                             );
-                                          $scope.setSelectedName = function(name)
-                                                                   {
-                                                                     selectedName = name
-                                                                   }
-                                          $scope.xlate = translations.translate;
-                                      }
-                                    ]
+                                        console.log(new Date().getSeconds(), target);
+                                        Photo.update(target, function(a, b, c)
+                                          {
+                                            console.log('abc', a, b, c);
+                                          });
+                                      };
+                    var report = function(newValue, oldValue)
+                    {
+                      if (newValue !== oldValue)
+                      {
+                        debounce(newValue, 1000, updatePhoto);
+                      }
+                    }
+                  }
+                ]
   );
 
-  app.filter('matchesNameNeedle', function ()
-                                  {
-                                    return function (name) {
-                                        return name.publicName.toUpperCase();
-                                    };
+  app.controller('NamesController', 
+                 ['$scope', '$http', 'translations', 
+                  function($scope, $http, translations)
+                  {
+                    $http.get("#{api_v1_names_path}.json?a_id=1")
+                         .success(function(response)
+                                  { 
+                                     $scope.names = response;
                                   }
+                         );
+                      $scope.setSelectedName = function(name)
+                                               {
+                                                 selectedName = name
+                                               }
+                      $scope.xlate = translations.translate;
+                  }
+                ]
+  );
+
+  app.filter('matchesNameNeedle', 
+              function ()
+              {
+                return function (name) {
+                    return name.publicName.toUpperCase();
+                };
+              }
   );
 
 

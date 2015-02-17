@@ -8,7 +8,7 @@ Rails.application.routes.draw do
         get 'details', on: :collection
       end
       resources :faces, only: [:create, :update, :destroy] do
-        post :reject, on: :member
+        post :restore, on: :member
       end
       resources :names, only: [:index]
     end
