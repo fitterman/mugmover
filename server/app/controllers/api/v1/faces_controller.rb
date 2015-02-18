@@ -6,7 +6,6 @@ module Api
       before_action :pre_validation
 
       def create
-        errors = []
         if @hsa && @photo
           @face = Face.new({
                             face_uuid: 'ffffffff',  # TODO Figure out what to fill this in with
@@ -20,10 +19,34 @@ module Api
                             y: params[:y],
                            });
           if !@face.save
-            errors += @face.errors.full_messages
+            @errors += @face.errors.full_messages
           end
         end
-        if errors.empty?
+        if @errors.empty?
+          photo = @face.photo
+          render partial: 'api/v1/faces/show', locals: {face: @face}
+        else
+          result = {status: 'fail', errors: @errors}
+          render json: result, status: :bad_request
+        end
+      end
+
+      def update
+        if @hsa && @photo
+          if @face
+            @face.x = params[:x]
+            @face.y = params[:y]
+            @face.width = params[:width]
+            @face.height = params[:height]
+            @face.named_face_id = params[:named_face_id]
+            if !@face.save
+              @errors += @face.errors.full_messages
+            end
+          else
+            @errors += ['Face not found']
+          end
+          end
+        if @errors.empty?
           photo = @face.photo
           render partial: 'api/v1/faces/show', locals: {face: @face}
         else
@@ -61,7 +84,6 @@ module Api
       # deleted. The response indicates what action occurred via the 
       # "destroyed" value.
       def destroy
-        errors = []
         if @hsa && @photo
           if @face
             if @face.manual && @face.named_face_id.nil?

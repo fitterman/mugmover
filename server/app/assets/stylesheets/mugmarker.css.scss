@@ -1,6 +1,7 @@
 // For now, these must by synchronized with their counterparts in the haml/erb world.
 $thumbsize:                   50;
 $faceFrameBorderColor:        #39f;
+$faceFrameUnknownColor:       #ffa319;
 $borderWidth:                 2px;
 $iconPixelDim:                16px;
 $handleWidth:                 10px;
@@ -21,7 +22,11 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
                 top: -(($iconPixelDim / 2) + $borderWidth);
                 width: $iconPixelDim;
               }
-.deleteControl span:hover
+.face-frame.unknown .deleteControl span
+              {
+                background-color: $faceFrameUnknownColor;
+              }
+.deleteControl span:hover, .face-frame.unknown .deleteControl span:hover
               {
                 background-color: #c00;
               }
@@ -35,6 +40,10 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
                 position: absolute; 
                 z-index: 110; 
               }
+.face-frame.unknown
+              {
+                border-color: $faceFrameUnknownColor;  
+              }              
 .handle       {
                 background-color: $faceFrameBorderColor;
                 border-radius: $handleWidth / 2;
@@ -43,6 +52,10 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
                 position: absolute;
                 width: $handleWidth;
                 z-index: 150;
+              }
+.face-frame.unknown .handle
+              {
+                background-color: $faceFrameUnknownColor;
               }
 #name         { 
                 z-index: 108; white-space: nowrap; position: absolute;

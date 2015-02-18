@@ -3,7 +3,6 @@ json.y face.y # top
 json.w face.width
 json.h face.height
 json.named_face_id face.named_face_id
-json.known face.named_face.present?
 json.deleted face.deleted_at.present?
 json.destroyed face.destroyed? # Useful after delete operation
 json.manual face.manual?

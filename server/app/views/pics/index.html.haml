@@ -1,3 +1,7 @@
+-# >>> TODO When you restore a face, and delete it, it doesn't go away
+
+
+
 - photos_per_request = Api::V1::PicsController::PAGESIZE
 
 :javascript
@@ -102,24 +106,26 @@
     var translations = 
     { 
       en: { 
-            confirmDeleteFace: 'Do you really want to delete this face?',
-            deleteFace: 'Delete face',
-            detailsButton: 'Details', 
-            photoButton: 'Photo', 
+            confirmDeleteFace: 'Do you really want to delete this frame?',
+            deleteFace: 'Delete frame',
+            detailsButton: 'Details',
+            errorUpdatingFaceSizeAndPosition: 'An error occurred and the frame position and/or size could not be updated.',
             markPhoto: 'Mark this photo for later attention',
-            restoreButton: 'Restore Faces',
+            photoButton: 'Photo', 
+            restoreButton: 'Restore Frames',
             tryAgain: 'An error occurred. Please try again.',
-            unableToAddFace: 'An error occurred and the face could not be added.',
-            unableToDeleteFace: 'An error occurred and the face could not be deleted.',
-            unableToRestoreFace: 'An error occured and the face could not be restored.',
+            unableToAddFace: 'An error occurred and the frame could not be added.',
+            unableToDeleteFace: 'An error occurred and the frame could not be deleted.',
+            unableToRestoreFace: 'An error occured and the frame could not be restored.',
             unknown: 'Unknown', 
           },
       ia: { 
             confirmDeleteFace: 'Oday youway eallyray antway otay eleteday isthay acefay?',
             deleteFace: 'Eleteday Acefay',
             detailsButton: 'Etailsday', 
-            photoButton: 'Otophay',
+            errorUpdatingFaceSizeAndPosition: 'Anway errorway occurredway andway ethay amefray ositionpay andway/orway izesay ouldcay otnay ebay updatedway.',
             markPhoto: 'Arkmay isthay otophay orfay aterlay attentionway',
+            photoButton: 'Otophay',
             restoreButton: 'Estoreray Acesfay',
             tryAgain: 'Anway errorway occurredway. Easeplay ytray againway.',
             unableToAddFace: 'Anway errorway occurredway andway ethay acefay ouldcay otnay ebay addedway.',
@@ -128,7 +134,6 @@
             unknown: 'Otnay Ownknay', 
           },
       };
-    var language = 'ia';
 
     return {
       setLanguage: function(newLang)
@@ -143,6 +148,7 @@
         }
         if (!translations[language][key])
         {
+          // TODO send an alert
           return 'Missing translation for "' + key + '"';
         }
         return translations[language][key];
@@ -408,6 +414,7 @@
                                   manual: true, 
                                   text: null,
                                   id: null,
+                                  named_face_id: null,
                                 };
                       defineScaledMethods(face);
                       if ((0 < face.x) && (face.x < ($scope.photo.width - (meanWidth / 2))) &&
@@ -497,8 +504,25 @@
                                           }
                     $scope.setHoverFace(null);
                     $scope.xlate = translations.translate;
-                    var updateFaceSizeAndLocation = function(target)
+                    var updateFaceSizeAndLocation = function(face)
                     {
+                        Face.update({
+                                      photo_id: face.photo_id,
+                                      id: face.id,
+                                      x: face.x,
+                                      y: face.y,
+                                      width: face.w,
+                                      height: face.h,
+                                      named_face_id: "face.nameId",
+                                    },
+                                    function(data)
+                                    {
+                                    },
+                                    function(err)
+                                    {
+                                      $window.alert($scope.xlate('errorUpdatingFaceSizeAndPosition'));
+                                    });
+
                       console.log(new Date().getSeconds(), target);
                     }
                     var faceResizeOrMove = function(newValue, oldValue)
