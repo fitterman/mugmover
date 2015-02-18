@@ -20,6 +20,8 @@
   var handleWidth = 2 * handleRadius; // px
   var magicAdjustmentFactor = 8
 
+  var faceNameHideTimeout = 1200
+
   var mugmarkerServices = angular.module('mugmarkerServices', ['ngResource']);
 
   mugmarkerServices.factory('Photo', 
@@ -120,17 +122,17 @@
             unknown: 'Unknown', 
           },
       ia: { 
-            confirmDeleteFace: 'Oday youway eallyray antway otay eleteday isthay acefay?',
-            deleteFace: 'Eleteday Acefay',
+            confirmDeleteFace: 'Oday youway eallyray antway otay eleteday isthay amefray?',
+            deleteFace: 'Eleteday Amefray',
             detailsButton: 'Etailsday', 
             errorUpdatingFaceSizeAndPosition: 'Anway errorway occurredway andway ethay amefray ositionpay andway/orway izesay ouldcay otnay ebay updatedway.',
             markPhoto: 'Arkmay isthay otophay orfay aterlay attentionway',
             photoButton: 'Otophay',
-            restoreButton: 'Estoreray Acesfay',
+            restoreButton: 'Estoreray Amesfray',
             tryAgain: 'Anway errorway occurredway. Easeplay ytray againway.',
-            unableToAddFace: 'Anway errorway occurredway andway ethay acefay ouldcay otnay ebay addedway.',
-            unableToDeleteFace: 'Anway errorway occurredway andway ethay acefay ouldcay otnay ebay eletedday.', 
-            unableToRestoreFace: 'Anway errorway occurredway andway ethay acefay ouldcay otnay ebay estoredray.', 
+            unableToAddFace: 'Anway errorway occurredway andway ethay amefray ouldcay otnay ebay addedway.',
+            unableToDeleteFace: 'Anway errorway occurredway andway ethay amefray ouldcay otnay ebay eletedday.', 
+            unableToRestoreFace: 'Anway errorway occurredway andway ethay amefray ouldcay otnay ebay estoredray.', 
             unknown: 'Otnay Ownknay', 
           },
       };
@@ -351,7 +353,6 @@
                       $scope.listeners.push(listener); // Hold onto it so it is possible to unbind it.
                     };
                     var photo = Photo.get({ id: $stateParams.id }, function() {
-                      console.log($scope);
                       scaleFactor = maxDim / Math.max(photo.width, photo.height);
                       photo.unscaled = function(rawValue) {return Math.floor(rawValue / scaleFactor);}
                       photo.mmuid; // Assign a unique ID so the first debounce doesn't trigger an update
@@ -504,9 +505,28 @@
                                            {
                                              return true;
                                            }
-                    $scope.setHoverFace = function(face)
+                    $scope.setHoverFace = function(face, delay) // no delay param -> immediate update
                                           {
-                                            $scope.hoverFace = face;
+                                            // If a face is specified, show it right away.
+                                            // If it's not, start a timer and clear it a second later.
+                                            if ($scope.hoverTImer) // If there's a timer running, clear it first
+                                            {
+                                              clearTimeout($scope.hoverTImer);
+                                              $scope.hoverTImer = undefined;
+                                            }
+                                            if (!delay)
+                                            {
+                                              $scope.hoverFace = face;
+                                            }
+                                            else
+                                            {
+                                              $scope.hoverTImer = setTimeout(function()
+                                                                             {
+                                                                                $scope.hoverFace = face;
+                                                                                $scope.$apply();
+                                                                              },
+                                                                              delay);
+                                            }
                                           }
                     $scope.setHoverFace(null);
                     $scope.xlate = translations.translate;
@@ -588,7 +608,7 @@
 %div{'ui-view' => 'display'}
 
 %div{'ng-controller' => 'NamesController'}
-  #name{style: "display: none;"}
+  #name
     %form#name-entry-form{novalidate: :novalidate, :style => "width: 20em;"}
       .input-group
         %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",

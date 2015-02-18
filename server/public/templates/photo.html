@@ -20,7 +20,7 @@
               mm-movable-containment="{top: -8 , left:  -15.5, width: 1000, height: 1000}"
               mm-movable-photo="photo"
               ng-mouseenter="setHoverFace(face)"
-              ng-mouseleave="setHoverFace(null)"
+              ng-mouseleave="setHoverFace(null, 1200)"
               ng-style="{ width: face.scaledW(), height: face.scaledH(), 
                           left: face.scaledX(), top: face.scaledY(), 
                           cursor: (face.manual ? 'move' : 'default')}">
