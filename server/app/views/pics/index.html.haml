@@ -326,6 +326,8 @@
                   {
                     var maxDim = 500; // pixels
                     var scaleFactor; // updated when the Photo object is loaded
+                    $scope.listeners = [];
+
                     var defineScaledMethods = function(whichFace)
                     {
                       whichFace.scaledX = function() {return (this.x * scaleFactor) + 'px';};
@@ -336,21 +338,20 @@
                       whichFace.handleY = function() {return (this.h * scaleFactor - 8) + 'px';};
                       whichFace.handleX = function() {return (this.w * scaleFactor - 8) + 'px';};
                       whichFace.photo_id = photo.id;
+                      whichFace.mmuid   // Assign a unique ID so the first debounce doesn't trigger an update
+                      var listener = $scope.$watch('photo.faces[' + $scope.listeners.length + ']', 
+                                                   faceResizeOrMove,
+                                                   true);
+                      $scope.listeners.push(listener); // Hold onto it so it is possible to unbind it.
                     };
-
                     var photo = Photo.get({ id: $stateParams.id }, function() {
+                      console.log($scope);
                       scaleFactor = maxDim / Math.max(photo.width, photo.height);
                       photo.unscaled = function(rawValue) {return Math.floor(rawValue / scaleFactor);}
                       photo.mmuid; // Assign a unique ID so the first debounce doesn't trigger an update
                       angular.forEach(photo.faces, defineScaledMethods);                              
                       $scope.photo = photo;
-                      $scope.faces = photo.faces;
-                      angular.forEach(photo.faces, function(value, key, obj) 
-                                                   {
-                                                     $scope.$watch('faces[' + key + ']', report, true); 
-                                                   });
-                      photo.faces = undefined;
-                      $scope.$watch('photo', report, true);
+
                     }); // get() returns a single photo
                    
                   /*  var photos = Photo.query(function() {
@@ -378,13 +379,14 @@
                       var meanHeight = 0;
                       var minFaceDimension = 200; // Pixels TODO Scale to photo
                       var n = 0;
-                      for (var i = 0; i < $scope.faces.length; i++)
+                      var fs = $scope.photo.faces
+                      for (var i = 0; i < fs.length; i++)
                       {
                         // Skip the logically deleted faces
-                        if (!$scope.faces[i].deleted)
+                        if (!fs[i].deleted)
                         {
-                          sumW += $scope.faces[i].w;
-                          sumH += $scope.faces[i].h;
+                          sumW += fs[i].w;
+                          sumH += fs[i].h;
                           n += 1;
                         }
                       }
@@ -411,7 +413,7 @@
                       if ((0 < face.x) && (face.x < ($scope.photo.width - (meanWidth / 2))) &&
                           (0 < face.y) && (face.y < ($scope.photo.height - (meanHeight / 2))))
                       {
-                        $scope.faces.push(face);
+                        $scope.photo.faces.push(face);
                         Face.save(face, function(data)
                                         {
                                           face.id = data.id;
@@ -430,7 +432,7 @@
                     $scope.removeFaceWithId = function(targetId)
                                               {
                                                 var matchingIndex;
-                                                angular.forEach($scope.faces, function(f, index)
+                                                angular.forEach($scope.photo.faces, function(f, index)
                                                 {
                                                   if (f.id == targetId)
                                                   {
@@ -438,8 +440,16 @@
                                                   }
                                                 });
                                                 if (matchingIndex)
-                                                {                                                                                            
-                                                  $scope.faces.splice(matchingIndex, 1);
+                                                { 
+                                                  // When we actually delete face (for real), we have to unbind
+                                                  // the listener corresponding to the last array element, because
+                                                  // the watch expressions are strings, for "face[i]", so when 
+                                                  // there is one less, the last listener goes away.
+                                                  var lastListener = $scope.listeners.pop();
+                                                  lastListener();  // Unbind
+
+                                                  // Now remove the particular face
+                                                  $scope.photo.faces.splice(matchingIndex, 1);
                                                 }
                                               }
                     $scope.restoreFace = function(face)
@@ -487,19 +497,20 @@
                                           }
                     $scope.setHoverFace(null);
                     $scope.xlate = translations.translate;
-                    var updatePhoto = function(target) 
-                                      {
-                                        console.log(new Date().getSeconds(), target);
-                                        Photo.update(target, function(a, b, c)
-                                          {
-                                            console.log('abc', a, b, c);
-                                          });
-                                      };
-                    var report = function(newValue, oldValue)
+                    var updateFaceSizeAndLocation = function(target)
                     {
-                      if (newValue !== oldValue)
+                      console.log(new Date().getSeconds(), target);
+                    }
+                    var faceResizeOrMove = function(newValue, oldValue)
+                    {
+                      if (newValue) // It is undefined after a delete operation
                       {
-                        debounce(newValue, 1000, updatePhoto);
+                        // We only monitor x and y, as any move or resize operation
+                        // must change at least one if not both of them.
+                        if ((newValue.x != oldValue.x) || (newValue.y != oldValue.y))
+                        {
+                          debounce(newValue, 1500, updateFaceSizeAndLocation)
+                        }
                       }
                     }
                   }

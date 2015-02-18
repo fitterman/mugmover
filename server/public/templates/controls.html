@@ -12,14 +12,14 @@
       <button id="restoreButton"
               class="btn btn-default dropdown-toggle"
               data-toggle="dropdown"
-              ng-disabled="(faces | filter:{deleted: true}).length == 0"
+              ng-disabled="(photo.faces | filter:{deleted: true}).length == 0"
               aria-expanded="false">
         {{xlate('restoreButton')}}
         <span class="caret"></span>
       </button>
       <ul id="restore-faces" class="dropdown-menu" role="menu">
         <li role="presentation" 
-            ng-repeat="face in filteredFaces = faces|filter:{deleted: true} | orderBy:'text' " 
+            ng-repeat="face in photo.faces | filter:{deleted: true} | orderBy:'text' " 
             ng-mouseenter="face.hovering = true"
             ng-mouseleave="face.hovering = false">
           <a role="menuitem" 
