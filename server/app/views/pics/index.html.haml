@@ -381,9 +381,10 @@
                       // We calculate the average width and height of visible faces
                       var sumW = 0;
                       var sumH = 0;
-                      var meanWidth = 0;
-                      var meanHeight = 0;
-                      var minFaceDimension = 200; // Pixels TODO Scale to photo
+                      var minFaceDimension = 20; // Pixels TODO Scale to photo
+                      var defaultFaceDimension = Math.min($scope.photo.width, $scope.photo.height) / 10;
+                      var meanWidth = minFaceDimension;
+                      var meanHeight = minFaceDimension;
                       var n = 0;
                       var fs = $scope.photo.faces
                       for (var i = 0; i < fs.length; i++)
@@ -400,6 +401,11 @@
                       {
                         meanWidth = sumW / n;
                         meanHeight = sumH / n;
+                      }
+                      else
+                      {
+                        meanWidth = defaultFaceDimension;
+                        meanHeight = defaultFaceDimension;
                       }
 
                       meanWidth = Math.max(meanWidth, minFaceDimension);
