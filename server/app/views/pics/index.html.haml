@@ -231,7 +231,26 @@
     };
   }]);
 
-
+  // mmNameEntry: support the entry of a name from the specified elment by obscuring it
+  // with the #name field.
+  
+  app.directive('mmNameEntry', ['$document', function($document) {
+    return {
+      scope:
+      {
+        face: '=mmNameEntry',
+      },
+      link: function(scope, element, attr, ctrl) 
+      {
+        var ele = element[0]; // extract the actual element
+        element.on('click', function(event)
+                            {
+                              $('#name').offset($(ele).offset()).show();
+                              $('#name-entry-box').focus();
+                            });
+      }
+    }
+  }]);
   /*
 
     // ***** Everything from this point down has to do with resizing/moving faces ***** //
@@ -571,6 +590,7 @@
                  ['$scope', '$http', 'translations', 
                   function($scope, $http, translations)
                   {
+                    $scope.nameNeedle = '';
                     $http.get("#{api_v1_names_path}.json?a_id=1")
                          .success(function(response)
                                   { 
@@ -579,9 +599,17 @@
                          );
                       $scope.setSelectedName = function(name)
                                                {
-                                                 selectedName = name
+                                                 selectedName = name;
+                                                 // If you don't set the offset to 0, 0, the next time
+                                                 // it shows, it's in the wrong place. Weird.
+                                                 $('#name').offset({top: 0, left: 0}).hide();
                                                }
                       $scope.xlate = translations.translate;
+                      $scope.resetNameNeedle = function()
+                                               {
+                                                 $scope.nameNeedle = '';
+                                                 $('#name-entry-box').focus();
+                                               }
                   }
                 ]
   );
@@ -607,14 +635,15 @@
   
 %div{'ui-view' => 'display'}
 
-%div{'ng-controller' => 'NamesController'}
-  #name
+.row{'ng-controller' => 'NamesController'}
+  #name{style: 'display: block; z-index: 200;'}
     %form#name-entry-form{novalidate: :novalidate, :style => "width: 20em;"}
       .input-group
         %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",
                                                     :placeholder => "Enter Name",
                                                     :type => "text"}/
         %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{"aria-label" => "Clear the name input field", |
+                                                                             "ng-click" => "resetNameNeedle()", |
                                                                              :style => "top: 0;"}
       #names-container{:style => "width: 20em; max-height: 170px; display: block;"}
         .row{'ng-repeat' => 'name in names', 

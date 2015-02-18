@@ -35,8 +35,9 @@
               ng-style="{top: face.scaledH()}">
           <input  class="name-display-box form-control input-sm ellipsis"
                   type="text"
-                  readonly
+                  readonly style="cursor: pointer"
                   placeholder="Unknown"
+                  mm-name-entry="face"
                   ng-model="face.text"
                   ng-show="(face === hoverFace)" />
         </form>
