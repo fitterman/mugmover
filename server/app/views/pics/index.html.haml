@@ -509,10 +509,10 @@
                                           {
                                             // If a face is specified, show it right away.
                                             // If it's not, start a timer and clear it a second later.
-                                            if ($scope.hoverTImer) // If there's a timer running, clear it first
+                                            if ($scope.hoverTimer) // If there's a timer running, clear it first
                                             {
-                                              clearTimeout($scope.hoverTImer);
-                                              $scope.hoverTImer = undefined;
+                                              clearTimeout($scope.hoverTimer);
+                                              $scope.hoverTimer = undefined;
                                             }
                                             if (!delay)
                                             {
@@ -520,7 +520,7 @@
                                             }
                                             else
                                             {
-                                              $scope.hoverTImer = setTimeout(function()
+                                              $scope.hoverTimer = setTimeout(function()
                                                                              {
                                                                                 $scope.hoverFace = face;
                                                                                 $scope.$apply();
