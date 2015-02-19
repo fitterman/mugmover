@@ -10,9 +10,7 @@
 // Read Sprockets README (https://github.com/sstephenson/sprockets#sprockets-directives) for details
 // about supported directives.
 //
-//  = require jquery
-//   NOT USING    = require jquery_ujs
-//   NOT USING    = require jquery-ui
+//   jquery is loaded from google CDN. We do not use jquery_ujs or jquery_ui
 
 //= require bootstrap-sprockets
 //= require_tree .

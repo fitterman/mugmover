@@ -62,10 +62,11 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
                 background-color: $faceFrameUnknownColor;
               }
 #name         { 
-                z-index: 108; 
-                white-space: nowrap;
-                position: absolute;
+                border: 2px solid black;
                 border-radius: $borderRadius;
+                position: absolute;
+                white-space: nowrap;
+                z-index: 200; 
               }
 #name-display-box:hover
               {

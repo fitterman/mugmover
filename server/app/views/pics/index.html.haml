@@ -676,7 +676,7 @@
   
 %div{'ui-view' => 'display'}
 
-#name{style: 'display: none; z-index: 200; border: 2px solid black; position: absolute;', 'ng-controller' => 'NamesController'}
+#name{style: 'display: none;', 'ng-controller' => 'NamesController'}
   .icon-control{style: 'position: absolute; right: -5px;'}
     %span#name-dismiss.glyphicon.glyphicon-remove{"aria-label" => "Clear the name input field", |
                                                   :style => "top: -10px; background-color: black; color: white;", |
@@ -693,7 +693,7 @@
                                                                            "ng-click" => "resetNameNeedle()", |
                                                                            :style => "top: 0;"}
     #names-container{:style => "width: 20em; max-height: 170px; display: block;"}
-      .row{'ng-repeat' => 'name in names', 
+      .row{'ng-repeat' => '(id, name) in names', 
            'ng-click' => 'setSelectedName(name)',
            'ng-show' => 'name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1'}
         .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
