@@ -23,7 +23,8 @@
               ng-mouseleave="setHoverFace(null, 1200)"
               ng-style="{ width: face.scaledW(), height: face.scaledH(), 
                           left: face.scaledX(), top: face.scaledY(), 
-                          cursor: (face.manual ? 'move' : 'default')}">
+                          cursor: (face.manual ? 'move' : 'default'),
+                          'z-index': ((face === hoverFace) ? '180' : '') }">
         <div  class="icon-control"
               ng-style="{position: relative}"
               ng-click="confirmFaceDeletion(face)">
@@ -32,7 +33,6 @@
                 title="{{xlate('deleteFace')}}"></span>
         </div>
         <form class="name-display-form"
-              z-index: 120;
               ng-style="{top: face.scaledH()}">
           <input  class="name-display-box form-control input-sm ellipsis"
                   type="text"
