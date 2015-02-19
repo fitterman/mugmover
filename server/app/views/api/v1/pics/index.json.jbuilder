@@ -1,5 +1,5 @@
 json.totalPhotos @total_photos
-json.photosPerRequest Api::V1::PicsController::PAGESIZE
+json.photosPerRequest @photos_per_request
 json.photos do
   json.array!(@photos) do |photo|
     json.extract! photo, :id

@@ -1,9 +1,3 @@
--# >>> TODO When you restore a face, and delete it, it doesn't go away
-
-
-
-- photos_per_request = Api::V1::PicsController::PAGESIZE
-
 :javascript
 
   $('#photobar').css({width: '200000px', 'background-color': 'green'});
@@ -714,19 +708,21 @@
   
   // This is the number of requests to make. It relies on knowing how many total photos there are,
   // so we scale it back after the first request. It starts big in case the window is super-wide.
-  var photosPerRequest = #{photos_per_request};
+  var photosPerRequest = 20;
   var photobarContainerWidth = document.getElementById('photobar-container').offsetWidth;
   var bunchedRequestCount = (photobarContainerWidth / (photosPerRequest * photoWidth)) + 1;
 
+      // TODO  Add code so we don't fetch the same bunch of pictures if it's already displayed
+      // TODO  Add code to purge photos when the DOM element starts to get full.
       // TODO  There was code here to make sure it doesn't show the same photo twice:
       //  <% if ($('.photothumb[phid=' + photo.get('id') + ']').length == 0) { %>
 
   var jqLite = angular.element;
   var jqLiteFind = function(sel) { angular.element(document.querySelector(sel)) };
-  var getNavImages = function(n)
+  var getNavImages = function(i)
   {
     $.ajax({
-      url: 'http://localhost:3000/api/v1/pics.json?a_id=1&n=' + n,
+      url: 'http://localhost:3000/api/v1/pics.json?a_id=1&n=' + photosPerRequest + '&i=' + i,
       success: function(response)
                {
                  document.getElementById('photobar').style.width = i2x(response.totalPhotos) + 'px';

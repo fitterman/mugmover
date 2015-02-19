@@ -4,19 +4,17 @@ module Api
     class PicsController < ApplicationController
       skip_before_action :verify_authenticity_token
 
-      PAGESIZE = 10
-
       # GET /photos.json
       # This takes extra parameters to regulate where it gets the photos
-      #   +n+ is the index of the photo to be sure to obtain
-      # internally the photos come back in pages of PAGESIZE.
+      #   +i+ is index of the first photo to retrieve
+      #   +n+ is the number of photos to return
       def index
         @hsa = HostingServiceAccount.find(params[:a_id])
-        params[:n] ||= 0
-        @index = Integer(params[:n]) * PAGESIZE
-        @photos = @hsa.photos.limit(PAGESIZE).offset(@index)
+        params[:i] ||= 0
+        @photos_per_request = params[:n].to_i
+        @index = Integer(params[:i].to_i) * @photos_per_request
+        @photos = @hsa.photos.limit(@photos_per_request).offset(@index)
         @total_photos = @hsa.photos.count
-        @photos_per_request = PAGESIZE
       end
 
       # GET /photos/1.json
