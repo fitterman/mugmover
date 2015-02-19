@@ -1,7 +1,7 @@
-* OSX
+# OSX
 
 
-### MUST HAVE ORIGINAL TYPE if ORIGINAL NAME is captured
+* MUST HAVE ORIGINAL TYPE if ORIGINAL NAME is captured
 
 - Change how the image requests work. First get the sizes, then the byte size,
   and then go for the version stuff. When applying the version stuff, verify
@@ -18,8 +18,11 @@
 - migrate from "_foo" to self.foo (see http://stackoverflow.com/questions/14112715/self-variablename-vs-variablename-vs-sysnthesize-variablename)
 - Deal with error-handling from the mugmover server
 
-* Server
+
+# Server
 - Flickr does not always have some sizes (1024, 1600 but we assume they do).
+
+### URGENT: WHEN WE UNDELETE SOMETHING, THE WATCHERS ARE NOT RESTORED.
 
 ** Server/Editor
 - If you click near the edge, the box should be limited to be inside bounds (it isn't).
