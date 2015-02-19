@@ -68,6 +68,10 @@
   mugmarkerServices.service('NameToPhotoGlue',  
                             [function()
                               {
+                                this.setPhotoScope = function(photoScope)
+                                {
+                                  this.photoScope = photoScope;
+                                }
                                 this.setFace = function(face)
                                 {
                                   this.selectedFace = face;
@@ -75,6 +79,7 @@
                                 }
                                 this.setName = function(name)
                                 {
+                                  this.photoScope.setHoverFace(this.selectedFace);
                                   this.selectedFace.namedFaceId = name.id;
                                 }
                               }
@@ -380,9 +385,10 @@
   }
 
   app.controller('PhotoController',
-                 ['$scope', '$stateParams', '$window', 'Photo', 'Face', 'translations', 
-                  function($scope, $stateParams, $window, Photo, Face, translations)
+                 ['$scope', '$stateParams', '$window', 'Photo', 'Face', 'NameToPhotoGlue', 'translations', 
+                  function($scope, $stateParams, $window, Photo, Face, NameToPhotoGlue, translations)
                   {
+                    NameToPhotoGlue.setPhotoScope($scope);
                     var maxDim = 500; // pixels
                     var scaleFactor; // updated when the Photo object is loaded
                     $scope.listeners = [];
@@ -547,8 +553,8 @@
                     $scope.setHoverFace = function(face, delay) // no delay param -> immediate update
                                           {
                                             // If a face is specified, show it right away.
-                                            // If it's not, start a timer and clear it a second later.
-                                            if ($scope.hoverTimer) // If there's a timer running, clear it first
+                                            // If it is not, start a timer and clear it a second later.
+                                            if ($scope.hoverTimer) // If there is a timer running, clear it first
                                             {
                                               clearTimeout($scope.hoverTimer);
                                               $scope.hoverTimer = undefined;
@@ -583,10 +589,12 @@
                                     function(data)
                                     {
                                       face.text = data.text; // TODO, stop getting the names like this.
+                                      $scope.setHoverFace(null, 1200); // Leave a little time for them to see it.
                                     },
                                     function(err)
                                     {
                                       $window.alert($scope.xlate('errorApplyingChange'));
+                                      $scope.setHoverFace(null);
                                     });
                     }
                     var faceResizeMoveOrNameChange = function(newValue, oldValue)
@@ -672,30 +680,30 @@
 .row#photobar-container
   #photobar
 
-  %div{'ui-view' => 'display'}
+%div{'ui-view' => 'display'}
 
 #name{style: 'display: none; position:absolute;', 'ng-controller' => 'NamesController'}
-    .icon-control{style: 'position: absolute; right: -5px;'}
-      %span#name-dismiss.glyphicon.glyphicon-remove{"aria-label" => "Clear the name input field", |
-                                                    :style => "top: -10px; background-color: black; color: white;", |
-                                                    'ng-click' => 'hideNameEntry()'}
+  .icon-control{style: 'position: absolute; right: -5px;'}
+    %span#name-dismiss.glyphicon.glyphicon-remove{"aria-label" => "Clear the name input field", |
+                                                  :style => "top: -10px; background-color: black; color: white;", |
+                                                  'ng-click' => 'hideNameEntry()'}
 
-    %form#name-entry-form{novalidate: :novalidate, :style => "width: 20em;"}
-      %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",
-                                                  'ng-keydown' => "processKeydown($event)",
-                                                  'ng-keyup' => "processKeyup($event)",
-                                                  :placeholder => "Enter Name",
-                                                  :type => "text"}/
-    #names-container{:style => "width: 20em; max-height: 170px; display: block;"}
-      .row{'ng-repeat' => '(id, name) in names', 
-           'ng-click' => 'setSelectedName(name)',
-           'ng-show' => 'name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1'}
-        .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
-          %img{:src => "https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png", :style => "height:30px"}/
-        .col-xs-10.ellipsis{:style => "padding: 0;"}
-          {{ name.publicName }}
-          .name-note
-            {{ name.note ? name.note : ' ' }} {{name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1 }}
+  %form#name-entry-form{novalidate: :novalidate, :style => "width: 20em;"}
+    %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",
+                                                'ng-keydown' => "processKeydown($event)",
+                                                'ng-keyup' => "processKeyup($event)",
+                                                :placeholder => "Enter Name",
+                                                :type => "text"}/
+  #names-container{:style => "width: 20em; max-height: 170px; display: block;"}
+    .row{'ng-repeat' => '(id, name) in names', 
+         'ng-click' => 'setSelectedName(name)',
+         'ng-show' => 'name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1'}
+      .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
+        %img{:src => "https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png", :style => "height:30px"}/
+      .col-xs-10.ellipsis{:style => "padding: 0;"}
+        {{ name.publicName }}
+        .name-note
+          {{ name.note ? name.note : ' ' }} {{name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1 }}
 
 :javascript
 
