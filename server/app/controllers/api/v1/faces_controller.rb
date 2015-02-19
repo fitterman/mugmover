@@ -13,7 +13,7 @@ module Api
                             visible: true,          # TODO Confirm the face is visible rather than setting it!
                             manual: true,
                             height: params[:h],
-                            photo_id: params['photo_id'],
+                            photo_id: params[:photo_id],
                             width: params[:w], 
                             x: params[:x],
                             y: params[:y],
@@ -122,11 +122,12 @@ module Api
 
     protected
       def pre_validation
+        params[:photo_id] ||= params[:photoId]
         @errors = []
         hsa_query = HostingServiceAccount.where(id: params[:a_id])
         if !hsa_query.empty?
           @hsa = hsa_query.first
-          photo_query = @hsa.photos.where(id: params[:photo_id])
+          photo_query = @hsa.photos.where(id: params[:photo_id] || params[:photoId])
           if !photo_query.empty?
             @photo = photo_query.first
             if params[:id].present?
