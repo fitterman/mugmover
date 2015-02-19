@@ -253,12 +253,13 @@
                         var ele = element[0]; // extract the actual element
                         element.on('click', function(event)
                                             {
+                                              var targetPosition = $(ele).offset();
+                                              targetPosition.top -= 2;  // $borderWidth
+                                              targetPosition.left -= 2; // $borderWidth
+
                                               // TODO It would be much better to clear the value of the
                                               // #name field by setting the nameNeedle to ''
-                                              var targetPosition = $(ele).offset();
-                                              targetPosition.top -= 2; // $borderWidth
-                                              targetPosition.left -= 2; // $borderWidth
-                                              $('#name').val('').offset(targetPosition).show();
+                                              $('#name').val('').css(targetPosition).show();
                                               $('#name-entry-box').focus();
                                             });
                       }
@@ -614,9 +615,7 @@
                          );
                       $scope.hideNameEntry = function()
                                              {
-                                                 // If you don't reposition the name entry, the next time
-                                                 // it shows, it's in the wrong place. Weird.
-                                               $('#name').offset({top: -1, left: -1}).hide();
+                                               $('#name').hide();
                                              }
                       $scope.setSelectedName = function(name)
                                                {
@@ -646,11 +645,6 @@
                           $scope.hideNameEntry();
                         }
                       }
-                      $scope.resetNameNeedle = function()
-                                               {
-                                                 $scope.nameNeedle = '';
-                                                 $('#name-entry-box').focus();
-                                               }
                   }
                 ]
   );
@@ -668,40 +662,33 @@
 -# // ***** This is all the markup for the page *****
 
  
-.row
-  %p#notice= notice
-
 .row#photobar-container
   #photobar
   
 %div{'ui-view' => 'display'}
 
-#name{style: 'display: none;', 'ng-controller' => 'NamesController'}
+#name{style: 'display: none; position:absolute;', 'ng-controller' => 'NamesController'}
   .icon-control{style: 'position: absolute; right: -5px;'}
     %span#name-dismiss.glyphicon.glyphicon-remove{"aria-label" => "Clear the name input field", |
                                                   :style => "top: -10px; background-color: black; color: white;", |
                                                   'ng-click' => 'hideNameEntry()'}
 
   %form#name-entry-form{novalidate: :novalidate, :style => "width: 20em;"}
-    .input-group
-      %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",
-                                                  'ng-keydown' => "processKeydown($event)",
-                                                  'ng-keyup' => "processKeyup($event)",
-                                                  :placeholder => "Enter Name",
-                                                  :type => "text"}/
-      %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{"aria-label" => "Clear the name input field", |
-                                                                           "ng-click" => "resetNameNeedle()", |
-                                                                           :style => "top: 0;"}
-    #names-container{:style => "width: 20em; max-height: 170px; display: block;"}
-      .row{'ng-repeat' => '(id, name) in names', 
-           'ng-click' => 'setSelectedName(name)',
-           'ng-show' => 'name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1'}
-        .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
-          %img{:src => "https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png", :style => "height:30px"}/
-        .col-xs-10.ellipsis{:style => "padding: 0;"}
-          {{ name.publicName }}
-          .name-note
-            {{ name.note ? name.note : ' ' }} {{name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1 }}
+    %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",
+                                                'ng-keydown' => "processKeydown($event)",
+                                                'ng-keyup' => "processKeyup($event)",
+                                                :placeholder => "Enter Name",
+                                                :type => "text"}/
+  #names-container{:style => "width: 20em; max-height: 170px; display: block;"}
+    .row{'ng-repeat' => '(id, name) in names', 
+         'ng-click' => 'setSelectedName(name)',
+         'ng-show' => 'name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1'}
+      .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
+        %img{:src => "https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png", :style => "height:30px"}/
+      .col-xs-10.ellipsis{:style => "padding: 0;"}
+        {{ name.publicName }}
+        .name-note
+          {{ name.note ? name.note : ' ' }} {{name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1 }}
 
 :javascript
 
