@@ -12,11 +12,11 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
 .icon-control span
               {
                 background-color: $faceFrameBorderColor;
-                border: 0.14 * $iconPixelDim solid rgba(0, 0, 0, 0);
+                border: 0.13 * $iconPixelDim solid rgba(0, 0, 0, 0);
                 border-radius: 50%; 
                 color: white; 
                 cursor: pointer;
-                font-size: 0.75 * $iconPixelDim;
+                font-size: 0.72 * $iconPixelDim;
                 height: $iconPixelDim;
                 left: -(($iconPixelDim / 2) + $borderWidth);
                 position: absolute;
