@@ -24,14 +24,15 @@
               ng-style="{ width: face.scaledW(), height: face.scaledH(), 
                           left: face.scaledX(), top: face.scaledY(), 
                           cursor: (face.manual ? 'move' : 'default')}">
-        <div  class="deleteControl"
+        <div  class="icon-control"
               ng-style="{position: relative}"
               ng-click="confirmFaceDeletion(face)">
-          <span class="glyphicon glyphicon-remove"
+          <span class="glyphicon glyphicon-trash"
                 aria-label="{{xlate('deleteFace')}}"
                 title="{{xlate('deleteFace')}}"></span>
         </div>
         <form class="name-display-form"
+              z-index: 120;
               ng-style="{top: face.scaledH()}">
           <input  class="name-display-box form-control input-sm ellipsis"
                   type="text"

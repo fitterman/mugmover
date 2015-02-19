@@ -1,14 +1,15 @@
 // For now, these must by synchronized with their counterparts in the haml/erb world.
 $thumbsize:                   50;
 $faceFrameBorderColor:        #39f;
-$faceFrameUnknownColor:       #ffa319;
+$faceFrameUnknownColor:       #e87400;
+$borderRadius:                2px;
 $borderWidth:                 2px;
 $iconPixelDim:                16px;
 $handleWidth:                 10px;
 $thumbsizeWithBorder:         $thumbsize + $borderWidth;
 
 
-.deleteControl span
+.icon-control span
               {
                 background-color: $faceFrameBorderColor;
                 border: 0.14 * $iconPixelDim solid rgba(0, 0, 0, 0);
@@ -21,15 +22,17 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
                 position: absolute;
                 top: -(($iconPixelDim / 2) + $borderWidth);
                 width: $iconPixelDim;
+                z-index: 2;
               }
-.face-frame.unknown .deleteControl span
+.face-frame.unknown .icon-control span
               {
                 background-color: $faceFrameUnknownColor;
               }
-.deleteControl span:hover, .face-frame.unknown .deleteControl span:hover
+.icon-control span:hover, .face-frame.unknown .icon-control span:hover
               {
                 background-color: #c00;
               }
+
 .ellipsis     {
                 overflow-x: hidden; 
                 text-overflow: ellipsis; 
@@ -37,6 +40,7 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
               }
 .face-frame   {
                 border: 2px solid $faceFrameBorderColor; 
+                border-radius: $borderRadius;
                 position: absolute; 
                 z-index: 110; 
               }
@@ -58,7 +62,10 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
                 background-color: $faceFrameUnknownColor;
               }
 #name         { 
-                z-index: 108; white-space: nowrap; position: absolute;
+                z-index: 108; 
+                white-space: nowrap;
+                position: absolute;
+                border-radius: $borderRadius;
               }
 #name-display-box:hover
               {

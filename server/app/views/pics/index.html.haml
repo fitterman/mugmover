@@ -161,96 +161,111 @@
   // mmMovable: not really draggable (no drop needed), with a containment rectangle specified
   // derived from https://docs.angularjs.org/guide/directive (see "Creating a Directive that Adds Event Listeners")
   
-  app.directive('mmMovable', ['$document', function($document) {
-    return {
-      scope:
-      {
-        face: '=mmMovable',
-        behavior: '@mmMovableBehavior',
-        containment: '=mmMovableContainment',
-        photo: '=mmMovablePhoto'
-      },
-      link: function(scope, element, attr, ctrl) 
-      {
-        var ele = element[0]; // extract the actual element
+  app.directive('mmMovable', 
+                [ '$document', 
+                  function($document)
+                  {
+                    return {
+                      scope:
+                      {
+                        face: '=mmMovable',
+                        behavior: '@mmMovableBehavior',
+                        containment: '=mmMovableContainment',
+                        photo: '=mmMovablePhoto'
+                      },
+                      link: function(scope, element, attr, ctrl) 
+                      {
+                        var ele = element[0]; // extract the actual element
 
-        var top = scope.containment.top - (ele.offsetHeight / 2);
-        var bottom = scope.containment.top + scope.containment.height - (ele.offsetHeight / 2);
+                        var top = scope.containment.top - (ele.offsetHeight / 2);
+                        var bottom = scope.containment.top + scope.containment.height - (ele.offsetHeight / 2);
 
-        var left = scope.containment.left - (ele.offsetWidth / 2);
-        var right = scope.containment.left + scope.containment.width - (ele.offsetWidth / 2);
-        
-        var startX = 0, startY = 0;
-        var x = scope.face.h - magicAdjustmentFactor;
-        var y = scope.face.w - magicAdjustmentFactor;
+                        var left = scope.containment.left - (ele.offsetWidth / 2);
+                        var right = scope.containment.left + scope.containment.width - (ele.offsetWidth / 2);
+                        
+                        var startX = 0, startY = 0;
+                        var x = scope.face.h - magicAdjustmentFactor;
+                        var y = scope.face.w - magicAdjustmentFactor;
 
-        var p = scope.photo; 
-        element.on('mousedown', function(event) {
-          event.preventDefault(); // Prevent default dragging of selected content
-          event.stopPropagation(); // The handle is nested in the frame, so it fires 2x
-          if (scope.face.manual) // Otherwise the "move" option remains available to all faces
-          {
-            startX = scope.photo.unscaled(event.pageX) - x;
-            startY = scope.photo.unscaled(event.pageY)- y;
-            $document.on('mousemove', mousemove);
-            $document.on('mouseup', mouseup);           
-          }
-        });
+                        var p = scope.photo; 
+                        element.on('mousedown', function(event) {
+                          event.preventDefault(); // Prevent default dragging of selected content
+                          event.stopPropagation(); // The handle is nested in the frame, so it fires 2x
+                          if (scope.face.manual) // Otherwise the "move" option remains available to all faces
+                          {
+                            startX = scope.photo.unscaled(event.pageX) - x;
+                            startY = scope.photo.unscaled(event.pageY)- y;
+                            $document.on('mousemove', mousemove);
+                            $document.on('mouseup', mouseup);           
+                          }
+                        });
 
-        function mousemove(event) {
-          var deltaX = x;
-          var deltaY = y;
-          var unscaledX = scope.photo.unscaled(event.pageX);
-          var unscaledY = scope.photo.unscaled(event.pageY);
-          x = Math.min(Math.max(unscaledX - startX, left), right);
-          y = Math.min(Math.max(unscaledY - startY, top), bottom);
-          deltaX = x - deltaX;
-          deltaY = y - deltaY;
+                        function mousemove(event) {
+                          var deltaX = x;
+                          var deltaY = y;
+                          var unscaledX = scope.photo.unscaled(event.pageX);
+                          var unscaledY = scope.photo.unscaled(event.pageY);
+                          x = Math.min(Math.max(unscaledX - startX, left), right);
+                          y = Math.min(Math.max(unscaledY - startY, top), bottom);
+                          deltaX = x - deltaX;
+                          deltaY = y - deltaY;
 
-          if (scope.behavior == 'resize')
-          {
-            scope.face.x -= deltaX;
-            scope.face.y -= deltaY;
-            scope.face.h += deltaY * 2;
-            scope.face.w += deltaX * 2;
-          }
-          else if (scope.behavior == 'move')
-          {
-            scope.face.x += deltaX;
-            scope.face.y += deltaY;
-          }
+                          if (scope.behavior == 'resize')
+                          {
+                            scope.face.x -= deltaX;
+                            scope.face.y -= deltaY;
+                            scope.face.h += deltaY * 2;
+                            scope.face.w += deltaX * 2;
+                          }
+                          else if (scope.behavior == 'move')
+                          {
+                            scope.face.x += deltaX;
+                            scope.face.y += deltaY;
+                          }
 
-          scope.$apply();
-        }
+                          scope.$apply();
+                        }
 
-        function mouseup() {
-          $document.off('mousemove', mousemove);
-          $document.off('mouseup', mouseup);
-        }
-      }
-    };
-  }]);
+                        function mouseup() {
+                          $document.off('mousemove', mousemove);
+                          $document.off('mouseup', mouseup);
+                        }
+                      }
+                    };
+                  }
+                ]
+  );
 
   // mmNameEntry: support the entry of a name from the specified elment by obscuring it
   // with the #name field.
   
-  app.directive('mmNameEntry', ['$document', function($document) {
-    return {
-      scope:
-      {
-        face: '=mmNameEntry',
-      },
-      link: function(scope, element, attr, ctrl) 
-      {
-        var ele = element[0]; // extract the actual element
-        element.on('click', function(event)
-                            {
-                              $('#name').offset($(ele).offset()).show();
-                              $('#name-entry-box').focus();
-                            });
-      }
-    }
-  }]);
+  app.directive('mmNameEntry', 
+                [ '$document', 
+                  function($document)
+                  {
+                    return {
+                      scope:
+                      {
+                        face: '=mmNameEntry',
+                      },
+                      link: function(scope, element, attr, ctrl) 
+                      {
+                        var ele = element[0]; // extract the actual element
+                        element.on('click', function(event)
+                                            {
+                                              // TODO It would be much better to clear the value of the
+                                              // #name field by setting the nameNeedle to ''
+                                              var targetPosition = $(ele).offset();
+                                              targetPosition.top -= 2; // $borderWidth
+                                              targetPosition.left -= 2; // $borderWidth
+                                              $('#name').val('').offset(targetPosition).show();
+                                              $('#name-entry-box').focus();
+                                            });
+                      }
+                    }
+                  }
+                ]
+  );
   /*
 
     // ***** Everything from this point down has to do with resizing/moving faces ***** //
@@ -587,8 +602,8 @@
   );
 
   app.controller('NamesController', 
-                 ['$scope', '$http', 'translations', 
-                  function($scope, $http, translations)
+                 ['$scope', '$http', '$window', 'translations', 
+                  function($scope, $http, $window, translations)
                   {
                     $scope.nameNeedle = '';
                     $http.get("#{api_v1_names_path}.json?a_id=1")
@@ -597,14 +612,40 @@
                                      $scope.names = response;
                                   }
                          );
+                      $scope.hideNameEntry = function()
+                                             {
+                                                 // If you don't reposition the name entry, the next time
+                                                 // it shows, it's in the wrong place. Weird.
+                                               $('#name').offset({top: -1, left: -1}).hide();
+                                             }
                       $scope.setSelectedName = function(name)
                                                {
                                                  selectedName = name;
-                                                 // If you don't set the offset to 0, 0, the next time
-                                                 // it shows, it's in the wrong place. Weird.
-                                                 $('#name').offset({top: 0, left: 0}).hide();
+                                                 $scope.hideNameEntry();
                                                }
                       $scope.xlate = translations.translate;
+                      $scope.processKeydown = function(keyboardEvent)
+                      {
+                        if ((keyboardEvent.keyCode == 40) ||  // down
+                            (keyboardEvent.keyCode == 38))
+                        {
+                          // We have to intercept these on the down, otherwise
+                          // they perform field beginning/end cursor movements.
+                          event.preventDefault();
+                        }
+                      }
+                      $scope.processKeyup = function(keyboardEvent)
+                      {
+                        var key = keyboardEvent.keyCode;
+                        if (key == 27) // escape
+                        {
+                          $scope.hideNameEntry();
+                        }
+                        else if (key == 13) // return/enter
+                        {
+                          $scope.hideNameEntry();
+                        }
+                      }
                       $scope.resetNameNeedle = function()
                                                {
                                                  $scope.nameNeedle = '';
@@ -635,26 +676,32 @@
   
 %div{'ui-view' => 'display'}
 
-.row{'ng-controller' => 'NamesController'}
-  #name{style: 'display: block; z-index: 200;'}
-    %form#name-entry-form{novalidate: :novalidate, :style => "width: 20em;"}
-      .input-group
-        %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",
-                                                    :placeholder => "Enter Name",
-                                                    :type => "text"}/
-        %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{"aria-label" => "Clear the name input field", |
-                                                                             "ng-click" => "resetNameNeedle()", |
-                                                                             :style => "top: 0;"}
-      #names-container{:style => "width: 20em; max-height: 170px; display: block;"}
-        .row{'ng-repeat' => 'name in names', 
-             'ng-click' => 'setSelectedName(name)',
-             'ng-show' => 'name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1'}
-          .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
-            %img{:src => "https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png", :style => "height:30px"}/
-          .col-xs-10.ellipsis{:style => "padding: 0;"}
-            {{ name.publicName }}
-            .name-note
-              {{ name.note ? name.note : ' ' }} {{name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1 }}
+#name{style: 'display: none; z-index: 200; border: 2px solid black; position: absolute;', 'ng-controller' => 'NamesController'}
+  .icon-control{style: 'position: absolute; right: -5px;'}
+    %span#name-dismiss.glyphicon.glyphicon-remove{"aria-label" => "Clear the name input field", |
+                                                  :style => "top: -10px; background-color: black; color: white;", |
+                                                  'ng-click' => 'hideNameEntry()'}
+
+  %form#name-entry-form{novalidate: :novalidate, :style => "width: 20em;"}
+    .input-group
+      %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",
+                                                  'ng-keydown' => "processKeydown($event)",
+                                                  'ng-keyup' => "processKeyup($event)",
+                                                  :placeholder => "Enter Name",
+                                                  :type => "text"}/
+      %span#name-clear.input-group-addon.glyphicon.glyphicon-remove-circle{"aria-label" => "Clear the name input field", |
+                                                                           "ng-click" => "resetNameNeedle()", |
+                                                                           :style => "top: 0;"}
+    #names-container{:style => "width: 20em; max-height: 170px; display: block;"}
+      .row{'ng-repeat' => 'name in names', 
+           'ng-click' => 'setSelectedName(name)',
+           'ng-show' => 'name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1'}
+        .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
+          %img{:src => "https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png", :style => "height:30px"}/
+        .col-xs-10.ellipsis{:style => "padding: 0;"}
+          {{ name.publicName }}
+          .name-note
+            {{ name.note ? name.note : ' ' }} {{name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1 }}
 
 :javascript
 
