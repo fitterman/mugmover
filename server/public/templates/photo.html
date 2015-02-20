@@ -12,7 +12,7 @@
                         'background-size' : 'contain',
                         'background-image': 'url(' + photo.thumb + ')' }" />
       <div id="face-frame-container">
-        <div  class="{{!face.named_face_id ? 'unknown face-frame' : 'face-frame'}}"
+        <div  class="{{!face.namedFaceId ? 'unknown face-frame' : 'face-frame'}}"
               ng-repeat="face in photo.faces"
               ng-show="face.hovering || (!face.deleted)"
               mm-movable="face"
