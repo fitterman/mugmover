@@ -66,7 +66,6 @@ body > .container
                 background-color: $faceFrameUnknownColor;
               }
 #name         { 
-                border: 2px solid black;
                 border-radius: $borderRadius;
                 position: absolute;
                 white-space: nowrap;
@@ -100,12 +99,10 @@ body > .container
               }
 #names-container .row.withfocus
               {
-                background-color: black;
                 color:  $faceFrameBorderColor;
               }
 #names-container .row:hover
               {
-                background-color: red;
                 color:  $faceFrameBorderColor;
               }
 #photo-container
