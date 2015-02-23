@@ -22,12 +22,11 @@ module Api
             @errors += @face.errors.full_messages
           end
         end
-        if @errors.empty?
-          photo = @face.photo
-          render partial: 'api/v1/faces/show', locals: {face: @face}
-        else
+        if @errors.any?
           result = {status: 'fail', errors: @errors}
           render json: result, status: :bad_request
+        else
+          render :common_response
         end
       end
 
@@ -62,8 +61,9 @@ module Api
         if @errors.any?
           result = {status: 'fail', errors: @errors}
           render json: result, status: :bad_request
+        else
+          render :common_response
         end
-        # otherwise we just let update.json.jbuilder render
       end
 
       # If the face-frame was manually added and has no name associated with it,
@@ -82,11 +82,11 @@ module Api
             @errors += ['Face not found']
           end
         end
-        if @errors.empty?
-          render partial: 'api/v1/faces/show', locals: {face: @face}
-        else
+        if @errors.any?
           result = {status: 'fail', errors: @errors}
           render json: result, status: :bad_request
+        else
+          render :common_response
         end
       end
 
@@ -99,11 +99,11 @@ module Api
             @errors += ['Deleted face not found']
           end
         end
-        if @errors.empty?
-          render partial: 'api/v1/faces/show', locals: {face: @face}
-        else
+        if @errors.any?
           result = {status: 'fail', errors: @errors}
           render json: result, status: :bad_request
+        else
+          render :common_response
         end
       end
 

@@ -70,10 +70,6 @@
                                 {
                                   this.photoScope = photoScope;
                                 }
-                                this.setNamesScope = function(namesScope)
-                                {
-                                  this.namesScope = namesScope;
-                                }
 
                                 // This just sets the names in this context
                                 this.setNamesIndex = function(namesIndex)
@@ -109,7 +105,6 @@
                                 this.applyNewName = function(nameNeedle)
                                 {
                                   this.photoScope.updateFace(this.selectedFace, nameNeedle);
-                                  this.namesScope.clearNameNeedle();
                                 }
 
                                 // This is called after a name in the list is clicked,
@@ -759,7 +754,6 @@
                  ['$scope', '$http', '$window', 'NameToPhotoGlue', 'translations', 
                   function($scope, $http, $window, NameToPhotoGlue, translations)
                   {
-                    NameToPhotoGlue.setNamesScope($scope);
                     $http.get("#{api_v1_names_path}.json?a_id=1")
                          .success(function(response)
                                   { 
@@ -767,11 +761,7 @@
                                      NameToPhotoGlue.setNamesIndex($scope.names);
                                   }
                          );
-                    $scope.clearNameNeedle = function()
-                    {
-                      $scope.nameNeedle = '';
-                    }
-                    $scope.clearNameNeedle();
+                    $scope.nameNeedle = '';
                     $scope.hideNameEntry = function()
                                            {
                                              $('#name').hide();
@@ -804,7 +794,7 @@
                         if (confirm('new name?'))
                         {
                           NameToPhotoGlue.applyNewName($scope.nameNeedle);
-                          $namesScope.clearNameNeedle();
+                          $scope.nameNeedle = '';
                         }
                         $scope.hideNameEntry();
                       }
