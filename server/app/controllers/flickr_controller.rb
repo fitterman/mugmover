@@ -1,4 +1,4 @@
-class PhotosController < ApplicationController
+class FlickrController < ApplicationController
   # NOTE: If PAGESIZE is so small that it can't span a page with images, the
   # continuation code may leave a gap if images in the middle of the horizontal
   # scroller. Yes, it does handle getting more, but not well enough to handle

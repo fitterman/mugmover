@@ -25,7 +25,7 @@
                             ['$resource',
                               function($resource)
                               {
-                                return $resource('/api/v1/pics/:id.json', 
+                                return $resource('/api/v1/photos/:id.json', 
                                                  {a_id: 1 }, 
                                                  {
                                                     update: 
@@ -409,7 +409,7 @@
                   ['$scope', '$stateParams', '$http', 'translations', 
                     function($scope, $stateParams, $http, translations)
                     {
-                      $http.get('#{details_api_v1_pics_path(format: :json)}?a_id=1&id=' + $stateParams.id )
+                      $http.get('#{details_api_v1_photos_path(format: :json)}?a_id=1&id=' + $stateParams.id )
                            .success(function(response)
                                     {
                                       $scope.photo = {id: $stateParams.id}; // To support navigation in partial
@@ -791,7 +791,7 @@
   var photobarContainerWidth = document.getElementById('photobar-container').offsetWidth;
   var bunchedRequestCount = (photobarContainerWidth / (photosPerRequest * photoWidth)) + 1;
 
-      // TODO  Add code so we don't fetch the same bunch of pictures if it's already displayed
+      // TODO  Add code so we don't fetch the same bunch of photos if it's already displayed
       // TODO  Add code to purge photos when the DOM element starts to get full.
       // TODO  There was code here to make sure it doesn't show the same photo twice:
       //  <% if ($('.photothumb[phid=' + photo.get('id') + ']').length == 0) { %>
@@ -801,7 +801,7 @@
   var getNavImages = function(i)
   {
     $.ajax({
-      url: 'http://localhost:3000/api/v1/pics.json?a_id=1&n=' + photosPerRequest + '&i=' + i,
+      url: 'http://localhost:3000/api/v1/photos.json?a_id=1&n=' + photosPerRequest + '&i=' + i,
       success: function(response)
                {
                  document.getElementById('photobar').style.width = i2x(response.totalPhotos) + 'px';

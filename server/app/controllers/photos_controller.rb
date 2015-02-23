@@ -1,6 +1,6 @@
 class PhotosController < ApplicationController
   
-  # GET /a/:a_id/pics(.:format)
+  # GET /a/:a_id/photos(.:format)
   # This takes extra parameters to regulate where it gets the photos
   #   +i+ is the index of the photo to be sure to obtain
   #   +n+ is the number of photos to send back in one response

@@ -1,8 +1,13 @@
-index = (@photos.page.to_i - 1) * @photos.perpage.to_i
-json.array!(@photos) do |photo|
-  json.extract! photo, :id
-  json.url api_v1_photo_url(params[:flickr_id], photo.id, format: :json)
-  json.thumb FlickRaw.url_t(photo)
-  json.index index
-  index += 1
+json.totalPhotos @total_photos
+json.photosPerRequest @photos_per_request
+json.photos do
+  json.array!(@photos) do |photo|
+    json.extract! photo, :id
+    json.url api_v1_photo_url(a_id: params[:a_id], id: photo.id, format: :json)
+    json.thumb photo.thumbnail_url
+    json.width photo.width
+    json.height photo.height
+    json.index @index
+    @index += 1
+  end
 end
