@@ -264,7 +264,7 @@ long                retryCount;
             DDLogError(@"OFFlickrAPIRequestFaultyXMLResponseError");
             break;
         case OFFlickrAPIRequestOAuthError:
-            DDLogError(@"OFFlickrAPIRequestOAuthError");
+            DDLogError(@"OFFlickrAPIRequestOAuthError: confirm you have confirmed the API key and secret.");
             return NO; /* We return because retrying this one isn't going to fix anything. */
             break;
         default:
@@ -290,6 +290,10 @@ long                retryCount;
         }
         else
         {
+            if (self.initializationProgress < 0.5)
+            {
+                DDLogError(@"Make sure you have included secrets.xcconfig and it defines the API key and secret.");
+            }
             // TODO Add method to restart intialization; have MMPhoto also call that.
             self.initializationProgress = -1.0;
         }
