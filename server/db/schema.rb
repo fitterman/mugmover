@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150217111202) do
+ActiveRecord::Schema.define(version: 20150223180318) do
 
   create_table "faces", force: true do |t|
     t.integer  "photo_id"
@@ -48,6 +48,7 @@ ActiveRecord::Schema.define(version: 20150217111202) do
     t.datetime "updated_at"
     t.string   "public_name"
     t.string   "private_name"
+    t.text     "note"
   end
 
   create_table "photos", force: true do |t|

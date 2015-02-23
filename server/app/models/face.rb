@@ -55,8 +55,9 @@ class Face < ActiveRecord::Base
           new_named_face.face_name_uuid = face_params['faceNameUuid']
 
           # IMPORTANT: If the face exists already, we do not update the name from the upload information
-          new_named_face.public_name = face_params['name']
           new_named_face.private_name = face_params['name']
+          # NOTE: We intentionally do not set the public name as it (and the notes) are initially
+          #       derived from what is in the private name.
           if !new_named_face.save
             face_errors[face_uuid] ||= []
             face_errors[face_uuid] += new_named_face.errors.full_messages
