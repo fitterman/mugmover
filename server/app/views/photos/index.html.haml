@@ -598,7 +598,10 @@
                                          };
                     $scope.confirmFaceDeletion = function(face)
                                                   {
-                                                    if (confirm($scope.xlate('confirmDeleteFace')))
+                                                    // We bypass the confirmation if it's both 
+                                                    // unnamed and manually created.
+                                                    if ((face.manual && !face.namedFaceId) ||
+                                                        confirm($scope.xlate('confirmDeleteFace')))
                                                     {
                                                       Face.delete({photo_id: face.photoId, id: face.id},
                                                                   function(data)
