@@ -65,20 +65,41 @@
   mugmarkerServices.service('NameToPhotoGlue',  
                             [function()
                               {
+                                // This just transfers the scope of the photo
                                 this.setPhotoScope = function(photoScope)
                                 {
                                   this.photoScope = photoScope;
                                 }
+
+                                // This just transfers the scope of the photo
+                                this.setNamesIndex = function(namesIndex)
+                                {
+                                  this.names = namesIndex;
+                                }
+
+                                // This translates a face ID to a name
+                                this.getPrivateName = function(namedFaceId)
+                                {
+                                  face = this.names[namedFaceId];
+                                  return face ? face.privateName : undefined;
+                                }
+
+                                // This records a particular face and clears the selected name
                                 this.setFace = function(face)
                                 {
                                   this.selectedFace = face;
                                   this.selectedName = null;
                                 }
+
+                                // This is called after a name in the list is clicked,
+                                // setting the name ID for the face that was just clicked
                                 this.setName = function(name)
                                 {
                                   this.photoScope.setHoverFace(this.selectedFace);
                                   this.selectedFace.namedFaceId = name.id;
                                 }
+
+                                // 
                               }
                              ]
   );
@@ -471,6 +492,7 @@
                       // "8" in the following has to do with the diameter of the handle
                       whichFace.handleY = function() {return (this.h * scaleFactor - 8) + 'px';};
                       whichFace.handleX = function() {return (this.w * scaleFactor - 8) + 'px';};
+                      whichFace.displayName = NameToPhotoGlue.getPrivateName(whichFace.namedFaceId);
                       whichFace.photoId = photo.id;
                       whichFace.mmuid   // Assign a unique ID so the first debounce does not trigger an update
                       var listener = $scope.$watch('photo.faces[' + $scope.listeners.length + ']', 
@@ -537,7 +559,6 @@
                                   photoId: $scope.photoId,
                                   deleted: false,
                                   manual: true, 
-                                  text: null,
                                   id: null,
                                   namedFaceId: null,
                                 };
@@ -664,7 +685,7 @@
                                     },
                                     function(data)
                                     {
-                                      face.text = data.text; // TODO, stop getting the names like this.
+                                      face.displayName = NameToPhotoGlue.getPrivateName(face.namedFaceId);
                                       $scope.setHoverFace(null, 1200); // Leave a little time for them to see it.
                                     },
                                     function(err)
@@ -702,40 +723,41 @@
                          .success(function(response)
                                   { 
                                      $scope.names = response;
+                                     NameToPhotoGlue.setNamesIndex($scope.names);
                                   }
                          );
-                      $scope.hideNameEntry = function()
+                    $scope.hideNameEntry = function()
+                                           {
+                                             $('#name').hide();
+                                           }
+                    $scope.setSelectedName = function(name)
                                              {
-                                               $('#name').hide();
+                                               NameToPhotoGlue.setName(name);
+                                               $scope.hideNameEntry();
                                              }
-                      $scope.setSelectedName = function(name)
-                                               {
-                                                 NameToPhotoGlue.setName(name);
-                                                 $scope.hideNameEntry();
-                                               }
-                      $scope.xlate = translations.translate;
-                      $scope.processKeydown = function(keyboardEvent)
+                    $scope.xlate = translations.translate;
+                    $scope.processKeydown = function(keyboardEvent)
+                    {
+                      if ((keyboardEvent.keyCode == 40) ||  // down
+                          (keyboardEvent.keyCode == 38))
                       {
-                        if ((keyboardEvent.keyCode == 40) ||  // down
-                            (keyboardEvent.keyCode == 38))
-                        {
-                          // We have to intercept these on the down, otherwise
-                          // they perform field beginning/end cursor movements.
-                          event.preventDefault();
-                        }
+                        // We have to intercept these on the down, otherwise
+                        // they perform field beginning/end cursor movements.
+                        event.preventDefault();
                       }
-                      $scope.processKeyup = function(keyboardEvent)
+                    }
+                    $scope.processKeyup = function(keyboardEvent)
+                    {
+                      var key = keyboardEvent.keyCode;
+                      if (key == 27) // escape
                       {
-                        var key = keyboardEvent.keyCode;
-                        if (key == 27) // escape
-                        {
-                          $scope.hideNameEntry();
-                        }
-                        else if (key == 13) // return/enter
-                        {
-                          $scope.hideNameEntry();
-                        }
+                        $scope.hideNameEntry();
                       }
+                      else if (key == 13) // return/enter
+                      {
+                        $scope.hideNameEntry();
+                      }
+                    }
                   }
                 ]
   );
