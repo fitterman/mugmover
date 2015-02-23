@@ -126,10 +126,13 @@ body > .container
               }
 #photobar-container
               {
-                height: 118px; 
+                background: black;
+                border: 6px solid black;
+                border-radius: 10px;
+                height: 140px; 
+                margin-top: 1em;
                 overflow-y: scroll;
                 white-space: nowrap;
-                background: black;
               }
 #photobar-container::-webkit-scrollbar 
               {
