@@ -10,9 +10,12 @@
   var borderWidth = 2; // px
   var photoWidth = fullThumbSize + (2 * borderWidth); // pixels (borderWidth px on each side)
 
+  // TODO Get these two aligned.
+  var minFaceDimension = 20; // Pixels TODO Scale to photo
+  var minFaceDimensionPixels = 24; // This is what the UI shows (it actually includes 2xborderWidth!)
+
   var handleRadius = 5; // px
   var handleWidth = 2 * handleRadius; // px
-  var magicAdjustmentFactor = 8
 
   var faceNameHideTimeout = 1200
 
@@ -175,9 +178,70 @@
   // mmMovable: not really draggable (no drop needed), with a containment rectangle specified
   // derived from https://docs.angularjs.org/guide/directive (see "Creating a Directive that Adds Event Listeners")
   
+  var calculateContainment = function(ele, behavior)
+  {
+    // All of the containment is in browser coordinates and is taken from the 
+    // browser elements. This ensures that what the user sees is going to be
+    // contained within the elements that are shown on the screen. Otherwise
+    // there's a slight risk the browser display with be off by a pixel (or
+    // a pixel-fraction on retina displays). I know that is un-angular in concept,
+    // but that's how it works for now.
+
+    var result;
+    var photoEle = $('#photo-img');
+    var photoWidth = photoEle.width();
+    var photoHeight = photoEle.height();
+
+    if (behavior == "move")
+    {
+      // The containment is a set of coordinates RELATIVE TO THE STARTING POSITION
+      // of the top left corner of the frame, defining from that origin, how far
+      // the the mouse can move (beyond which the mouse may move, but its motion is ignored).
+      var frameEle = $(ele);
+      result =  {
+                  top:    0,
+                  left:   0,
+                  right:  photoEle.width() - frameEle.outerWidth(), 
+                  bottom: photoEle.height() - frameEle.outerHeight(),
+                }
+    }
+    else if (behavior == "resize")
+    {
+      // For this, the calculations are more complex. The "top" value is the smaller of
+      // the distance from the top of the photo to the top of the frame and
+      // the distance from the bottom of the photo and the bottom of the frame.
+      // That number must then be subtracted from the starting position of the frame top.
+      // The logic for the left is the same, except it involves the "x" axis.
+
+      // The right and bottom points are the centerpoint of the frame.
+      var frameEle = $(ele).parent();
+      var framePos = frameEle.position();
+      result =  {
+                  top:    framePos.top - 
+                          Math.min(framePos.top, photoEle.height() - (framePos.top + frameEle.outerHeight())),
+                  left:   framePos.left - 
+                          Math.min(framePos.left, photoEle.width() - (framePos.left + frameEle.outerWidth())),
+                  right:  framePos.left + ((frameEle.width() - minFaceDimensionPixels) / 2),
+                  bottom: framePos.top + ((frameEle.height() - minFaceDimensionPixels) / 2),
+                };
+      result.maxW = (2 * (result.right - result.left)) + minFaceDimensionPixels;
+      result.maxH = (2 * (result.bottom - result.top)) + minFaceDimensionPixels;
+    }
+    else
+    {
+      console.log('Unexpected behavior ' + '"' + behavior + '"');
+      return; 
+    }
+    result.constrainX = function(x) { return Math.min(Math.max(x, result.left), result.right); };
+    result.constrainY = function(y) { return Math.min(Math.max(y, result.top), result.bottom); };
+    result.constrainW = function(w) { return Math.min(Math.max(w, minFaceDimensionPixels), result.maxW); };
+    result.constrainH = function(h) { return Math.min(Math.max(h, minFaceDimensionPixels), result.maxH); };
+    return result;
+  }
+
   app.directive('mmMovable', 
-                [ '$document', 
-                  function($document)
+                [ '$document',
+                  function($document, $scope)
                   {
                     return {
                       scope:
@@ -189,52 +253,63 @@
                       },
                       link: function(scope, element, attr, ctrl) 
                       {
-                        var ele = element[0]; // extract the actual element
+                        var containment; // Keeps track of where the top-left corner of the frame can move to.
 
-                        var top = scope.containment.top - (ele.offsetHeight / 2);
-                        var bottom = scope.containment.top + scope.containment.height - (ele.offsetHeight / 2);
+                        // These the starting position of the cursor at the mousedown event
+                        var mouseX, mouseY;
 
-                        var left = scope.containment.left - (ele.offsetWidth / 2);
-                        var right = scope.containment.left + scope.containment.width - (ele.offsetWidth / 2);
+                        // These are the starting position of the top-left corner of the face frame
+                        // in the *photo* coordinate space.
+                        var initialX, initialY, initialH, initialW;
                         
-                        var startX = 0, startY = 0;
-                        var x = scope.face.h - magicAdjustmentFactor;
-                        var y = scope.face.w - magicAdjustmentFactor;
-
-                        var p = scope.photo; 
                         element.on('mousedown', function(event) {
                           event.preventDefault(); // Prevent default dragging of selected content
                           event.stopPropagation(); // The handle is nested in the frame, so it fires 2x
                           if (scope.face.manual) // Otherwise the "move" option remains available to all faces
                           {
-                            startX = scope.photo.unscaled(event.pageX) - x;
-                            startY = scope.photo.unscaled(event.pageY)- y;
+                            mouseX = event.pageX;
+                            mouseY = event.pageY;
+                            initialX = scope.photo.scaled(scope.face.x);
+                            initialY = scope.photo.scaled(scope.face.y);
+                            initialW = scope.photo.scaled(scope.face.w);
+                            initialH = scope.photo.scaled(scope.face.h);
+
+                            containment = calculateContainment(element, scope.behavior);
+
                             $document.on('mousemove', mousemove);
                             $document.on('mouseup', mouseup);           
                           }
                         });
 
                         function mousemove(event) {
-                          var deltaX = x;
-                          var deltaY = y;
-                          var unscaledX = scope.photo.unscaled(event.pageX);
-                          var unscaledY = scope.photo.unscaled(event.pageY);
-                          x = Math.min(Math.max(unscaledX - startX, left), right);
-                          y = Math.min(Math.max(unscaledY - startY, top), bottom);
-                          deltaX = x - deltaX;
-                          deltaY = y - deltaY;
+                          var newX, newY, newW, newH;
+                          var deltaX = event.pageX - mouseX;
+                          var deltaY = event.pageY - mouseY;
 
                           if (scope.behavior == 'resize')
                           {
-                            scope.face.x -= deltaX;
-                            scope.face.y -= deltaY;
-                            scope.face.h += deltaY * 2;
-                            scope.face.w += deltaX * 2;
+                            newX = initialX - (event.pageX - mouseX);
+                            newY = initialY - (event.pageY - mouseY);
+                            newX = containment.constrainX(newX);
+                            newY = containment.constrainY(newY);
+                            scope.face.x = scope.photo.unscaled(newX);
+                            scope.face.y = scope.photo.unscaled(newY);
+
+                            newW = initialW + (2 * (event.pageX - mouseX));
+                            newH = initialH + (2 * (event.pageY - mouseY));
+                            newW = containment.constrainW(newW);
+                            newH = containment.constrainH(newH);
+                            scope.face.w = scope.photo.unscaled(newW);
+                            scope.face.h = scope.photo.unscaled(newH);
                           }
                           else if (scope.behavior == 'move')
                           {
-                            scope.face.x += deltaX;
-                            scope.face.y += deltaY;
+                            newX = initialX + event.pageX - mouseX;
+                            newY = initialY + event.pageY - mouseY;
+                            newX = containment.constrainX(newX);
+                            newY = containment.constrainY(newY);
+                            scope.face.x = scope.photo.unscaled(newX);
+                            scope.face.y = scope.photo.unscaled(newY);
                           }
 
                           scope.$apply();
@@ -405,7 +480,12 @@
                     };
                     var photo = Photo.get({ id: $stateParams.id }, function() {
                       scaleFactor = maxDim / Math.max(photo.width, photo.height);
+
+                      // "unscaled()" converts from browser coordinates to photo coordinates
                       photo.unscaled = function(rawValue) {return Math.floor(rawValue / scaleFactor);}
+
+                      // "scaled()" converts from photo coordinates to browser coordinates
+                      photo.scaled =   function(rawValue) {return Math.floor(rawValue * scaleFactor);}
                       photo.mmuid; // Assign a unique ID so the first debounce does not trigger an update
                       angular.forEach(photo.faces, defineScaledMethods);                              
                       $scope.photo = photo;
@@ -421,7 +501,6 @@
                       // We calculate the average width and height of visible faces
                       var sumW = 0;
                       var sumH = 0;
-                      var minFaceDimension = 20; // Pixels TODO Scale to photo
                       var defaultFaceDimension = Math.min($scope.photo.width, $scope.photo.height) / 10;
                       var meanWidth = minFaceDimension;
                       var meanHeight = minFaceDimension;
@@ -676,7 +755,7 @@
 
 %div{'ui-view' => 'display'}
 
-#name{style: 'display: none; position:absolute;', 'ng-controller' => 'NamesController'}
+#name{style: 'display: none; padding: 0; position:absolute;', 'ng-controller' => 'NamesController'}
   .icon-control{style: 'position: absolute; right: -5px;'}
     %span#name-dismiss.glyphicon.glyphicon-remove{"aria-label" => "Clear the name input field", |
                                                   :style => "top: -10px; background-color: black; color: white;", |
@@ -688,7 +767,7 @@
                                                 'ng-keyup' => "processKeyup($event)",
                                                 :placeholder => "Enter Name",
                                                 :type => "text"}/
-  #names-container{:style => "width: 20em; max-height: 170px; display: block;"}
+  #names-container.dropdown-menu{:style => "margin-top: 0; padding-top: 5px; width: 20em; max-height: 170px; display: block;"}
     .row{'ng-repeat' => '(id, name) in names', 
          'ng-click' => 'setSelectedName(name)',
          'ng-show' => 'name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1'}
