@@ -26,6 +26,7 @@ module Api
           result = {status: 'fail', errors: @errors}
           render json: result, status: :bad_request
         else
+          @named_faces = @hsa.named_faces.since(50.minutes.ago)
           render :common_response
         end
       end
@@ -62,6 +63,7 @@ module Api
           result = {status: 'fail', errors: @errors}
           render json: result, status: :bad_request
         else
+          @named_faces = @hsa.named_faces.since(50.minutes.ago)
           render :common_response
         end
       end
@@ -86,6 +88,7 @@ module Api
           result = {status: 'fail', errors: @errors}
           render json: result, status: :bad_request
         else
+          @named_faces = @hsa.named_faces.since(50.minutes.ago)
           render :common_response
         end
       end
@@ -103,6 +106,7 @@ module Api
           result = {status: 'fail', errors: @errors}
           render json: result, status: :bad_request
         else
+          @named_faces = @hsa.named_faces.since(50.minutes.ago)
           render :common_response
         end
       end

@@ -1,7 +1,11 @@
 class HostingServiceAccount < ActiveRecord::Base
 
   has_many    :photos
-  has_many    :named_faces
+  has_many    :named_faces   do
+    def since(time)
+      where(['updated_at >= ?', time])
+    end
+  end
 
   validates   :name,          inclusion: %w{flickr}, 
                               presence: {allow_blank: false}
