@@ -31,6 +31,9 @@ module Api
         end
       end
 
+      # Enables the updating of a face record. When invoked with the
+      # additional argument "newName", it will create a NamedFace object
+      # and associate it with that face.
       def update
         if @hsa && @photo
           if @face
@@ -38,7 +41,17 @@ module Api
             @face.y = params[:y]
             @face.width = params[:width]
             @face.height = params[:height]
-            @face.named_face_id = params[:named_face_id]
+            if params[:newName]
+              new_face = NamedFace.create(hosting_service_account_id: @hsa.id,
+                                          face_key: 'uncertain',
+                                          face_name_uuid: 'uncertain',
+                                          private_name: params[:newName])
+              @named_faces = [new_face]
+              @errors += new_face.errors.full_messages
+              @face.named_face_id = new_face.id
+            else
+              @face.named_face_id = params[:named_face_id]
+            end
             if !@face.save
               @errors += @face.errors.full_messages
             end
@@ -46,40 +59,14 @@ module Api
             @errors += ['Face not found']
           end
           end
-        if @errors.empty?
-          photo = @face.photo
-          render partial: 'api/v1/faces/show', locals: {face: @face}
-        else
-          result = {status: 'fail', errors: @errors}
-          render json: result, status: :bad_request
-        end
-      end
-
-      # link an existing facename to a face
-      def link
-        if @hsa && @photo
-          named_face = nil
-          if (@face = @photo.faces.where(id: params[:id]).first)
-            named_face = @hsa.named_faces.where(id: params[:name_id].first)
-            if (named_face)
-              @face.named_face_id = named_face.id
-              if !@face.save
-                @errors += @face.errors.full_messages
-              end
-            else
-              @errors += ['Named face not found']
-            end
-          else
-            @errors += ['Face not found']
-          end
-        end
         if @errors.any?
           result = {status: 'fail', errors: @errors}
           render json: result, status: :bad_request
         end
+        # otherwise we just let update.json.jbuilder render
       end
 
-      # If the face was manually added and has no name associated with it,
+      # If the face-frame was manually added and has no name associated with it,
       # a logical deletion will occur. Otherwise, the face will be logically
       # deleted. The response indicates what action occurred via the 
       # "destroyed" value.

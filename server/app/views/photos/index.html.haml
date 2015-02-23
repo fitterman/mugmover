@@ -70,8 +70,12 @@
                                 {
                                   this.photoScope = photoScope;
                                 }
+                                this.setNamesScope = function(namesScope)
+                                {
+                                  this.namesScope = namesScope;
+                                }
 
-                                // This just transfers the scope of the photo
+                                // This just sets the names in this context
                                 this.setNamesIndex = function(namesIndex)
                                 {
                                   this.names = namesIndex;
@@ -84,11 +88,28 @@
                                   return face ? face.privateName : undefined;
                                 }
 
+                                this.mergeNewFacedata = function(newNames)
+                                {
+                                  for (var id in newNames)
+                                  {
+                                    this.names[id] = newNames[id];
+                                  }
+                                }
+
                                 // This records a particular face and clears the selected name
                                 this.setFace = function(face)
                                 {
                                   this.selectedFace = face;
                                   this.selectedName = null;
+                                }
+
+                                // This method accepts a name, which will be sent to the
+                                // server to create a new record, and that record will 
+                                // then be associated with the current face frame.
+                                this.applyNewName = function(nameNeedle)
+                                {
+                                  this.photoScope.updateFace(this.selectedFace, nameNeedle);
+                                  this.namesScope.clearNameNeedle();
                                 }
 
                                 // This is called after a name in the list is clicked,
@@ -567,15 +588,17 @@
                           (0 < face.y) && (face.y < ($scope.photo.height - (meanHeight / 2))))
                       {
                         $scope.photo.faces.push(face);
-                        Face.save(face, function(data)
-                                        {
-                                          face.id = data.id;
-                                        },
-                                        function(err)
-                                        {
-                                          $scope.removeFaceWithId(null);
-                                          $window.alert($scope.xlate('unableToAddFace'));
-                                        });
+                        Face.save(face, 
+                                  function(data)
+                                  {
+                                    NameToPhotoGlue.mergeNewFacedata(data.names);
+                                    face.id = data.face.id;
+                                  },
+                                  function(err)
+                                  {
+                                    $scope.removeFaceWithId(null);
+                                    $window.alert($scope.xlate('unableToAddFace'));
+                                  });
                       }
                       else
                       {
@@ -610,7 +633,8 @@
                                            Face.restore({photo_id: face.photoId, id: face.id},
                                                         function(data)
                                                         {
-                                                          face.deleted = data.deleted; // FALSE
+                                                          NameToPhotoGlue.mergeNewFacedata(data.names);
+                                                          face.deleted = data.face.deleted; // FALSE
                                                         },
                                                         function(err)
                                                         {
@@ -627,13 +651,14 @@
                                                       Face.delete({photo_id: face.photoId, id: face.id},
                                                                   function(data)
                                                                   {
-                                                                    if (data.destroyed) // true deletion
+                                                                    NameToPhotoGlue.mergeNewFacedata(data.names);
+                                                                    if (data.face.destroyed) // true deletion
                                                                     {
                                                                       $scope.removeFaceWithId(face.id);
                                                                     }
                                                                     else
                                                                     {
-                                                                      face.deleted = data.deleted; // TRUE
+                                                                      face.deleted = data.face.deleted; // TRUE
                                                                     }
                                                                   },
                                                                   function(err)
@@ -672,19 +697,35 @@
                                           }
                     $scope.setHoverFace(null);
                     $scope.xlate = translations.translate;
-                    var updateFace = function(face)
+
+                    // If updateFace is called with one argument, then the 
+                    // server will be updated with all the various values stored
+                    // in the object. When called with a second argument (that is
+                    // a string), it attempt to create a new FaceName and assign
+                    // it to this face.
+                    $scope.updateFace = function(face, newName)
                     {
-                        Face.update({
+                        var data = {
                                       photoId: face.photoId,
                                       id: face.id,
                                       x: face.x,
                                       y: face.y,
                                       width: face.w,
-                                      height: face.h,
-                                      namedFaceId: face.namedFaceId,
-                                    },
+                                      height: face.h
+                                    };
+                        if (typeof newName == 'string')
+                        {
+                          data.newName = newName;
+                        }
+                        else
+                        {
+                          data.namedFaceId = face.namedFaceId;
+                        }
+                        Face.update(data,
                                     function(data)
                                     {
+                                      face.namedFaceId = data.face.namedFaceId;
+                                      NameToPhotoGlue.mergeNewFacedata(data.names);
                                       face.displayName = NameToPhotoGlue.getPrivateName(face.namedFaceId);
                                       $scope.setHoverFace(null, 1200); // Leave a little time for them to see it.
                                     },
@@ -702,11 +743,11 @@
                         // must change at least one if not both of them.
                         if ((newValue.x != oldValue.x) || (newValue.y != oldValue.y))
                         {
-                          debounce(newValue, 1500, updateFace)
+                          debounce(newValue, 1500, $scope.updateFace)
                         }
                         else if (newValue.namedFaceId != oldValue.namedFaceId)
                         {
-                          debounce(newValue, 100, updateFace)
+                          debounce(newValue, 100, $scope.updateFace)
                         }
                       }
                     }
@@ -718,7 +759,7 @@
                  ['$scope', '$http', '$window', 'NameToPhotoGlue', 'translations', 
                   function($scope, $http, $window, NameToPhotoGlue, translations)
                   {
-                    $scope.nameNeedle = '';
+                    NameToPhotoGlue.setNamesScope($scope);
                     $http.get("#{api_v1_names_path}.json?a_id=1")
                          .success(function(response)
                                   { 
@@ -726,6 +767,11 @@
                                      NameToPhotoGlue.setNamesIndex($scope.names);
                                   }
                          );
+                    $scope.clearNameNeedle = function()
+                    {
+                      $scope.nameNeedle = '';
+                    }
+                    $scope.clearNameNeedle();
                     $scope.hideNameEntry = function()
                                            {
                                              $('#name').hide();
@@ -755,6 +801,11 @@
                       }
                       else if (key == 13) // return/enter
                       {
+                        if (confirm('new name?'))
+                        {
+                          NameToPhotoGlue.applyNewName($scope.nameNeedle);
+                          $namesScope.clearNameNeedle();
+                        }
                         $scope.hideNameEntry();
                       }
                     }
