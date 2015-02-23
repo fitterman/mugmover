@@ -123,6 +123,7 @@ module Api
     protected
       def pre_validation
         params[:photo_id] ||= params[:photoId]
+        params[:named_face_id] ||= params[:namedFaceId]
         @errors = []
         hsa_query = HostingServiceAccount.where(id: params[:a_id])
         if !hsa_query.empty?

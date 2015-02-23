@@ -534,12 +534,12 @@
                                   y: unscaledY - (meanHeight / 2), 
                                   w: meanWidth, 
                                   h: meanHeight, 
-                                  photo_id: $scope.photoId,
+                                  photoId: $scope.photoId,
                                   deleted: false,
                                   manual: true, 
                                   text: null,
                                   id: null,
-                                  named_face_id: null,
+                                  namedFaceId: null,
                                 };
                       defineScaledMethods(face);
                       if ((0 < face.x) && (face.x < ($scope.photo.width - (meanWidth / 2))) &&
@@ -651,13 +651,13 @@
                     var updateFace = function(face)
                     {
                         Face.update({
-                                      photo_id: face.photoId,
+                                      photoId: face.photoId,
                                       id: face.id,
                                       x: face.x,
                                       y: face.y,
                                       width: face.w,
                                       height: face.h,
-                                      named_face_id: face.namedFaceId,
+                                      namedFaceId: face.namedFaceId,
                                     },
                                     function(data)
                                     {
