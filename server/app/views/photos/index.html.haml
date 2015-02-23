@@ -836,7 +836,7 @@
   #names-container.dropdown-menu{:style => "margin-top: 0; padding-top: 5px; width: 20em; max-height: 170px; display: block;"}
     .row{'ng-repeat' => '(id, name) in names', 
          'ng-click' => 'setSelectedName(name)',
-         'ng-show' => 'name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1'}
+         'ng-show' => '(name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1) || (name.note.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1)'}
       .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
         %img{:src => "https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png", :style => "height:30px"}/
       .col-xs-10.ellipsis{:style => "padding: 0;"}
