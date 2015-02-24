@@ -1,6 +1,14 @@
 //
 //  MMPhoto.m
-//  mugmover
+//  This class handles the overall processing of photos. Photos can be
+//  initialized from a Flickr dictionary, which passes over a collection
+//  of data values that are contained in the photostream request itself
+//  (see MMFlickrPhotostream for details). Once the photo is init'd, the
+//  "performNextStep" method is called repeatedly as each step completes,
+//  and it embodies the knowledge of what happens next -- specifically
+//  with regard to steps requiring network access. Finally, "processPhoto"
+//  is invoked, which performs all the local processing against the
+//  iPhoto library.
 //
 //  Created by Bob Fitterman on 11/27/14.
 //  Copyright (c) 2014 Dicentra LLC. All rights reserved.

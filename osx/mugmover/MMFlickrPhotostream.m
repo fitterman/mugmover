@@ -1,6 +1,9 @@
 //
 //  MMFlickrPhotostream.m
-//  mugmover
+//  Everything to do with a Flickr Photostream (that is the stream itself, not the
+//  access to data from individual images contained in the stream). Once the
+//  initialization has completed, the bulk of this class is used to queue
+//  requests to process each individual photo. See the MMPhoto class for further details.
 //
 //  Created by Bob Fitterman on 11/13/14.
 //  Copyright (c) 2014 Dicentra LLC. All rights reserved.

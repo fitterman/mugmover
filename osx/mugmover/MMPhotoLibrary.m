@@ -1,6 +1,6 @@
 //
 //  MMPhotoLibrary.m
-//  mugmover
+//  Everything having to do with reading the local library.
 //
 //  Created by Bob Fitterman on 11/13/14.
 //  Copyright (c) 2014 Dicentra LLC. All rights reserved.
