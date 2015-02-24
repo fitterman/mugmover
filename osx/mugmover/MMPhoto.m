@@ -659,7 +659,8 @@
 {
     NSMutableArray *discardedItems = [NSMutableArray array];
     
-    for (MMFace *face in _faceArray) {
+    for (MMFace *face in _faceArray)
+    {
         if (!face.visible || face.rejected || face.ignore)
         {
             [discardedItems addObject: face];
@@ -724,7 +725,9 @@
     if (!jsonData)
     {
         DDLogError(@"ERROR JSON Serialization returned: %@", error);
-    } else {
+    }
+    else
+    {
         NSString *jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
         NSDictionary *postData = @{@"data": jsonString};
         DDLogInfo(@"TO MUGMOVER   index=%ld, remaining=%ld", (long)_index, [_stream inQueue]);

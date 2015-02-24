@@ -87,10 +87,12 @@ BOOL const MMdebugLevel;
     [self updateUserInterface];
 
     NSString *senderName = nil;
-    if (sender == self.textField) {
+    if (sender == self.textField)
+    {
         senderName = @"textField";
     }
-    else {
+    else
+    {
         senderName = @"slider";
     }
     DDLogInfo(@"%@ sent takeFloatValueForVolumeFrom: with value %1.2f", senderName, [sender floatValue]);

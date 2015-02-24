@@ -253,7 +253,8 @@ long                retryCount;
      end
      
      */
-    switch (inError.code) {
+    switch (inError.code)
+    {
         case OFFlickrAPIRequestConnectionError:
             DDLogError(@"OFFlickrAPIRequestConnectionError");
             break;
