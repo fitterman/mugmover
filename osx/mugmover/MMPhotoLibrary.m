@@ -11,6 +11,10 @@
 #import "FMDB/FMDB.h"
 #import "FMDB/FMResultSet.h"
 
+@import QuartzCore.CIFilter;
+@import QuartzCore.CoreImage.CIContext;
+@import QuartzCore.CoreImage.CIFilter;
+
 @implementation MMPhotoLibrary
 
 
@@ -116,7 +120,7 @@ NSString *photosPath;
                            versionFilename: versionFilename];
 }
 
-- (NSDictionary *) versionExifFromMasterPath: (NSString *) masterPath
+- (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
 {
     NSArray *pathPieces = @[_libraryBasePath, @"Masters", masterPath];
     
@@ -129,7 +133,7 @@ NSString *photosPath;
     return nil;
 }
 
-- (NSDictionary *) versionExifFromMasterPath: (NSString *) masterPath
+- (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
                                  versionUuid: (NSString *) versionUuid
                              versionFilename: (NSString *) versionFilename
 {
@@ -152,10 +156,128 @@ NSString *photosPath;
     return nil;
 }
 
-// This method extracts Exif data from a local file, which we probably do not need to do!
-+(NSDictionary*) getImageExif: (NSString*) filePath
+
+// Version 2
++ (NSMutableArray *) getCroppedRegions: (NSString*) filePath
+                       withCoordinates: (NSArray*) rectArray
+                             thumbSize: (NSInteger) thumbSize
 {
-    NSDictionary* exifDictionary = nil;
+    NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: [rectArray count]];
+    NSURL* fileURL = [NSURL fileURLWithPath : filePath];
+    
+    // After the crop, then scale, the resulting image was not always an integer size and in fact
+    // was not even square in some cases. To rectify this, we recrop one more time at the end with
+    // definitive metrics
+
+     CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef bitmapContext = CGBitmapContextCreate(NULL, thumbSize, thumbSize, 8, 0, colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
+    CIContext *context = [CIContext contextWithCGContext: bitmapContext options: @{}];
+    // TODO Is there a release for the CIContext?
+    
+    if ((result != NULL) && (fileURL != NULL))
+    {
+        CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileURL];
+
+        if (image != NULL)
+        {
+            for (NSArray *rect in rectArray)
+            {
+                CGRect cropRect = CGRectMake([[rect objectAtIndex: 0] doubleValue],
+                                             [[rect objectAtIndex: 1] doubleValue],
+                                             [[rect objectAtIndex: 2] doubleValue],
+                                             [[rect objectAtIndex: 3] doubleValue]);
+
+                CIImage *croppedImage = [image imageByCroppingToRect: cropRect];
+
+                // scale the image
+                CIFilter *scaleFilter = [CIFilter filterWithName: @"CILanczosScaleTransform"];
+                [scaleFilter setValue: croppedImage forKey: @"inputImage"];
+                NSNumber *scaleFactor = [[NSNumber alloc] initWithFloat:(float) thumbSize / [[rect objectAtIndex: 2] doubleValue]];
+                [scaleFilter setValue: scaleFactor forKey: @"inputScale"];
+                [scaleFilter setValue: @1.0 forKey: @"inputAspectRatio"];
+                CIImage *scaledAndCroppedImage = [scaleFilter valueForKey: @"outputImage"];
+
+                //### http://stackoverflow.com/questions/9601242/cropping-ciimage-with-cicrop-isnt-working-properly
+                /* This may do the same all in place
+                [image drawAtPoint: NSZeroPoint
+                          fromRect: NSMakeRect(150, 150, 300, 300)
+                         operation: NSCompositeSourceOver
+                          fraction: 1.0];
+                */
+                //###
+
+                NSMutableData* thumbJpegData = [[NSMutableData alloc] init];
+                CGImageDestinationRef dest = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)thumbJpegData,
+                                                                              (__bridge CFStringRef)@"public.jpeg",
+                                                                              1,
+                                                                              NULL);
+                //CFURLRef saveUrl2 = (__bridge CFURLRef)[NSURL fileURLWithPath:[@"~/Desktop/lockwood-crop-2.jpg" stringByExpandingTildeInPath]];
+                //CGImageDestinationRef dest = CGImageDestinationCreateWithURL(saveUrl2, kUTTypeJPEG, 1, NULL);
+                if (dest != NULL)
+                {
+                    CGImageRef img = [context createCGImage:scaledAndCroppedImage
+                                                   fromRect:[scaledAndCroppedImage extent]];
+                    CGImageDestinationAddImage(dest, img, nil);
+                    if (CGImageDestinationFinalize(dest))
+                    {
+                        NSString *jpegAsString = [thumbJpegData base64EncodedStringWithOptions: 0];
+                        [result addObject: jpegAsString];
+                    }
+                    else
+                    {
+                        DDLogError(@"Failed to generate face thumbnail");
+                        [result addObject: @""];
+                    }
+                    CGImageRelease(img);
+                    CFRelease(dest);
+                }
+                else
+                {
+                    [result addObject: @""];
+
+                }
+            }
+        }
+    }
+    CGContextRelease(bitmapContext);
+    CGColorSpaceRelease(colorspace);
+    return result;
+}
+
+// The method takes in an image and resizes it to some specified size
++ (CGImageRef)resizeCGImage: (CGImageRef)image
+                    toWidth: (NSInteger)width
+                   toHeight: (NSInteger)height
+{
+    // create context, keeping original image properties
+    CGColorSpaceRef colorspace = CGImageGetColorSpace(image);
+    CGContextRef context = CGBitmapContextCreate(NULL,
+                                                 width,
+                                                 height,
+                                                 CGImageGetBitsPerComponent(image),
+                                                 CGImageGetBytesPerRow(image),
+                                                 colorspace,
+                                                 (CGBitmapInfo)CGImageGetAlphaInfo(image));
+    CGColorSpaceRelease(colorspace);
+
+    if (context == NULL)
+        return nil;
+    
+    // draw image to context (resizing it)
+    CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+    
+    // extract resulting image from context
+    CGImageRef imgRef = CGBitmapContextCreateImage(context);
+    CGContextRelease(context);
+
+    return imgRef;
+}
+
+
+// This method extracts Exif data from a local file, which we probably do not need to do!
++(NSMutableDictionary*) getImageExif: (NSString*) filePath
+{
+    NSMutableDictionary* exifDictionary = nil;
     NSURL* fileURL = [NSURL fileURLWithPath : filePath];
     
     if (fileURL)
@@ -174,9 +296,10 @@ NSString *photosPath;
             {
                 
                 // cast CFDictonaryRef to NSDictionary
-                exifDictionary = [NSDictionary dictionaryWithDictionary : (__bridge NSDictionary *) metadataRef];
+                exifDictionary = [NSMutableDictionary dictionaryWithDictionary : (__bridge NSDictionary *) metadataRef];
                 if (exifDictionary)
                 {
+                    [exifDictionary setValue: filePath forKey: @"_image"];
                     NSDictionary *iptcDictionary = [exifDictionary objectForKey: @"{IPTC}"];
                     if (iptcDictionary)
                     {

@@ -31,6 +31,7 @@
 @property (strong)              NSMutableDictionary *       flickrDictionary;
 @property (strong)              OFFlickrAPIRequest *        flickrRequest;
 @property (assign)              NSInteger                   index;
+@property (strong)              NSString *                  iPhotoOriginalImagePath;
 @property (assign, readonly)    Float64                     masterHeight;
 @property (strong)              NSString *                  masterUuid;
 @property (assign, readonly)    Float64                     masterWidth;

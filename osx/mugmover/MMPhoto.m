@@ -277,6 +277,7 @@
             {
                 NSString *iphotoModifyTime = [[exif objectForKey: @"{TIFF}"] valueForKey: @"DateTime"];
                 NSString *iphotoOriginalTime = [[exif objectForKey: @"{Exif}"] valueForKey: @"DateTimeOriginal"];
+                _iPhotoOriginalImagePath = [exif objectForKey: @"_image"];
                 
                 if ((iphotoModifyTime && [iphotoModifyTime isEqualToString: flickrModifyTime]) &&
                     (iphotoOriginalTime && [iphotoOriginalTime isEqualToString: flickrOriginalTime]))
@@ -637,13 +638,19 @@
     [self findRelevantAdjustments];
     [self adjustForStraightenCropAndGetFaces];
     [self moveFacesRelativeToTopLeftOrigin];
+    [self fetchThumbnailsFromOriginal];
     [self sendPhotoToMugmover];
+    
+    // Note that we discard the hidden/rejected faces _after_ uploading to mugmover.
+    // This is not an error: we intentionally hold onto those.
     [self discardHiddenFaces];
+
     // TODO Some day we will reinstate the following line. When you do, be sure to look into
     // optimizing the note generation so that we don't keep deleting and adding the same notes.
     // Without that we will use up our API quota very quickly.
 
-    // To restore Flickr note-writing, remove the next two lines
+    // To restore Flickr note-writing, remove the next two operations. It's by virtual of
+    // deleting all fo this data that we inhibit the Flickr note-writing.
     if (_oldNotesToDelete)
     {
         [_oldNotesToDelete removeAllObjects];
@@ -677,6 +684,51 @@
     
     [_faceArray removeObjectsInArray: discardedItems];
     
+}
+- (BOOL) fetchThumbnailsFromOriginal
+{
+    if (_faceArray)
+    {
+        NSMutableArray *rectangles = [[NSMutableArray alloc] initWithCapacity: [_faceArray count]];
+        for (MMFace *face in _faceArray)
+        {
+            // We want square images, so we settle on the average of the height/width
+            // The automated faces are very tight, so we upscale the targeted dimension (* 3.0)
+            Float64 dim = ((face.faceWidth + face.faceHeight) / 2.0) * 3.0;
+            
+            Float64 left = MAX([face.centerPoint x] - (dim / 2.0), 0.0); // In case it goes off the left side of the image.
+            left = MIN(left, _processedWidth - dim); // in case it would run beyond the right side
+            Float64 bottom =  MAX([face.centerPoint y] - (dim / 2.0), 0.0); // In case it goes off the bottom of the image
+            bottom  = MIN(bottom, _processedHeight - dim); // in case it would run beyond the top
+            NSArray *rect = @[[NSNumber numberWithDouble: left],
+                              [NSNumber numberWithDouble: bottom], // OSX uses the bottom-left corner for origin
+                              [NSNumber numberWithDouble: dim],
+                              [NSNumber numberWithDouble: dim]];
+            [rectangles addObject: rect];
+        }
+        if (_iPhotoOriginalImagePath)
+        {
+            NSMutableArray *thumbnails = [MMPhotoLibrary getCroppedRegions: _iPhotoOriginalImagePath
+                                                           withCoordinates: rectangles
+                                                                 thumbSize: 100]; // standardize on 100x100 thumbnails
+            // TODO Need an assertion here
+            if ([thumbnails count] != [_faceArray count])
+            {
+                DDLogError(@"ERROR expected %lu thumbnails, got %lu.", [_faceArray count], [thumbnails count]);
+                return NO;
+            }
+            else
+            {
+                NSInteger counter = 0;
+                for (MMFace *face in _faceArray)
+                {
+                    face.thumbnail = thumbnails[counter];
+                    counter++;
+                }
+            }
+        }
+    }
+    return YES;
 }
 
 - (void) sendPhotoToMugmover

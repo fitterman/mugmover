@@ -508,6 +508,17 @@
                       // "8" in the following has to do with the diameter of the handle
                       whichFace.handleY = function() {return (this.h * scaleFactor - 8) + 'px';};
                       whichFace.handleX = function() {return (this.w * scaleFactor - 8) + 'px';};
+                      whichFace.thumbDataUri = function()
+                                               {
+                                                 if ((!this.thumbnail) || (this.thumbnail.length === 0))
+                                                 {
+                                                   return null;
+                                                 }
+                                                 else
+                                                 {
+                                                   return 'data:image/jpeg;base64,' + this.thumbnail;
+                                                 }
+                                               }
                       whichFace.displayName = NameToPhotoGlue.getPrivateName(whichFace.namedFaceId);
                       whichFace.photoId = photo.id;
                       whichFace.mmuid   // Assign a unique ID so the first debounce does not trigger an update

@@ -22,6 +22,10 @@
 
 - (void) close;
 
++(NSMutableArray *) getCroppedRegions: (NSString*) filePath
+                      withCoordinates: (NSArray *) rectanglesArray
+                            thumbSize: (NSInteger) thumbSize;
+
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 
 - (NSDictionary *) versionExifFromMasterPath: masterPath;

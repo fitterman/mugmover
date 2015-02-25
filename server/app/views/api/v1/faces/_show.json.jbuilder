@@ -7,4 +7,5 @@ json.deleted face.deleted_at.present?
 json.destroyed face.destroyed? # Useful after delete operation
 json.manual face.manual?
 json.id face.id 
+json.thumbnail face.thumbnail
 

@@ -32,7 +32,7 @@
     if (self)
     {
         _photo = photo;
-        
+        _thumbnail = @""; // It needs to be an empty string if it doesn't exist
         {
             DDLogInfo(@"PROC'ING FACE faceUdid=%@", faceUuid);
             DDLogInfo(@"INPUTS        topLeft=%@ bottomLeft=%@ bottomRight=%@ %3.1fWx%3.1fH",
@@ -74,7 +74,7 @@
         _visible = YES;
 
         {
-            DDLogInfo(@"x       centerPoint=%@ %3.1fWx%3.1fH",
+            DDLogInfo(@"END OF INIT   centerPoint=%@ masterDims=(%3.1fWx%3.1fH)",
                     _centerPoint, _photo.masterWidth, _photo.masterHeight);
         }
     }
@@ -126,6 +126,7 @@
              @"name":              _name,
              @"keyVersionUuid":    _keyVersionUuid,
              @"manual":            @(_manual),
+             @"thumbnail":         _thumbnail,
              };
 }
 
