@@ -1,7 +1,12 @@
 <div ng-include src="'/templates/controls.html'">
 </div>
 
-<div class="row"
+<div class="row">
+  <div class="col-xs-4 col-sm-2" ng-repeat="face in photo.faces | filter:noThumbnail ">
+    <img class="thumbnail" style="border-radius: 50%;" data-id="{{face.id}}" ng-src="{{face.thumbDataUri()}}" alt="{{face.publicName}}" />
+  </div>
+</div>
+<div class="row">
   <div class="col-xs-8">
     <div id="photo-container">
       <img  id="photo-img" 

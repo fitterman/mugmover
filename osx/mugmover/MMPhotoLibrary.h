@@ -34,4 +34,8 @@
                                  versionUuid: versionUuid
                              versionFilename: versionFilename;
 
+- (NSString *) versionPathFromMasterPath: (NSString *) masterPath
+                             versionUuid: (NSString *) versionUuid
+                         versionFilename: (NSString *) versionFilename;
+
 @end

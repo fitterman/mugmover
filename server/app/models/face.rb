@@ -13,18 +13,25 @@ class Face < ActiveRecord::Base
   validates   :height,              numericality: { greater_than_or_equal_to: 0 }
   validates   :face_key,            presence: true
 
+  before_validation    :normalize
+
       #   #  ###  ##### ####   
       ##  # #   #   #   #       While the source data works with the center
       # # # #   #   #   ###     X and Y coordinates of the face, in the
       #  ## #   #   #   #       server, we track X and Y as the top left corner.
       #   #  ###    #   ####
 
-
   ## TODO Add rejected and figure out how manually-added faces are treated (vs automatic and rejected).
   ## Also add the facekey which associates a face to a name. Add the facekey in the person table
   
   def primary_name
     self.face_uuid
+  end
+
+  def normalize
+    if self.thumbnail.blank?
+      self.thumbnail = nil
+    end
   end
 
   # This is the core of the face upload code, invoked by the UploadsController

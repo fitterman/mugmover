@@ -201,14 +201,26 @@
     if ((_version != -1) && _versionUuid)
     {
         NSNumber *number = [NSNumber numberWithInteger: _version - 1];
+        NSString *query =  @"SELECT masterUuid, masterHeight, masterWidth, processedHeight, "
+                                "processedWidth, rotation, imagePath, filename, versionUuid FROM RKVersion v"
+                            "FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid "
+                            "WHERE uuid = ? AND versionNumber = ? ";
         NSArray *args = @[_versionUuid, number];
-        
-        FMResultSet *resultSet = [_stream.library.photosDatabase executeQuery: @"SELECT * FROM RKVersion WHERE uuid = ? AND versionNumber = ?"
+
+        FMResultSet *resultSet = [_stream.library.photosDatabase executeQuery: query
                                                          withArgumentsInArray: args];
         
         if (resultSet && [resultSet next])
         {
             [self updateFromIphotoLibraryVersionRecord: resultSet];
+            
+            NSString *masterPath = [resultSet stringForColumn: @"imagePath"];
+            NSString *versionFilename = [resultSet stringForColumn: @"filename"];
+            NSString *versionUuid = [resultSet stringForColumn: @"versionUuid"];
+
+            _iPhotoOriginalImagePath = [_stream.library versionPathFromMasterPath: (NSString *) masterPath
+                                                                      versionUuid: versionUuid
+                                                                  versionFilename: versionFilename];
             return YES;
         }
     }
@@ -694,16 +706,22 @@
         {
             // We want square images, so we settle on the average of the height/width
             // The automated faces are very tight, so we upscale the targeted dimension (* 3.0)
-            Float64 dim = ((face.faceWidth + face.faceHeight) / 2.0) * 3.0;
+            Float64 idealDim = ((face.faceWidth + face.faceHeight) / 2.0) * 3.0;
+
+            Float64 potentialX = MIN([face.centerPoint x],                       // dist between center of face and left side of photo
+                                     _processedWidth - [face.centerPoint x]);    // dist between center of face and right side of photo
+            Float64 potentialY = MIN([face.centerPoint y] ,                      // dist between center of face and bottom side of photo
+                                     _processedHeight - [face.centerPoint y]);   // dist between center of face and top side of photo
+            Float64 physicalLimit = 2.0 * MIN(potentialX, potentialY);           // 2 x the smallest of them all wins
+            idealDim = MIN(idealDim, physicalLimit);                           // The smallest wins
+
+            Float64 left = [face.centerPoint x] - (idealDim / 2.0);
+            Float64 bottom = (_processedHeight - [face.centerPoint y]) - (idealDim / 2.0);
             
-            Float64 left = MAX([face.centerPoint x] - (dim / 2.0), 0.0); // In case it goes off the left side of the image.
-            left = MIN(left, _processedWidth - dim); // in case it would run beyond the right side
-            Float64 bottom =  MAX([face.centerPoint y] - (dim / 2.0), 0.0); // In case it goes off the bottom of the image
-            bottom  = MIN(bottom, _processedHeight - dim); // in case it would run beyond the top
             NSArray *rect = @[[NSNumber numberWithDouble: left],
                               [NSNumber numberWithDouble: bottom], // OSX uses the bottom-left corner for origin
-                              [NSNumber numberWithDouble: dim],
-                              [NSNumber numberWithDouble: dim]];
+                              [NSNumber numberWithDouble: idealDim],
+                              [NSNumber numberWithDouble: idealDim]];
             [rectangles addObject: rect];
         }
         if (_iPhotoOriginalImagePath)
@@ -752,7 +770,7 @@
                                     @{ @"height":               [NSNumber numberWithLong: _masterHeight],
                                        @"number":               [NSNumber numberWithLong: _version],
                                        @"masterUuid":           _masterUuid,
-                                       @"originalDate":         _originalDate,
+                                       @"originalDate":         _originalDate ? _originalDate : @"",
                                        @"originalFilename":     _originalFilename ? _originalFilename : @"",
                                        @"versionUuid":          _versionUuid,
                                        @"width":                [NSNumber numberWithLong: _masterWidth],

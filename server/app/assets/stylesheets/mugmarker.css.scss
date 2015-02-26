@@ -126,13 +126,20 @@ body > .container
               }
 #photobar-container
               {
+                zoom: 50%;
                 background: black;
                 border: 6px solid black;
                 border-radius: 10px;
                 height: 140px; 
-                margin-top: 1em;
+                margin-top: 10em;
                 overflow-y: scroll;
                 white-space: nowrap;
+              }
+#photobar-container:hover
+              {
+                margin-top: 5em;
+                zoom: 50%;
+                z-index: 200;
               }
 #photobar-container::-webkit-scrollbar 
               {

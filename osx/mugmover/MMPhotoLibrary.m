@@ -133,21 +133,38 @@ NSString *photosPath;
     return nil;
 }
 
+- (NSString *) versionPathFromMasterPath: (NSString *) masterPath
+                             versionUuid: (NSString *) versionUuid
+                         versionFilename: (NSString *) versionFilename
+{
+    NSArray *masterPathPieces = [masterPath componentsSeparatedByString: @"/"];
+    if (masterPathPieces != NULL)
+    {
+        NSArray *pathPieces = @[_libraryBasePath,
+                                @"Previews",
+                                [masterPathPieces objectAtIndex: 0],
+                                [masterPathPieces objectAtIndex: 1],
+                                [masterPathPieces objectAtIndex: 2],
+                                [masterPathPieces objectAtIndex: 3],
+                                versionUuid,
+                                versionFilename];
+        if (pathPieces != NULL)
+        {
+            NSString *versionPath = [pathPieces componentsJoinedByString: @"/"];
+            return versionPath;
+        }
+    }
+    return NULL;
+    
+}
+
 - (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
                                  versionUuid: (NSString *) versionUuid
                              versionFilename: (NSString *) versionFilename
 {
-    NSArray *masterPathPieces = [masterPath componentsSeparatedByString: @"/"];
-    NSArray *pathPieces = @[_libraryBasePath,
-                            @"Previews",
-                            [masterPathPieces objectAtIndex: 0],
-                            [masterPathPieces objectAtIndex: 1],
-                            [masterPathPieces objectAtIndex: 2],
-                            [masterPathPieces objectAtIndex: 3],
-                            versionUuid,
-                            versionFilename];
-    
-    NSString *versionPath = [pathPieces componentsJoinedByString: @"/"];
+    NSString *versionPath = [self versionPathFromMasterPath: masterPath
+                                                versionUuid: versionUuid
+                                            versionFilename: versionFilename];
     if (versionPath)
     {
         DDLogInfo(@"VERSION EXIF  versionPath=%@", versionPath);
@@ -169,7 +186,7 @@ NSString *photosPath;
     // was not even square in some cases. To rectify this, we recrop one more time at the end with
     // definitive metrics
 
-     CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
+    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
     CGContextRef bitmapContext = CGBitmapContextCreate(NULL, thumbSize, thumbSize, 8, 0, colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
     CIContext *context = [CIContext contextWithCGContext: bitmapContext options: @{}];
     // TODO Is there a release for the CIContext?
@@ -196,15 +213,6 @@ NSString *photosPath;
                 [scaleFilter setValue: scaleFactor forKey: @"inputScale"];
                 [scaleFilter setValue: @1.0 forKey: @"inputAspectRatio"];
                 CIImage *scaledAndCroppedImage = [scaleFilter valueForKey: @"outputImage"];
-
-                //### http://stackoverflow.com/questions/9601242/cropping-ciimage-with-cicrop-isnt-working-properly
-                /* This may do the same all in place
-                [image drawAtPoint: NSZeroPoint
-                          fromRect: NSMakeRect(150, 150, 300, 300)
-                         operation: NSCompositeSourceOver
-                          fraction: 1.0];
-                */
-                //###
 
                 NSMutableData* thumbJpegData = [[NSMutableData alloc] init];
                 CGImageDestinationRef dest = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)thumbJpegData,
@@ -233,6 +241,7 @@ NSString *photosPath;
                 }
                 else
                 {
+                    DDLogError(@"Failed to finalize thumbnail image");
                     [result addObject: @""];
 
                 }
