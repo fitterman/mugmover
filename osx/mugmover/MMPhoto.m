@@ -770,7 +770,7 @@
                                     @{ @"height":               [NSNumber numberWithLong: _masterHeight],
                                        @"number":               [NSNumber numberWithLong: _version],
                                        @"masterUuid":           _masterUuid,
-                                       @"originalDate":         _originalDate ? _originalDate : @"",
+                                       @"originalDate":         _originalDate,
                                        @"originalFilename":     _originalFilename ? _originalFilename : @"",
                                        @"versionUuid":          _versionUuid,
                                        @"width":                [NSNumber numberWithLong: _masterWidth],
