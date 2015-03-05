@@ -127,6 +127,7 @@
              @"keyVersionUuid":    _keyVersionUuid,
              @"manual":            @(_manual),
              @"thumbnail":         _thumbnail,
+             @"thumbscale":        @(_scaleFactor),
              };
 }
 

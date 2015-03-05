@@ -27,6 +27,7 @@
 @property (strong)              NSString *  masterUuid;
 @property (strong, readonly)    NSString *  name;
 @property (weak)                MMPhoto *   photo;
+@property (assign)              Float64     scaleFactor; // of the thumbnail
 @property (strong)              NSString *  thumbnail; // Base64 encoded
 @property (assign, readonly)    BOOL        rejected;
 @property (assign, readonly)    BOOL        visible;

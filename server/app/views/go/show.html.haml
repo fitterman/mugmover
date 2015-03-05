@@ -899,7 +899,7 @@
          'ng-click' => 'setSelectedName(name)',
          'ng-show' => '(name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1) || (name.note.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1)'}
       .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
-        %img{:src => "https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png", :style => "height:30px"}/
+        %img{'ng-src' => "{{name.thumbnail}}" }
       .col-xs-10.ellipsis{:style => "padding: 0;"}
         {{ name.publicName }}
         .name-note

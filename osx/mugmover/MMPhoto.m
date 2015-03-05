@@ -740,7 +740,9 @@
                 NSInteger counter = 0;
                 for (MMFace *face in _faceArray)
                 {
-                    face.thumbnail = thumbnails[counter];
+                    NSDictionary *thumb = thumbnails[counter];
+                    face.thumbnail = [thumb valueForKey: @"jpeg"];
+                    face.scaleFactor = [[thumb valueForKey: @"scale"] floatValue];
                     counter++;
                 }
             }

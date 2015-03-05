@@ -229,12 +229,12 @@ NSString *photosPath;
                     if (CGImageDestinationFinalize(dest))
                     {
                         NSString *jpegAsString = [thumbJpegData base64EncodedStringWithOptions: 0];
-                        [result addObject: jpegAsString];
+                        [result addObject: @{@"jpeg": jpegAsString, @"scale": scaleFactor}];
                     }
                     else
                     {
                         DDLogError(@"Failed to generate face thumbnail");
-                        [result addObject: @""];
+                        [result addObject: @{}];
                     }
                     CGImageRelease(img);
                     CFRelease(dest);
@@ -242,7 +242,7 @@ NSString *photosPath;
                 else
                 {
                     DDLogError(@"Failed to finalize thumbnail image");
-                    [result addObject: @""];
+                    [result addObject: @{}];
 
                 }
             }

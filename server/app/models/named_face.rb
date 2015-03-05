@@ -1,7 +1,12 @@
 class NamedFace < ActiveRecord::Base
 
   belongs_to  :hosting_service_account
-  has_many    :faces
+  has_many    :faces do
+                def sharpest
+                  order('thumbscale DESC').first
+                end
+  end
+  has_one     :face_icon,              class_name: 'Face'
 
   default_scope { order('public_name') } 
 

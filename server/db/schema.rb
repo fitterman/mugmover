@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150224214119) do
+ActiveRecord::Schema.define(version: 20150305174717) do
 
   create_table "faces", force: true do |t|
     t.integer  "photo_id"
@@ -28,6 +28,7 @@ ActiveRecord::Schema.define(version: 20150224214119) do
     t.integer  "manual"
     t.datetime "deleted_at"
     t.text     "thumbnail"
+    t.float    "thumbscale"
   end
 
   add_index "faces", ["deleted_at"], name: "index_faces_on_deleted_at"
@@ -50,6 +51,7 @@ ActiveRecord::Schema.define(version: 20150224214119) do
     t.string   "public_name"
     t.string   "private_name"
     t.text     "note"
+    t.integer  "face_icon_id"
   end
 
   create_table "photos", force: true do |t|

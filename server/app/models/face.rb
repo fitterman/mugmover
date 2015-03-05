@@ -91,6 +91,7 @@ class Face < ActiveRecord::Base
       face.face_key = face_params['faceKey']
       face.manual = face_params['manual']
       face.thumbnail = face_params['thumbnail']
+      face.thumbscale = face_params['thumbscale']
       if face_params['ignore'] || face_params['rejected']
         # If it's marked as ignore or rejected, treat it as logically deleted
         face.deleted_at = Time.now
