@@ -535,6 +535,8 @@
 
                       // "scaled()" converts from photo coordinates to browser coordinates
                       photo.scaled =   function(rawValue) {return Math.floor(rawValue * scaleFactor);}
+                      photo.workingImageHeight = function() {return photo.height * scaleFactor + 'px'};
+                      photo.workingImageWidth  = function() {return photo.width * scaleFactor + 'px'};
                       photo.mmuid; // Assign a unique ID so the first debounce does not trigger an update
                       angular.forEach(photo.faces, defineScaledMethods);                              
                       $scope.photo = photo;

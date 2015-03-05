@@ -8,7 +8,11 @@
 </div>
 <div class="row">
   <div class="col-xs-8">
-    <div id="photo-container">
+    <div id="photo-container"
+         ng-style="{
+                     height: photo.workingImageHeight(),
+                     width: photo.workingImageWidth()
+                    }">
       <img  id="photo-img" 
             class="img-responsive" 
             ng-src="{{photo.url}}"
