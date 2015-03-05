@@ -407,54 +407,7 @@
                   }
                 ]
   );
-  /*
 
-    // ***** Everything from this point down has to do with resizing/moving faces ***** //
-    // ***** Only faces that were manually created are allowed to perform these functions ***** //
-
-    var faceOriginalW;
-    var faceOriginalH;
-    var relPos;
-
-    var setRelPos = function()
-    {
-      faceOriginalW = Math.floor(0.5 + $(face).width()); // round it up/down
-      faceOriginalH = Math.floor(0.5 + $(face).height()); // round it up/down
-      facePosition = $(face).position();
-      relPos = {top: Math.floor(0.5 + facePosition.top) + faceOriginalH - handleRadius + borderWidth, 
-                left: Math.floor(0.5 + facePosition.left) + faceOriginalW - handleRadius + borderWidth};
-    }
-
-    setRelPos();
-
-    var setHandleContainmentRectangle = function(target)
-    {
-      var faceCenterX = containerPosition.left + facePosition.left + (faceOriginalW / 2);
-      var faceCenterY = containerPosition.top + facePosition.top + (faceOriginalH / 2);
-      var distanceToEachEdge = [faceCenterX - containerPosition.left, 
-                                containerPosition.left + $('#photo-container > img').width() - faceCenterX];
-      var maxDeltaX = Math.min.apply(null, distanceToEachEdge);
-      distanceToEachEdge = [faceCenterY - containerPosition.top, 
-                            containerPosition.top + $('#photo-container > img').height() - faceCenterY];
-      var maxDeltaY = Math.min.apply(null, distanceToEachEdge);
-      var handleContainment = [faceCenterX, // Do not adjust because handle is positioned from its left edge
-                               faceCenterY,
-                               faceCenterX + maxDeltaX - handleWidth,
-                               faceCenterY + maxDeltaY - handleWidth
-                              ];
-      $(target).draggable('option', 'containment', handleContainment); 
-    }
-    var setFaceContainmentRectangle = function(target)
-    {
-      var faceContainmentRectangle = [containerPosition.left + handleRadius, 
-                                      containerPosition.top + handleRadius,
-                                      containerPosition.left + $('#photo-container > img').width() -
-                                        ($(face).width() + handleWidth),
-                                      containerPosition.top + $('#photo-container > img').height() -
-                                        ($(face).height() + handleWidth)];
-      $(target).draggable('option', 'containment', faceContainmentRectangle)
-    }
-  */
   app.controller('DetailController', 
                   ['$scope', '$stateParams', '$http', 'translations', 
                     function($scope, $stateParams, $http, translations)
