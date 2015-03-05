@@ -7,7 +7,7 @@
   var endGap = 400; // pixels
   var fullThumbSize = 50;
   var halfThumbSize = fullThumbSize / 2;
-  var borderWidth = 2; // px
+  var borderWidth = 1; // px
   var photoWidth = fullThumbSize + (2 * borderWidth); // pixels (borderWidth px on each side)
 
   // TODO Get these two aligned.
@@ -936,11 +936,15 @@
                    var match = document.getElementById('thumb_' + photo.id);
                    if (!match)
                    {
+                     photo.aspectRatio = photo.width / photo.height;
+                     var thumbStyle = (photo.aspectRatio > 1) ? 'width: ' + fullThumbSize + 'px; height: ' + (fullThumbSize / photo.aspectRatio) + 'px;' 
+                                                              : 'width: ' + (fullThumbSize * photo.aspectRatio) + 'px; height: ' + fullThumbSize + 'px;' ;
                      $('<div id="thumb_' + photo.id + '" ' +
                                  'class="photothumb unselected" ' +
                                  'style="left:' + i2x(photo.index) + 'px;" '  +
                                  'data-index="' + photo.index + '" ' +
-                                 'data-id="' + photo.id + '"><img src="'+ photo.thumb + '" /></div>')
+                                 'data-id="' + photo.id + '"><img src="'+ 
+                                 photo.thumb + '" style="' + thumbStyle + '" /></div>')
                        .appendTo('#photobar');
                    }
                  }

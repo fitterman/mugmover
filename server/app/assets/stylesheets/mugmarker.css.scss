@@ -6,6 +6,7 @@ $borderRadius:                2px;
 $borderWidth:                 2px;
 $iconPixelDim:                16px;
 $handleWidth:                 10px;
+$thumbBorderWidth:            1px;
 $thumbsizeWithBorder:         $thumbsize + $borderWidth;
 
 body > .container
@@ -130,7 +131,7 @@ body > .container
                 background: black;
                 border: 6px solid black;
                 border-radius: 10px;
-                height: 140px; 
+                height: 130px; 
                 margin-top: 10em;
                 overflow-y: scroll;
                 white-space: nowrap;
@@ -143,18 +144,18 @@ body > .container
               }
 #photobar-container::-webkit-scrollbar 
               {
-                height: 10px; 
+                height: 5px; 
                 width: 0px; 
                 -webkit-appearance: none; 
               }
 #photobar-container::-webkit-scrollbar-track 
               {
                 background-color: rgba(0, 0, 0, .2);  
-                border: 10px solid silver; 
+                border: 5px solid silver; 
               }
 #photobar-container::-webkit-scrollbar-thumb 
               { 
-                border-radius: 8px; 
+                border-radius: 4px; 
                 background-color: rgba(0, 0, 0, 0.4); 
               }
 .photothumb   { 
@@ -178,15 +179,12 @@ body > .container
 .photothumb:hover > img
               {
                 position: relative;
-                max-height: 2 * $thumbsizeWithBorder;
-                max-width: 2 * $thumbsizeWithBorder;
+                zoom: 200%;
               }
 .photothumb > img
               {
-                max-height: $thumbsizeWithBorder;
-                max-width: $thumbsizeWithBorder;
                 margin: auto;
-                border: 2px solid white;
+                border: $thumbBorderWidth solid white;
               }
 #restore-faces 
               {
