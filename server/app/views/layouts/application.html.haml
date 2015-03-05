@@ -20,4 +20,5 @@
       $(window).load( window_load_ready_function );
       $(document).on( 'page:load', window_load_ready_function );
   %body
-    = yield
+    .container
+      = yield

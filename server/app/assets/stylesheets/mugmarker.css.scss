@@ -13,12 +13,13 @@ body > .container
               {
                 // padding-top: 60px;
               }
-
+.circle       {
+                border-radius: 50% !important; 
+              }
 .icon-control span
               {
                 background-color: $faceFrameBorderColor;
                 border: 0.13 * $iconPixelDim solid rgba(0, 0, 0, 0);
-                border-radius: 50%; 
                 color: white; 
                 cursor: pointer;
                 font-size: 0.72 * $iconPixelDim;
@@ -108,7 +109,6 @@ body > .container
               }
 #names-container img
               {
-                border-radius: 50%;
                 height: 30px;
               }
 #photo-container
@@ -136,7 +136,7 @@ body > .container
                 border: 6px solid black;
                 border-radius: 10px;
                 height: 130px; 
-                margin-top: 10em;
+                margin-top: 5em;
                 overflow-y: scroll;
                 position: relative;
                 white-space: nowrap;

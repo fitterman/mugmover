@@ -153,6 +153,19 @@
 
                   }
                })
+        .state('names',
+                {
+                  url:'/names',
+                  views:
+                  {
+                    display:
+                    {
+                      templateUrl: '/templates/names.html',
+                      controller: 'NamesController'
+                    }
+
+                  }
+               })
     }
   ]);
 
@@ -829,61 +842,71 @@
                 };
               }
   );
+  app.filter('object2Array',
+              function()
+              {
+                return function(input) {
+                  var out = []; 
+                  for (i in input){
+                    out.push(input[i]);
+                  }
+                  return out;
+                }
+              }
+  );
+
 
 
 -# // ***** This is all the markup for the page *****
 
 %nav.navbar.navbar-default.navbar-fixed-top
-  .container
-    .navbar-header
-      %button.navbar-toggle.collapsed{'type' => 'button',  |
-                                      'data-toggle' => "collapse",  |
-                                      'data-target' => "#navbar",   |
-                                      'aria-expanded' => "false",   |
-                                      'aria-controls' => 'navbar' }
-        %span.sr-only
-          Toggle navigation
-        %span.icon-bar
-        %span.icon-bar
-        %span.icon-bar
-      %a.navbar-brand{href: '#'}
-        mugmarker
-    .navbar.navbar-collapse.collapse
-      %ul.nav.navbar-nav
-        %li
-          %a{href: '/go/1#/photos'}
-            Photos
-        %li
-          %a{href: '/go/1#/faces'}
-            Faces
-      %ul.nav.navbar-nav.navbar-right
-        %li.dropdown
-          %a.dropdown-toggle{href: '#',
-                             'data-toggle' => "dropdown",
-                             'role' => "button",
-                             'aria-expanded' => "false"}
-            menu
-            %span.caret
-          %ul.dropdown-menu{role: 'menu'}
-            %li
-              %a{href: '#'}
-                Settings
-            %li
-              %a{href: '#'}
-                Log In
-            %li
-              %a{href: '#'}
-                Log Out
-            %li.dropdown
+  .navbar-header
+    %button.navbar-toggle.collapsed{'type' => 'button',  |
+                                    'data-target' => "#navbar",   |
+                                    'aria-expanded' => "false",   |
+                                    'aria-controls' => 'navbar' }
+      %span.sr-only
+        Toggle navigation
+      %span.icon-bar
+      %span.icon-bar
+      %span.icon-bar
+    %a.navbar-brand{href: '#'}
+      mugmarker
+  .navbar
+    %ul.nav.navbar-nav
+      %li
+        %a{href: '/go/1#/photo/edit/4'}
+          Photos
+      %li
+        %a{href: '/go/1#/names'}
+          People
+    %ul.nav.navbar-nav.navbar-right
+      %li.dropdown
+        %a.dropdown-toggle{href: '#',
+                           'data-toggle' => "dropdown",
+                           'role' => "button",
+                           'aria-expanded' => "false"}
+          menu
+          %span.caret
+        %ul.dropdown-menu{role: 'menu'}
+          %li
+            %a{href: '#'}
+              Settings
+          %li
+            %a{href: '#'}
+              Log In
+          %li
+            %a{href: '#'}
+              Log Out
+          %li.dropdown
 
-.container
-  .row#photobar-container
-    #photobar
+.row#photobar-container{display: 'none'}
+  #photobar
 
-.container{'ui-view' => 'display'}
+%div{'ui-view' => 'display'}
 
 #name{style: 'display: none; padding: 0; position:absolute;', 'ng-controller' => 'NamesController'}
-  .icon-control{style: 'position: absolute; right: -5px;'}
+  .icon-control.circle{style: 'position: absolute; right: -5px;'}
     %span#name-dismiss.glyphicon.glyphicon-remove{"aria-label" => "Clear the name input field", |
                                                   :style => "top: -10px; background-color: black; color: white;", |
                                                   'ng-click' => 'hideNameEntry()'}
@@ -899,111 +922,8 @@
          'ng-click' => 'setSelectedName(name)',
          'ng-show' => '(name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1) || (name.note.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1)'}
       .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
-        %img{'ng-src' => "{{name.thumbnail}}" }
+        %img.circle{'ng-src' => "{{name.thumbnail}}" }
       .col-xs-10.ellipsis{:style => "padding: 0;"}
         {{ name.publicName }}
         .name-note
           {{ name.note ? name.note : ' ' }}
-
-:javascript
-
-  // ***** All the ISOLATED jQuery-dependent stuff that has to come after jQuery is loaded
-  //       and the DOM is ready. Hence it is at the end, isolated. Move this to jqLite.    *****
-  var i2x = function(i) { return endGap + (i * photoWidth) };
-  var x2i = function(x) { return Math.floor(Math.max(0, x - endGap) / photoWidth) };
-  
-  // This is the number of requests to make. It relies on knowing how many total photos there are,
-  // so we scale it back after the first request. It starts big in case the window is super-wide.
-  var photosPerRequest = 20;
-  var photobarContainerWidth = document.getElementById('photobar-container').offsetWidth;
-  var bunchedRequestCount = (photobarContainerWidth / (photosPerRequest * photoWidth)) + 1;
-
-      // TODO  Add code so we don't fetch the same bunch of photos if it's already displayed
-      // TODO  Add code to purge photos when the DOM element starts to get full.
-      // TODO  There was code here to make sure it doesn't show the same photo twice:
-      //  <% if ($('.photothumb[phid=' + photo.get('id') + ']').length == 0) { %>
-
-  var jqLite = angular.element;
-  var jqLiteFind = function(sel) { angular.element(document.querySelector(sel)) };
-  var getNavImages = function(i)
-  {
-    $.ajax({
-      url: 'http://localhost:3000/api/v1/photos.json?a_id=1&n=' + photosPerRequest + '&i=' + i,
-      success: function(response)
-               {
-                 document.getElementById('photobar').style.width = i2x(response.totalPhotos) + 'px';
-                 for (var i = 0; i < response.photos.length ; i++) 
-                 {
-                   var photo = response.photos[i];
-                   var match = document.getElementById('thumb_' + photo.id);
-                   if (!match)
-                   {
-                     photo.aspectRatio = photo.width / photo.height;
-                     var thumbStyle = (photo.aspectRatio > 1) ? 'width: ' + fullThumbSize + 'px; height: ' + (fullThumbSize / photo.aspectRatio) + 'px;' 
-                                                              : 'width: ' + (fullThumbSize * photo.aspectRatio) + 'px; height: ' + fullThumbSize + 'px;' ;
-                     $('<div id="thumb_' + photo.id + '" ' +
-                                 'class="photothumb unselected" ' +
-                                 'style="left:' + i2x(photo.index) + 'px;" '  +
-                                 'data-index="' + photo.index + '" ' +
-                                 'data-id="' + photo.id + '"><img src="'+ 
-                                 photo.thumb + '" style="' + thumbStyle + '" /></div>')
-                       .appendTo('#photobar');
-                   }
-                 }
-               },
-        error: function(jqXhr, status) {
-            alert('An unexpected error occurred (' + status + '). Please try again.');
-          },
-        dataType: 'json'
-    });
-  }
-  
-  var scrollingDone = function() {
-    var x = document.getElementById('photobar-container').scrollLeft;
-    n = Math.floor(x2i(x) / photosPerRequest); // The first bunch to be requested
-    for (var j = 0; j < bunchedRequestCount; j++)
-    {
-      getNavImages(n + j);
-    }
-  };
-  scrollingDone();
-  $('#photobar-container').on('scroll', function() {debounce(this, 250, scrollingDone)} );
-
-  $('#photobar').on('mouseover', '.photothumb', function() {
-      $(this).css({ top: $(this).position().top - halfThumbSize,
-                    left: $(this).position().left - halfThumbSize
-                  });
-  });
-  $('#photobar').on('mouseout', '.photothumb', function() {
-    $(this).css({ top:  $(this).position().top + halfThumbSize,
-                  left: $(this).position().left + halfThumbSize
-                 });
-  });
-  $('#photobar').on('click', '.photothumb', function() {
-    $('#photobar > .selected').removeClass('selected').addClass('unselected');
-    // TODO Fill in with the image you have. Requires knowing the AR of the photo 
-    //$('#photo-container').html('&nbsp;').css({'background-image': $(this).css('background-image'), 
-    //                                            "background-size": "contain", 
-    //                                            "background-color": "white"})
-    //                                      .css(parseFloat($(this).attr("ar")) > 1.0 ? 'width' : 'height', "500px");
-    $(this).removeClass('unselected').addClass('selected');
-    window.location = "#/photo/edit/" + $(this).data('id');
-  });
-  $(document).on('keyup', function(keyboardEvent) {
-    var key = keyboardEvent.which;
-    var current = $('#photobar > .selected').data('index');
-    if (current)
-    {
-      if (key == 37) // left arrow
-      {
-        current -= 1;
-      }
-      else if (key == 39) // right arrow
-      {
-        current += 1;
-      }
-      var next = $('#photobar > div[data-index=' + current + ']');
-      console.log('next', next);
-      next.trigger('click');
-    }
-  });

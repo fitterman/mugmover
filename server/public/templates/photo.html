@@ -3,7 +3,7 @@
 
 <div class="row">
   <div class="col-xs-4 col-sm-2" ng-repeat="face in photo.faces | filter:noThumbnail ">
-    <img class="thumbnail" style="border-radius: 50%;" data-id="{{face.id}}" ng-src="{{face.thumbDataUri()}}" alt="{{face.publicName}}" />
+    <img class="thumbnail circle" data-id="{{face.id}}" ng-src="{{face.thumbDataUri()}}" alt="{{face.publicName}}" />
   </div>
 </div>
 <div class="row">
@@ -65,3 +65,107 @@
     </div>
   </div>
 </div>  
+
+<script type="text/javascript">
+
+  // ***** All the ISOLATED jQuery-dependent stuff that has to come after jQuery is loaded
+  //       and the DOM is ready. Hence it is at the end, isolated.  *****
+  var i2x = function(i) { return endGap + (i * photoWidth) };
+  var x2i = function(x) { return Math.floor(Math.max(0, x - endGap) / photoWidth) };
+  
+  // This is the number of requests to make. It relies on knowing how many total photos there are,
+  // so we scale it back after the first request. It starts big in case the window is super-wide.
+  var photosPerRequest = 20;
+  var photobarContainerWidth = document.getElementById('photobar-container').offsetWidth;
+  var bunchedRequestCount = (photobarContainerWidth / (photosPerRequest * photoWidth)) + 1;
+
+      // TODO  Add code so we don't fetch the same bunch of photos if it's already displayed
+      // TODO  Add code to purge photos when the DOM element starts to get full.
+      // TODO  There was code here to make sure it doesn't show the same photo twice:
+      //  <% if ($('.photothumb[phid=' + photo.get('id') + ']').length == 0) { %>
+
+  var jqLite = angular.element;
+  var jqLiteFind = function(sel) { angular.element(document.querySelector(sel)) };
+  var getNavImages = function(i)
+  {
+    $.ajax({
+      url: 'http://localhost:3000/api/v1/photos.json?a_id=1&n=' + photosPerRequest + '&i=' + i,
+      success: function(response)
+               {
+                 document.getElementById('photobar').style.width = i2x(response.totalPhotos) + 'px';
+                 for (var i = 0; i < response.photos.length ; i++) 
+                 {
+                   var photo = response.photos[i];
+                   var match = document.getElementById('thumb_' + photo.id);
+                   if (!match)
+                   {
+                     photo.aspectRatio = photo.width / photo.height;
+                     var thumbStyle = (photo.aspectRatio > 1) ? 'width: ' + fullThumbSize + 'px; height: ' + (fullThumbSize / photo.aspectRatio) + 'px;' 
+                                                              : 'width: ' + (fullThumbSize * photo.aspectRatio) + 'px; height: ' + fullThumbSize + 'px;' ;
+                     $('<div id="thumb_' + photo.id + '" ' +
+                                 'class="photothumb unselected" ' +
+                                 'style="left:' + i2x(photo.index) + 'px;" '  +
+                                 'data-index="' + photo.index + '" ' +
+                                 'data-id="' + photo.id + '"><img src="'+ 
+                                 photo.thumb + '" style="' + thumbStyle + '" /></div>')
+                       .appendTo('#photobar');
+                   }
+                 }
+               },
+        error: function(jqXhr, status) {
+            alert('An unexpected error occurred (' + status + '). Please try again.');
+          },
+        dataType: 'json'
+    });
+  }
+  
+  var scrollingDone = function() {
+    var x = document.getElementById('photobar-container').scrollLeft;
+    n = Math.floor(x2i(x) / photosPerRequest); // The first bunch to be requested
+    for (var j = 0; j < bunchedRequestCount; j++)
+    {
+      getNavImages(n + j);
+    }
+  };
+  scrollingDone();
+  $('#photobar-container').on('scroll', function() {debounce(this, 250, scrollingDone)} );
+
+  $('#photobar').on('mouseover', '.photothumb', function() {
+      $(this).css({ top: $(this).position().top - halfThumbSize,
+                    left: $(this).position().left - halfThumbSize
+                  });
+  });
+  $('#photobar').on('mouseout', '.photothumb', function() {
+    $(this).css({ top:  $(this).position().top + halfThumbSize,
+                  left: $(this).position().left + halfThumbSize
+                 });
+  });
+  $('#photobar').on('click', '.photothumb', function() {
+    $('#photobar > .selected').removeClass('selected').addClass('unselected');
+    // TODO Fill in with the image you have. Requires knowing the AR of the photo 
+    //$('#photo-container').html('&nbsp;').css({'background-image': $(this).css('background-image'), 
+    //                                            "background-size": "contain", 
+    //                                            "background-color": "white"})
+    //                                      .css(parseFloat($(this).attr("ar")) > 1.0 ? 'width' : 'height', "500px");
+    $(this).removeClass('unselected').addClass('selected');
+    window.location = "#/photo/edit/" + $(this).data('id');
+  });
+  $(document).on('keyup', function(keyboardEvent) {
+    var key = keyboardEvent.which;
+    var current = $('#photobar > .selected').data('index');
+    if (current)
+    {
+      if (key == 37) // left arrow
+      {
+        current -= 1;
+      }
+      else if (key == 39) // right arrow
+      {
+        current += 1;
+      }
+      var next = $('#photobar > div[data-index=' + current + ']');
+      console.log('next', next);
+      next.trigger('click');
+    }
+  });
+</script>
