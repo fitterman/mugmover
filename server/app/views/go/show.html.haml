@@ -129,7 +129,7 @@
       $stateProvider
         .state('edit',
                 {
-                  url:'/edit/:id',
+                  url:'/photo/edit/:id',
                   views:
                   {
                     display:
@@ -142,7 +142,7 @@
                })
         .state('detail', 
                 {
-                  url:'/detail/:id',
+                  url:'/photo/detail/:id',
                   views:
                   {
                     display:
@@ -849,10 +849,10 @@
     .navbar.navbar-collapse.collapse
       %ul.nav.navbar-nav
         %li
-          %a{href: '../navbar/'}
+          %a{href: '/go/1#/photos'}
             Photos
         %li
-          %a{href: '../navbar-static-top/'}
+          %a{href: '/go/1#/faces'}
             Faces
       %ul.nav.navbar-nav.navbar-right
         %li.dropdown
@@ -981,7 +981,7 @@
     //                                            "background-color": "white"})
     //                                      .css(parseFloat($(this).attr("ar")) > 1.0 ? 'width' : 'height', "500px");
     $(this).removeClass('unselected').addClass('selected');
-    window.location = "#/edit/" + $(this).data('id');
+    window.location = "#/photo/edit/" + $(this).data('id');
   });
   $(document).on('keyup', function(keyboardEvent) {
     var key = keyboardEvent.which;
