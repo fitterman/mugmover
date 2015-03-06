@@ -21,6 +21,10 @@
 
   var mugmarkerServices = angular.module('mugmarkerServices', ['ngResource']);
 
+  var blank = function(stringValue)
+  {
+    return (stringValue === null || stringValue.trim().length === 0)
+  }
   mugmarkerServices.factory('Photo',
                             ['$resource',
                               function($resource)
@@ -75,6 +79,19 @@
                                 this.setNamesIndex = function(namesIndex)
                                 {
                                   this.names = namesIndex;
+                                }
+
+
+                                // This gets the names that are already loaded
+                                this.getNamesIndex = function()
+                                {
+                                  return this.names;
+                                }
+
+                                // This indicates whether the names index has been initialized
+                                this.namesIndexInitialized = function()
+                                {
+                                  return !!this.names;
                                 }
 
                                 // This translates a face ID to a name
@@ -161,6 +178,19 @@
                     display:
                     {
                       templateUrl: '/templates/names.html',
+                      controller: 'NamesController'
+                    }
+
+                  }
+               })
+        .state('name',
+                {
+                  url:'/name/:id',
+                  views:
+                  {
+                    display:
+                    {
+                      templateUrl: '/templates/name.html',
                       controller: 'NamesController'
                     }
 
@@ -394,8 +424,8 @@
                                             {
                                               NameToPhotoGlue.setFace(scope.face);
                                               var targetPosition = $(ele).offset();
-                                              targetPosition.top -= 2;  // $borderWidth
-                                              targetPosition.left -= 2; // $borderWidth
+                                              targetPosition.top -= 1;  // $borderWidth
+                                              targetPosition.left -= 1; // $borderWidth
 
                                               // TODO It would be much better to clear the value of the
                                               // #name field by setting the nameNeedle to ''
@@ -427,9 +457,9 @@
   ]);
 
 
-
+  // This method provides a unique ID on each DOM object for which it is invoked.
+  // It's needed for the timers so they can be associated with a face-frame.
   (function() {
-
     var id_counter = 1;
     Object.defineProperty(Object.prototype, "__uniqueId", {
         writable: true
@@ -581,7 +611,7 @@
                     }
                     $scope.noThumbnail = function(face)
                                          {
-                                           return !(face.thumbnail === null || face.thumbnail.trim().length === 0)
+                                           return blank(face.thumbnail);
                                          }
                     $scope.removeFaceWithId = function(targetId)
                                               {
@@ -734,54 +764,80 @@
   );
 
   app.controller('NamesController', 
-                 ['$scope', '$http', '$window', 'NameToPhotoGlue', 'translations', 
-                  function($scope, $http, $window, NameToPhotoGlue, translations)
+                 ['$scope', '$stateParams', '$http', '$window', 'NameToPhotoGlue', 'translations', 
+                  function($scope, $stateParams, $http, $window, NameToPhotoGlue, translations)
                   {
-                    $http.get("#{api_v1_names_path}.json?a_id=1")
-                         .success(function(response)
-                                  { 
-                                     $scope.names = response;
-                                     NameToPhotoGlue.setNamesIndex($scope.names);
-                                  }
-                         );
-                    $scope.nameNeedle = '';
-                    $scope.hideNameEntry = function()
-                                           {
-                                             $('#name').hide();
-                                           }
-                    $scope.setSelectedName = function(name)
-                                             {
-                                               NameToPhotoGlue.setName(name);
-                                               $scope.hideNameEntry();
-                                             }
-                    $scope.xlate = translations.translate;
-                    $scope.processKeydown = function(keyboardEvent)
+                    if (!NameToPhotoGlue.namesIndexInitialized())
                     {
-                      if ((keyboardEvent.keyCode == 40) ||  // down
-                          (keyboardEvent.keyCode == 38))
-                      {
-                        // We have to intercept these on the down, otherwise
-                        // they perform field beginning/end cursor movements.
-                        event.preventDefault();
-                      }
+                      $http.get("#{api_v1_names_path}.json?a_id=1")
+                           .success(function(response)
+                                    { 
+                                      NameToPhotoGlue.setNamesIndex(response);
+                                      $scope.names = response;
+                                      // This code is needed here for the times the single-name
+                                      // route is visited directly.
+                                      if ($stateParams.id)
+                                      {
+                                        $scope.name = $scope.names[$stateParams.id];
+                                        // HERE AND BELOW...
+                                        // insert code to load a resource for the faces associated with this name
+                                      }
+                                    }
+                           );
+
                     }
-                    $scope.processKeyup = function(keyboardEvent)
+                    else
                     {
-                      var key = keyboardEvent.which;
-                      if (key == 27) // escape
+                      $scope.names = NameToPhotoGlue.getNamesIndex();
+                    }
+                    if ($stateParams.id && $scope.names)
+                    {
+                      // and it's needed here for times when the data is already loaded.
+                      $scope.name = $scope.names[$stateParams.id];
+                      // HERE AND ABOVE...
+                      // insert code to load a resource for the faces associated with this name
+                    }
+                    else
+                    {
+                      $scope.nameNeedle = '';
+                      $scope.hideNameEntry = function()
+                                             {
+                                               $('#name').hide();
+                                             }
+                      $scope.setSelectedName = function(name)
+                                               {
+                                                 NameToPhotoGlue.setName(name);
+                                                 $scope.hideNameEntry();
+                                               }
+                      $scope.xlate = translations.translate;
+                      $scope.processKeydown = function(keyboardEvent)
                       {
-                        $scope.hideNameEntry();
-                      }
-                      else if (key == 13) // return/enter
-                      {
-                        if (confirm('new name?'))
+                        if ((keyboardEvent.keyCode == 40) ||  // down
+                            (keyboardEvent.keyCode == 38))
                         {
-                          NameToPhotoGlue.applyNewName($scope.nameNeedle);
-                          $scope.nameNeedle = '';
+                          // We have to intercept these on the down, otherwise
+                          // they perform field beginning/end cursor movements.
+                          event.preventDefault();
                         }
-                        $scope.hideNameEntry();
                       }
-                      keyboardEvent.stopPropagation()
+                      $scope.processKeyup = function(keyboardEvent)
+                      {
+                        var key = keyboardEvent.which;
+                        if (key == 27) // escape
+                        {
+                          $scope.hideNameEntry();
+                        }
+                        else if (key == 13) // return/enter
+                        {
+                          if (confirm('new name?'))
+                          {
+                            NameToPhotoGlue.applyNewName($scope.nameNeedle);
+                            $scope.nameNeedle = '';
+                          }
+                          $scope.hideNameEntry();
+                        }
+                        keyboardEvent.stopPropagation()
+                      }
                     }
                   }
                 ]
@@ -871,7 +927,7 @@
                                                 :placeholder => "Enter Name",
                                                 :type => "text"}/
   #names-container.dropdown-menu{:style => "margin-top: 0; padding-top: 5px; width: 20em; max-height: 170px; display: block;"}
-    .row{'ng-repeat' => '(id, name) in names', 
+    .row{'ng-repeat' => "name in names | object2Array | orderBy:'publicName'", 
          'ng-click' => 'setSelectedName(name)',
          'ng-show' => '(name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1) || (name.note.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1)'}
       .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}

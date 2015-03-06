@@ -1,15 +1,15 @@
-<div ng-include src="'/templates/controls.html'">
-</div>
-
 <div class="row">
   <div class="col-xs-12">
-    <div href="nothing"
-        ng-repeat="name in names | object2Array | orderBy:'publicName'"
-        style="display: inline-block; height: 120px; width: 120px; text-align: center; " >
-      <!-- 110px is 100 + 5px on each side -->
-      <img  class="thumbnail circle"  style="display: inherit; height: 110px; width: 110px; margin-bottom: 0;"
-            ng-src="{{name.thumbnail}}" alt="{{name.publicName}}" />
-      <span class="ellipsis" style="display: inherit; width: 100%; ">{{name.privateName}}</span>
+    <div ng-repeat="name in names | object2Array | orderBy:'publicName'"
+         style="display: inline-block;">
+      <div style="display: inherit; height: 120px; width: 120px; text-align: center; " >
+        <a href="#/name/{{name.id}}" ng-attr-title="{{name.withNote()}}">
+          <!-- 110px is 100 + 5px on each side -->
+          <img  class="thumbnail circle"  style="display: inherit; height: 110px; width: 110px; margin-bottom: 0;"
+                ng-src="{{name.thumbnail}}" title="{{name.publicName}}" />
+        </a>
+        <span class="ellipsis" style="display: inherit; width: 100%; ">{{name.privateName}}</span>
+      </div>
     </div>
   </div>
 </div>

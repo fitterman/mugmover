@@ -4,6 +4,7 @@ $faceFrameBorderColor:        #39f;
 $faceFrameUnknownColor:       #e87400;
 $borderRadius:                2px;
 $borderWidth:                 2px;
+$defaultFontColor:            black;
 $iconPixelDim:                16px;
 $handleWidth:                 10px;
 $thumbBorderWidth:            1px;
@@ -24,7 +25,7 @@ body > .container
                 cursor: pointer;
                 font-size: 0.72 * $iconPixelDim;
                 height: $iconPixelDim;
-                left: -(($iconPixelDim / 2) + $borderWidth);
+                right: -(($iconPixelDim / 2) + $borderWidth);
                 position: absolute;
                 top: -(($iconPixelDim / 2) + $borderWidth);
                 width: $iconPixelDim;
@@ -40,9 +41,9 @@ body > .container
               }
 
 .ellipsis     {
-                overflow-x: hidden; 
-                text-overflow: ellipsis; 
-                white-space: nowrap;
+                overflow-x: hidden !important; 
+                text-overflow: ellipsis !important;
+                white-space: nowrap !important;
               }
 .face-frame   {
                 border: 2px solid $faceFrameBorderColor; 
@@ -131,7 +132,6 @@ body > .container
               }
 #photobar-container
               {
-                zoom: 50%;
                 background: black;
                 border: 6px solid black;
                 border-radius: 10px;
@@ -144,7 +144,6 @@ body > .container
 #photobar-container:hover
               {
                 margin-top: 5em;
-                zoom: 50%;
                 z-index: 200;
               }
 #photobar-container::-webkit-scrollbar 
@@ -176,15 +175,12 @@ body > .container
               }
 .photothumb:hover
               {
-                width: 2 * $thumbsizeWithBorder;
-                height: 2 * $thumbsizeWithBorder;
                 opacity: 1.0;
                 z-index: 3;
               }
 .photothumb:hover > img
               {
                 position: relative;
-                zoom: 200%;
               }
 .photothumb > img
               {
