@@ -66,6 +66,23 @@
                               }
                              ]
   );
+  mugmarkerServices.factory('Name',
+                          ['$resource',
+                            function($resource)
+                            {
+                              return $resource('/api/v1/names/:id.json', 
+                                               {a_id: 1}, 
+                                               {
+                                                  update: 
+                                                  {
+                                                    method: "PUT",
+                                                    params: {id: "@id"} // The name Id
+                                                  }
+                                                } 
+                              );
+                            }
+                           ]
+  );
   mugmarkerServices.service('NameToPhotoGlue',  
                             [function()
                               {
@@ -215,6 +232,7 @@
             tryAgain: 'An error occurred. Please try again.',
             unableToAddFace: 'An error occurred and the frame could not be added.',
             unableToDeleteFace: 'An error occurred and the frame could not be deleted.',
+            unableToGetRelatedPhotos: 'An error occured and the photos for this person could not be obtained.',
             unableToRestoreFace: 'An error occured and the frame could not be restored.',
             unknown: 'Unknown', 
           },
@@ -229,6 +247,7 @@
             tryAgain: 'Anway errorway occurredway. Easeplay ytray againway.',
             unableToAddFace: 'Anway errorway occurredway andway ethay amefray ouldcay otnay ebay addedway.',
             unableToDeleteFace: 'Anway errorway occurredway andway ethay amefray ouldcay otnay ebay eletedday.', 
+            unableToGetRelatedPhotos: 'Anway errorway occurredway andway ethay otosphay orfay isthay ersonpay ouldcay otnay obtainedway.',
             unableToRestoreFace: 'Anway errorway occurredway andway ethay amefray ouldcay otnay ebay estoredray.', 
             unknown: 'Otnay Ownknay', 
           },
@@ -764,9 +783,22 @@
   );
 
   app.controller('NamesController', 
-                 ['$scope', '$stateParams', '$http', '$window', 'NameToPhotoGlue', 'translations', 
-                  function($scope, $stateParams, $http, $window, NameToPhotoGlue, translations)
+                 ['$scope', '$stateParams', '$http', '$window', 'Name', 'NameToPhotoGlue', 'translations', 
+                  function($scope, $stateParams, $http, $window, Name, NameToPhotoGlue, translations)
                   {
+                    $scope.getRelatedPhotos = function(namedFaceId) 
+                                              { 
+                                                $scope.name = $scope.names[namedFaceId];
+                                                Name.get({id: namedFaceId},
+                                                         function(data)
+                                                         {
+                                                           $scope.faces = data.faces;
+                                                         },
+                                                         function(err)
+                                                         {
+                                                           $window.alert($scope.xlate('unableToGetRelatedPhotos'));
+                                                         });
+                                              };
                     if (!NameToPhotoGlue.namesIndexInitialized())
                     {
                       $http.get("#{api_v1_names_path}.json?a_id=1")
@@ -774,14 +806,14 @@
                                     { 
                                       NameToPhotoGlue.setNamesIndex(response);
                                       $scope.names = response;
+
                                       // This code is needed here for the times the single-name
                                       // route is visited directly.
                                       if ($stateParams.id)
                                       {
-                                        $scope.name = $scope.names[$stateParams.id];
-                                        // HERE AND BELOW...
-                                        // insert code to load a resource for the faces associated with this name
-                                      }
+                                        $scope.getRelatedPhotos($stateParams.id)
+                                      };
+
                                     }
                            );
 
@@ -793,9 +825,7 @@
                     if ($stateParams.id && $scope.names)
                     {
                       // and it's needed here for times when the data is already loaded.
-                      $scope.name = $scope.names[$stateParams.id];
-                      // HERE AND ABOVE...
-                      // insert code to load a resource for the faces associated with this name
+                      $scope.getRelatedPhotos($stateParams.id)
                     }
                     else
                     {

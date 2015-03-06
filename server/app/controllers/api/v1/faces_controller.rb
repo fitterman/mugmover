@@ -129,7 +129,7 @@ module Api
             @errors += ['Photo not found']
           end
         else
-          @errors += ['Album not found']
+          @errors += ['Account not found']
         end
       end
     end

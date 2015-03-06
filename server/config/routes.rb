@@ -10,7 +10,7 @@ Rails.application.routes.draw do
       resources :faces, only: [:create, :update, :destroy] do
         post :restore, on: :member
       end
-      resources :names, only: [:index]
+      resources :names, only: [:index, :show]
     end
   end
 
