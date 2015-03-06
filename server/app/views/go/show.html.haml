@@ -859,8 +859,8 @@
 %div{'ui-view' => 'display'}
 
 #name{style: 'display: none; padding: 0; position:absolute;', 'ng-controller' => 'NamesController'}
-  .icon-control.circle{style: 'position: absolute; right: -5px;'}
-    %span#name-dismiss.glyphicon.glyphicon-remove{"aria-label" => "Clear the name input field", |
+  .icon-control{style: 'position: absolute; right: -5px;'}
+    %span#name-dismiss.circle.glyphicon.glyphicon-remove{"aria-label" => "Clear the name input field", |
                                                   :style => "top: -10px; background-color: black; color: white;", |
                                                   'ng-click' => 'hideNameEntry()'}
 
