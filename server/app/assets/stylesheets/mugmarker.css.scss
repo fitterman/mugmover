@@ -14,8 +14,13 @@ body > .container
               {
                 // padding-top: 60px;
               }
-.circle       {
+.circle       
+              {
                 border-radius: 50% !important; 
+              }
+.icon-control
+              {
+                position: relative;
               }
 .icon-control span
               {
@@ -30,6 +35,11 @@ body > .container
                 top: -(($iconPixelDim / 2) + $borderWidth);
                 width: $iconPixelDim;
                 z-index: 2;
+              }
+.icon-control span.goto
+              {
+                right: 10px;
+                top: 10px;
               }
 .face-frame.unknown .icon-control span
               {

@@ -35,7 +35,6 @@
                           cursor: (face.manual ? 'move' : 'default'),
                           'z-index': ((face === hoverFace) ? '180' : '') }">
         <div  class="icon-control"
-              ng-style="{position: relative}"
               ng-click="confirmFaceDeletion(face)">
           <span class="circle glyphicon glyphicon-trash"
                 aria-label="{{xlate('deleteFace')}}"
@@ -43,13 +42,20 @@
         </div>
         <form class="name-display-form"
               ng-style="{top: face.scaledH()}">
-          <input  class="name-display-box form-control input-sm ellipsis"
-                  type="text"
-                  readonly style="cursor: pointer"
-                  placeholder="Unknown"
-                  mm-name-entry="face"
-                  ng-model="face.displayName"
-                  ng-show="(face === hoverFace)" />
+          <div ng-class=" face.namedFaceId ? 'input-group' : '' " 
+               ng-show="(face === hoverFace)" >
+            <input  class="name-display-box form-control input-sm ellipsis"
+                    type="text"
+                    readonly style="cursor: pointer"
+                    placeholder="Unknown"
+                    mm-name-entry="face"
+                    ng-model="face.displayName" />
+            <span class="input-group-addon" ng-show="face.namedFaceId">
+              <a ui-sref="name({id: face.namedFaceId})"><span class="goto glyphicon glyphicon-chevron-right"
+                    aria-label="{{xlate('gotoPerson')}}"
+                    title="{{xlate('gotoPerson')}}"></span></a>
+            </span>
+          </div>
         </form>
         <div class="handle"
              ng-if="face.manual"
