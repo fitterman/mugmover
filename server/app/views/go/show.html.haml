@@ -161,7 +161,7 @@
     {
       $urlRouterProvider.otherwise('/');
       $stateProvider
-        .state('edit',
+        .state('photoedit',
                 {
                   url:'/photo/edit/:id',
                   views:
@@ -174,7 +174,7 @@
 
                   }
                })
-        .state('detail', 
+        .state('photodetail', 
                 {
                   url:'/photo/detail/:id',
                   views:
@@ -783,21 +783,25 @@
   );
 
   app.controller('NamesController', 
-                 ['$scope', '$stateParams', '$http', '$window', 'Name', 'NameToPhotoGlue', 'translations', 
-                  function($scope, $stateParams, $http, $window, Name, NameToPhotoGlue, translations)
+                 ['$scope', '$state', '$stateParams', '$http', '$window', 'Name', 'NameToPhotoGlue', 'translations', 
+                  function($scope, $state, $stateParams, $http, $window, Name, NameToPhotoGlue, translations)
                   {
                     $scope.getRelatedPhotos = function(namedFaceId) 
                                               { 
-                                                $scope.name = $scope.names[namedFaceId];
-                                                Name.get({id: namedFaceId},
-                                                         function(data)
-                                                         {
-                                                           $scope.faces = data.faces;
-                                                         },
-                                                         function(err)
-                                                         {
-                                                           $window.alert($scope.xlate('unableToGetRelatedPhotos'));
-                                                         });
+                                                // We can fall in here any time there is an "id" param
+                                                if ($state.current.name == 'name')
+                                                {
+                                                  $scope.name = $scope.names[namedFaceId];
+                                                  Name.get({id: namedFaceId},
+                                                           function(data)
+                                                           {
+                                                             $scope.faces = data.faces;
+                                                           },
+                                                           function(err)
+                                                           {
+                                                             $window.alert($scope.xlate('unableToGetRelatedPhotos'));
+                                                           });                                                 
+                                                }
                                               };
                     if (!NameToPhotoGlue.namesIndexInitialized())
                     {
