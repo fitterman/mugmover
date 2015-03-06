@@ -173,8 +173,6 @@ NSString *photosPath;
     return nil;
 }
 
-
-// Version 2
 + (NSMutableArray *) getCroppedRegions: (NSString*) filePath
                        withCoordinates: (NSArray*) rectArray
                              thumbSize: (NSInteger) thumbSize

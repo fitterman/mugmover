@@ -31,6 +31,12 @@
 #import "MMEnvironment.h"
 #import "MMNetworkRequest.h"
 
+@import QuartzCore.CIFilter;
+@import QuartzCore.CoreImage.CIContext;
+@import QuartzCore.CoreImage.CIFilter;
+
+#define MAX_THUMB_DIM (100)
+
 @implementation MMPhoto
 
 - (MMPhoto *) initWithFlickrDictionary: (NSDictionary *) flickrDictionary
@@ -202,7 +208,7 @@
     {
         NSNumber *number = [NSNumber numberWithInteger: _version - 1];
         NSString *query =  @"SELECT masterUuid, masterHeight, masterWidth, processedHeight, "
-                                "processedWidth, rotation, imagePath, filename, versionUuid FROM RKVersion v"
+                                "processedWidth, rotation, imagePath, filename, versionUuid FROM RKVersion v "
                             "FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid "
                             "WHERE uuid = ? AND versionNumber = ? ";
         NSArray *args = @[_versionUuid, number];
@@ -650,6 +656,7 @@
     [self findRelevantAdjustments];
     [self adjustForStraightenCropAndGetFaces];
     [self moveFacesRelativeToTopLeftOrigin];
+    [self createPhotoThumbnail];
     [self fetchThumbnailsFromOriginal];
     [self sendPhotoToMugmover];
     
@@ -697,6 +704,62 @@
     [_faceArray removeObjectsInArray: discardedItems];
     
 }
+- (void) createPhotoThumbnail
+{
+    NSURL* fileURL = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
+    _thumbnail = @""; // It cannot be null, so just in case this fails.
+    
+    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef bitmapContext = CGBitmapContextCreate(NULL, MAX_THUMB_DIM, MAX_THUMB_DIM, 8, 0, colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
+    CIContext *context = [CIContext contextWithCGContext: bitmapContext options: @{}];
+    // TODO Is there a release for the CIContext?
+    
+    if (fileURL != NULL)
+    {
+        CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileURL];
+        
+        if (image != NULL)
+        {
+            // scale the image
+            CIFilter *scaleFilter = [CIFilter filterWithName: @"CILanczosScaleTransform"];
+            [scaleFilter setValue: image forKey: @"inputImage"];
+            NSNumber *scaleFactor = [[NSNumber alloc] initWithFloat: ((float) MAX_THUMB_DIM) / ((float)MAX(_processedWidth, _processedHeight))];
+            [scaleFilter setValue: scaleFactor forKey: @"inputScale"];
+            [scaleFilter setValue: @1.0 forKey: @"inputAspectRatio"];
+            CIImage *scaledImage = [scaleFilter valueForKey: @"outputImage"];
+            
+            NSMutableData* thumbJpegData = [[NSMutableData alloc] init];
+            CGImageDestinationRef dest = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)thumbJpegData,
+                                                                          (__bridge CFStringRef)@"public.jpeg",
+                                                                          1,
+                                                                          NULL);
+            //CFURLRef saveUrl2 = (__bridge CFURLRef)[NSURL fileURLWithPath:[@"~/Desktop/lockwood-crop-2.jpg" stringByExpandingTildeInPath]];
+            //CGImageDestinationRef dest = CGImageDestinationCreateWithURL(saveUrl2, kUTTypeJPEG, 1, NULL);
+            if (dest != NULL)
+            {
+                CGImageRef img = [context createCGImage:scaledImage
+                                               fromRect:[scaledImage extent]];
+                CGImageDestinationAddImage(dest, img, nil);
+                if (CGImageDestinationFinalize(dest))
+                {
+                    _thumbnail = [thumbJpegData base64EncodedStringWithOptions: 0];
+                }
+                else
+                {
+                    DDLogError(@"Failed to generate photo thumbnail");
+                }
+                CGImageRelease(img);
+                CFRelease(dest);
+            }
+            else
+            {
+                DDLogError(@"Failed to finalize photo thumbnail image");
+            }
+        }
+    }
+    CGContextRelease(bitmapContext);
+    CGColorSpaceRelease(colorspace);
+}
 - (BOOL) fetchThumbnailsFromOriginal
 {
     if (_faceArray)
@@ -728,7 +791,7 @@
         {
             NSMutableArray *thumbnails = [MMPhotoLibrary getCroppedRegions: _iPhotoOriginalImagePath
                                                            withCoordinates: rectangles
-                                                                 thumbSize: 100]; // standardize on 100x100 thumbnails
+                                                                 thumbSize: MAX_THUMB_DIM];
             // TODO Need an assertion here
             if ([thumbnails count] != [_faceArray count])
             {
@@ -774,6 +837,7 @@
                                        @"masterUuid":           _masterUuid,
                                        @"originalDate":         _originalDate,
                                        @"originalFilename":     _originalFilename ? _originalFilename : @"",
+                                       @"thumbnail":            _thumbnail,
                                        @"versionUuid":          _versionUuid,
                                        @"width":                [NSNumber numberWithLong: _masterWidth],
                                     },

@@ -30,6 +30,7 @@ class Photo < ActiveRecord::Base
     photo.original_date = photo_hash['originalDate']
     photo.date_uploaded = service_hash['dateUploaded']
     photo.original_format = service_hash['originalFormat']
+    photo.thumbnail = photo_hash['thumbnail']
     photo.request = full_hash
     photo.save
     return photo
