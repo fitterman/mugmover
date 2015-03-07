@@ -2,11 +2,11 @@
   <div class="col-xs-12">
     <div ng-repeat="name in names | object2Array | orderBy:'publicName'"
          style="display: inline-block;">
-      <div style="display: inherit; height: 120px; width: 120px; text-align: center; " >
-        <a href="#/name/{{name.id}}" ng-attr-title="{{name.withNote()}}">
+      <div style="display: inherit; height: 120px; width: 120px; text-align: center;" >
+        <a href="#/name/{{name.id}}">
           <!-- 110px is 100 + 5px on each side -->
           <img  class="thumbnail circle"  style="display: inherit; height: 110px; width: 110px; margin-bottom: 0;"
-                ng-src="{{name.thumbnail}}" title="{{name.publicName}}" />
+                ng-src="{{name.thumbnail}}" ng-attr-title="{{name.withNote}}" />
         </a>
         <span class="ellipsis" style="display: inherit; width: 100%; ">{{name.privateName}}</span>
       </div>

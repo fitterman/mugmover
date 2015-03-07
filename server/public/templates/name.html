@@ -1,7 +1,12 @@
 <div class="row">
   <div class="col-xs-12">
-    <h3>{{name.privateName}}</h3>
-    <h4>{{name.note}}</h4>
+    <h4>
+      <div style="display: inline-block; " >
+        <img  class="circle"  style="display: inherit; height: 50px; width: 50px; margin-bottom: 0;"
+              ng-src="{{name.thumbnail}}" />
+      </div>
+      {{name.withNote}}
+    </h4>
   </div>
 </div>
 
@@ -13,7 +18,7 @@
         <a href="#/photo/edit/{{face.photoId}}">
           <!-- 110px is 100 + 5px on each side -->
           <img  class="thumbnail circle"  style="display: inherit; height: 110px; width: 110px; margin-bottom: 0;"
-                ng-src="{{face.thumbnail}}" title="Updated at {{face.photoUpdatedAt}}" />
+                ng-src="{{face.thumbnail}}" title="{{xlate('updatedAt')}} {{face.photoUpdatedAt}}" />
         </a>
       </div>
     </div>

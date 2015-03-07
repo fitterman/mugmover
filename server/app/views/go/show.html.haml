@@ -86,6 +86,11 @@
   mugmarkerServices.service('NameToPhotoGlue',  
                             [function()
                               {
+                                var withNoteFunction = function(obj)
+                                                       {
+                                                          obj.withNote = blank(obj.note) ? obj.publicName 
+                                                                                         : obj.publicName + ' (' + obj.note + ')';
+                                                       }
                                 // This just transfers the scope of the photo
                                 this.setPhotoScope = function(photoScope)
                                 {
@@ -96,6 +101,11 @@
                                 this.setNamesIndex = function(namesIndex)
                                 {
                                   this.names = namesIndex;
+                                  angular.forEach(this.names, function(name)
+                                                              {
+                                                                withNoteFunction(name);
+                                                              }
+                                                 );
                                 }
 
 
@@ -123,6 +133,7 @@
                                   for (var id in newNames)
                                   {
                                     this.names[id] = newNames[id];
+                                    withNoteFunction(this.names[id]);
                                   }
                                 }
 
@@ -227,7 +238,9 @@
             detailsButton: 'Details',
             errorApplyingChange: 'An error occurred and the change you made could not be saved.',
             markPhoto: 'Mark or unmark this photo for later attention',
+            people: 'People',
             photoButton: 'Photo', 
+            photos: 'Photos',
             restoreButton: 'Restore Frames',
             tryAgain: 'An error occurred. Please try again.',
             unableToAddFace: 'An error occurred and the frame could not be added.',
@@ -235,6 +248,7 @@
             unableToGetRelatedPhotos: 'An error occured and the photos for this person could not be obtained.',
             unableToRestoreFace: 'An error occured and the frame could not be restored.',
             unknown: 'Unknown', 
+            updatedAt: 'Updated at',
           },
       ia: { 
             confirmDeleteFace: 'Oday youway eallyray antway otay eleteday isthay amefray?',
@@ -242,6 +256,8 @@
             detailsButton: 'Etailsday', 
             errorApplyingChange: 'Anway errorway occurredway andway ethay angechay ouyay ademay ouldcay otnay ebay avedsay..',
             markPhoto: 'Arkmay or unmarkway isthay otophay orfay aterlay attentionway',
+            people: 'Eoplepay',
+            photos: 'Otosphay',
             photoButton: 'Otophay',
             restoreButton: 'Estoreray Amesfray',
             tryAgain: 'Anway errorway occurredway. Easeplay ytray againway.',
@@ -250,6 +266,7 @@
             unableToGetRelatedPhotos: 'Anway errorway occurredway andway ethay otosphay orfay isthay ersonpay ouldcay otnay obtainedway.',
             unableToRestoreFace: 'Anway errorway occurredway andway ethay amefray ouldcay otnay ebay estoredray.', 
             unknown: 'Otnay Ownknay', 
+            updatedAt: 'Updatedway atway',
           },
       };
 
@@ -457,10 +474,31 @@
                 ]
   );
 
-  app.controller('DetailController', 
-                  ['$scope', '$stateParams', '$http', 'translations', 
-                    function($scope, $stateParams, $http, translations)
+  app.factory('Page', function() {
+     var title = 'Mugmarker';
+     return {
+       title: function() { return title; },
+       setTitle: function(newTitle) { title = newTitle }
+     };
+  });
+
+  app.controller('PageController', 
+                  // NOTE: Because these are injected at this level, and associated
+                  //       with the $scope, all subordinate controllers have access
+                  //       to them.
+                  ['$scope', 'Page', 'translations', 
+                    function($scope, Page, translations)
                     {
+                      $scope.Page = Page;
+                      $scope.xlate = translations.translate;
+                    }
+  ]);
+
+  app.controller('DetailController', 
+                  ['$scope', '$stateParams', '$http', 
+                    function($scope, $stateParams, $http)
+                    {
+                      $scope.Page.setTitle('DetailController');
                       $http.get('#{details_api_v1_photos_path(format: :json)}?a_id=1&id=' + $stateParams.id )
                            .success(function(response)
                                     {
@@ -471,7 +509,6 @@
                       {
                         return angular.toJson($scope.details, true);
                       }
-                      $scope.xlate = translations.translate;
                     }
   ]);
 
@@ -506,9 +543,10 @@
   }
 
   app.controller('PhotoController',
-                 ['$scope', '$stateParams', '$window', 'Photo', 'Face', 'NameToPhotoGlue', 'translations', 
-                  function($scope, $stateParams, $window, Photo, Face, NameToPhotoGlue, translations)
+                 ['$scope', '$stateParams', '$window', 'Photo', 'Face', 'NameToPhotoGlue', 
+                  function($scope, $stateParams, $window, Photo, Face, NameToPhotoGlue)
                   {
+                    $scope.Page.setTitle($scope.xlate('photos'));
                     NameToPhotoGlue.setPhotoScope($scope);
                     var maxDim = 500; // pixels
                     var scaleFactor; // updated when the Photo object is loaded
@@ -723,7 +761,6 @@
                                             }
                                           }
                     $scope.setHoverFace(null);
-                    $scope.xlate = translations.translate;
 
                     // If updateFace is called with one argument, then the 
                     // server will be updated with all the various values stored
@@ -783,15 +820,17 @@
   );
 
   app.controller('NamesController', 
-                 ['$scope', '$state', '$stateParams', '$http', '$window', 'Name', 'NameToPhotoGlue', 'translations', 
-                  function($scope, $state, $stateParams, $http, $window, Name, NameToPhotoGlue, translations)
+                 ['$scope', '$state', '$stateParams', '$http', '$window', 'Name', 'NameToPhotoGlue', 
+                  function($scope, $state, $stateParams, $http, $window, Name, NameToPhotoGlue)
                   {
+                    $scope.Page.setTitle($scope.xlate('people'));
                     $scope.getRelatedPhotos = function(namedFaceId) 
                                               { 
                                                 // We can fall in here any time there is an "id" param
                                                 if ($state.current.name == 'name')
                                                 {
                                                   $scope.name = $scope.names[namedFaceId];
+                                                  $scope.Page.setTitle($scope.name.publicName);
                                                   Name.get({id: namedFaceId},
                                                            function(data)
                                                            {
@@ -805,11 +844,11 @@
                                               };
                     if (!NameToPhotoGlue.namesIndexInitialized())
                     {
-                      $http.get("#{api_v1_names_path}.json?a_id=1")
+                      $http.get("/api/v1/names.json?a_id=1")
                            .success(function(response)
                                     { 
                                       NameToPhotoGlue.setNamesIndex(response);
-                                      $scope.names = response;
+                                      $scope.names = NameToPhotoGlue.getNamesIndex(); // After it's been processed
 
                                       // This code is needed here for the times the single-name
                                       // route is visited directly.
@@ -843,7 +882,6 @@
                                                  NameToPhotoGlue.setName(name);
                                                  $scope.hideNameEntry();
                                                }
-                      $scope.xlate = translations.translate;
                       $scope.processKeydown = function(keyboardEvent)
                       {
                         if ((keyboardEvent.keyCode == 40) ||  // down
@@ -901,6 +939,8 @@
 
 
 -# // ***** This is all the markup for the page *****
+
+-# // % div{'ng-include' => "'/templates/navbar.html'"}
 
 %nav.navbar.navbar-default.navbar-fixed-top
   .navbar-header
