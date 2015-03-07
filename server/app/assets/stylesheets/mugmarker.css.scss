@@ -122,6 +122,11 @@ body > .container
               {
                 height: 30px;
               }
+.oneline      
+              {
+                overflow-x: scroll;
+                white-space: nowrap;
+              }
 #photo-container
               {
                 position: relative;

@@ -941,31 +941,10 @@
 -# // ***** This is all the markup for the page *****
 
 %div{'ng-include' => "'/templates/navbar.html'"}
+%div{'ng-include' => "'/templates/namepicker.html'"}
 
 .row#photobar-container{display: 'none'}
   #photobar
 
 %div{'ui-view' => 'display'}
 
-#name{style: 'display: none; padding: 0; position:absolute;', 'ng-controller' => 'NamesController'}
-  .icon-control{style: 'position: absolute; right: 4px;'}
-    %span#name-dismiss.circle.glyphicon.glyphicon-remove{"aria-label" => "Clear the name input field", |
-                                                  :style => "top: -10px; background-color: black; color: white;", |
-                                                  'ng-click' => 'hideNameEntry()'}
-
-  %form#name-entry-form{novalidate: :novalidate, :style => "width: 20em;"}
-    %input#name-entry-box.form-control.input-sm{'ng-model' => "nameNeedle",
-                                                'ng-keydown' => "processKeydown($event)",
-                                                'ng-keyup' => "processKeyup($event)",
-                                                :placeholder => "Enter Name",
-                                                :type => "text"}/
-  #names-container.dropdown-menu{:style => "margin-top: 0; padding-top: 5px; width: 20em; max-height: 170px; display: block;"}
-    .row{'ng-repeat' => "name in names | object2Array | orderBy:'publicName'", 
-         'ng-click' => 'setSelectedName(name)',
-         'ng-show' => '(name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1) || (name.note.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1)'}
-      .col-xs-1{:style => "padding-left: 4px; min-width: 38px; "}
-        %img.circle{'ng-src' => "{{name.thumbnail}}" }
-      .col-xs-10.ellipsis{:style => "padding: 0;"}
-        {{ name.publicName }}
-        .name-note
-          {{ name.note ? name.note : ' ' }}

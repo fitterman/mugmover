@@ -1,4 +1,19 @@
 <div class="row">
+  <div class="col-xs-12 oneline">
+    <div ng-repeat="name in names | object2Array | orderBy:'publicName'"
+         style="display: inline-block;">
+      <div style="display: inherit; height: 60px; width: 60px; text-align: center;" >
+        <a href="#/name/{{name.id}}">
+          <img  class="circle"  style="display: inherit; height: 50px; width: 50px; margin-bottom: 0;"
+                ng-src="{{name.thumbnail}}" ng-attr-title="{{name.withNote}}" />
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
   <div class="col-xs-12">
     <h4>
       <div style="display: inline-block; " >

@@ -1,0 +1,33 @@
+<div id="name" ng-controller="NamesController" style="display: none; padding: 0; position:absolute;">
+  <div class="icon-control" style="position: absolute; right: 4px;">
+    <span aria-label="Clear the name input field" class="circle glyphicon glyphicon-remove" id="name-dismiss" ng-click="hideNameEntry()" style="top: -10px; background-color: black; color: white;"></span>
+  </div>
+  <form id="name-entry-form" 
+        novalidate="novalidate" 
+        style="width: 20em;">
+    <input  class="form-control input-sm" 
+            id="name-entry-box" 
+            ng-keydown="processKeydown($event)" 
+            ng-keyup="processKeyup($event)" 
+            ng-model="nameNeedle" 
+            placeholder="Enter Name" 
+            type="text" 
+    />
+  </form>
+  <div class="dropdown-menu" id="names-container" style="margin-top: 0; padding-top: 5px; width: 20em; max-height: 170px; display: block;">
+    <div  class="row" 
+          ng-click="setSelectedName(name)" 
+          ng-repeat="name in names | object2Array | orderBy:'publicName'" 
+          ng-show="(name.publicName.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1) || (name.note.toLowerCase().indexOf(nameNeedle.toLowerCase()) > -1)">
+      <div class="col-xs-1" style="padding-left: 4px; min-width: 38px; ">
+        <img class="circle" ng-src="{{name.thumbnail}}" />
+      </div>
+      <div class="col-xs-10 ellipsis" style="padding: 0;">
+        {{ name.publicName }}
+        <div class="name-note">
+          {{ name.note ? name.note : ' ' }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
