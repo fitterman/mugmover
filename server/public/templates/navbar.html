@@ -16,16 +16,16 @@
     <ul class="nav navbar-nav">
       <li>
         <a ui-sref="photos.edit({id: 4})">
-          Photos
+          {{xlate('photos')}}
         </a>
       </li>
       <li>
         <a ui-sref="names.list()">
-          People
+          {{xlate('people')}}
         </a>
       </li>
     </ul>
-    <div class="nav navbar-nav navbar-left" ui-view="navspecific">
+    <div class="nav navbar-nav navbar-left" ui-view="navspecific" style="padding-top: 0.5em; ">
     </div>
     <ul class="nav navbar-nav navbar-right">
       <li class="dropdown">
