@@ -3,7 +3,7 @@
     <div ng-repeat="name in names | object2Array | orderBy:'publicName'"
          style="display: inline-block;">
       <div style="display: inherit; height: 60px; width: 60px; text-align: center;" >
-        <a href="#/name/{{name.id}}">
+        <a ui-sref="names.show({id: name.id})">
           <img  class="circle"  style="display: inherit; height: 50px; width: 50px; margin-bottom: 0;"
                 ng-src="{{name.thumbnail}}" ng-attr-title="{{name.withNote}}" />
         </a>
@@ -30,7 +30,7 @@
     <div ng-repeat="face in faces"
          style="display: inline-block;">
       <div style="display: inherit; height: 120px; width: 120px; text-align: center; " >
-        <a href="#/photo/edit/{{face.photoId}}">
+        <a ui-sref="photos.edit({id: face.photoId})">  <<<<<<#### THIS IS NOT POPULATED ####
           <!-- 110px is 100 + 5px on each side -->
           <img  class="thumbnail circle"  style="display: inherit; height: 110px; width: 110px; margin-bottom: 0;"
                 ng-src="{{face.thumbnail}}" title="{{xlate('updatedAt')}} {{face.photoUpdatedAt}}" />

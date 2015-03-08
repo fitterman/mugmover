@@ -1,7 +1,5 @@
 :javascript
 
-  $('#photobar').css({width: '200000px', 'background-color': 'green'});
-
   var language = 'ia';
 
   var endGap = 400; // pixels
@@ -96,7 +94,20 @@
                                 {
                                   this.photoScope = photoScope;
                                 }
-
+                                // This is commuicating with the controller that shows the nav
+                                this.setPhotoNavScope = function(photoNavScope)
+                                {
+                                  this.photoNavScope = photoNavScope;
+                                  // If the photoScope is already present, send it back
+                                  if (this.photoScope && this.photoScope.photo)
+                                  {
+                                    this.photoNavScope.setPhoto(this.photoScope.photo);
+                                  }
+                                }
+                                this.updatePhotoToNavScope = function(photo)
+                                {
+                                  this.photoNavScope.setPhoto(photo);
+                                }
                                 // This just sets the names in this context
                                 this.setNamesIndex = function(namesIndex)
                                 {
@@ -172,32 +183,38 @@
     {
       $urlRouterProvider.otherwise('/');
       $stateProvider
-        .state('photoedit',
+        .state('photos',
                 {
-                  url:'/photo/edit/:id',
+                  url:'/photos',
                   views:
                   {
                     display:
                     {
-                      templateUrl: '/templates/photo.html',
+                      templateUrl: '/templates/photos.html',
                       controller: 'PhotoController'
-                    }
-
-                  }
-               })
-        .state('photodetail', 
-                {
-                  url:'/photo/detail/:id',
-                  views:
-                  {
-                    display:
+                    },
+                    navspecific:
                     {
-                      templateUrl: '/templates/detail.html',
-                      controller: 'DetailController'
+                      templateUrl: '/templates/photos.edit.nav.html',
+                      controller: 'PhotoNavController'
                     }
-
                   }
-               })
+                }
+              )
+        .state('photos.edit',
+                {
+                  url:'/edit/:id',
+                  templateUrl: '/templates/photos.edit.html',
+                  controller: 'PhotoController'
+                }
+              )
+        .state('photos.detail', 
+                {
+                  url:'/detail/:id',
+                  templateUrl: '/templates/photos.detail.html',
+                  controller: 'DetailController'
+                }
+              )
         .state('names',
                 {
                   url:'/names',
@@ -208,22 +225,23 @@
                       templateUrl: '/templates/names.html',
                       controller: 'NamesController'
                     }
-
                   }
-               })
-        .state('name',
+                }
+              )
+        .state('names.list',
                 {
-                  url:'/name/:id',
-                  views:
-                  {
-                    display:
-                    {
-                      templateUrl: '/templates/name.html',
-                      controller: 'NamesController'
-                    }
-
-                  }
-               })
+                  url:'/list',
+                  templateUrl: '/templates/names.list.html',
+                  // controller: 'NamesController'
+                }
+              )
+        .state('names.show',
+                {
+                  url:'/show/:id',
+                  templateUrl: '/templates/names.show.html',
+                  controller: 'NameController'
+                }
+              )
     }
   ]);
 
@@ -542,6 +560,31 @@
                              milliseconds);
   }
 
+  app.controller('PhotoNavController',
+                 ['$scope', 'NameToPhotoGlue', 'Face',
+                  function($scope, NameToPhotoGlue, Face)
+                  {
+                    $scope.setPhoto = function(photo)
+                                      {
+                                        $scope.photo = photo;
+                                      };
+                    $scope.restoreFace = function(face)
+                                         {
+                                           Face.restore({photo_id: face.photoId, id: face.id},
+                                                        function(data)
+                                                        {
+                                                          NameToPhotoGlue.mergeNewFacedata(data.names);
+                                                          face.deleted = data.face.deleted; // FALSE
+                                                        },
+                                                        function(err)
+                                                        {
+                                                          $window.alert($scope.xlate('unableToRestoreFace'));
+                                                        });
+                                         };
+                  }
+                ]
+  );
+
   app.controller('PhotoController',
                  ['$scope', '$stateParams', '$window', 'Photo', 'Face', 'NameToPhotoGlue', 
                   function($scope, $stateParams, $window, Photo, Face, NameToPhotoGlue)
@@ -580,6 +623,7 @@
                                                    true);
                       $scope.listeners.push(listener); // Hold onto it so it is possible to unbind it.
                     };
+                    // TODO How does this work? Where does "photo" in the function get defined?
                     var photo = Photo.get({ id: $stateParams.id }, function() {
                       scaleFactor = maxDim / Math.max(photo.width, photo.height);
 
@@ -593,6 +637,7 @@
                       photo.mmuid; // Assign a unique ID so the first debounce does not trigger an update
                       angular.forEach(photo.faces, defineScaledMethods);                              
                       $scope.photo = photo;
+                      NameToPhotoGlue.updatePhotoToNavScope(photo);
 
                     }); // get() returns a single photo
 
@@ -693,19 +738,6 @@
                                                   $scope.photo.faces.splice(matchingIndex, 1);
                                                 }
                                               }
-                    $scope.restoreFace = function(face)
-                                         {
-                                           Face.restore({photo_id: face.photoId, id: face.id},
-                                                        function(data)
-                                                        {
-                                                          NameToPhotoGlue.mergeNewFacedata(data.names);
-                                                          face.deleted = data.face.deleted; // FALSE
-                                                        },
-                                                        function(err)
-                                                        {
-                                                          $window.alert($scope.xlate('unableToRestoreFace'));
-                                                        });
-                                         };
                     $scope.confirmFaceDeletion = function(face)
                                                   {
                                                     // We bypass the confirmation if it's both 
@@ -827,7 +859,87 @@
                     $scope.getRelatedPhotos = function(namedFaceId) 
                                               { 
                                                 // We can fall in here any time there is an "id" param
-                                                if ($state.current.name == 'name')
+                                                if ($state.current.name == 'names.show')
+                                                {
+                                                  $scope.name = $scope.names[namedFaceId];
+                                                  $scope.Page.setTitle($scope.name.publicName);
+                                                  Name.get({id: namedFaceId},
+                                                           function(data)
+                                                           {
+                                                             $scope.faces = data.faces;
+                                                           },
+                                                           function(err)
+                                                           {
+                                                             $window.alert($scope.xlate('unableToGetRelatedPhotos'));
+                                                           });                                                 
+                                                }
+                                              };
+                    if (!NameToPhotoGlue.namesIndexInitialized())
+                    {
+                      $http.get("/api/v1/names.json?a_id=1")
+                           .success(function(response)
+                                    { 
+                                      NameToPhotoGlue.setNamesIndex(response);
+                                      $scope.names = NameToPhotoGlue.getNamesIndex(); // After it's been processed
+                                    }
+                           );
+
+                    }
+                    else
+                    {
+                      $scope.names = NameToPhotoGlue.getNamesIndex();
+                    }
+                    $scope.nameNeedle = '';
+                    $scope.hideNameEntry = function()
+                                           {
+                                             $('#name').hide();
+                                           }
+                    $scope.setSelectedName = function(name)
+                                             {
+                                               NameToPhotoGlue.setName(name);
+                                               $scope.hideNameEntry();
+                                             }
+                    $scope.processKeydown = function(keyboardEvent)
+                    {
+                      if ((keyboardEvent.keyCode == 40) ||  // down
+                          (keyboardEvent.keyCode == 38))
+                      {
+                        // We have to intercept these on the down, otherwise
+                        // they perform field beginning/end cursor movements.
+                        event.preventDefault();
+                      }
+                    }
+                    $scope.processKeyup = function(keyboardEvent)
+                    {
+                      var key = keyboardEvent.which;
+                      if (key == 27) // escape
+                      {
+                        $scope.hideNameEntry();
+                      }
+                      else if (key == 13) // return/enter
+                      {
+                        if (confirm('new name?'))
+                        {
+                          NameToPhotoGlue.applyNewName($scope.nameNeedle);
+                          $scope.nameNeedle = '';
+                        }
+                        $scope.hideNameEntry();
+                      }
+                      keyboardEvent.stopPropagation()
+                    }
+                  }
+                ]
+  );
+
+  app.controller('NameController', 
+                 ['$scope', '$state', '$stateParams', '$http', '$window', 'Name', 'NameToPhotoGlue', 
+                  function($scope, $state, $stateParams, $http, $window, Name, NameToPhotoGlue)
+                  {
+                    $scope.Page.setTitle($scope.xlate('people'));
+                    $scope.getRelatedPhotos = function(namedFaceId) 
+                                              { 
+                                                // We can fall in here any time there is an "id" param
+                                                if ($state.current.name == 'names.show')
                                                 {
                                                   $scope.name = $scope.names[namedFaceId];
                                                   $scope.Page.setTitle($scope.name.publicName);
@@ -861,55 +973,10 @@
                            );
 
                     }
-                    else
-                    {
-                      $scope.names = NameToPhotoGlue.getNamesIndex();
-                    }
                     if ($stateParams.id && $scope.names)
                     {
                       // and it's needed here for times when the data is already loaded.
                       $scope.getRelatedPhotos($stateParams.id)
-                    }
-                    else
-                    {
-                      $scope.nameNeedle = '';
-                      $scope.hideNameEntry = function()
-                                             {
-                                               $('#name').hide();
-                                             }
-                      $scope.setSelectedName = function(name)
-                                               {
-                                                 NameToPhotoGlue.setName(name);
-                                                 $scope.hideNameEntry();
-                                               }
-                      $scope.processKeydown = function(keyboardEvent)
-                      {
-                        if ((keyboardEvent.keyCode == 40) ||  // down
-                            (keyboardEvent.keyCode == 38))
-                        {
-                          // We have to intercept these on the down, otherwise
-                          // they perform field beginning/end cursor movements.
-                          event.preventDefault();
-                        }
-                      }
-                      $scope.processKeyup = function(keyboardEvent)
-                      {
-                        var key = keyboardEvent.which;
-                        if (key == 27) // escape
-                        {
-                          $scope.hideNameEntry();
-                        }
-                        else if (key == 13) // return/enter
-                        {
-                          if (confirm('new name?'))
-                          {
-                            NameToPhotoGlue.applyNewName($scope.nameNeedle);
-                            $scope.nameNeedle = '';
-                          }
-                          $scope.hideNameEntry();
-                        }
-                        keyboardEvent.stopPropagation()
-                      }
                     }
                   }
                 ]
@@ -942,9 +1009,6 @@
 
 %div{'ng-include' => "'/templates/navbar.html'"}
 %div{'ng-include' => "'/templates/namepicker.html'"}
-
-.row#photobar-container{display: 'none'}
-  #photobar
 
 %div{'ui-view' => 'display'}
 

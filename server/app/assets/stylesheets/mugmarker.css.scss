@@ -7,6 +7,8 @@ $borderWidth:                 2px;
 $defaultFontColor:            black;
 $iconPixelDim:                16px;
 $handleWidth:                 10px;
+$photobarColor:               white;
+$photobarPhotoBorder:         black;
 $thumbBorderWidth:            1px;
 $thumbsizeWithBorder:         $thumbsize + $borderWidth;
 
@@ -147,10 +149,10 @@ body > .container
               }
 #photobar-container
               {
-                background: black;
-                border: 6px solid black;
+                background: $photobarColor;
+                border: 6px solid $photobarColor;
                 border-radius: 10px;
-                height: 130px; 
+                height: 80px; 
                 margin-top: 5em;
                 overflow-y: scroll;
                 position: relative;
@@ -184,7 +186,7 @@ body > .container
                 display: inline-flex; 
                 height: $thumbsizeWithBorder;
                 position: absolute;
-                top: 27px;
+                top: 3px;
                 width: $thumbsizeWithBorder;
                 z-index: 2;
               }
@@ -200,7 +202,7 @@ body > .container
 .photothumb > img
               {
                 margin: auto;
-                border: $thumbBorderWidth solid white;
+                border: $thumbBorderWidth solid $photobarPhotoBorder;
               }
 #restore-faces 
               {
@@ -210,5 +212,10 @@ body > .container
               {
                 background-color: rgba(255, 255, 255, 0.6);
               }
-.selected     { background-color: black; opacity: 1.0; }
+.selected     { background-color: $photobarColor; opacity: 1.0; }
+.selected img {
+                /* These two messes are stolen from what bootstrap does on :focus form boxes */
+                border-color: rgb(103, 175, 233);
+                box-shadow: rgba(0, 0, 0, 0.0745098) 0px 1px 1px 0px inset, rgba(103, 175, 233, 0.592157) 0px 0px 7.90463399887085px 0px;
+              }
 .unselected   { opacity: 0.6; }

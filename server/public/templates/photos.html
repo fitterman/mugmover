@@ -1,76 +1,9 @@
-<div ng-include="'/templates/controls.html'">
-</div>
-
-<div class="row">
-  <div class="col-xs-4 col-sm-2" ng-repeat="face in photo.faces | filter:noThumbnail ">
-    <img class="thumbnail circle" data-id="{{face.id}}" ng-src="{{face.thumbDataUri()}}" title="{{face.publicName}}" />
+<div class="row" id="photobar-container" style="">
+  <div id="photobar">
   </div>
 </div>
-<div class="row">
-  <div class="col-xs-8">
-    <div id="photo-container"
-         ng-style="{
-                     height: photo.workingImageHeight(),
-                     width: photo.workingImageWidth()
-                    }">
-      <img  id="photo-img" 
-            class="img-responsive" 
-            ng-src="{{photo.url}}"
-            ng-click="addFaceAt($event.offsetX, $event.offsetY)"
-            ng-style="{ 'background-repeat': 'no-repeat', 
-                        'background-size' : 'contain',
-                        'background-image': 'url(' + photo.thumb + ')' }" />
-      <div id="face-frame-container">
-        <div  class="{{!face.namedFaceId ? 'unknown face-frame' : 'face-frame'}}"
-              ng-repeat="face in photo.faces"
-              ng-show="face.hovering || (!face.deleted)"
-              mm-movable="face"
-              mm-movable-behavior="move"
-              mm-movable-containment="{top: -8 , left:  -15.5, width: 1000, height: 1000}"
-              mm-movable-photo="photo"
-              ng-mouseenter="setHoverFace(face)"
-              ng-mouseleave="setHoverFace(null, 1200)"
-              ng-style="{ width: face.scaledW(), height: face.scaledH(), 
-                          left: face.scaledX(), top: face.scaledY(), 
-                          cursor: (face.manual ? 'move' : 'default'),
-                          'z-index': ((face === hoverFace) ? '180' : '') }">
-        <div  class="icon-control"
-              ng-click="confirmFaceDeletion(face)">
-          <span class="circle glyphicon glyphicon-trash"
-                aria-label="{{xlate('deleteFace')}}"
-                title="{{xlate('deleteFace')}}"></span>
-        </div>
-        <form class="name-display-form"
-              ng-style="{top: face.scaledH()}">
-          <div ng-class=" face.namedFaceId ? 'input-group' : '' " 
-               ng-show="(face === hoverFace)" >
-            <input  class="name-display-box form-control input-sm ellipsis"
-                    type="text"
-                    readonly style="cursor: pointer"
-                    placeholder="Unknown"
-                    mm-name-entry="face"
-                    ng-model="face.displayName" />
-            <span class="input-group-addon" ng-show="face.namedFaceId">
-              <a ui-sref="name({id: face.namedFaceId})"><span class="goto glyphicon glyphicon-chevron-right"
-                    aria-label="{{xlate('gotoPerson')}}"
-                    title="{{xlate('gotoPerson')}}"></span></a>
-            </span>
-          </div>
-        </form>
-        <div class="handle"
-             ng-if="face.manual"
-             mm-movable="face"
-             mm-movable-behavior="resize"
-             mm-movable-photo="photo"
-             mm-movable-containment="{top: (face.w / 2) + 10, left: (face.h / 2) + 10, width: 400, height: 400}"
-             mm-comment="8 in the next line is the 'magic_adjustment_factor'"
-             ng-style="{position: relative, top: face.handleY(), left: face.handleX()}"
-           &nbsp;
-        </div>
 
-    </div>
-  </div>
-</div>  
+<div ui-view></div>
 
 <script type="text/javascript">
 
@@ -145,7 +78,7 @@
     //                                            "background-color": "white"})
     //                                      .css(parseFloat($(this).attr("ar")) > 1.0 ? 'width' : 'height', "500px");
     $(this).removeClass('unselected').addClass('selected');
-    window.location = "#/photo/edit/" + $(this).data('id');
+    window.location = "#/photos/edit/" + $(this).data('id');
   });
   $(document).on('keyup', function(keyboardEvent) {
     var key = keyboardEvent.which;
