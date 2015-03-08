@@ -565,6 +565,7 @@
                  ['$scope', 'NameToPhotoGlue', 'Face',
                   function($scope, NameToPhotoGlue, Face)
                   {
+                    NameToPhotoGlue.setPhotoNavScope($scope);
                     $scope.setPhoto = function(photo)
                                       {
                                         $scope.photo = photo;
