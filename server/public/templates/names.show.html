@@ -1,11 +1,13 @@
 <div class="row">
   <div class="col-xs-12 oneline">
-    <div ng-repeat="name in names | object2Array | orderBy:'publicName'"
+    <div ng-repeat="iteratedName in names | object2Array | orderBy:'publicName'"
          style="display: inline-block;">
       <div style="display: inherit; height: 60px; width: 60px; text-align: center;" >
-        <a ui-sref="names.show({id: name.id})">
-          <img  class="circle"  style="display: inherit; height: 50px; width: 50px; margin-bottom: 0;"
-                ng-src="{{name.thumbnail}}" ng-attr-title="{{name.withNote}}" />
+        <a  ng-class=" name === iteratedName ? 'selected' : '' "
+            ui-sref="names.show({id: iteratedName.id})">
+          <img  class="circle"  
+                style="display: inherit; height: 50px; width: 50px; margin-bottom: 0;"
+                ng-src="{{iteratedName.thumbnail}}" ng-attr-title="{{iteratedName.withNote}}" />
         </a>
       </div>
     </div>
@@ -30,7 +32,7 @@
     <div ng-repeat="face in faces"
          style="display: inline-block;">
       <div style="display: inherit; height: 120px; width: 120px; text-align: center; " >
-        <a ui-sref="photos.edit({id: face.photoId})">  <<<<<<#### THIS IS NOT POPULATED ####
+        <a ui-sref="photos.edit({id: face.photoId})">
           <!-- 110px is 100 + 5px on each side -->
           <img  class="thumbnail circle"  style="display: inherit; height: 110px; width: 110px; margin-bottom: 0;"
                 ng-src="{{face.thumbnail}}" title="{{xlate('updatedAt')}} {{face.photoUpdatedAt}}" />

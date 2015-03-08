@@ -106,7 +106,10 @@
                                 }
                                 this.updatePhotoToNavScope = function(photo)
                                 {
-                                  this.photoNavScope.setPhoto(photo);
+                                  if (this.photoNavScope)
+                                  {
+                                    this.photoNavScope.setPhoto(photo);
+                                  }
                                 }
                                 // This just sets the names in this context
                                 this.setNamesIndex = function(namesIndex)
@@ -152,7 +155,6 @@
                                 this.setFace = function(face)
                                 {
                                   this.selectedFace = face;
-                                  this.selectedName = null;
                                 }
 
                                 // This method accepts a name, which will be sent to the
@@ -232,7 +234,6 @@
                 {
                   url:'/list',
                   templateUrl: '/templates/names.list.html',
-                  // controller: 'NamesController'
                 }
               )
         .state('names.show',
