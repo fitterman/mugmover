@@ -42,7 +42,7 @@ module Api
         @photo.flag = params[:flag]
         if @photo.save
           result = {status: 'ok', photo: {flag: @photo.flag}}
-          render json: result 
+          render json: result
         else
           result = {status: 'fail', errors: @photo.errors.full_messages}
           render json: result, status: :bad_request

@@ -32,10 +32,10 @@ NSString *photosPath;
         {
             return nil;
         }
-        
+
         _facesDatabase = [FMDatabase databaseWithPath: facesPath];
         _photosDatabase = [FMDatabase databaseWithPath: photosPath];
-        
+
         DDLogInfo(@"Opening _photosPath=%@", photosPath);
         if (self.facesDatabase && self.photosDatabase &&
             [self.facesDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE] &&
@@ -54,7 +54,7 @@ NSString *photosPath;
             _databaseAppId = [_photosDatabase
                               stringForQuery: @"SELECT propertyValue FROM RKAdminData "
                                                "WHERE propertyArea = 'database' AND propertyName = 'applicationIdentifier'"];
-            
+
             return self;
         }
         else
@@ -82,7 +82,7 @@ NSString *photosPath;
     Versions are named like "path to iphoto library/" + "Previews/" + "2012/05/14/20120514-132735/" + versionUuid + "03485_s_9aefb8sby3508.jpg"
 
     The Master relative path is available from the imagePath column, e.g., '2012/03/20/20120320-075509/03485_s_9aefb8sby3508.jpg'
-    The Version relative path must be constructed and as it is not apparent how the date part of the 
+    The Version relative path must be constructed and as it is not apparent how the date part of the
     filename comes into being, the safest approach is to find the Master and Version, pull the imagePath
     split it into parts at the "/", drop the last element, and take the uuid of the Version object
     and the filename column as well.
@@ -96,25 +96,25 @@ NSString *photosPath;
     // to do it this way.
     NSArray *args = @[masterUuid];
     NSDictionary *result = nil;
-    
+
     FMResultSet *versionRecord = [_photosDatabase executeQuery: @ "SELECT v.filename, v.uuid versionUuid, imagePath "
                                                                   "FROM RKMaster m JOIN RKVersion v ON m.uuid = v.masterUuid "
                                                                   "INNER JOIN "
                                                                   "  (SELECT uuid, MAX(versionNumber) version FROM RKVersion x "
-                                                                  "WHERE masterUuid = ? GROUP BY masterUuid) lastVersion " 
+                                                                  "WHERE masterUuid = ? GROUP BY masterUuid) lastVersion "
                                                                   "ON v.uuid = lastVersion.uuid AND v.versionNumber = lastVersion.version "
-                                                                  
+
 
                                           withArgumentsInArray: args];
     if (![versionRecord next])
     {
         return result;
     }
-    
+
     NSString *versionFilename = [versionRecord stringForColumn: @"filename"];
     NSString *versionUuid = [versionRecord stringForColumn: @"versionUuid"];
     NSString *masterPath = [versionRecord stringForColumn: @"imagePath"];
-    
+
     return [self versionExifFromMasterPath: masterPath
                                versionUuid: versionUuid
                            versionFilename: versionFilename];
@@ -123,7 +123,7 @@ NSString *photosPath;
 - (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
 {
     NSArray *pathPieces = @[_libraryBasePath, @"Masters", masterPath];
-    
+
     NSString *fullMasterPath = [pathPieces componentsJoinedByString: @"/"];
     if (fullMasterPath)
     {
@@ -155,7 +155,7 @@ NSString *photosPath;
         }
     }
     return NULL;
-    
+
 }
 
 - (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
@@ -179,7 +179,7 @@ NSString *photosPath;
 {
     NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: [rectArray count]];
     NSURL* fileURL = [NSURL fileURLWithPath : filePath];
-    
+
     // After the crop, then scale, the resulting image was not always an integer size and in fact
     // was not even square in some cases. To rectify this, we recrop one more time at the end with
     // definitive metrics
@@ -188,7 +188,7 @@ NSString *photosPath;
     CGContextRef bitmapContext = CGBitmapContextCreate(NULL, thumbSize, thumbSize, 8, 0, colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
     CIContext *context = [CIContext contextWithCGContext: bitmapContext options: @{}];
     // TODO Is there a release for the CIContext?
-    
+
     if ((result != NULL) && (fileURL != NULL))
     {
         CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileURL];
@@ -269,10 +269,10 @@ NSString *photosPath;
 
     if (context == NULL)
         return nil;
-    
+
     // draw image to context (resizing it)
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
-    
+
     // extract resulting image from context
     CGImageRef imgRef = CGBitmapContextCreateImage(context);
     CGContextRelease(context);
@@ -286,22 +286,22 @@ NSString *photosPath;
 {
     NSMutableDictionary* exifDictionary = nil;
     NSURL* fileURL = [NSURL fileURLWithPath : filePath];
-    
+
     if (fileURL)
     {
-        
+
         // load the bit image from the file url
         CGImageSourceRef source = CGImageSourceCreateWithURL ( (__bridge CFURLRef) fileURL, NULL);
-        
+
         if (source)
         {
-            
+
             // get image properties into a dictionary
             CFDictionaryRef metadataRef = CGImageSourceCopyPropertiesAtIndex(source, 0, NULL);
-            
+
             if (metadataRef)
             {
-                
+
                 // cast CFDictonaryRef to NSDictionary
                 exifDictionary = [NSMutableDictionary dictionaryWithDictionary : (__bridge NSDictionary *) metadataRef];
                 if (exifDictionary)
@@ -316,7 +316,7 @@ NSString *photosPath;
                     }
                 }
             }
-            
+
             CFRelease(source);
             source = nil;
         }
@@ -325,7 +325,7 @@ NSString *photosPath;
     {
         DDLogError(@"Error in reading local image file %@", filePath);
     }
-    
+
     return exifDictionary;
 }
 
@@ -350,8 +350,8 @@ NSString *photosPath;
 @end
 /*
  import Foundation
- 
- 
+
+
  // Returns a FMResultSet and the position is on the first record (the master photo)
  // unless it does not exist, in which this method returns nil
  func masterPhoto(uuid:String) -> FMResultSet?
@@ -370,8 +370,8 @@ NSString *photosPath;
  //  isInTrash integer, faceDetectionState integer, colorSpaceName varchar,
  //  colorSpaceDefinition blob, fileAliasData blob, importedBy integer,
  //  streamAssetId varchar, streamSourceUuid varchar, burstUuid varchar
- 
- 
+
+
  let masterSet = db.executeQuery("SELECT * FROM RKMaster WHERE uuid = ?", withArgumentsInArray: [uuid])
  if !masterSet.next()
  {
@@ -380,7 +380,7 @@ NSString *photosPath;
  }
  return masterSet
  }
- 
+
  // For reference, this is the schema of the RKVersion table
  //
  //  modelId integer primary key, uuid varchar, name varchar, fileName varchar,
@@ -410,6 +410,6 @@ NSString *photosPath;
  //          faceDetectionIsFromPreview, hasKeywords,
  //  Integer: faceDetectionRotationFromMaster, masterHeight, masterWidth,
  //          processedHeight, processedWidth, rotation,
- 
+
 
 */

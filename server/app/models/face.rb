@@ -15,7 +15,7 @@ class Face < ActiveRecord::Base
 
   before_validation    :normalize
 
-      #   #  ###  ##### ####   
+      #   #  ###  ##### ####
       ##  # #   #   #   #       While the source data works with the center
       # # # #   #   #   ###     X and Y coordinates of the face, in the
       #  ## #   #   #   #       server, we track X and Y as the top left corner.
@@ -23,7 +23,7 @@ class Face < ActiveRecord::Base
 
   ## TODO Add rejected and figure out how manually-added faces are treated (vs automatic and rejected).
   ## Also add the facekey which associates a face to a name. Add the facekey in the person table
-  
+
   def primary_name
     self.face_uuid
   end
@@ -36,17 +36,17 @@ class Face < ActiveRecord::Base
 
   # This is the core of the face upload code, invoked by the UploadsController
   # When it is successful, it will return an array of Face objects and and a hash
-  # of errors (the keys are the UUID of the face that had the problem and the 
+  # of errors (the keys are the UUID of the face that had the problem and the
   # values are an array of error strings). If the error has is empty, then no errors
   # were detected. If there are errors, it is up to the caller (who should invoke this
   # inside a transaction) to abort the transaction, otherwise assorted objects
-  # that may have been created, including _some_ of the faces, will be left 
+  # that may have been created, including _some_ of the faces, will be left
   # hanging around.
 
   def self.from_hash(hosting_service_account, database_uuid, photo, face_array, options={force: false})
     face_errors = {}
     faces = face_array.map do |face_params|
-      ## face_key is filled in for every face, but face_name_uuid is only present if the 
+      ## face_key is filled in for every face, but face_name_uuid is only present if the
       ## face has a FaceName associaed with it
       face_uuid = face_params['uuid']
       face_name_uuid = face_params['faceNameUuid']

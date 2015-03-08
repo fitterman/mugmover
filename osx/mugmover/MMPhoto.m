@@ -59,7 +59,7 @@
                 [self releaseStrongPointers];
                 return nil;
             }
-            
+
             for (NSString *key in flickrDictionary)
             {
                 NSString *value = [flickrDictionary valueForKey: key];
@@ -215,11 +215,11 @@
 
         FMResultSet *resultSet = [_stream.library.photosDatabase executeQuery: query
                                                          withArgumentsInArray: args];
-        
+
         if (resultSet && [resultSet next])
         {
             [self updateFromIphotoLibraryVersionRecord: resultSet];
-            
+
             NSString *masterPath = [resultSet stringForColumn: @"imagePath"];
             NSString *versionFilename = [resultSet stringForColumn: @"filename"];
             NSString *versionUuid = [resultSet stringForColumn: @"versionUuid"];
@@ -236,7 +236,7 @@
 // Using the width, height and date (already acquired), look for a match
 - (BOOL) findMatchingVersionInIphotoLibraryByAttributes
 {
-    
+
     // This process is problematic. Using the image dimensions and its original name,
     // we can find any number of matches. In some cases we may not have the name!
     // To narrow those down to the right image, it is necessary to find images
@@ -252,9 +252,9 @@
                              "v.processedWidth = ? AND v.processedHeight = ? "
                        "ORDER BY v.versionNumber DESC ";
             ;
-    
+
     // TODO  See notes here
-    
+
     NSString *width = [_flickrDictionary objectForKey: @"width"];
     NSString *height = [_flickrDictionary objectForKey: @"height"];
     if ((!_originalFilename) || (!width) || (!height))
@@ -285,21 +285,21 @@
             }
             else
             {
-                
+
                 exif = [_stream.library versionExifFromMasterPath: masterPath
                                                       versionUuid: versionUuid
                                                   versionFilename: versionFilename];
             }
-            
+
             if (exif)
             {
                 NSString *iphotoModifyTime = [[exif objectForKey: @"{TIFF}"] valueForKey: @"DateTime"];
                 NSString *iphotoOriginalTime = [[exif objectForKey: @"{Exif}"] valueForKey: @"DateTimeOriginal"];
                 _iPhotoOriginalImagePath = [exif objectForKey: @"_image"];
-                
+
                 if ((iphotoModifyTime && [iphotoModifyTime isEqualToString: flickrModifyTime]) &&
                     (iphotoOriginalTime && [iphotoOriginalTime isEqualToString: flickrOriginalTime]))
-                    
+
                 {
                     _versionUuid = versionUuid;
                     _version = [[resultSet stringForColumn: @"version"] intValue];
@@ -341,7 +341,7 @@
                                rotate: _rotationAngle];
         _masterWidth = _croppedWidth;
         _masterHeight = _croppedHeight;
-        
+
     }
     else
     {
@@ -421,7 +421,7 @@
                         {
                             NSInteger cw = [[parameters valueForKeyPath: @"inputKeys.inputWidth"] intValue];
                             NSInteger ch = [[parameters valueForKeyPath: @"inputKeys.inputHeight"] intValue];
-                            
+
                             // I had a single occurrence of a crop operation coming through with settings of
                             // height=0 and width=0. Since apparently that might happen, this is a safety net
                             // to make sure there is no recurrence.
@@ -450,7 +450,7 @@
                 }
             }
         }
-        
+
         // In the following case, the StraghtenCrop operation will have to do a crop, and it is
         // determined by measuring back from the center in each direction (by half).
         if (hasStraighten && !hasCrop)
@@ -458,15 +458,15 @@
             DDLogInfo(@">>> BEFORE  cropOrigin=%@", _cropOrigin);
 
          /*  What follows ia bit of a mystery to my challenged brain
-          
-            When there is only a straighten operation, it's up to us to figure out where the 
+
+            When there is only a straighten operation, it's up to us to figure out where the
             crop origin falls. For some reason, it's like we rotate the x one way and the y
-            the other direction. , and from there we know where the origin is. This probably 
+            the other direction. , and from there we know where the origin is. This probably
             relates to the fact that we're cropping to the minimum rectangle that fits. I suspect
             there is a more efficient way to get this done (much more, in fact) but at this point
             it is working and I'm going to bail.
           */
-            
+
             MMPoint *rotateCenterPoint = [[MMPoint alloc] initWithX: (_masterWidth / 2.0) y: (_masterHeight / 2.0)];
             _cropOrigin.x =  (_masterWidth - _croppedWidth) / 2.0;
             _cropOrigin.y = (_masterHeight - _croppedHeight) / 2.0;
@@ -479,7 +479,7 @@
             _cropOrigin.x = correctX;
 
             DDLogInfo(@">>> AFTER   cropOrigin=%@", _cropOrigin);
-            
+
         }
         return  nil;
     }
@@ -495,7 +495,7 @@
 {
     MMPoint *rotateCenterPoint = nil;
     NSMutableArray *result = nil;
-    
+
     rotateCenterPoint = [[MMPoint alloc] initWithX: (cropWidth / 2.0) y: (cropHeight / 2.0)];
     if (!rotateCenterPoint)
     {
@@ -540,7 +540,7 @@
         {
             // When we straighten the image, the canvas size grows just enough to allow the image to
             // still fit inside the new canvas when rotated. This formula gives you the new dimensions.
-            
+
             Float64 absStraightenAngleInRadians = fabs(straightenAngle) / DEGREES_PER_RADIAN;
             Float64 newWidth =  (_masterWidth * cos(absStraightenAngleInRadians)) +
                                 (_masterHeight * sin(absStraightenAngleInRadians));
@@ -549,10 +549,10 @@
             {
                 DDLogInfo(@"GROW CANVAS   %3.1fWx%3.1fH", newWidth, newHeight);
             }
-            
+
             while ([resultSet next])
             {
-                
+
                 MMPoint *topLeft     = [[MMPoint alloc] initWithX: [resultSet doubleForColumn: @"topLeftX" ]
                                                                 y: [resultSet doubleForColumn: @"topLeftY" ]];
                 MMPoint *bottomLeft  = [[MMPoint alloc] initWithX: [resultSet doubleForColumn: @"bottomLeftX" ]
@@ -584,19 +584,19 @@
                         DDLogInfo(@"FACE DIMS     %3.1fWx%3.1fH", face.faceWidth, face.faceHeight);
                     }
                     [face rotate: straightenAngle origin: straightenCenterPoint];
-                    
+
                     // Based on dimensions of the straightened image, adjust the faces and rotation
                     // point/ within the new coordinate space of the cropped image. This adjustment
                     // has to do with the size of the canvas increasing.
 
                     face.centerPoint.x += (newWidth - _masterWidth) / 2.0;
                     face.centerPoint.y += (newHeight - _masterHeight) / 2.0;
-                    
+
                     // Now crop the image
 
                     face.centerPoint.x -= cropOrigin.x;
                     face.centerPoint.y -= cropOrigin.y;
-                    
+
                     // Then figure out whether the face is still visible.
 
                     {
@@ -659,7 +659,7 @@
     [self createPhotoThumbnail];
     [self fetchThumbnailsFromOriginal];
     [self sendPhotoToMugmover];
-    
+
     // Note that we discard the hidden/rejected faces _after_ uploading to mugmover.
     // This is not an error: we intentionally hold onto those.
     [self discardHiddenFaces];
@@ -692,7 +692,7 @@
 - (void) discardHiddenFaces
 {
     NSMutableArray *discardedItems = [NSMutableArray array];
-    
+
     for (MMFace *face in _faceArray)
     {
         if (!face.visible || face.rejected || face.ignore)
@@ -700,24 +700,24 @@
             [discardedItems addObject: face];
         }
     }
-    
+
     [_faceArray removeObjectsInArray: discardedItems];
-    
+
 }
 - (void) createPhotoThumbnail
 {
     NSURL* fileURL = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
     _thumbnail = @""; // It cannot be null, so just in case this fails.
-    
+
     CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
     CGContextRef bitmapContext = CGBitmapContextCreate(NULL, MAX_THUMB_DIM, MAX_THUMB_DIM, 8, 0, colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
     CIContext *context = [CIContext contextWithCGContext: bitmapContext options: @{}];
     // TODO Is there a release for the CIContext?
-    
+
     if (fileURL != NULL)
     {
         CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileURL];
-        
+
         if (image != NULL)
         {
             // scale the image
@@ -727,7 +727,7 @@
             [scaleFilter setValue: scaleFactor forKey: @"inputScale"];
             [scaleFilter setValue: @1.0 forKey: @"inputAspectRatio"];
             CIImage *scaledImage = [scaleFilter valueForKey: @"outputImage"];
-            
+
             NSMutableData* thumbJpegData = [[NSMutableData alloc] init];
             CGImageDestinationRef dest = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)thumbJpegData,
                                                                           (__bridge CFStringRef)@"public.jpeg",
@@ -780,7 +780,7 @@
 
             Float64 left = [face.centerPoint x] - (idealDim / 2.0);
             Float64 bottom = (_processedHeight - [face.centerPoint y]) - (idealDim / 2.0);
-            
+
             NSArray *rect = @[[NSNumber numberWithDouble: left],
                               [NSNumber numberWithDouble: bottom], // OSX uses the bottom-left corner for origin
                               [NSNumber numberWithDouble: idealDim],
@@ -844,7 +844,7 @@
                                  @"service":                     _flickrDictionary,
                                  @"adjustments":                 _adjustmentsArray,
                                };
-    
+
 
     NSMutableDictionary *attributes = [properties mutableCopy];
 
@@ -861,7 +861,7 @@
     }
 
     // Now that we have everything, serialize the data to JSON and start the upload
-    
+
     NSError *error;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject: attributes
                                                        options: 0
@@ -916,10 +916,10 @@
 
 - (void) fetchImageByteSize
 {
-    
+
     _request = [[MMNetworkRequest alloc] initMakeHeadRequest: _originalUrl
                                                     delegate: self];
-    
+
 }
 
 - (void) fetchFlickrSizes
@@ -941,7 +941,7 @@
                                arguments: [NSDictionary dictionaryWithObjectsAndKeys: photoId, @"photo_id",
                                            secret, @"secret",
                                            nil]];
-    
+
 }
 
 - (void) fetchFlickrInfo
@@ -954,7 +954,7 @@
                                        reason: message
                                      userInfo: nil];
     }
-    
+
     _flickrRequest.sessionInfo = @"fetchInfo";
     NSString *photoId = [_flickrDictionary objectForKey: @"id"];
     NSString *secret = [_flickrDictionary objectForKey: @"secret"];
@@ -962,7 +962,7 @@
                                arguments: [NSDictionary dictionaryWithObjectsAndKeys: photoId, @"photo_id",
                                            secret, @"secret",
                                            nil]];
-    
+
 }
 
 - (void) fetchFlickrExif
@@ -975,7 +975,7 @@
                                        reason: message
                                      userInfo: nil];
     }
-    
+
     _flickrRequest.sessionInfo = @"fetchExif";
     NSString *photoId = [_flickrDictionary objectForKey: @"id"];
     NSString *secret = [_flickrDictionary objectForKey: @"secret"];
@@ -983,7 +983,7 @@
                               arguments: [NSDictionary dictionaryWithObjectsAndKeys: photoId, @"photo_id",
                                           secret, @"secret",
                                           nil]];
-    
+
 }
 
 - (void) addNoteForOneFace
@@ -1027,7 +1027,7 @@
     }
     NSArray  *pieces = @[@"deleteNote", noteId];
     _flickrRequest.sessionInfo = [pieces componentsJoinedByString: @";"];
-    
+
     NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys: noteId, @"note_id",
                           MUGMOVER_API_KEY_MACRO, @"api_key",
                           nil];
@@ -1052,7 +1052,7 @@
             NSString *tag = [dict objectForKey: @"tag"];
             NSString *tagspace = [dict objectForKey: @"tagspace"];
             NSDictionary *raw = [dict objectForKey: @"raw"];
-            
+
             NSDictionary *spaceDictionary = [_exifDictionary objectForKey: tagspace];
             if (!spaceDictionary)
             {
@@ -1065,7 +1065,7 @@
         // Store some things you will need later
         _originalFilename = [_exifDictionary valueForKeyPath: @"IPTC.ObjectName"];
         _originalDate = [_exifDictionary valueForKeyPath: @"ExifIFD.DateTimeOriginal"];
-        
+
         // The versionUuid might be in one of two places. Check one if the other isn't there.
         _versionUuid = [_exifDictionary valueForKeyPath: @"IPTC.SpecialInstructions"];
         if (!_versionUuid)
@@ -1155,7 +1155,7 @@
     {
         [self updateNotesOnFlickr]; // There is no cleanup because we delete the notes as we queue the requests
     }
-    
+
     else if ([pieces[0] isEqualToString: @"addNote"])
     {
         // We can now remove the face.
@@ -1202,12 +1202,12 @@
                 [self deleteNote: pieces[1]]; // Retry
             }
         }
-        
+
         else if ([pieces[0] isEqualToString: @"addNote"])
         {
             // This will try to add the same note, but do it outside the delegate method
             [self updateNotesOnFlickr];
-            
+
         }
 
     }

@@ -1,18 +1,18 @@
 - thumbsize = 50
 
 :css
-  .photothumb { z-index: 2; display: inline-flex; 
-                  width: #{thumbsize}px; height: #{thumbsize}px; 
+  .photothumb { z-index: 2; display: inline-flex;
+                  width: #{thumbsize}px; height: #{thumbsize}px;
                   background-size: contain; background-color: white;
                   border: 2px solid white; }
   .unselected   { opacity: 0.5; }
   .selected     { background-color: red; border: 2px solid red; opacity: 1.0; }
-  .enlarged     { z-index: 3; opacity: 1.0; 
+  .enlarged     { z-index: 3; opacity: 1.0;
                   width: #{2 * thumbsize}px; height: #{2 * thumbsize}px; }
 %p#notice= notice
 
 - content_for :title do
-  flickr / 
+  flickr /
   = params[:flickr_id]
 
 #caption
@@ -22,16 +22,16 @@
   #photobar{style: "position:relative;" }
 
 #photo-container{style: 'position:relative;'}
-    
+
 :plain
   <script type="text/template" id="photos-template-text">
     <% _.each(photos, function(photo) { %>
       <% if ($('.photothumb[phid=' + photo.get('id') + ']').length == 0) { %>
-          <div class="photothumb unselected" style="position: absolute; 
-              background-repeat: no-repeat; background-position: center; 
+          <div class="photothumb unselected" style="position: absolute;
+              background-repeat: no-repeat; background-position: center;
               background-image: url('<%- photo.get('thumb') %>');
               top: 27px;
-              left: <%- i2x(photo.get('index')) %>px;" 
+              left: <%- i2x(photo.get('index')) %>px;"
               phw="<%- photo.get('id') %>px"
               phh="<%- photo.get('id') %>px"
               phid="<%- photo.get('id') %>">
@@ -47,13 +47,13 @@
   </script>
 
   <script type="text/template" id="photo-template-text">
-    <img src=<%- photo.get('url') %> 
+    <img src=<%- photo.get('url') %>
          style="z-index: 1; position: absolute; top: 0; left: 0; max-width:500px; max-height:500px;">
     <% var notes = photo.get('notes'); %>
     <% for (var i = 0, len = notes.length; i < len; i++) { %>
         <div class="floating" style="z-index: 100; position: absolute; border: 1px solid silver;
             left: <%- notes[i].x %>px; top: <%- notes[i].y %>px;
-            width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;" 
+            width: <%- notes[i].w %>px; height: <%- notes[i].h %>px;"
             data-caption="<%- notes[i].text %>"></div>
     <% }; %>
   </script>
@@ -82,7 +82,7 @@
   var scrollingDone = function() {
     var x = $('#photobar-container').scrollLeft();
     var i = x2i(x);
-    photoList.render({flickr_id: '#{params[:flickr_id]}', n: Math.floor(i / photosPerRequest)}); 
+    photoList.render({flickr_id: '#{params[:flickr_id]}', n: Math.floor(i / photosPerRequest)});
   };
   $('#photobar-container').scroll( $.debounce( 250, scrollingDone) );
 
@@ -96,9 +96,9 @@
                                         });
   $('#photobar').on('click', '.photothumb', function() {
     $('#photobar > .selected').removeClass('selected').addClass('unselected');
-    // TODO Fill in with the image you have. Requires knowing the AR of the photo 
-    //$('#photo-container').html('&nbsp;').css({'background-image': $(this).css('background-image'), 
-    //                                            "background-size": "contain", 
+    // TODO Fill in with the image you have. Requires knowing the AR of the photo
+    //$('#photo-container').html('&nbsp;').css({'background-image': $(this).css('background-image'),
+    //                                            "background-size": "contain",
     //                                            "background-color": "white"})
     //                                      .css(parseFloat($(this).attr("ar")) > 1.0 ? 'width' : 'height', "500px");
     $(this).removeClass('unselected').addClass('selected');
@@ -129,7 +129,7 @@
           return this;
         }
       })
-      
+
     }
   });
   var ShowPhoto = Backbone.View.extend({
@@ -146,7 +146,7 @@
           var html = template({photo: photo});
           that.$el.html(html);
           return this;
-        }        
+        }
       })
     }
   });

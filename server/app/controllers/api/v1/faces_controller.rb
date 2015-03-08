@@ -14,7 +14,7 @@ module Api
                             manual: true,
                             height: params[:h],
                             photo_id: params[:photo_id],
-                            width: params[:w], 
+                            width: params[:w],
                             x: params[:x],
                             y: params[:y],
                            });
@@ -70,7 +70,7 @@ module Api
 
       # If the face-frame was manually added and has no name associated with it,
       # a logical deletion will occur. Otherwise, the face will be logically
-      # deleted. The response indicates what action occurred via the 
+      # deleted. The response indicates what action occurred via the
       # "destroyed" value.
       def destroy
         if @hsa && @photo

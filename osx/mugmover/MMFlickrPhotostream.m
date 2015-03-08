@@ -29,7 +29,7 @@ long                retryCount;
     self = [self init];
     if (self)
     {
-        
+
         if (!flickrHandle || !libraryPath)
         {
             return nil;
@@ -40,7 +40,7 @@ long                retryCount;
             [self releaseStrongPointers];
             return nil;
         }
-        
+
         _photoDictionary = [[NSMutableDictionary alloc] init];
         if (!_photoDictionary)
         {
@@ -50,7 +50,7 @@ long                retryCount;
         self.handle = flickrHandle;
         _currentPhotoIndex = (_page - 1) * PHOTOS_PER_REQUEST;
         self.initializationProgress = 0.0;
-     
+
         [[NSAppleEventManager sharedAppleEventManager] setEventHandler: self
                                                            andSelector: @selector(handleIncomingURL:withReplyEvent:)
                                                          forEventClass: kInternetEventClass
@@ -65,12 +65,12 @@ long                retryCount;
             DDLogError(@"    Unable to initialize pool!");
         }
         OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
-        
+
         DDLogInfo(@"STEP 2 Initiate the OAuth the request");
         self.initializationProgress = 0.4; // That's 2 out of 5 steps
         // Initiate the request, giving Flickr the mugmover callback to hit
         [flickrRequest fetchOAuthRequestTokenWithCallbackURL: [NSURL URLWithString: @"mugmover:callback"]];
-        
+
         _streamQueue = [NSOperationQueue mainQueue];
 
         // TODO Get this running in another thread
@@ -95,7 +95,7 @@ long                retryCount;
  didObtainOAuthRequestToken: (NSString *) inRequestToken
                      secret: (NSString *) inSecret
 {
-    
+
     DDLogInfo(@"STEP 3 Use the request token");
     DDLogInfo(@"       request=%@", inRequest);
     DDLogInfo(@"       requestToken=%@", inRequestToken);
@@ -104,15 +104,15 @@ long                retryCount;
 
     _flickrContext.OAuthToken = inRequestToken;
     _flickrContext.OAuthTokenSecret = inSecret;
-    
+
     [_requestPool returnRequestToPool: inRequest];
     //    [progressLabel setStringValue: @"Pending your approval..."];
-    
+
     NSURL *authURL = [_flickrContext userAuthorizationURLWithRequestToken: inRequestToken
                                                       requestedPermission: OFFlickrWritePermission];
     DDLogInfo(@"       authUrl=%@", [authURL absoluteString]);
     [[NSWorkspace sharedWorkspace] openURL: authURL];
-    
+
 }
 
 - (void) handleIncomingURL: (NSAppleEventDescriptor *) event
@@ -120,13 +120,13 @@ long                retryCount;
 {
     DDLogInfo(@"STEP 4 Handle incoming (mugmover) URL");
     self.initializationProgress = 0.8; /* That's 4 out of 5 steps */
-    
+
     NSURL *callbackURL = [NSURL URLWithString: [[event paramDescriptorForKeyword: keyDirectObject] stringValue]];
     DDLogInfo(@"       callbackURL=%@", [callbackURL absoluteString]);
-    
+
     NSString *requestToken= nil;
     NSString *verifier = nil;
-    
+
     BOOL result = OFExtractOAuthCallback(callbackURL, [NSURL URLWithString: @"mugmover:callback"], &requestToken, &verifier);
     if (!result)
     {
@@ -155,7 +155,7 @@ long                retryCount;
     _accessSecret = inSecret;
     _flickrContext.OAuthToken = inAccessToken;
     _flickrContext.OAuthTokenSecret = inSecret;
-    
+
     [_requestPool returnRequestToPool: inRequest];
     self.initializationProgress = 1.0; /* That's 5 out of 5 steps */
 
@@ -169,7 +169,7 @@ long                retryCount;
 - (void) getPhotos
 {
     NSString *userId = @"127850168@N06"; // TODO Don't hardcode this
-    
+
     OFFlickrAPIRequest *flickrRequest = [_requestPool getRequestFromPoolSettingDelegate: self];
     if ([flickrRequest isRunning])
     {
@@ -254,7 +254,7 @@ long                retryCount;
     /* TODO
      HANDLE THIS     ERROR flickrAPIRequest failed The operation couldn’t be completed. Request timeout (code=2147418114)
      end
-     
+
      */
     switch (inError.code)
     {
@@ -279,7 +279,7 @@ long                retryCount;
         return [_requestPool canRetry: inRequest];
     }
     return NO;
-    
+
 }
 
 - (void) flickrAPIRequest: (OFFlickrAPIRequest *) inRequest
@@ -301,7 +301,7 @@ long                retryCount;
             // TODO Add method to restart intialization; have MMPhoto also call that.
             self.initializationProgress = -1.0;
         }
-        
+
     }
 /* NEED TO FIGURE OUT WHICH REQUEST FAILED : initialization, reset to 0/-1 and retry that */
 /* ANSWER: Set and check sessionInfo element to track a given request. */

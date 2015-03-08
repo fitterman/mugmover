@@ -1,5 +1,5 @@
 class GoController < ApplicationController
-  
+
   # GET /a/:a_id/photos(.:format)
   # This takes extra parameters to regulate where it gets the photos
   #   +i+ is the index of the photo to be sure to obtain

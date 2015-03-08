@@ -16,12 +16,12 @@
         <span class="caret"></span>
       </button>
       <ul id="restore-faces" class="dropdown-menu" role="menu">
-        <li role="presentation" 
-            ng-repeat="face in photo.faces | filter:{deleted: true} | orderBy:'displayName' " 
+        <li role="presentation"
+            ng-repeat="face in photo.faces | filter:{deleted: true} | orderBy:'displayName' "
             ng-mouseenter="face.hovering = true"
             ng-mouseleave="face.hovering = false">
-          <a role="menuitem" 
-             ng-click="restoreFace(face)" 
+          <a role="menuitem"
+             ng-click="restoreFace(face)"
              tabindex="-1" href="#">{{face.displayName || '(' + xlate('unknown') + ')'}}</a>
         </li>
       </ul>

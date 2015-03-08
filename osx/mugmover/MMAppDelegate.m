@@ -28,7 +28,7 @@ BOOL const MMdebugLevel;
     MMTrack *aTrack = [[MMTrack alloc] init];
     [self setTrack: aTrack]; /* alternatively, self.track = aTrack; */
     [self updateUserInterface];
-    
+
     stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
                                              libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
 //                                             libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
@@ -40,11 +40,11 @@ BOOL const MMdebugLevel;
                     options: (NSKeyValueObservingOptionNew)
                     context: (__bridge void *)(self)];
     }
-    
+
 }
 
-/* TODO 
- 
+/* TODO
+
  From http://stackoverflow.com/questions/25833322/why-does-this-kvo-code-crash-100-of-the-time
  call  -removeObserver:forKeyPath:context:  when the time comes
 */
@@ -100,7 +100,7 @@ BOOL const MMdebugLevel;
 
 - (void) updateUserInterface
 {
-    
+
     float volume = [self.track volume];
     [self.textField setFloatValue: volume];
     [self.slider setFloatValue: volume];

@@ -61,7 +61,7 @@
     MMPoint *p1 = [[MMPoint alloc] initWithX: 1.5 y: 1.5];
     MMPoint *p2 = [[MMPoint alloc] initWithX: 1.5 y: 1.0];
     XCTAssertEqualWithAccuracy([MMPoint distanceBetween: p1 and: p2], 0.5, 0.01);
-    
+
 }
 
 - (void) testFaceCreation
@@ -73,10 +73,10 @@
 
     XCTAssertEqualWithAccuracy(topRightSquare.faceCenter.x, 658.218, 0.001, "faceCenter.x failed");
     XCTAssertEqualWithAccuracy(topRightSquare.faceCenter.y, 435.370, 0.001, "faceCenter.y failed");
-    
+
     XCTAssertEqualWithAccuracy(topRightSquare.faceWidth, 133.286, 0.001, "width failed");
     XCTAssertEqualWithAccuracy(topRightSquare.faceHeight, 133.286, 0.001, "height failed");
-    
+
     XCTAssertEqualWithAccuracy(topRightSquare.radius, 344.987, 0.001, "radius failed");
     XCTAssertEqualWithAccuracy(topRightSquare.originalAngle, 32.108, 0.001, "angle failed");
 }
@@ -89,11 +89,11 @@
                                                             bottomLeft: [[MMPoint alloc] initWithX: 0.808162715123663 y: 0.996058805356458]
                                                            masterWidth: 732
                                                           masterHeight: 504];
-    
+
     MMPoint *rotatedCenter = [topRightSquare rotateToPixels: 0.0];
     XCTAssertEqualWithAccuracy(rotatedCenter.x, 658.218, 0.001, "x with rotation 0.0 failed");
     XCTAssertEqualWithAccuracy(rotatedCenter.y, 435.370, 0.001, "y with rotation 0.0 failed");
-    
+
     rotatedCenter = [topRightSquare rotateToPixels: 32.108];
     XCTAssertEqualWithAccuracy(rotatedCenter.x, 710.987, 0.001, "x with rotation 32.108 failed");
     XCTAssertEqualWithAccuracy(rotatedCenter.y, 252.004, 0.001, "y with rotation 32.108 failed");

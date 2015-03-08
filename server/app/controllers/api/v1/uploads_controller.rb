@@ -8,7 +8,7 @@ module Api
         errors, service_account, photo, faces = store_uploaded_objects(request)
         if errors.empty?
           result = {status: 'ok'}
-          render json: result 
+          render json: result
         else
           result = {status: 'fail', errors: errors}
           render json: result, status: :bad_request
@@ -23,7 +23,7 @@ module Api
         errors = {} # Give it scope
 
         Photo.transaction do
-          
+
           # Separate the properties you will need
           photo_hash = request['photo']
           service_hash = request.delete('service')

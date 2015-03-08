@@ -8,7 +8,7 @@ class AddAndRenameManyColumns < ActiveRecord::Migration
     rename_column :photos, :processed_height, :height
 
     rename_column :display_names, :person_id, :named_face_id
-    
+
     create_table :named_faces do |t|
       t.integer :hosting_service_account_id
       t.string :database_uuid

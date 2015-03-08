@@ -28,11 +28,11 @@
     if (self)
     {
         /* Create the request pool */
-        
+
         _availableFlickrRequestPool = [[NSMutableArray alloc] initWithCapacity: MAX_POOL_SIZE];
         _activeFlickrRequestPool = [[NSMutableDictionary alloc] init];
         _flickrContext = flickrContext;
-        
+
         if (!_availableFlickrRequestPool || !_activeFlickrRequestPool)
         {
             return nil;
@@ -47,7 +47,7 @@
     {
         NSString *requestKey = [NSString stringWithFormat: @"%lx", (NSInteger)(request)];
         MMFlickrRequest *wrappedRequest = [_activeFlickrRequestPool objectForKey: requestKey];
-        
+
         if (wrappedRequest)
         {
             wrappedRequest.retriesRemaining -= 1;
@@ -80,7 +80,7 @@
             }
         }
         [wrappedRequest.request setDelegate: delegate];
-        
+
         // Note that we use the request id for the key, not the wrapped request
         NSString *requestKey = [NSString stringWithFormat: @"%lx", (NSInteger)(wrappedRequest.request)];
         [_activeFlickrRequestPool setObject: wrappedRequest forKey: requestKey];
@@ -98,7 +98,7 @@
     {
         NSString *requestKey = [NSString stringWithFormat: @"%lx", (NSInteger)(request)];
         NSObject *wrappedRequest = [_activeFlickrRequestPool objectForKey: requestKey];
-        
+
         if (!wrappedRequest)
         {
             @throw [NSException exceptionWithName: @"PoolManagement"

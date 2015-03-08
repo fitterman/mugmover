@@ -16,7 +16,7 @@
 - (id) initUploadForApiVersion: (NSInteger) version
                       bodyData: (NSDictionary *) bodyData // values should NOT be URLEncoded
 {
-    
+
     self = [self init];
     if (self)
     {
@@ -31,13 +31,13 @@
         {
             // Set the request's content type to application/x-www-form-urlencoded
             [_request setValue: @"application/x-www-form-urlencoded" forHTTPHeaderField: @"Content-Type"];
-            
+
             // Designate the request a POST request and specify its body data
             [_request setHTTPMethod: @"POST"];
             [_request setValue: @"application/json" forHTTPHeaderField: @"Accept"];
-            
+
             // URL-encode the data and then send that
-            
+
             NSMutableArray *encodedValues = [[NSMutableArray alloc] initWithCapacity: [bodyData count]];
             for(id key in bodyData)
             {
@@ -70,7 +70,7 @@
     // This gets called each time the server sends out a chnk of the response.
     // It can be called multiple times, for example in the case of a
     // redirect, so each time we reset the data.
-    
+
     [_receivedData setLength: 0];
 }
 

@@ -47,7 +47,7 @@
         [topLeft scaleByXFactor: _photo.masterWidth yFactor: _photo.masterHeight];
         [bottomLeft scaleByXFactor: _photo.masterWidth yFactor: _photo.masterHeight];
         [bottomRight scaleByXFactor: _photo.masterWidth yFactor: _photo.masterHeight];
-        
+
         {
             DDLogInfo(@"SCALED PTS    topLeft=%@ bottomLeft=%@ bottomRight=%@",
                     topLeft, bottomLeft, bottomRight);
@@ -85,15 +85,15 @@
          origin: (MMPoint *) centerPoint
 {
     {
-        DDLogInfo(@"BEFORE ROTATE centerPoint=%@ %3.1fWx%3.1fH", 
+        DDLogInfo(@"BEFORE ROTATE centerPoint=%@ %3.1fWx%3.1fH",
                 _centerPoint, _photo.masterWidth, _photo.masterHeight);
-        DDLogInfo(@"ROTATION      degrees=%3.1f origin=%@", 
+        DDLogInfo(@"ROTATION      degrees=%3.1f origin=%@",
                 degrees, centerPoint);
     }
     [self.centerPoint rotate: degrees relativeTo: centerPoint];
 
     {
-        DDLogInfo(@"AFTER ROTATE  centerPoint=%@ %3.1fWx%3.1fH", 
+        DDLogInfo(@"AFTER ROTATE  centerPoint=%@ %3.1fWx%3.1fH",
                 _centerPoint, _photo.masterWidth, _photo.masterHeight);
     }
 }

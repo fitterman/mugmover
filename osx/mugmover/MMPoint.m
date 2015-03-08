@@ -36,7 +36,7 @@
         // Get the angle and straight-line distance of this point relative to the origin
         Float64 deltaX = self.x - origin.x;
         Float64 deltaY = self.y - origin.y;
-        
+
         Float64 angle = atan(deltaY / deltaX) * DEGREES_PER_RADIAN;
         if (deltaX < 0)
         {
@@ -44,7 +44,7 @@
         }
 
         Float64 distance = sqrtl(pow(deltaX, 2.0) + pow(deltaY, 2.0));
-        
+
         // See note above about why degrees is subtracted
         angle += degrees;                       // Rotated to the new angle
         angle = angle / DEGREES_PER_RADIAN;     // in radians
@@ -63,7 +63,7 @@
     _y *= yFactor;
 }
 
-+ (id) midpointOf: (MMPoint *) p1 
++ (id) midpointOf: (MMPoint *) p1
               and: (MMPoint *) p2
 {
     return [[MMPoint alloc] initWithX: (p1.x + p2.x) / 2.0 y: (p1.y + p2.y) / 2.0];

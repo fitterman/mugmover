@@ -18,12 +18,12 @@
 - (id) initMakeHeadRequest: (NSString *) urlString
                   delegate: (MMPhoto *) delegate
 {
-    
+
     self = [self init];
     if (self)
     {
         NSURL *url = [NSURL URLWithString: urlString];
-        
+
         _request = [NSMutableURLRequest requestWithURL: url
                                            cachePolicy: NSURLRequestUseProtocolCachePolicy
                                        timeoutInterval: DEFAULT_HEAD_TIMEOUT];
@@ -31,12 +31,12 @@
         {
             return nil;
         }
-        
+
         // Designate the request a POST request and specify its body data
         [_request setHTTPMethod: @"HEAD"];
-        
+
         _receivedData = [NSMutableData dataWithCapacity: 0];
-        
+
         // create the connection, starting the request
         _connection = [[NSURLConnection alloc] initWithRequest: _request
                                                       delegate: self];
@@ -75,14 +75,14 @@
         return YES;
     }
     return NO;
-    
+
 }
 
 - (void) connection: (NSURLConnection *) connection
    didFailWithError: (NSError *) error
 {
     // Release the connection and the data object.
-    
+
     [_delegate mmNetworkRequest: self
                didFailWithError: error];
     [self releaseStrongPointers];

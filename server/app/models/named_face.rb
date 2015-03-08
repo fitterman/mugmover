@@ -8,7 +8,7 @@ class NamedFace < ActiveRecord::Base
   end
   has_one     :face_icon,              class_name: 'Face'
 
-  default_scope { order('public_name') } 
+  default_scope { order('public_name') }
 
   validates   :face_key,               presence: {allow_blank: false}
   validates   :face_name_uuid,         presence: {allow_blank: false}

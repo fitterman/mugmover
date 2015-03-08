@@ -5,7 +5,7 @@
       <div style="display: inherit; height: 60px; width: 60px; text-align: center;" >
         <a  ng-class=" name === iteratedName ? 'selected' : '' "
             ui-sref="names.show({id: iteratedName.id})">
-          <img  class="circle"  
+          <img  class="circle"
                 style="display: inherit; height: 50px; width: 50px; margin-bottom: 0;"
                 ng-src="{{iteratedName.thumbnail}}" ng-attr-title="{{iteratedName.withNote}}" />
         </a>

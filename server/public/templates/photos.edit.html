@@ -13,11 +13,11 @@
                      height: photo.workingImageHeight(),
                      width: photo.workingImageWidth()
                     }">
-      <img  id="photo-img" 
-            class="img-responsive" 
+      <img  id="photo-img"
+            class="img-responsive"
             ng-src="{{photo.url}}"
             ng-click="addFaceAt($event.offsetX, $event.offsetY)"
-            ng-style="{ 'background-repeat': 'no-repeat', 
+            ng-style="{ 'background-repeat': 'no-repeat',
                         'background-size' : 'contain',
                         'background-image': 'url(' + photo.thumb + ')' }" />
       <div id="face-frame-container">
@@ -30,8 +30,8 @@
               mm-movable-photo="photo"
               ng-mouseenter="setHoverFace(face)"
               ng-mouseleave="setHoverFace(null, 1200)"
-              ng-style="{ width: face.scaledW(), height: face.scaledH(), 
-                          left: face.scaledX(), top: face.scaledY(), 
+              ng-style="{ width: face.scaledW(), height: face.scaledH(),
+                          left: face.scaledX(), top: face.scaledY(),
                           cursor: (face.manual ? 'move' : 'default'),
                           'z-index': ((face === hoverFace) ? '180' : '') }">
         <div  class="icon-control"
@@ -42,7 +42,7 @@
         </div>
         <form class="name-display-form"
               ng-style="{top: face.scaledH()}">
-          <div ng-class=" face.namedFaceId ? 'input-group' : '' " 
+          <div ng-class=" face.namedFaceId ? 'input-group' : '' "
                ng-show="(face === hoverFace)" >
             <input  class="name-display-box form-control input-sm ellipsis"
                     type="text"
@@ -70,5 +70,5 @@
 
     </div>
   </div>
-</div>  
+</div>
 
