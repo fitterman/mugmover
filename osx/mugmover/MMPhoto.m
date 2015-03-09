@@ -208,7 +208,7 @@
     {
         NSNumber *number = [NSNumber numberWithInteger: _version - 1];
         NSString *query =  @"SELECT masterUuid, masterHeight, masterWidth, processedHeight, "
-                                "processedWidth, rotation, imagePath, filename, versionUuid FROM RKVersion v "
+                                "processedWidth, rotation, imagePath, fileName, versionUuid FROM RKVersion v "
                             "FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid "
                             "WHERE uuid = ? AND versionNumber = ? ";
         NSArray *args = @[_versionUuid, number];
@@ -221,7 +221,7 @@
             [self updateFromIphotoLibraryVersionRecord: resultSet];
 
             NSString *masterPath = [resultSet stringForColumn: @"imagePath"];
-            NSString *versionFilename = [resultSet stringForColumn: @"filename"];
+            NSString *versionFilename = [resultSet stringForColumn: @"fileName"];
             NSString *versionUuid = [resultSet stringForColumn: @"versionUuid"];
 
             _iPhotoOriginalImagePath = [_stream.library versionPathFromMasterPath: (NSString *) masterPath
@@ -244,7 +244,7 @@
     // In fact, we may find multiple matches and will have to take a guess
     // which is the best match.
 
-    NSString *query = @"SELECT v.versionNumber version, v.uuid versionUuid, m.uuid, imagePath, v.filename filename, "
+    NSString *query = @"SELECT v.versionNumber version, v.uuid versionUuid, m.uuid, imagePath, v.fileName fileName, "
                              "masterUuid, masterHeight, masterWidth, processedHeight, processedWidth, "
                               "rotation, isOriginal "
                        "FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid "
@@ -276,7 +276,7 @@
             NSDictionary *exif = nil;
 
             NSString *masterPath = [resultSet stringForColumn: @"imagePath"];
-            NSString *versionFilename = [resultSet stringForColumn: @"filename"];
+            NSString *versionFilename = [resultSet stringForColumn: @"fileName"];
             NSString *versionUuid = [resultSet stringForColumn: @"versionUuid"];
 
             if ([resultSet boolForColumn: @"isOriginal"])

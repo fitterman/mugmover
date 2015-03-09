@@ -97,7 +97,7 @@ NSString *photosPath;
     NSArray *args = @[masterUuid];
     NSDictionary *result = nil;
 
-    FMResultSet *versionRecord = [_photosDatabase executeQuery: @ "SELECT v.filename, v.uuid versionUuid, imagePath "
+    FMResultSet *versionRecord = [_photosDatabase executeQuery: @ "SELECT v.fileName, v.uuid versionUuid, imagePath "
                                                                   "FROM RKMaster m JOIN RKVersion v ON m.uuid = v.masterUuid "
                                                                   "INNER JOIN "
                                                                   "  (SELECT uuid, MAX(versionNumber) version FROM RKVersion x "
@@ -111,7 +111,7 @@ NSString *photosPath;
         return result;
     }
 
-    NSString *versionFilename = [versionRecord stringForColumn: @"filename"];
+    NSString *versionFilename = [versionRecord stringForColumn: @"fileName"];
     NSString *versionUuid = [versionRecord stringForColumn: @"versionUuid"];
     NSString *masterPath = [versionRecord stringForColumn: @"imagePath"];
 
