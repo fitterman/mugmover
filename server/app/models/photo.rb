@@ -36,6 +36,10 @@ class Photo < ActiveRecord::Base
     return photo
   end
 
+  def thumbnail_data_or_url
+    thumbnail.blank? ? thumbnail_url : ('data:image/jpeg;base64,' + self.thumbnail)
+  end
+
   # Ensure it has a valid value
   def normalize_flag
     if self.flag.nil?
