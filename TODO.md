@@ -21,17 +21,10 @@
 
 # Server
 - Flickr does not always have some sizes (1024, 1600 but we assume they do).
-
-### URGENT: WHEN WE UNDELETE SOMETHING, THE WATCHERS ARE NOT RESTORED.
-
-** Server/Editor
-- If you click near the edge, the box should be limited to be inside bounds (it isn't).
-
+- Our photo thumbnails are substantially worse than flickr's
 
 URL Scheme: account/obfuscated-service-account-id
 
-* Underscore
-- Stop requesting pages of photos you already have received (on scrolling)
 
 // Figure out collections (which contain Sets) and Sets (which contain phtos) and figure out how to tell what photos are in which.
 // Photos can be in multiple Albums (fka Sets).

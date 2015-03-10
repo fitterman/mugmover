@@ -285,10 +285,15 @@
                       templateUrl: '/templates/names.html',
                       controller: 'NamesController'
                     },
+                    navspecific:
+                    {
+                      templateUrl: '/templates/names.nav.html',
+                      controller: 'NameNavController'
+                    },
                     navline2:
                     {
                       templateUrl: '/templates/names.navslider.html',
-                      controller: 'NamesNavController'
+                      controller: 'NamesNavSliderController'
                     }
                   }
                 }
@@ -573,7 +578,7 @@
                     {
                       $scope.Page = Page;
                       $scope.xlate = translations.translate;
-                    }
+                                      }
   ]);
 
   app.controller('DetailController',
@@ -624,13 +629,14 @@
                              milliseconds);
   }
 
-  app.controller('NamesNavController',
+  app.controller('NamesNavSliderController',
                  ['$scope', 'NameToPhotoGlue',
                   function($scope, NameToPhotoGlue)
                   {
                     $scope.setSelectedName = function(name)
                     {
                       $scope.name = name;
+                      NameNavController.setName(name); // Propogate to the related controller
                     };
                     $scope.names = NameToPhotoGlue.getNamesIndex();
                   }
@@ -692,6 +698,19 @@
                   } 
                  ]
   );
+
+  app.controller('NameNavController',
+                 ['$scope',
+                  function($scope)
+                  {
+                    $scope.setName = function(name)
+                                      {
+                                        $scope.name = name;
+                                      };
+                  }
+                ]
+  );
+
   app.controller('PhotoNavController',
                  ['$scope', 'NameToPhotoGlue', 'Face',
                   function($scope, NameToPhotoGlue, Face)
