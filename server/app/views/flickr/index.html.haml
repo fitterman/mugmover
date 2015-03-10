@@ -27,7 +27,7 @@
   <script type="text/template" id="photos-template-text">
     <% _.each(photos, function(photo) { %>
       <% if ($('.photothumb[phid=' + photo.get('id') + ']').length == 0) { %>
-          <div class="photothumb unselected" style="position: absolute;
+          <div class="photothumb" style="position: absolute;
               background-repeat: no-repeat; background-position: center;
               background-image: url('<%- photo.get('thumb') %>');
               top: 27px;
@@ -95,13 +95,13 @@
                                           left: $(this).position().left + #{thumbsize / 2}});
                                         });
   $('#photobar').on('click', '.photothumb', function() {
-    $('#photobar > .selected').removeClass('selected').addClass('unselected');
+    $('#photobar > .selected').removeClass('selected');
     // TODO Fill in with the image you have. Requires knowing the AR of the photo
     //$('#photo-container').html('&nbsp;').css({'background-image': $(this).css('background-image'),
     //                                            "background-size": "contain",
     //                                            "background-color": "white"})
     //                                      .css(parseFloat($(this).attr("ar")) > 1.0 ? 'width' : 'height', "500px");
-    $(this).removeClass('unselected').addClass('selected');
+    $(this).addClass('selected');
     router.navigate('show/' + $(this).attr('phid') , {trigger: true});
   });
 

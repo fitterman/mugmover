@@ -1,5 +1,6 @@
 json.totalPhotos @total_photos
 json.photosPerRequest @photos_per_request
+json.page @page
 json.photos do
   json.array!(@photos) do |photo|
     json.extract! photo, :id

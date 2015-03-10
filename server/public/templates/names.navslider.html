@@ -1,0 +1,15 @@
+<div class="navbar-slider-container">
+  <div class="navbar-slider">
+    <div ng-repeat="iteratedName in names | object2Array | orderBy:'publicName'"
+         style="display: inline-block;">
+      <div class="navbar-element" >
+        <a  ng-class="{selected: name === iteratedName}"
+            ng-click="setSelectedName(iteratedName)"
+            ui-sref="names.show({id: iteratedName.id})">
+          <img  class="circle"
+                style="display: inherit; height: 50px; width: 50px; margin-bottom: 0;"
+                ng-src="{{iteratedName.thumbnail}}" ng-attr-title="{{iteratedName.withNote}}" />
+        </a>
+      </div>
+    </div>
+</div>

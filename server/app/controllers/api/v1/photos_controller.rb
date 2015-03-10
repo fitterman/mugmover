@@ -12,7 +12,8 @@ module Api
         @hsa = HostingServiceAccount.find(params[:a_id])
         params[:i] ||= 0
         @photos_per_request = params[:n].to_i
-        @index = Integer(params[:i].to_i) * @photos_per_request
+        @page = Integer(params[:i].to_i)
+        @index = @page * @photos_per_request
         @photos = @hsa.photos.limit(@photos_per_request).offset(@index)
         @total_photos = @hsa.photos.count
       end

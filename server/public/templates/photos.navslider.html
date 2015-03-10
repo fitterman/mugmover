@@ -1,0 +1,16 @@
+<div mm-scroll="showMore()" class="navbar-slider-container">
+  <div class="navbar-slider" 
+       ng-style="scrollerWidthProperty">
+    <div  ng-repeat="thumb in thumbnails" 
+          ng-style="thumb.divStyle">
+      <div class="navbar-element">
+        <a  ng-class="{selected: photo === thumb}"
+            ng-click="setSelectedPhoto(thumb)"
+            ui-sref="photos.edit({id: thumb.id})">
+          <img  ng-style="thumb.thumbStyle"
+                ng-src="{{thumb.thumb}}" ng-attr-title="{{ 'thumb.withNote' }}" />
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -7,10 +7,18 @@ $borderWidth:                 2px;
 $defaultFontColor:            black;
 $iconPixelDim:                16px;
 $handleWidth:                 10px;
-$photobarColor:               white;
-$photobarPhotoBorder:         black;
+$navbarSliderColor:           transparent;
+$navbarSliderPhotoBorder:     black;
 $thumbBorderWidth:            1px;
 $thumbsizeWithBorder:         $thumbsize + $borderWidth;
+
+@mixin vertical-align {
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
 
 body > .container
               {
@@ -51,13 +59,14 @@ body > .container
               {
                 background-color: #c00;
               }
-
-.ellipsis     {
+.ellipsis
+              {
                 overflow-x: hidden !important; 
                 text-overflow: ellipsis !important;
                 white-space: nowrap !important;
               }
-.face-frame   {
+.face-frame
+              {
                 border: 2px solid $faceFrameBorderColor; 
                 border-radius: $borderRadius;
                 position: absolute; 
@@ -67,7 +76,8 @@ body > .container
               {
                 border-color: $faceFrameUnknownColor;  
               }              
-.handle       {
+.handle
+              {
                 background-color: $faceFrameBorderColor;
                 border-radius: $handleWidth / 2;
                 cursor: nwse-resize;
@@ -80,7 +90,8 @@ body > .container
               {
                 background-color: $faceFrameUnknownColor;
               }
-#name         { 
+#name
+              { 
                 border-radius: $borderRadius;
                 position: absolute;
                 white-space: nowrap;
@@ -95,7 +106,8 @@ body > .container
                 position: relative;
                 width:  20em;
               }
-.name-note    {
+.name-note
+              {
                 font-size: 70%;
               }    
 #names-container
@@ -124,6 +136,13 @@ body > .container
               {
                 height: 30px;
               }
+.navbar-element
+              {
+                display: inline-block;
+                height: 60px; 
+                width: 60px;
+                text-align: center;
+              }
 .oneline      
               {
                 overflow-x: scroll;
@@ -135,51 +154,55 @@ body > .container
                 margin-left: auto;
                 margin-right: auto;
               }
-#photo-img    {
+#photo-img
+              {
                 cursor: crosshair;
                 position: absolute;
                 top: 0;
                 z-index: 1;
               }
-#photobar     {
+#navline2
+              {
+                height: 80px;
+              }
+#navbarSlider
+              {
                 left: 0;
                 position: absolute;
                 top: 0;
                 z-index: 100;
               }
-#photobar-container
+.navbar-slider
               {
-                background: $photobarColor;
-                border: 6px solid $photobarColor;
-                border-radius: 10px;
-                height: 80px; 
-                margin-top: 5em;
-                overflow-y: scroll;
                 position: relative;
+                height: 80px;
+              }
+.navbar-slider-container
+              {
+                background: $navbarSliderColor;
+                border: 6px solid $navbarSliderColor;
+                border-radius: 10px;
+                overflow-y: scroll;
                 white-space: nowrap;
               }
-#photobar-container:hover
-              {
-                margin-top: 5em;
-                z-index: 200;
-              }
-#photobar-container::-webkit-scrollbar 
+.navbar-slider-container::-webkit-scrollbar 
               {
                 height: 5px; 
                 width: 0px; 
                 -webkit-appearance: none; 
               }
-#photobar-container::-webkit-scrollbar-track 
+.navbar-slider-container::-webkit-scrollbar-track 
               {
                 background-color: rgba(0, 0, 0, .2);  
                 border: 5px solid silver; 
               }
-#photobar-container::-webkit-scrollbar-thumb 
+.navbar-slider-container::-webkit-scrollbar-thumb 
               { 
                 border-radius: 4px; 
                 background-color: rgba(0, 0, 0, 0.4); 
               }
-.photothumb   { 
+.photothumb
+              { 
                 background-position: center; 
                 background-repeat: no-repeat;
                 background-size: contain; 
@@ -202,7 +225,7 @@ body > .container
 .photothumb > img
               {
                 margin: auto;
-                border: $thumbBorderWidth solid $photobarPhotoBorder;
+                border: $thumbBorderWidth solid $navbarSliderPhotoBorder;
               }
 #restore-faces 
               {
@@ -212,10 +235,20 @@ body > .container
               {
                 background-color: rgba(255, 255, 255, 0.6);
               }
-.selected     { background-color: $photobarColor; opacity: 1.0; }
-.selected img {
+.navbar-slider-container img
+              {
+                opacity: 0.6;
+                @include vertical-align;
+              }
+.navbar-slider-container img:hover
+              {
+                opacity: 1.0;
+              }
+.navbar-slider-container .selected img 
+              {
+                opacity: 1.0; 
                 /* These two messes are stolen from what bootstrap does on :focus form boxes */
-                border-color: rgb(103, 175, 233);
+                /* Because the people circles do not specify a border, it was necessary to add a width and solid style */
+                border: rgb(103, 175, 233) 1px solid;
                 box-shadow: rgba(0, 0, 0, 0.0745098) 0px 1px 1px 0px inset, rgba(103, 175, 233, 0.592157) 0px 0px 7.90463399887085px 0px;
               }
-.unselected   { opacity: 0.6; }

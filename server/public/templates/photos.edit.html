@@ -2,11 +2,6 @@
 </div>
 
 <div class="row">
-  <div class="col-xs-4 col-sm-2" ng-repeat="face in photo.faces | filter:noThumbnail ">
-    <img class="thumbnail circle" data-id="{{face.id}}" ng-src="{{face.thumbDataUri()}}" title="{{face.publicName}}" />
-  </div>
-</div>
-<div class="row">
   <div class="col-xs-8">
     <div id="photo-container"
          ng-style="{
@@ -71,4 +66,5 @@
     </div>
   </div>
 </div>
+
 

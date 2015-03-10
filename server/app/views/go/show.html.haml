@@ -2,11 +2,12 @@
 
   var language = 'ia';
 
-  var endGap = 400; // pixels
   var fullThumbSize = 50;
   var halfThumbSize = fullThumbSize / 2;
   var borderWidth = 1; // px
-  var photoWidth = fullThumbSize + (2 * borderWidth); // pixels (borderWidth px on each side)
+  var photoWidth = fullThumbSize;
+  var photosPerRequest = 20;
+  var navbarElementPixelWidth = 60; // pixels
 
   // TODO Get these two aligned.
   var minFaceDimension = 20; // Pixels TODO Scale to photo
@@ -177,6 +178,58 @@
                               }
                              ]
   );
+  mugmarkerServices.service('PhotoSliderCache',
+                            ['$http',
+                              function($http)
+                              {
+                                this.cache = [];
+                                this.loaded = {};
+                                var that = this;
+                                this.getTotalPhotos = function() { return this.totalPhotos };
+                                this.getPhotos = function() { return this.cache };
+                                this.updatePhotos = function(fromIndex, toIndex)
+                                                 {
+                                                   var promises = [];
+                                                   for (var i = fromIndex; i <= toIndex; i += photosPerRequest)
+                                                   {
+                                                     var page = Math.floor(i / photosPerRequest);
+                                                     if (!that.loaded[page])
+                                                     {
+                                                       var url = '/api/v1/photos.json?a_id=1&n=' + photosPerRequest + '&i=' + page;
+                                                       var promise = $http.get(url)
+                                                                          .then(function(response)
+                                                                                {
+                                                                                  that.loaded[response.data.page] = true;
+                                                                                  that.totalPhotos = response.data.totalPhotos;
+                                                                                  angular.forEach(response.data.photos, function(photo)
+                                                                                                            {
+                                                                                                              var scaleFactor = fullThumbSize / Math.max(photo.width, photo.height);
+                                                                                                              var smaller = (fullThumbSize * scaleFactor);
+                                                                                                              if (photo.width > photo.height)
+                                                                                                              {
+                                                                                                                photo.thumbStyle = {width: fullThumbSize + 'px', height: (photo.height * scaleFactor) + 'px'};
+                                                                                                              }
+                                                                                                              else
+                                                                                                              {
+                                                                                                                photo.thumbStyle = {height: fullThumbSize + 'px', width: (photo.width * scaleFactor) + 'px'};
+                                                                                                              }
+                                                                                                              photo.divStyle = {left: (photo.index * navbarElementPixelWidth) + 'px', position: 'absolute', top: 0, display: 'inline-block'};
+                                                                                                              that.cache.push(photo);
+                                                                                                            });
+                                                                                },
+                                                                                function(response, status, headers, config)
+                                                                                {
+                                                                                  alert('An error occurred (' + status + '). Please try again.');
+                                                                                });
+                                                       promises.push(promise);
+                                                     }
+                                                   }
+                                                   return promises;
+                                                 };
+                              }
+                            ]
+  );
+
   var app = angular.module('mugmarker', ['ui.router', 'mugmarkerServices']);
 
   // Configure the router (ui-router)
@@ -197,8 +250,13 @@
                     },
                     navspecific:
                     {
-                      templateUrl: '/templates/photos.edit.nav.html',
+                      templateUrl: '/templates/photos.nav.html',
                       controller: 'PhotoNavController'
+                    },
+                    navline2:
+                    {
+                      templateUrl: '/templates/photos.navslider.html',
+                      controller: 'PhotoNavSliderController'
                     }
                   }
                 }
@@ -226,6 +284,11 @@
                     {
                       templateUrl: '/templates/names.html',
                       controller: 'NamesController'
+                    },
+                    navline2:
+                    {
+                      templateUrl: '/templates/names.navslider.html',
+                      controller: 'NamesNavController'
                     }
                   }
                 }
@@ -505,8 +568,8 @@
                   // NOTE: Because these are injected at this level, and associated
                   //       with the $scope, all subordinate controllers have access
                   //       to them.
-                  ['$scope', 'Page', 'translations',
-                    function($scope, Page, translations)
+                  ['$scope', 'Page', 'PhotoSliderCache', 'translations',
+                    function($scope, Page, PhotoSliderCache, translations)
                     {
                       $scope.Page = Page;
                       $scope.xlate = translations.translate;
@@ -561,6 +624,74 @@
                              milliseconds);
   }
 
+  app.controller('NamesNavController',
+                 ['$scope', 'NameToPhotoGlue',
+                  function($scope, NameToPhotoGlue)
+                  {
+                    $scope.setSelectedName = function(name)
+                    {
+                      $scope.name = name;
+                    };
+                    $scope.names = NameToPhotoGlue.getNamesIndex();
+                  }
+                ]
+  );
+
+  app.directive('mmScroll', function () {
+      return {
+          restrict: 'A',
+          leftPos: 0,
+          link: function (scope, element, attrs) {
+              var raw = element[0];
+              element.bind('scroll', function () {
+                  this.leftPos = raw.scrollLeft;
+                  this.mmuid; // Just need to call this once to assign it
+                  debounce(this, 1500, scope.scrolledTo)
+              });
+          }
+      };
+  });
+
+  app.controller('PhotoNavSliderController',
+                 ['$scope', 'PhotoSliderCache',
+                  function($scope, PhotoSliderCache)
+                  {
+                    $scope.photoScrollerWidth = 1000; // intial value
+                    $scope.$watch("photoScrollerWidth",function(){
+                      $scope.scrollerWidthProperty = { width: $scope.photoScrollerWidth + 'px' };
+                    });
+                    $scope.setSelectedPhoto = function(thumb)
+                    {
+                      $scope.photo = thumb;
+                    };
+
+                    $scope.scrolledTo = function(scroller) {
+                      var first = Math.floor(scroller.leftPos / navbarElementPixelWidth);
+                      var last = first + Math.floor($('.navbar-slider-container').width() / navbarElementPixelWidth) + 1;
+                      PhotoSliderCache.updatePhotos(first, last);
+                    };
+                    $scope.thumbnails = PhotoSliderCache.getPhotos();
+                    // To get started, we need some number of photos
+                    var initialRequest = Math.ceil($('.navbar-slider-container').width() / navbarElementPixelWidth);
+                    var promises = PhotoSliderCache.updatePhotos(0, initialRequest); // Prime the pump
+                    var promise = promises[0] // Any promise will do, we just need the totalPhotos
+                    if (promise) 
+                    {
+                      promise.then(function(d)
+                                   {
+                                     $scope.photoScrollerWidth = PhotoSliderCache.getTotalPhotos() * navbarElementPixelWidth;
+                                   },
+                                   function(data, status, headers, config)
+                                   {
+                                     // TODO Check this function, because I think it has the wrong signature
+                                     alert('An error occurred (' + status + '). Please try again.');
+                                   }
+
+                      );
+                    }
+                  } 
+                 ]
+  );
   app.controller('PhotoNavController',
                  ['$scope', 'NameToPhotoGlue', 'Face',
                   function($scope, NameToPhotoGlue, Face)
@@ -1012,5 +1143,5 @@
 %div{'ng-include' => "'/templates/navbar.html'"}
 %div{'ng-include' => "'/templates/namepicker.html'"}
 
-%div{'ui-view' => 'display'}
+%div{'ui-view' => 'display', style: 'padding-top: 120px;'}
 

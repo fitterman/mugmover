@@ -9,17 +9,7 @@
     = javascript_include_tag 'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular-resource.min.js'
     = javascript_include_tag 'https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.13/angular-ui-router.min.js'
     = javascript_include_tag 'application'
-    - if Rails.env.development? || Rails.env.test?
-      = javascript_include_tag 'jquery.ba-throttle-debounce.min-1.1.js'
-    - else
-      = javascript_include_tag '//cdnjs.cloudflare.com/ajax/libs/jquery-throttle-debounce/1.1/jquery.ba-throttle-debounce.min.js'
     = csrf_meta_tags
-    :javascript
-      var window_load_ready_function = function() {
-         #{ yield :window_load }
-      }
-      $(window).load( window_load_ready_function );
-      $(document).on( 'page:load', window_load_ready_function );
   %body
     .container
       = yield

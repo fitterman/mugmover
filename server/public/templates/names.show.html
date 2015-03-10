@@ -1,21 +1,4 @@
 <div class="row">
-  <div class="col-xs-12 oneline">
-    <div ng-repeat="iteratedName in names | object2Array | orderBy:'publicName'"
-         style="display: inline-block;">
-      <div style="display: inherit; height: 60px; width: 60px; text-align: center;" >
-        <a  ng-class=" name === iteratedName ? 'selected' : '' "
-            ui-sref="names.show({id: iteratedName.id})">
-          <img  class="circle"
-                style="display: inherit; height: 50px; width: 50px; margin-bottom: 0;"
-                ng-src="{{iteratedName.thumbnail}}" ng-attr-title="{{iteratedName.withNote}}" />
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<div class="row">
   <div class="col-xs-12">
     <h4>
       <div style="display: inline-block; " >

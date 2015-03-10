@@ -1,0 +1,29 @@
+<div class="btn-group" role="group" aria-label="Control what is displayed">
+  <a id="photoButton" class="btn btn-default" ui-sref="photos.edit({id: photo.id})">
+    {{xlate('photoButton')}}
+  </a>
+  <a id="detailsButton" class="btn btn-default" ui-sref="photos.detail({id: photo.id})">
+    {{xlate('detailsButton')}}
+  </a>
+</div>
+<div id="restoreGroup" class="btn-group">
+  <button id="restoreButton"
+          class="btn btn-default dropdown-toggle"
+          data-toggle="dropdown"
+          ng-disabled="(photo.faces | filter:{deleted: true}).length == 0"
+          aria-expanded="false">
+    {{xlate('restoreButton')}}
+    <span class="caret"></span>
+  </button>
+  <ul id="restore-faces" class="dropdown-menu" role="menu">
+    <li role="presentation"
+        ng-repeat="face in photo.faces | filter:{deleted: true} | orderBy:'displayName' "
+        ng-mouseenter="face.hovering = true"
+        ng-mouseleave="face.hovering = false">
+      <a role="menuitem"
+         ng-click="restoreFace(face)"
+         tabindex="-1" href="#">{{face.displayName || '(' + xlate('unknown') + ')'}}</a>
+    </li>
+  </ul>
+</div>
+
