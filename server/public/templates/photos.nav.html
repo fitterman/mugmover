@@ -26,4 +26,15 @@
     </li>
   </ul>
 </div>
-
+<div class="btn-group" role="flag">
+  <span class="glyphicon glyphicon-unchecked pull-right"
+        style="font-size: 200%;"
+        ng-show="(photo.id % 2) == 0"
+        title="{{xlate('markPhoto')}}"
+        aria-label="not marked"></span>
+  <span class="glyphicon glyphicon-check pull-right"
+        style="font-size: 200%;"
+        ng-hide="(photo.id % 2) == 0"
+        title="{{xlate('markPhoto')}}"
+        aria-label="not marked"></span>
+</div>

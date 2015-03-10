@@ -22,7 +22,7 @@ $thumbsizeWithBorder:         $thumbsize + $borderWidth;
 
 body > .container
               {
-                // padding-top: 60px;
+                padding-top: 150px; /* That's 10px extra */
               }
 .circle       
               {
@@ -163,7 +163,7 @@ body > .container
               }
 #navline2
               {
-                height: 80px;
+                height: 70px;
               }
 #navbarSlider
               {
@@ -175,7 +175,7 @@ body > .container
 .navbar-slider
               {
                 position: relative;
-                height: 80px;
+                height: 70px;
               }
 .navbar-slider-container
               {
