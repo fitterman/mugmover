@@ -420,8 +420,39 @@ NSString *photosPath;
 
                 // cast CFDictonaryRef to NSDictionary
                 exifDictionary = [NSMutableDictionary dictionaryWithDictionary : (__bridge NSDictionary *) metadataRef];
+
                 if (exifDictionary)
                 {
+                    NSError *error = NULL;
+                    NSMutableDictionary *oldNew = [[NSMutableDictionary alloc] init];
+                    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern: @"\\A\\{([^}]+)\\}\\Z"
+                                                                                           options: 0
+                                                                                             error: &error];
+                    if (error)
+                    {
+                        DDLogError(@"Unable to create regex: error=%@", error);
+                    }
+                    for (NSString * key in [exifDictionary allKeys])
+                    {
+                        NSTextCheckingResult *match = [regex firstMatchInString: key
+                                                                        options: 0
+                                                                          range: NSMakeRange(0, [key length])];
+                        {
+                            if (match)
+                            {
+                                [oldNew setObject: [key substringWithRange: NSMakeRange(match.range.location + 1, match.range.length - 2)]
+                                           forKey: key];
+                            }
+                        }
+                    }
+                    for (NSString *key in oldNew)
+                    {
+                        NSString *newKey = [oldNew objectForKey: key];
+                        id objectToPreserve = [exifDictionary objectForKey: key];
+                        [exifDictionary setObject:objectToPreserve forKey: newKey];
+                        [exifDictionary removeObjectForKey: key];
+                    }
+
                     [exifDictionary setValue: filePath forKey: @"_image"];
                     unsigned long long fileSize = [[[NSFileManager defaultManager] attributesOfItemAtPath: filePath error:nil] fileSize];
                     [exifDictionary setValue: @(fileSize) forKey: @"_fileSize"];

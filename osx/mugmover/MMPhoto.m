@@ -107,7 +107,7 @@
     NSArray *exifDateFormatters = @[exifDateFormat1, exifDateFormat2];
     
     NSString *exifDateString;
-    for (NSString *keypath in @[@"{Exif}.DateTimeOriginal", @"{Exif}.DateTimeDigitized", @"{TIFF}.DateTime"])
+    for (NSString *keypath in @[@"Exif.DateTimeOriginal", @"Exif.DateTimeDigitized", @"TIFF.DateTime"])
     {
         exifDateString = [exifProperties valueForKeyPath: keypath];
         if (exifDateString)
