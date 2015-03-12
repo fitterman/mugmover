@@ -19,6 +19,10 @@ module Api
       def store_uploaded_objects(request)
         # Create an untainted copy of the uploaded hash, as we're going to save it with the photo
         pristine_hash = request.deep_dup
+        pristine_hash['photo'].delete('thumbnail') # Too big to carry around twice
+        if pristine_hash.key?('faces')
+          pristine_hash['faces'].each { |face| face.delete 'thumbnail' }
+        end
 
         errors = {} # Give it scope
 
@@ -29,11 +33,11 @@ module Api
           service_hash = request.delete('service')
           database_uuid = request['source']['databaseUuid']
 
-          hosting_service_account = HostingServiceAccount.from_hash(service_hash)
+          hosting_service_account = HostingServiceAccount.from_hash({name: 'flickr', handle: 'foobar'})
           if hosting_service_account.errors.present?
             errors[:service] = hosting_service_account.errors.full_messages
           else
-            photo = Photo.from_hash(hosting_service_account, database_uuid, service_hash, photo_hash, pristine_hash)
+            photo = Photo.from_hash(hosting_service_account, database_uuid, photo_hash, pristine_hash)
             if photo.errors.present?
               errors[:photo] = photo.errors.full_messages
             else
@@ -50,6 +54,7 @@ module Api
           end
 
           # One or more errors... abort the transaction, then return the errors
+          puts errors
           raise ActiveRecord::Rollback
 
         end # of the transaction

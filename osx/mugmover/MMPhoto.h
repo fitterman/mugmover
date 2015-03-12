@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <ObjectiveFlickr/ObjectiveFlickr.h>
 #import "MMPhoto.h"
+#import "MMPhotoLibrary.h"
 
 @class MMApiRequest;
 @class MMFlickrPhotostream;
@@ -19,6 +20,7 @@
 
 @property (strong, readonly)    NSMutableArray *            adjustmentsArray;
 @property (strong)              MMApiRequest *              apiRequest;
+@property (strong, readonly)    NSMutableDictionary *       attributes;
 @property (strong)              MMPoint *                   cropOrigin;
 @property (assign, readonly)    Float64                     croppedHeight;
 @property (assign, readonly)    Float64                     croppedWidth;
@@ -32,6 +34,7 @@
 @property (strong)              OFFlickrAPIRequest *        flickrRequest;
 @property (assign)              NSInteger                   index;
 @property (strong)              NSString *                  iPhotoOriginalImagePath;
+@property (weak, readonly)      MMPhotoLibrary *            library;
 @property (assign, readonly)    Float64                     masterHeight;
 @property (strong)              NSString *                  masterUuid;
 @property (assign, readonly)    Float64                     masterWidth;
@@ -52,6 +55,10 @@
 - (MMPhoto *) initWithFlickrDictionary: (NSDictionary *) flickrDictionary
                                 stream: (MMFlickrPhotostream *) stream
                                  index: (NSInteger) index;
+
+- (MMPhoto *) initFromPhotoProperties: (NSDictionary *) photoProperties
+                       exifProperties: (NSDictionary *) exifProperties
+                              library: (MMPhotoLibrary *) library;
 
 - (void) adjustForStraightenCropAndGetFaces;
 

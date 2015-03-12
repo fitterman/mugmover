@@ -10,6 +10,7 @@
 #import "MMAppDelegate.h"
 #import "MMTrack.h"
 #import "MMFlickrPhotostream.h"
+#import "MMPhotoLibrary.h"
 #import "MMPhoto.h"
 #import "MMFace.h"
 
@@ -62,7 +63,8 @@ BOOL const MMdebugLevel;
             DDLogInfo(@"       initializationProgress=%@", newValue);
             if ([newValue floatValue] == 1.0)
             {
-                [stream getPhotos]; /* This kicks off the whole process */
+                [stream.library getPhotos];    /* This kicks off the whole process from the database without a service */
+                // [stream getPhotos]; /* This kicks off the whole process with flickr */
             }
         }
     }

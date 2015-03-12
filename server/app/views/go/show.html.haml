@@ -652,7 +652,7 @@
               element.bind('scroll', function () {
                   this.leftPos = raw.scrollLeft;
                   this.mmuid; // Just need to call this once to assign it
-                  debounce(this, 1500, scope.scrolledTo)
+                  debounce(this, 500, scope.scrolledTo)
               });
           }
       };
@@ -764,7 +764,7 @@
                                                  }
                                                  else
                                                  {
-                                                   return 'data:image/jpeg;base64,' + this.thumbnail;
+                                                   return this.thumbnail;
                                                  }
                                                }
                       whichFace.displayName = NameToPhotoGlue.getPrivateName(whichFace.namedFaceId);

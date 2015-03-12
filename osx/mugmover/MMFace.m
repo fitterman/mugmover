@@ -225,6 +225,7 @@
     _keyVersionUuid = nil;
     _masterUuid = nil;
     _name = nil;
+    _thumbnail = nil;
 }
 
 @end

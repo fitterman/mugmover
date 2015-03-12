@@ -17,25 +17,29 @@
 @property (strong, readonly)    NSString *          libraryBasePath;
 @property (strong)              FMDatabase *        facesDatabase;
 @property (strong)              FMDatabase *        photosDatabase;
+@property (strong)              NSDictionary *      sourceDictionary;
+
+@property (assign)              unsigned long       page; // For looping through records
 
 - (id) initWithPath: (NSString *) path;
 
 - (void) close;
 
-+(NSMutableArray *) getCroppedRegions: (NSString*) filePath
-                      withCoordinates: (NSArray *) rectanglesArray
-                            thumbSize: (NSInteger) thumbSize;
-
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 
 - (NSDictionary *) versionExifFromMasterPath: masterPath;
 
-- (NSDictionary *) versionExifFromMasterPath: masterPath
-                                 versionUuid: versionUuid
-                             versionFilename: versionFilename;
+- (NSDictionary *) versionExifFromMasterPath: (NSString *) masterPath
+                                 versionUuid: (NSString *) versionUuid
+                             versionFilename: (NSString *) versionFilename
+                                 versionName: (NSString *) versionName;
+
 
 - (NSString *) versionPathFromMasterPath: (NSString *) masterPath
                              versionUuid: (NSString *) versionUuid
-                         versionFilename: (NSString *) versionFilename;
+                         versionFilename: (NSString *) versionFilename
+                             versionName: (NSString *) versionName;
+
+- (void) getPhotos;
 
 @end

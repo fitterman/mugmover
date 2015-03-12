@@ -1,0 +1,21 @@
+<div class="row">
+  <div class="col-xs-12">
+    <h3>{{name.privateName}}</h3>
+    <h4>{{name.note}}</h4>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-12">
+    <div ng-repeat="face in faces"
+         style="display: inline-block;">
+      <div style="display: inherit; height: 120px; width: 120px; text-align: center; " >
+        <a href="#/photo/edit/{{face.photoId}}">
+          <!-- 110px is 100 + 5px on each side -->
+          <img  class="thumbnail circle"  style="display: inherit; height: 110px; width: 110px; margin-bottom: 0;"
+                ng-src="{{face.thumbnail}}" title="Updated at {{face.photoUpdatedAt}}" />
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

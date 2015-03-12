@@ -7,15 +7,15 @@ class HostingServiceAccount < ActiveRecord::Base
     end
   end
 
-  validates   :name,          inclusion: %w{flickr},
+  validates   :name,          inclusion: %w{flickr smugmug},
                               presence: {allow_blank: false}
   validates   :handle,        presence: {allow_blank: false}
 #  validates   :handle,       inclusion: %w{127850168@N06}
 #  validates   :auth_token,   presence: true
 
   def self.from_hash(service_hash)
-    service_name = service_hash.delete('name')
-    service_handle = service_hash['owner']
+    service_name = service_hash.delete(:name)
+    service_handle = service_hash[:handle]
 
     hosting_service_account = HostingServiceAccount.find_or_create_by(name: service_name,
                                                                       handle: service_handle)

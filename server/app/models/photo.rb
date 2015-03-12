@@ -14,24 +14,28 @@ class Photo < ActiveRecord::Base
 
   serialize     :request, JSON
 
-  before_save   :populate_urls
+#   before_save   :populate_urls
   before_save   :normalize_flag
 
-  def self.from_hash(hosting_service_account, database_uuid, service_hash, photo_hash, full_hash)
-    service_photo_id = service_hash['id']
+  def self.from_hash(hosting_service_account, database_uuid, photo_hash, full_hash)
+    # service_photo_id = service_hash['id'] || "TODO hosting_service_photo_id"
     photo = Photo.find_or_create_by(hosting_service_account_id: hosting_service_account.id,
-                                    hosting_service_photo_id: service_photo_id) do |new_user|
+                                    database_uuid: database_uuid,
+                                    master_uuid: photo_hash['masterUuid']
+                             #       hosting_service_photo_id: service_photo_id
+                                    ) do |new_user|
     end
-    photo.width = service_hash.delete('width') || photo_hash['width']
-    photo.height = service_hash.delete('height') || photo_hash['height']
+    photo.width = photo_hash['processedWidth']
+    photo.height = photo_hash['processedHeight']
     photo.version_uuid = photo_hash['versionUuid']
     photo.master_uuid = photo_hash['masterUuid']
     photo.database_uuid = database_uuid
     photo.original_date = photo_hash['originalDate']
-    photo.date_uploaded = service_hash['dateUploaded']
-    photo.original_format = service_hash['originalFormat']
+#    photo.date_uploaded = service_hash['dateUploaded']
+#    photo.original_format = service_hash['originalFormat']
     photo.thumbnail = photo_hash['thumbnail']
     photo.request = full_hash
+    require 'pp' ; pp photo
     photo.save
     return photo
   end

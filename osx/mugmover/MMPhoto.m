@@ -1,3 +1,4 @@
+
 //
 //  MMPhoto.m
 //  This class handles the overall processing of photos. Photos can be
@@ -39,6 +40,101 @@
 
 @implementation MMPhoto
 
+- (MMPhoto *) commonInitialization
+{
+    _rotationAngle = 0.0;
+    _straightenAngle = 0.0;
+    _cropOrigin = [[MMPoint alloc] initWithX: 0.0 y: 0.0];
+    if (!_cropOrigin)
+    {
+        [self releaseStrongPointers];
+        return nil;
+    }
+    _adjustmentsArray = [[NSMutableArray alloc] init];
+    if (!_adjustmentsArray)
+    {
+        [self releaseStrongPointers];
+        return nil;
+    }
+    return self;
+}
+
+- (MMPhoto *) initFromPhotoProperties: (NSDictionary *) photoProperties
+                       exifProperties: (NSDictionary *) exifProperties
+                              library: (MMPhotoLibrary *) library
+{
+    self = [self init];
+    if (self)
+    {
+        if ([self commonInitialization] == nil)
+        {
+            [self releaseStrongPointers];
+            return nil;
+        }
+    }
+    _library = library;
+    NSDictionary *properties = @{
+                                     @"source":     [_library sourceDictionary],
+                                     @"exif":       exifProperties,
+                                     @"photo":      [photoProperties mutableCopy],
+                                 };
+    
+    _attributes = [properties mutableCopy];
+
+    _masterUuid = [photoProperties valueForKey: @"masterUuid"];
+    _masterHeight = [[photoProperties valueForKey: @"masterHeight"] doubleValue];
+    _masterWidth = [[photoProperties valueForKey: @"masterWidth"] doubleValue];
+    _processedHeight = [[photoProperties valueForKey: @"processedHeight"] doubleValue];
+    _processedWidth = [[photoProperties valueForKey: @"processedWidth"] doubleValue];
+    _rotationAngle = [[photoProperties valueForKey: @"rotation"] doubleValue];
+    _version = [[photoProperties valueForKey: @"versionNumber"] longValue];
+    _iPhotoOriginalImagePath = [exifProperties valueForKey: @"_image"];
+    
+    [self populateDateFromExif: exifProperties];
+    return self;
+}
+
+- (void) populateDateFromExif: (NSDictionary *) exifProperties
+{
+    NSDateFormatter *exifDateFormat1 = [[NSDateFormatter alloc] init];
+    [exifDateFormat1 setDateFormat: @"yyyy:MM:dd HH:mm:ss"];
+    exifDateFormat1.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
+    
+    NSDateFormatter *exifDateFormat2 = [[NSDateFormatter alloc] init];
+    [exifDateFormat2 setDateFormat: @"MMM d, yyyy, hh:mm:ss a"];
+    exifDateFormat2.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
+    
+    NSArray *exifDateFormatters = @[exifDateFormat1, exifDateFormat2];
+    
+    NSString *exifDateString;
+    for (NSString *keypath in @[@"{Exif}.DateTimeOriginal", @"{Exif}.DateTimeDigitized", @"{TIFF}.DateTime"])
+    {
+        exifDateString = [exifProperties valueForKeyPath: keypath];
+        if (exifDateString)
+        {
+            break;
+        }
+    }
+    
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    [dateFormat setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
+    dateFormat.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
+
+    if (exifDateString)
+    {
+        NSDate *exifDateTimestamp = nil;
+        for (NSDateFormatter *exifDateFormat in exifDateFormatters)
+        {
+            exifDateTimestamp = [exifDateFormat dateFromString: exifDateString];
+            if (exifDateTimestamp)
+            {
+                _originalDate = [dateFormat stringFromDate: exifDateTimestamp];
+                break;
+            }
+        }
+    }
+}
+
 - (MMPhoto *) initWithFlickrDictionary: (NSDictionary *) flickrDictionary
                                 stream: (MMFlickrPhotostream *) stream
                                  index: (NSInteger) index
@@ -51,10 +147,8 @@
         if (_flickrDictionary && stream && flickrDictionary)
         {
             _stream = stream;
-            _rotationAngle = 0.0;
-            _straightenAngle = 0.0;
-            _cropOrigin = [[MMPoint alloc] initWithX: 0.0 y: 0.0];
-            if (!_cropOrigin)
+            _library = stream.library;
+            if ([self commonInitialization] == nil)
             {
                 [self releaseStrongPointers];
                 return nil;
@@ -82,12 +176,6 @@
             }
             _oldNotesToDelete = [[NSMutableArray alloc] init];
             if (!_oldNotesToDelete)
-            {
-                [self releaseStrongPointers];
-                return nil;
-            }
-            _adjustmentsArray = [[NSMutableArray alloc] init];
-            if (!_adjustmentsArray)
             {
                 [self releaseStrongPointers];
                 return nil;
@@ -208,25 +296,28 @@
     {
         NSNumber *number = [NSNumber numberWithInteger: _version - 1];
         NSString *query =  @"SELECT masterUuid, masterHeight, masterWidth, processedHeight, "
-                                "processedWidth, rotation, imagePath, fileName, versionUuid FROM RKVersion v "
+                                "processedWidth, rotation, imagePath, v.fileName versionFilename, "
+                                "v.name versionName, versionUuid "
                             "FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid "
                             "WHERE uuid = ? AND versionNumber = ? ";
         NSArray *args = @[_versionUuid, number];
 
-        FMResultSet *resultSet = [_stream.library.photosDatabase executeQuery: query
+        FMResultSet *resultSet = [_library.photosDatabase executeQuery: query
                                                          withArgumentsInArray: args];
 
         if (resultSet && [resultSet next])
         {
             [self updateFromIphotoLibraryVersionRecord: resultSet];
 
-            NSString *masterPath = [resultSet stringForColumn: @"imagePath"];
-            NSString *versionFilename = [resultSet stringForColumn: @"fileName"];
+            NSString *masterPath = [resultSet stringForColumn: @"imagePath"];            
+            NSString *versionFilename = [resultSet stringForColumn: @"versionFilename"];
+            NSString *versionName = [resultSet stringForColumn: @"versionName"];
             NSString *versionUuid = [resultSet stringForColumn: @"versionUuid"];
 
-            _iPhotoOriginalImagePath = [_stream.library versionPathFromMasterPath: (NSString *) masterPath
+            _iPhotoOriginalImagePath = [_library versionPathFromMasterPath: (NSString *) masterPath
                                                                       versionUuid: versionUuid
-                                                                  versionFilename: versionFilename];
+                                                                  versionFilename: versionFilename
+                                                                      versionName: versionName];
             return YES;
         }
     }
@@ -244,7 +335,7 @@
     // In fact, we may find multiple matches and will have to take a guess
     // which is the best match.
 
-    NSString *query = @"SELECT v.versionNumber version, v.uuid versionUuid, m.uuid, imagePath, v.fileName fileName, "
+    NSString *query = @"SELECT v.versionNumber version, v.uuid versionUuid, m.uuid, imagePath, v.name versionFilename, "
                              "masterUuid, masterHeight, masterWidth, processedHeight, processedWidth, "
                               "rotation, isOriginal "
                        "FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid "
@@ -263,7 +354,7 @@
         return NO;
     }
     NSArray *args = @[_originalFilename, width, height];
-    FMResultSet *resultSet = [_stream.library.photosDatabase executeQuery: query
+    FMResultSet *resultSet = [_library.photosDatabase executeQuery: query
                                              withArgumentsInArray: args];
 
     NSString *flickrModifyTime = [_exifDictionary valueForKeyPath: @"IFD0.ModifyDate"];
@@ -276,19 +367,21 @@
             NSDictionary *exif = nil;
 
             NSString *masterPath = [resultSet stringForColumn: @"imagePath"];
-            NSString *versionFilename = [resultSet stringForColumn: @"fileName"];
+            NSString *versionFilename = [resultSet stringForColumn: @"versionFilename"];
+            NSString *versionName = [resultSet stringForColumn: @"versionName"];
             NSString *versionUuid = [resultSet stringForColumn: @"versionUuid"];
 
             if ([resultSet boolForColumn: @"isOriginal"])
             {
-                exif = [_stream.library versionExifFromMasterPath: masterPath];
+                exif = [_library versionExifFromMasterPath: masterPath];
             }
             else
             {
 
-                exif = [_stream.library versionExifFromMasterPath: masterPath
-                                                      versionUuid: versionUuid
-                                                  versionFilename: versionFilename];
+                exif = [_library versionExifFromMasterPath: masterPath
+                                               versionUuid: versionUuid
+                                           versionFilename: versionFilename
+                                               versionName: versionName];
             }
 
             if (exif)
@@ -373,7 +466,7 @@
         return nil;
     }
 
-    FMDatabase *photosDb = [self.stream.library photosDatabase];
+    FMDatabase *photosDb = [_library photosDatabase];
     if (photosDb)
     {
         NSArray *args = @[_versionUuid];
@@ -510,7 +603,7 @@
         return nil;
     }
 
-    FMDatabase *faceDb = [self.stream.library facesDatabase];
+    FMDatabase *faceDb = [_library facesDatabase];
     if (!faceDb)
     {
         DDLogError(@"ERROR   No face database!");
@@ -518,13 +611,14 @@
     }
 
     NSArray *args = @[_masterUuid];
-    NSUInteger matches = [[[self.stream library] facesDatabase]
+    NSUInteger matches = [[_library facesDatabase]
                                 intForQuery: @"SELECT COUNT(*) cnt FROM RKDetectedFace WHERE masterUuid = ?",
                                 _masterUuid];
 
+    result = [[NSMutableArray alloc] initWithCapacity: matches]; // Even if it's zero, you have to send back an array
+
     if (matches > 0)
     {
-        result = [[NSMutableArray alloc] initWithCapacity: matches];
         if (!result)
         {
             DDLogError(@"ERROR   No result returned by FMDatabase");
@@ -597,18 +691,6 @@
                     face.centerPoint.x -= cropOrigin.x;
                     face.centerPoint.y -= cropOrigin.y;
 
-                    // Then figure out whether the face is still visible.
-
-                    {
-                        DDLogInfo(@"ADJUSTED      centerPoint=%@", face.centerPoint);
-                    }
-
-                    BOOL visible = [face visibleWithCroppedWidth: cropWidth
-                                                   croppedHeight: cropHeight];
-                    {
-                        DDLogInfo(@"SET VIS       visible=%d", visible);
-                    }
-
                     [face rotate: -rotationAngle origin: rotateCenterPoint];
 
                     // You need to adjust the face into a new coordinate space when there's
@@ -622,8 +704,19 @@
                         face.faceWidth = face.faceHeight;
                         face.faceHeight = tmp;
                     }
+                    DDLogInfo(@"ADJUSTED      face.centerPoint=%@", face.centerPoint);
 
-                    [result addObject: face];
+
+                    // This sets (and returns) the visibility of the face
+                    BOOL visible = [face visibleWithCroppedWidth: cropWidth
+                                                   croppedHeight: cropHeight];
+                    DDLogInfo(@"SET VIS       visible=%d", visible);
+                    
+                    // If it isn't visible, drop it
+                    if (visible)
+                    {
+                        [result addObject: face];
+                    }
                 }
             }
         }
@@ -709,16 +802,16 @@
     NSURL* fileURL = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
     _thumbnail = @""; // It cannot be null, so just in case this fails.
 
+
     CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
     CGContextRef bitmapContext = CGBitmapContextCreate(NULL, MAX_THUMB_DIM, MAX_THUMB_DIM, 8, 0, colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
-    CIContext *context = [CIContext contextWithCGContext: bitmapContext options: @{}];
-    // TODO Is there a release for the CIContext?
-
-    if (fileURL != NULL)
+    CIContext *ciContext = [CIContext contextWithCGContext: bitmapContext options: @{}];
+    
+    if (fileURL)
     {
         CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileURL];
 
-        if (image != NULL)
+        if (image)
         {
             // scale the image
             CIFilter *scaleFilter = [CIFilter filterWithName: @"CILanczosScaleTransform"];
@@ -733,12 +826,10 @@
                                                                           (__bridge CFStringRef)@"public.jpeg",
                                                                           1,
                                                                           NULL);
-            //CFURLRef saveUrl2 = (__bridge CFURLRef)[NSURL fileURLWithPath:[@"~/Desktop/lockwood-crop-2.jpg" stringByExpandingTildeInPath]];
-            //CGImageDestinationRef dest = CGImageDestinationCreateWithURL(saveUrl2, kUTTypeJPEG, 1, NULL);
-            if (dest != NULL)
+            if (dest)
             {
-                CGImageRef img = [context createCGImage:scaledImage
-                                               fromRect:[scaledImage extent]];
+                CGImageRef img = [ciContext createCGImage:scaledImage
+                                                  fromRect:[scaledImage extent]];
                 CGImageDestinationAddImage(dest, img, nil);
                 if (CGImageDestinationFinalize(dest))
                 {
@@ -755,10 +846,14 @@
             {
                 DDLogError(@"Failed to finalize photo thumbnail image");
             }
+            thumbJpegData = nil;
         }
     }
+
     CGContextRelease(bitmapContext);
     CGColorSpaceRelease(colorspace);
+    ciContext = nil;
+
 }
 - (BOOL) fetchThumbnailsFromOriginal
 {
@@ -776,7 +871,7 @@
             Float64 potentialY = MIN([face.centerPoint y] ,                      // dist between center of face and bottom side of photo
                                      _processedHeight - [face.centerPoint y]);   // dist between center of face and top side of photo
             Float64 physicalLimit = 2.0 * MIN(potentialX, potentialY);           // 2 x the smallest of them all wins
-            idealDim = MIN(idealDim, physicalLimit);                           // The smallest wins
+            idealDim = MIN(idealDim, physicalLimit);                             // The smallest wins
 
             Float64 left = [face.centerPoint x] - (idealDim / 2.0);
             Float64 bottom = (_processedHeight - [face.centerPoint y]) - (idealDim / 2.0);
@@ -789,9 +884,9 @@
         }
         if (_iPhotoOriginalImagePath)
         {
-            NSMutableArray *thumbnails = [MMPhotoLibrary getCroppedRegions: _iPhotoOriginalImagePath
-                                                           withCoordinates: rectangles
-                                                                 thumbSize: MAX_THUMB_DIM];
+            NSMutableArray *thumbnails = [self getCroppedRegions: _iPhotoOriginalImagePath
+                                                 withCoordinates: rectangles
+                                                       thumbSize: MAX_THUMB_DIM];
             // TODO Need an assertion here
             if ([thumbnails count] != [_faceArray count])
             {
@@ -816,38 +911,17 @@
 
 - (void) sendPhotoToMugmover
 {
-    NSDictionary *properties = @{
-                                 @"source":
-                                    @{ @"app":                  @"mmu",
-                                       @"appVersion": (NSString *) [[NSBundle mainBundle] objectForInfoDictionaryKey: @"CFBundleShortVersionString"],
-                                       @"databaseUuid":         [[_stream library] databaseUuid],
-                                       @"databaseVersion":      [[_stream library] databaseVersion],
-                                       @"databaseAppId":        [[_stream library] databaseAppId],
-                                     },
-                                 @"crop":
-                                    @{ @"cropOrigin":           [_cropOrigin asDictionary],
-                                       @"croppedHeight":        [NSNumber numberWithLong: _croppedHeight],
-                                       @"croppedWidth":         [NSNumber numberWithLong: _croppedWidth],
-                                       @"rotationAngle":        [NSNumber numberWithDouble: _rotationAngle],
-                                       @"straightenAngle":      [NSNumber numberWithDouble: _straightenAngle],
-                                     },
-                                 @"photo":
-                                    @{ @"height":               [NSNumber numberWithLong: _masterHeight],
-                                       @"number":               [NSNumber numberWithLong: _version],
-                                       @"masterUuid":           _masterUuid,
-                                       @"originalDate":         _originalDate,
-                                       @"originalFilename":     _originalFilename ? _originalFilename : @"",
-                                       @"thumbnail":            _thumbnail,
-                                       @"versionUuid":          _versionUuid,
-                                       @"width":                [NSNumber numberWithLong: _masterWidth],
-                                    },
-                                 @"service":                     _flickrDictionary,
-                                 @"adjustments":                 _adjustmentsArray,
-                               };
-
-
-    NSMutableDictionary *attributes = [properties mutableCopy];
-
+    NSDictionary *cropProperties = @{
+                                        @"cropOrigin":           [_cropOrigin asDictionary],
+                                        @"croppedHeight":        [NSNumber numberWithLong: _croppedHeight],
+                                        @"croppedWidth":         [NSNumber numberWithLong: _croppedWidth],
+                                        @"rotationAngle":        [NSNumber numberWithDouble: _rotationAngle],
+                                        @"straightenAngle":      [NSNumber numberWithDouble: _straightenAngle],
+                                    };
+    [_attributes setObject: _library.sourceDictionary forKey: @"source"];
+    [_attributes setObject: cropProperties forKey: @"crop"];
+    [_attributes setObject: _adjustmentsArray forKey: @"adjustments"];
+    [[_attributes objectForKey: @"photo" ] setObject: _thumbnail forKey: @"thumbnail"];
 
     if (_faceArray)
     {
@@ -857,13 +931,13 @@
             [facesProperties addObject: [face properties]];
 
         }
-        [attributes setObject: facesProperties forKey: @"faces"];
+        [_attributes setObject: facesProperties forKey: @"faces"];
     }
 
     // Now that we have everything, serialize the data to JSON and start the upload
 
     NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject: attributes
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject: _attributes
                                                        options: 0
                                                          error: &error];
     if (!jsonData)
@@ -887,19 +961,23 @@
     {
         [_stream.requestPool returnRequestToPool: _flickrRequest];
     }
+    
     _adjustmentsArray = nil;
     _apiRequest = nil;
+    _attributes = nil;
     _cropOrigin = nil;
     _exifDictionary = nil;
     _faceArray = nil;
     _flickrDictionary = nil;
     _flickrRequest = nil;
+    _iPhotoOriginalImagePath = nil;
     _masterUuid = nil;
     _oldNotesToDelete = nil;
     _originalDate = nil;
     _originalFilename = nil;
     _originalUrl = nil;
     _request = nil;
+    _thumbnail = nil;
     _versionUuid = nil;
     [_stream removeFromPhotoDictionary: self];
 }
@@ -1255,4 +1333,90 @@
     }
 
 }
+
+- (NSMutableArray *) getCroppedRegions: (NSString*) filePath
+                       withCoordinates: (NSArray*) rectArray
+                             thumbSize: (NSInteger) thumbSize
+{
+    NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: [rectArray count]];
+    NSURL* fileURL = [NSURL fileURLWithPath : filePath];
+    
+    // After the crop, then scale, the resulting image was not always an integer size and in fact
+    // was not even square in some cases. To rectify this, we recrop one more time at the end with
+    // definitive metrics
+    
+    // TODO Is there a release for the CIContext?
+    
+    if ((result) && (fileURL))
+    {
+        CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileURL];
+        
+        if (image)
+        {
+            for (NSArray *rect in rectArray)
+            {
+                CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
+                CGContextRef bitmapContext = CGBitmapContextCreate(NULL, MAX_THUMB_DIM, MAX_THUMB_DIM, 8, 0, colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
+                CIContext *ciContext = [CIContext contextWithCGContext: bitmapContext options: @{}];
+                
+                CGRect cropRect = CGRectMake([[rect objectAtIndex: 0] doubleValue],
+                                             [[rect objectAtIndex: 1] doubleValue],
+                                             [[rect objectAtIndex: 2] doubleValue],
+                                             [[rect objectAtIndex: 3] doubleValue]);
+                
+                CIImage *croppedImage = [image imageByCroppingToRect: cropRect];
+                
+                // scale the image
+                CIFilter *scaleFilter = [CIFilter filterWithName: @"CILanczosScaleTransform"];
+                [scaleFilter setValue: croppedImage forKey: @"inputImage"];
+                NSNumber *scaleFactor = [[NSNumber alloc] initWithFloat:(float) thumbSize / [[rect objectAtIndex: 2] doubleValue]];
+                [scaleFilter setValue: scaleFactor forKey: @"inputScale"];
+                [scaleFilter setValue: @1.0 forKey: @"inputAspectRatio"];
+                CIImage *scaledAndCroppedImage = [scaleFilter valueForKey: @"outputImage"];
+                
+                NSMutableData* thumbJpegData = [[NSMutableData alloc] init];
+                CGImageDestinationRef dest = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)thumbJpegData,
+                                                                              (__bridge CFStringRef)@"public.jpeg",
+                                                                              1,
+                                                                              NULL);
+                //CFURLRef saveUrl2 = (__bridge CFURLRef)[NSURL fileURLWithPath:[@"~/Desktop/lockwood-crop-2.jpg" stringByExpandingTildeInPath]];
+                //CGImageDestinationRef dest = CGImageDestinationCreateWithURL(saveUrl2, kUTTypeJPEG, 1, NULL);
+                if (dest)
+                {
+                    CGImageRef img = [ciContext createCGImage:scaledAndCroppedImage
+                                                     fromRect:[scaledAndCroppedImage extent]];
+                    CGImageDestinationAddImage(dest, img, nil);
+                    if (CGImageDestinationFinalize(dest))
+                    {
+                        NSString *jpegAsString = [thumbJpegData base64EncodedStringWithOptions: 0];
+                        [result addObject: @{@"jpeg": jpegAsString, @"scale": scaleFactor}];
+                    }
+                    else
+                    {
+                        DDLogError(@"Failed to generate face thumbnail");
+                        DDLogInfo(@"        rect=%@ path=%@", rect, filePath);
+                        [result addObject: @{@"jpeg": @"", @"scale": scaleFactor}];
+                    }
+                    CGImageRelease(img);
+                    CFRelease(dest);
+                }
+                else
+                {
+                    DDLogError(@"Failed to finalize thumbnail image");
+                    [result addObject: @{}];
+                    
+                }
+                thumbJpegData = nil;
+                
+                CGContextRelease(bitmapContext);
+                CGColorSpaceRelease(colorspace);
+                ciContext = nil;
+
+            }
+            image = nil;
+        }
+    }
+    return result;
+}
+
 @end
