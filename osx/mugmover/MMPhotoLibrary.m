@@ -32,6 +32,16 @@ NSString *photosPath;
         _bitmapContext = CGBitmapContextCreate(NULL, MAX_THUMB_DIM, MAX_THUMB_DIM, 8, 0, _colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
         _ciContext = [CIContext contextWithCGContext: _bitmapContext options: @{}];
     
+        NSDateFormatter *exifDateFormat1 = [[NSDateFormatter alloc] init];
+        [exifDateFormat1 setDateFormat: @"yyyy:MM:dd HH:mm:ss"];
+        exifDateFormat1.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
+        
+        NSDateFormatter *exifDateFormat2 = [[NSDateFormatter alloc] init];
+        [exifDateFormat2 setDateFormat: @"MMM d, yyyy, hh:mm:ss a"];
+        exifDateFormat2.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
+        
+        _exifDateFormatters = @[exifDateFormat1, exifDateFormat2];
+
         _libraryBasePath = path;
         NSString *facesPath = [path stringByAppendingPathComponent: @"Database/apdb/Faces.db"];
         NSString *photosPath = [path stringByAppendingPathComponent: @"Database/apdb/Library.apdb"];
@@ -498,7 +508,8 @@ NSString *photosPath;
     CGContextRelease(_bitmapContext);
     CGColorSpaceRelease(_colorspace);
     _ciContext = nil;
-    
+    _exifDateFormatters = nil;
+
 
 }
 

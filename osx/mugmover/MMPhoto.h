@@ -49,6 +49,7 @@
 @property (assign, readonly)    Float64                     straightenAngle;
 @property (weak)                MMFlickrPhotostream *       stream;
 @property (strong)              NSString *                  thumbnail;
+@property (assign)              BOOL                        verboseLogging;
 @property (assign)              NSInteger                   version;
 @property (strong)              NSString *                  versionUuid;
 

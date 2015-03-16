@@ -10,12 +10,12 @@
 
 @interface MMApiRequest : NSObject
 
-@property (strong) NSURLConnection *        connection;
-@property (strong) NSMutableData *          receivedData;
-@property (strong) NSMutableURLRequest *    request;
-
 // TODO Add retry count and automatic retries
 
 - (id) initUploadForApiVersion: (NSInteger) version
-                      bodyData: (NSDictionary *) bodyData;
+                      bodyData: (NSDictionary *) bodyData // values should NOT be URLEncoded
+             completionHandler: (void (^)(NSURLResponse *response,
+                                          NSData *data,
+                                          NSError *connectionError)) handler;
+
 @end

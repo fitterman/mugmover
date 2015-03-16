@@ -12,7 +12,6 @@
 
 @interface MMNetworkRequest : NSObject
 
-@property (strong)              NSURLConnection *        connection;
 @property (strong)              MMPhoto *                delegate;
 @property (strong)              NSMutableData *          receivedData;
 @property (strong)              NSMutableURLRequest *    request;

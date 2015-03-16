@@ -73,6 +73,7 @@
         }
     }
     _library = library;
+    _verboseLogging = _library.verboseLogging;
     
     _attributes = [[NSMutableDictionary alloc] initWithCapacity: 20];
     [_attributes setObject: [_library sourceDictionary] forKey: @"source"];
@@ -94,17 +95,7 @@
 }
 
 - (void) populateDateFromExif: (NSDictionary *) exifProperties
-{
-    NSDateFormatter *exifDateFormat1 = [[NSDateFormatter alloc] init];
-    [exifDateFormat1 setDateFormat: @"yyyy:MM:dd HH:mm:ss"];
-    exifDateFormat1.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
-    
-    NSDateFormatter *exifDateFormat2 = [[NSDateFormatter alloc] init];
-    [exifDateFormat2 setDateFormat: @"MMM d, yyyy, hh:mm:ss a"];
-    exifDateFormat2.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
-    
-    NSArray *exifDateFormatters = @[exifDateFormat1, exifDateFormat2];
-    
+{    
     NSString *exifDateString;
     for (NSString *keypath in @[@"Exif.DateTimeOriginal", @"Exif.DateTimeDigitized", @"TIFF.DateTime"])
     {
@@ -122,7 +113,7 @@
     if (exifDateString)
     {
         NSDate *exifDateTimestamp = nil;
-        for (NSDateFormatter *exifDateFormat in exifDateFormatters)
+        for (NSDateFormatter *exifDateFormat in [_library exifDateFormatters])
         {
             exifDateTimestamp = [exifDateFormat dateFromString: exifDateString];
             if (exifDateTimestamp)
@@ -274,7 +265,10 @@
         blockOperation = [NSBlockOperation blockOperationWithBlock:^
                           {
                               MMFace *face = [_faceArray objectAtIndex: 0];
-                              DDLogInfo (@"  BLOCK adding face uuid=%@", face.faceUuid);
+                              if (_library.verboseLogging)
+                              {
+                                  DDLogInfo (@"  BLOCK adding face uuid=%@", face.faceUuid);
+                              }
                               [self addNoteForOneFace];
                           }];
     }
@@ -488,8 +482,10 @@
         while ([adjustments next])
         {
             NSString *operationName = [adjustments stringForColumn: @"name"];
-            DDLogInfo(@"ADJ FOUND     operationName=%@", operationName);
-
+            if (_library.verboseLogging)
+            {
+                DDLogInfo(@"ADJ FOUND     operationName=%@", operationName);
+            }
             NSData *blob = [adjustments dataForColumn: @"data"];
             if (blob)
             {
@@ -526,8 +522,10 @@
                                 Float64 y = (Float64) [[parameters valueForKeyPath: @"inputKeys.inputYOrigin"] intValue];
                                 _cropOrigin.x += x;
                                 _cropOrigin.y += y;
-
-                                DDLogInfo(@"SET CROP TO   cropOrigin=%@ %3.1fWx%3.1fH", _cropOrigin, _croppedWidth, _croppedHeight);
+                                if (_library.verboseLogging)
+                                {
+                                    DDLogInfo(@"SET CROP TO   cropOrigin=%@ %3.1fWx%3.1fH", _cropOrigin, _croppedWidth, _croppedHeight);
+                                }
                             }
                         }
                         else if ([operationName isEqualToString: @"RKStraightenCropOperation"])
@@ -535,8 +533,10 @@
                             hasStraighten = YES;
                             NSString *angle = [parameters valueForKeyPath: @"inputKeys.inputRotation"];
                             _straightenAngle += [angle floatValue];
-
-                            DDLogInfo(@"SET ROTATION  straigtenAngle=%3.1f", _straightenAngle);
+                            if (_library.verboseLogging)
+                            {
+                                DDLogInfo(@"SET ROTATION  straigtenAngle=%3.1f", _straightenAngle);
+                            }
                         }
                     }
                 }
@@ -548,7 +548,6 @@
         // determined by measuring back from the center in each direction (by half).
         if (hasStraighten && !hasCrop)
         {
-            DDLogInfo(@">>> BEFORE  cropOrigin=%@", _cropOrigin);
 
          /*  What follows ia bit of a mystery to my challenged brain
 
@@ -570,9 +569,6 @@
             _cropOrigin.y = (_masterHeight - _croppedHeight) / 2.0;
             [_cropOrigin rotate: -fabs(_straightenAngle) relativeTo: rotateCenterPoint];
             _cropOrigin.x = correctX;
-
-            DDLogInfo(@">>> AFTER   cropOrigin=%@", _cropOrigin);
-
         }
         return  nil;
     }
@@ -641,6 +637,7 @@
                                 (_masterHeight * sin(absStraightenAngleInRadians));
             Float64 newHeight = (_masterHeight * cos(absStraightenAngleInRadians)) +
                                 (_masterWidth * sin(absStraightenAngleInRadians));
+            if (_library.verboseLogging)
             {
                 DDLogInfo(@"GROW CANVAS   %3.1fWx%3.1fH", newWidth, newHeight);
             }
@@ -674,7 +671,7 @@
                           faceKey: [resultSet intForColumn: @"faceKey"]
                    keyVersionUuid: [resultSet stringForColumn: @"keyVersionUuid"]
                            manual: [resultSet columnIsNull: @"faceFlags"]];
-
+                    if (_library.verboseLogging)
                     {
                         DDLogInfo(@"FACE DIMS     %3.1fWx%3.1fH", face.faceWidth, face.faceHeight);
                     }
@@ -712,16 +709,21 @@
                     {
                         [result addObject: face];
                     }
-                    DDLogInfo(@"ADJUSTED      face.centerPoint=%@", face.centerPoint);
-                    DDLogInfo(@"SET VIS       visible=%d", visible);
-                                    }
+                    if (_library.verboseLogging)
+                    {
+                        DDLogInfo(@"ADJUSTED      face.centerPoint=%@", face.centerPoint);
+                        DDLogInfo(@"SET VIS       visible=%d", visible);
+                    }
+                }
             }
             [resultSet close];
         }
     }
-
-    DDLogInfo(@"FINAL SIZE    cropOrigin=%@ cropDims=%3.1fWx%3.1fH", cropOrigin,
-              _processedWidth, _processedHeight);
+    if (_library.verboseLogging)
+    {
+        DDLogInfo(@"FINAL SIZE    cropOrigin=%@ cropDims=%3.1fWx%3.1fH", cropOrigin,
+                  _processedWidth, _processedHeight);
+    }
     return result;
 
 }
@@ -895,7 +897,7 @@
                 else
                 {
                     DDLogError(@"Failed to generate face thumbnail");
-                    DDLogInfo(@"        rect=%@ path=%@", rect, _iPhotoOriginalImagePath);
+                    DDLogError(@"        rect=%@ path=%@", rect, _iPhotoOriginalImagePath);
                     [result addObject: @{@"jpeg": @"", @"scale": @(scaleFactor)}];
                 }
                 CGImageRelease(img);
@@ -1006,9 +1008,55 @@
         NSString *jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
         jsonData = nil;
         NSDictionary *postData = @{@"data": jsonString};
-        DDLogInfo(@"TO MUGMOVER   index=%ld, remaining=%ld", (long)_index, [_stream inQueue]);
         _apiRequest = [[MMApiRequest alloc] initUploadForApiVersion: 1
-                                                           bodyData: postData];
+                                                           bodyData: postData
+                                                  completionHandler: ^(NSURLResponse *response, NSData *data, NSError *netError)
+                                                                       {
+                                                                           DDLogInfo(@"MM RESPONSE   status=%ld, hasData?=%d",
+                                                                                   
+                                                                                     (long)[(NSHTTPURLResponse *)response statusCode],
+                                                                                     !!data);
+                                                                           NSDictionary *results = nil;
+                                                                           if (data)
+                                                                           {
+                                                                               // Attempt to parse the data as JSON
+                                                                               NSError *deserializationError = nil;
+                                                                               id object = [NSJSONSerialization JSONObjectWithData: data
+                                                                                                                           options: 0
+                                                                                                                             error: &deserializationError];
+                                                                               if (deserializationError)
+                                                                               {
+                                                                                   NSString *formattedString = [[NSString alloc] initWithData: data
+                                                                                                                                     encoding: NSASCIIStringEncoding];
+                                                                                   NSInteger strLen = [formattedString length];
+                                                                                   if (strLen > 60)
+                                                                                   {
+                                                                                       formattedString = [NSString stringWithFormat: @"%@...", [formattedString substringToIndex: 60]];
+                                                                                   }
+                                                                                   DDLogError(@"            Malformed JSON %@ (%ld bytes)", formattedString, strLen);
+                                                                               }
+                                                                               else
+                                                                               {
+                                                                                   if([object isKindOfClass:[NSDictionary class]])
+                                                                                   {
+                                                                                       results = object;
+                                                                                   }
+                                                                                   else
+                                                                                   {
+                                                                                       DDLogInfo(@"        Valid JSON, but not an Object. Ignored.");
+                                                                                   }
+                                                                               }
+                                                                           }
+                                                                           if (netError)
+                                                                           {
+                                                                               DDLogError(@"NETWORK ERROR error=%@", netError);
+                                                                               if (results)
+                                                                               {
+                                                                                   DDLogInfo(@"             JSON Object %@", results);
+                                                                               }
+                                                                           }
+                                                                       }
+                                                ];
         postData = nil;
     }
 

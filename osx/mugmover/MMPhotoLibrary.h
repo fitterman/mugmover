@@ -18,9 +18,12 @@
 @property (strong)              FMDatabase *        facesDatabase;
 @property (strong)              FMDatabase *        photosDatabase;
 @property (strong)              NSDictionary *      sourceDictionary;
-@property (assign)              CGColorSpaceRef         colorspace;
-@property (assign)              CGContextRef            bitmapContext;
-@property (strong)              CIContext *             ciContext;
+@property (assign)              BOOL                verboseLogging;
+
+@property (assign)              CGColorSpaceRef     colorspace;
+@property (assign)              CGContextRef        bitmapContext;
+@property (strong)              CIContext *         ciContext;
+@property (strong)              NSArray *           exifDateFormatters;
 
 @property (assign)              unsigned long       page; // For looping through records
 

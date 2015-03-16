@@ -38,10 +38,10 @@
         _receivedData = [NSMutableData dataWithCapacity: 0];
 
         // create the connection, starting the request
-        _connection = [[NSURLConnection alloc] initWithRequest: _request
+        NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest: _request
                                                       delegate: self];
 
-        if (!_connection)
+        if (!connection)
         {
             [self releaseStrongPointers];
             return nil;
@@ -65,9 +65,9 @@
     if (_retries > 0)
     {
         _retries--;
-        _connection = [[NSURLConnection alloc] initWithRequest: _request
-                                                      delegate: self];
-        if (!_connection)
+        NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest: _request
+                                                                      delegate: self];
+        if (!connection)
         {
             _request = nil;
             return NO;
@@ -90,7 +90,6 @@
 
 - (void) releaseStrongPointers
 {
-    _connection = nil;
     _delegate = nil;
     _receivedData = nil;
     _request = nil;

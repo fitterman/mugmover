@@ -33,6 +33,7 @@
     {
         _photo = photo;
         _thumbnail = @""; // It needs to be an empty string if it doesn't exist
+        if (_photo.verboseLogging)
         {
             DDLogInfo(@"PROC'ING FACE faceUdid=%@", faceUuid);
             DDLogInfo(@"INPUTS        topLeft=%@ bottomLeft=%@ bottomRight=%@ %3.1fWx%3.1fH",
@@ -48,6 +49,7 @@
         [bottomLeft scaleByXFactor: _photo.masterWidth yFactor: _photo.masterHeight];
         [bottomRight scaleByXFactor: _photo.masterWidth yFactor: _photo.masterHeight];
 
+        if (_photo.verboseLogging)
         {
             DDLogInfo(@"SCALED PTS    topLeft=%@ bottomLeft=%@ bottomRight=%@",
                     topLeft, bottomLeft, bottomRight);
@@ -73,6 +75,7 @@
         _rejected = rejected;
         _visible = YES;
 
+        if (_photo.verboseLogging)
         {
             DDLogInfo(@"END OF INIT   centerPoint=%@ masterDims=(%3.1fWx%3.1fH)",
                     _centerPoint, _photo.masterWidth, _photo.masterHeight);
@@ -84,6 +87,7 @@
 - (void) rotate: (Float64) degrees
          origin: (MMPoint *) centerPoint
 {
+    if (_photo.verboseLogging)
     {
         DDLogInfo(@"BEFORE ROTATE centerPoint=%@ %3.1fWx%3.1fH",
                 _centerPoint, _photo.masterWidth, _photo.masterHeight);
@@ -92,6 +96,7 @@
     }
     [self.centerPoint rotate: degrees relativeTo: centerPoint];
 
+    if (_photo.verboseLogging)
     {
         DDLogInfo(@"AFTER ROTATE  centerPoint=%@ %3.1fWx%3.1fH",
                 _centerPoint, _photo.masterWidth, _photo.masterHeight);
@@ -136,6 +141,7 @@
 {
     _visible = ((_centerPoint.x - (_faceWidth / 2.0) >= 0.0) && (_centerPoint.x - (_faceWidth / 2.0) < width) &&
                 (_centerPoint.y - (_faceHeight / 2.0) >= 0.0) && (_centerPoint.y + (_faceHeight / 2.0) < height));
+    if (_photo.verboseLogging)
     {
         DDLogInfo(@"SET VISIBLITY centerPoint=%@ %3.1fWx%3.1fH visibility=%d",
                 _centerPoint, width, height, _visible);
