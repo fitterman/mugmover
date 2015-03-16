@@ -798,16 +798,12 @@
     [_faceArray removeObjectsInArray: discardedItems];
 
 }
+
 - (void) createPhotoThumbnail
 {
     NSURL* fileURL = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
     _thumbnail = @""; // It cannot be null, so just in case this fails.
 
-
-    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
-    CGContextRef bitmapContext = CGBitmapContextCreate(NULL, MAX_THUMB_DIM, MAX_THUMB_DIM, 8, 0, colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
-    CIContext *ciContext = [CIContext contextWithCGContext: bitmapContext options: @{}];
-    
     if (fileURL)
     {
         CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileURL];
@@ -815,10 +811,14 @@
         if (image)
         {
             // scale the image
+            Float64 scaleFactor = ((Float64) MAX_THUMB_DIM) / ((Float64)MAX(_processedWidth, _processedHeight));
+            
+//            CGAffineTransform  scalingTransform = CGAffineTransformMakeScale(scaleFactor, scaleFactor);
+//            CIImage *scaledImage = [image imageByApplyingTransform: scalingTransform];
+            
             CIFilter *scaleFilter = [CIFilter filterWithName: @"CILanczosScaleTransform"];
             [scaleFilter setValue: image forKey: @"inputImage"];
-            NSNumber *scaleFactor = [[NSNumber alloc] initWithFloat: ((float) MAX_THUMB_DIM) / ((float)MAX(_processedWidth, _processedHeight))];
-            [scaleFilter setValue: scaleFactor forKey: @"inputScale"];
+            [scaleFilter setValue: @(scaleFactor) forKey: @"inputScale"];
             [scaleFilter setValue: @1.0 forKey: @"inputAspectRatio"];
             CIImage *scaledImage = [scaleFilter valueForKey: @"outputImage"];
 
@@ -829,7 +829,7 @@
                                                                           NULL);
             if (dest)
             {
-                CGImageRef img = [ciContext createCGImage:scaledImage
+                CGImageRef img = [_library.ciContext createCGImage:scaledImage
                                                   fromRect:[scaledImage extent]];
                 CGImageDestinationAddImage(dest, img, nil);
                 if (CGImageDestinationFinalize(dest))
@@ -851,11 +851,12 @@
         }
     }
 
-    CGContextRelease(bitmapContext);
-    CGColorSpaceRelease(colorspace);
-    ciContext = nil;
+//    CGContextRelease(bitmapContext);
+//    CGColorSpaceRelease(colorspace);
+//    ciContext = nil;
 
 }
+
 - (BOOL) fetchThumbnailsFromOriginal
 {
     if (_faceArray)

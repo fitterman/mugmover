@@ -28,6 +28,10 @@ NSString *photosPath;
     self = [self init];
     if (self)
     {
+        _colorspace = CGColorSpaceCreateDeviceRGB();
+        _bitmapContext = CGBitmapContextCreate(NULL, MAX_THUMB_DIM, MAX_THUMB_DIM, 8, 0, _colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
+        _ciContext = [CIContext contextWithCGContext: _bitmapContext options: @{}];
+    
         _libraryBasePath = path;
         NSString *facesPath = [path stringByAppendingPathComponent: @"Database/apdb/Faces.db"];
         NSString *photosPath = [path stringByAppendingPathComponent: @"Database/apdb/Library.apdb"];
@@ -487,6 +491,11 @@ NSString *photosPath;
     _facesDatabase = nil;
     _photosDatabase = nil;
     _libraryBasePath = nil;
+    CGContextRelease(_bitmapContext);
+    CGColorSpaceRelease(_colorspace);
+    _ciContext = nil;
+    
+
 }
 
 @end
