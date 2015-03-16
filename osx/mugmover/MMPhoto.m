@@ -746,13 +746,14 @@
 
 - (void) processPhoto
 {
+    @autoreleasepool {
     [self findRelevantAdjustments];
     [self adjustForStraightenCropAndGetFaces];
     [self moveFacesRelativeToTopLeftOrigin];
     [self createPhotoThumbnail];
     [self fetchThumbnailsFromOriginal];
     [self sendPhotoToMugmover];
-
+    }
     // Note that we discard the hidden/rejected faces _after_ uploading to mugmover.
     // This is not an error: we intentionally hold onto those.
     [self discardHiddenFaces];
