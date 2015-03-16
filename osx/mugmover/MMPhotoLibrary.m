@@ -118,7 +118,7 @@ NSString *photosPath;
                             "        v.name versionName, v.processedHeight, v.processedWidth, v.rotation "
                             "FROM RKVersion v JOIN RKMaster m  ON v.masterUuid = m.uuid "
                             "WHERE v.isHidden != 1 AND v.showInLibrary = 1 "
-        "AND m.uuid IN ('ypRSN43uT1Sr5nU4eW%%UA', 'BXJwbAn%R8Sk+T1p5KXncA') "
+//        "AND m.uuid IN ('BXJwbAn%R8Sk+T1p5KXncA') "
                             "ORDER BY m.createDate, m.uuid LIMIT ? OFFSET ? ";
         
         FMResultSet *resultSet = [_photosDatabase executeQuery: query
@@ -258,6 +258,7 @@ NSString *photosPath;
                                    
             // DDLogInfo(@"MASTER     %ld %@ %@ %ld %@", counter, masterUuid, createDateTimestamp, versionNumber, versionUuid);
         }
+        [resultSet close];
     }
     DDLogInfo(@"MASTER     DONE");
     DDLogInfo(@"  Date/time mismatches detected=%ld (postive=%ld, negative=%ld)",
@@ -298,6 +299,7 @@ NSString *photosPath;
                                           withArgumentsInArray: args];
     if (![versionRecord next])
     {
+        [versionRecord close];
         return result;
     }
 
@@ -305,6 +307,7 @@ NSString *photosPath;
     NSString *versionFilename = [versionRecord stringForColumn: @"versionFilename"];
     NSString *versionUuid = [versionRecord stringForColumn: @"versionUuid"];
     NSString *masterPath = [versionRecord stringForColumn: @"imagePath"];
+    [versionRecord close];
 
     return [self versionExifFromMasterPath: masterPath
                                versionUuid: versionUuid
@@ -405,13 +408,13 @@ NSString *photosPath;
 +(NSMutableDictionary*) getImageExif: (NSString*) filePath
 {
     NSMutableDictionary* exifDictionary = nil;
-    NSURL* fileURL = [NSURL fileURLWithPath : filePath];
+    NSURL* fileUrl = [NSURL fileURLWithPath : filePath];
 
-    if (fileURL)
+    if (fileUrl)
     {
 
         // load the bit image from the file url
-        CGImageSourceRef source = CGImageSourceCreateWithURL ( (__bridge CFURLRef) fileURL, NULL);
+        CGImageSourceRef source = CGImageSourceCreateWithURL ( (__bridge CFURLRef) fileUrl, NULL);
 
         if (source)
         {
@@ -424,6 +427,7 @@ NSString *photosPath;
 
                 // cast CFDictonaryRef to NSDictionary
                 exifDictionary = [NSMutableDictionary dictionaryWithDictionary : (__bridge NSDictionary *) metadataRef];
+                CFRelease(metadataRef);
 
                 if (exifDictionary)
                 {

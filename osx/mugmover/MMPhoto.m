@@ -73,13 +73,11 @@
         }
     }
     _library = library;
-    NSDictionary *properties = @{
-                                     @"source":     [_library sourceDictionary],
-                                     @"exif":       exifProperties,
-                                     @"photo":      [photoProperties mutableCopy],
-                                 };
     
-    _attributes = [properties mutableCopy];
+    _attributes = [[NSMutableDictionary alloc] initWithCapacity: 20];
+    [_attributes setObject: [_library sourceDictionary] forKey: @"source"];
+    [_attributes setObject: exifProperties forKey: @"exif"];
+    [_attributes setObject: [photoProperties mutableCopy] forKey: @"photo"];
 
     _masterUuid = [photoProperties valueForKey: @"masterUuid"];
     _masterHeight = [[photoProperties valueForKey: @"masterHeight"] doubleValue];
@@ -87,6 +85,7 @@
     _processedHeight = [[photoProperties valueForKey: @"processedHeight"] doubleValue];
     _processedWidth = [[photoProperties valueForKey: @"processedWidth"] doubleValue];
     _rotationAngle = [[photoProperties valueForKey: @"rotation"] doubleValue];
+    _versionUuid = [photoProperties valueForKey: @"versionUuid"];
     _version = [[photoProperties valueForKey: @"versionNumber"] longValue];
     _iPhotoOriginalImagePath = [exifProperties valueForKey: @"_image"];
     
@@ -318,8 +317,10 @@
                                                                       versionUuid: versionUuid
                                                                   versionFilename: versionFilename
                                                                       versionName: versionName];
+            [resultSet close];
             return YES;
         }
+        [resultSet close];
     }
     return NO;
 }
@@ -409,6 +410,7 @@
                 continue;
             }
         }
+        [resultSet close];
     }
     return NO;
 }
@@ -432,9 +434,6 @@
                                 width: _croppedWidth
                                height: _croppedHeight
                                rotate: _rotationAngle];
-        _masterWidth = _croppedWidth;
-        _masterHeight = _croppedHeight;
-
     }
     else
     {
@@ -543,6 +542,7 @@
                 }
             }
         }
+        [adjustments close];
 
         // In the following case, the StraghtenCrop operation will have to do a crop, and it is
         // determined by measuring back from the center in each direction (by half).
@@ -629,6 +629,7 @@
                                   "fn.name, fn.uuid faceNameUuid, fn.fullName, fn.keyVersionUuid FROM RKDetectedFace f "
                                   "LEFT JOIN RKFaceName fn ON f.faceKey = fn.faceKey "
                                   "WHERE masterUuid = ?"
+
                                  withArgumentsInArray: args];
         if (resultSet)
         {
@@ -695,7 +696,6 @@
 
                     // You need to adjust the face into a new coordinate space when there's
                     // a quarter-turn. Also flip height/width.
-
                     if (quarterTurn)
                     {
                         face.centerPoint.x -= (cropWidth - cropHeight) / 2.0;
@@ -704,55 +704,52 @@
                         face.faceWidth = face.faceHeight;
                         face.faceHeight = tmp;
                     }
-                    DDLogInfo(@"ADJUSTED      face.centerPoint=%@", face.centerPoint);
 
-
-                    // This sets (and returns) the visibility of the face
-                    BOOL visible = [face visibleWithCroppedWidth: cropWidth
-                                                   croppedHeight: cropHeight];
-                    DDLogInfo(@"SET VIS       visible=%d", visible);
-                    
+                    BOOL visible = [face visibleWithCroppedWidth: _processedWidth
+                                                   croppedHeight: _processedHeight];
                     // If it isn't visible, drop it
                     if (visible)
                     {
                         [result addObject: face];
                     }
-                }
+                    DDLogInfo(@"ADJUSTED      face.centerPoint=%@", face.centerPoint);
+                    DDLogInfo(@"SET VIS       visible=%d", visible);
+                                    }
             }
+            [resultSet close];
         }
     }
 
-    if (quarterTurn)
-    {
-        _masterHeight = cropWidth;
-        _masterWidth = cropHeight;
-    }
-    else
-    {
-        _masterHeight = cropHeight;
-        _masterWidth = cropWidth;
-    }
-    {
-        DDLogInfo(@"FINAL SIZE    cropOrigin=%@ cropDims=%3.1fWx%3.1fH", cropOrigin, _masterWidth, _masterHeight);
-    }
+    DDLogInfo(@"FINAL SIZE    cropOrigin=%@ cropDims=%3.1fWx%3.1fH", cropOrigin,
+              _processedWidth, _processedHeight);
     return result;
 
 }
 
 - (Float64) aspectRatio
 {
-    return _masterWidth / _masterHeight;
+    return _processedWidth / _processedHeight;
 }
 
 - (void) processPhoto
 {
     @autoreleasepool {
-    [self findRelevantAdjustments];
-    [self adjustForStraightenCropAndGetFaces];
-    [self moveFacesRelativeToTopLeftOrigin];
-    [self createPhotoThumbnail];
-    [self fetchThumbnailsFromOriginal];
-    [self sendPhotoToMugmover];
+        [self findRelevantAdjustments];
+        [self adjustForStraightenCropAndGetFaces];
+        [self moveFacesRelativeToTopLeftOrigin];
+
+        NSURL* fileUrl = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
+        _thumbnail = @""; // It cannot be null, so just in case this fails.
+        
+        if (fileUrl)
+        {
+            CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileUrl];
+            fileUrl = nil;
+            
+            _thumbnail = [self createPhotoThumbnail: image];
+            [self fetchThumbnailsFromOriginal: image];
+        }
+        [self sendPhotoToMugmover];
     }
     // Note that we discard the hidden/rejected faces _after_ uploading to mugmover.
     // This is not an error: we intentionally hold onto those.
@@ -799,65 +796,123 @@
 
 }
 
-- (void) createPhotoThumbnail
+// Note that the returned thumbnail is a Base64-encoded representation thereof
+- (NSString *) createPhotoThumbnail: (CIImage *) image
 {
-    NSURL* fileURL = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
-    _thumbnail = @""; // It cannot be null, so just in case this fails.
+    NSString *result = nil;
 
-    if (fileURL)
+    if (image)
     {
-        CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileURL];
+        // scale the image
+        Float64 scaleFactor = ((Float64) MAX_THUMB_DIM) / ((Float64)MAX(_processedWidth, _processedHeight));
+        CGAffineTransform  scalingTransform = CGAffineTransformMakeScale(scaleFactor, scaleFactor);
+        CIImage *scaledImage = [image imageByApplyingTransform: scalingTransform];
 
-        if (image)
+        NSMutableData* thumbJpegData = [[NSMutableData alloc] init];
+        CGImageDestinationRef dest = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)thumbJpegData,
+                                                                      (__bridge CFStringRef)@"public.jpeg",
+                                                                      1,
+                                                                      NULL);
+        if (dest)
         {
-            // scale the image
-            Float64 scaleFactor = ((Float64) MAX_THUMB_DIM) / ((Float64)MAX(_processedWidth, _processedHeight));
-            
-//            CGAffineTransform  scalingTransform = CGAffineTransformMakeScale(scaleFactor, scaleFactor);
-//            CIImage *scaledImage = [image imageByApplyingTransform: scalingTransform];
-            
-            CIFilter *scaleFilter = [CIFilter filterWithName: @"CILanczosScaleTransform"];
-            [scaleFilter setValue: image forKey: @"inputImage"];
-            [scaleFilter setValue: @(scaleFactor) forKey: @"inputScale"];
-            [scaleFilter setValue: @1.0 forKey: @"inputAspectRatio"];
-            CIImage *scaledImage = [scaleFilter valueForKey: @"outputImage"];
+            CGRect extent = [scaledImage extent];
+            if (_processedHeight > _processedWidth)
+            {
+                extent.size.width = lroundl(scaleFactor * _processedWidth);
+                extent.size.height = MAX_THUMB_DIM;
+            }
+            else
+            {
+                extent.size.width = MAX_THUMB_DIM;
+                extent.size.height = lroundl(scaleFactor * _processedHeight);
+            }
 
+            CGImageRef img = [_library.ciContext createCGImage: scaledImage
+                                                      fromRect: extent];
+            CGImageDestinationAddImage(dest, img, nil);
+            if (CGImageDestinationFinalize(dest))
+            {
+                result = [thumbJpegData base64EncodedStringWithOptions: 0];
+            }
+            else
+            {
+                DDLogError(@"Failed to generate photo thumbnail");
+            }
+            CGImageRelease(img);
+            CFRelease(dest);
+        }
+        else
+        {
+            DDLogError(@"Failed to finalize photo thumbnail image");
+        }
+        thumbJpegData = nil;
+    }
+    return result;
+}
+- (NSMutableArray *) getCroppedRegions: (CIImage *) image
+                       withCoordinates: (NSArray*) rectArray
+                             thumbSize: (NSInteger) thumbSize
+{
+    NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: [rectArray count]];
+    
+    if ((result) && (image))
+    {
+        for (NSArray *rect in rectArray)
+        {
+            CGRect cropRect = CGRectMake([[rect objectAtIndex: 0] doubleValue],
+                                         [[rect objectAtIndex: 1] doubleValue],
+                                         [[rect objectAtIndex: 2] doubleValue],
+                                         [[rect objectAtIndex: 3] doubleValue]);
+            
+            CIImage *croppedImage = [image imageByCroppingToRect: cropRect];
+            
+            Float64 scaleFactor = thumbSize / [[rect objectAtIndex: 2] doubleValue];
+            CGAffineTransform  scalingTransform = CGAffineTransformMakeScale(scaleFactor, scaleFactor);
+            CIImage *scaledAndCroppedImage = [croppedImage imageByApplyingTransform: scalingTransform];
+            
             NSMutableData* thumbJpegData = [[NSMutableData alloc] init];
             CGImageDestinationRef dest = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)thumbJpegData,
                                                                           (__bridge CFStringRef)@"public.jpeg",
                                                                           1,
                                                                           NULL);
+            
             if (dest)
             {
-                CGImageRef img = [_library.ciContext createCGImage:scaledImage
-                                                  fromRect:[scaledImage extent]];
+                // Force the crop to be perfectly square. Due to rounding it's actually 101x102 or 101x101
+                // or the like in most cases.
+                CGRect extent = [scaledAndCroppedImage extent];
+                extent.size.width = thumbSize;
+                extent.size.height = thumbSize;
+                CGImageRef img = [_library.ciContext createCGImage: scaledAndCroppedImage
+                                                          fromRect: extent];
+                
                 CGImageDestinationAddImage(dest, img, nil);
                 if (CGImageDestinationFinalize(dest))
                 {
-                    _thumbnail = [thumbJpegData base64EncodedStringWithOptions: 0];
+                    NSString *jpegAsString = [thumbJpegData base64EncodedStringWithOptions: 0];
+                    [result addObject: @{@"jpeg": jpegAsString, @"scale": @(scaleFactor)}];
                 }
                 else
                 {
-                    DDLogError(@"Failed to generate photo thumbnail");
+                    DDLogError(@"Failed to generate face thumbnail");
+                    DDLogInfo(@"        rect=%@ path=%@", rect, _iPhotoOriginalImagePath);
+                    [result addObject: @{@"jpeg": @"", @"scale": @(scaleFactor)}];
                 }
                 CGImageRelease(img);
                 CFRelease(dest);
             }
             else
             {
-                DDLogError(@"Failed to finalize photo thumbnail image");
+                DDLogError(@"Failed to finalize thumbnail image");
+                [result addObject: @{}];
+                
             }
-            thumbJpegData = nil;
         }
     }
-
-//    CGContextRelease(bitmapContext);
-//    CGColorSpaceRelease(colorspace);
-//    ciContext = nil;
-
+    return result;
 }
 
-- (BOOL) fetchThumbnailsFromOriginal
+- (BOOL) fetchThumbnailsFromOriginal: (CIImage *) image
 {
     if (_faceArray)
     {
@@ -884,9 +939,9 @@
                               [NSNumber numberWithDouble: idealDim]];
             [rectangles addObject: rect];
         }
-        if (_iPhotoOriginalImagePath)
+        if (image)
         {
-            NSMutableArray *thumbnails = [self getCroppedRegions: _iPhotoOriginalImagePath
+            NSMutableArray *thumbnails = [self getCroppedRegions: image
                                                  withCoordinates: rectangles
                                                        thumbSize: MAX_THUMB_DIM];
             // TODO Need an assertion here
@@ -949,10 +1004,12 @@
     else
     {
         NSString *jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
+        jsonData = nil;
         NSDictionary *postData = @{@"data": jsonString};
         DDLogInfo(@"TO MUGMOVER   index=%ld, remaining=%ld", (long)_index, [_stream inQueue]);
         _apiRequest = [[MMApiRequest alloc] initUploadForApiVersion: 1
                                                            bodyData: postData];
+        postData = nil;
     }
 
 }
@@ -966,10 +1023,13 @@
     
     _adjustmentsArray = nil;
     _apiRequest = nil;
+    [_attributes removeAllObjects];
     _attributes = nil;
     _cropOrigin = nil;
+    [_exifDictionary removeAllObjects];
     _exifDictionary = nil;
     _faceArray = nil;
+    [_flickrDictionary removeAllObjects];
     _flickrDictionary = nil;
     _flickrRequest = nil;
     _iPhotoOriginalImagePath = nil;
@@ -1334,91 +1394,6 @@
         [self performNextStep];
     }
 
-}
-
-- (NSMutableArray *) getCroppedRegions: (NSString*) filePath
-                       withCoordinates: (NSArray*) rectArray
-                             thumbSize: (NSInteger) thumbSize
-{
-    NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: [rectArray count]];
-    NSURL* fileURL = [NSURL fileURLWithPath : filePath];
-    
-    // After the crop, then scale, the resulting image was not always an integer size and in fact
-    // was not even square in some cases. To rectify this, we recrop one more time at the end with
-    // definitive metrics
-    
-    // TODO Is there a release for the CIContext?
-    
-    if ((result) && (fileURL))
-    {
-        CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileURL];
-        
-        if (image)
-        {
-            for (NSArray *rect in rectArray)
-            {
-                CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
-                CGContextRef bitmapContext = CGBitmapContextCreate(NULL, MAX_THUMB_DIM, MAX_THUMB_DIM, 8, 0, colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
-                CIContext *ciContext = [CIContext contextWithCGContext: bitmapContext options: @{}];
-                
-                CGRect cropRect = CGRectMake([[rect objectAtIndex: 0] doubleValue],
-                                             [[rect objectAtIndex: 1] doubleValue],
-                                             [[rect objectAtIndex: 2] doubleValue],
-                                             [[rect objectAtIndex: 3] doubleValue]);
-                
-                CIImage *croppedImage = [image imageByCroppingToRect: cropRect];
-                
-                // scale the image
-                CIFilter *scaleFilter = [CIFilter filterWithName: @"CILanczosScaleTransform"];
-                [scaleFilter setValue: croppedImage forKey: @"inputImage"];
-                NSNumber *scaleFactor = [[NSNumber alloc] initWithFloat:(float) thumbSize / [[rect objectAtIndex: 2] doubleValue]];
-                [scaleFilter setValue: scaleFactor forKey: @"inputScale"];
-                [scaleFilter setValue: @1.0 forKey: @"inputAspectRatio"];
-                CIImage *scaledAndCroppedImage = [scaleFilter valueForKey: @"outputImage"];
-                
-                NSMutableData* thumbJpegData = [[NSMutableData alloc] init];
-                CGImageDestinationRef dest = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)thumbJpegData,
-                                                                              (__bridge CFStringRef)@"public.jpeg",
-                                                                              1,
-                                                                              NULL);
-                //CFURLRef saveUrl2 = (__bridge CFURLRef)[NSURL fileURLWithPath:[@"~/Desktop/lockwood-crop-2.jpg" stringByExpandingTildeInPath]];
-                //CGImageDestinationRef dest = CGImageDestinationCreateWithURL(saveUrl2, kUTTypeJPEG, 1, NULL);
-                if (dest)
-                {
-                    CGImageRef img = [ciContext createCGImage:scaledAndCroppedImage
-                                                     fromRect:[scaledAndCroppedImage extent]];
-                    CGImageDestinationAddImage(dest, img, nil);
-                    if (CGImageDestinationFinalize(dest))
-                    {
-                        NSString *jpegAsString = [thumbJpegData base64EncodedStringWithOptions: 0];
-                        [result addObject: @{@"jpeg": jpegAsString, @"scale": scaleFactor}];
-                    }
-                    else
-                    {
-                        DDLogError(@"Failed to generate face thumbnail");
-                        DDLogInfo(@"        rect=%@ path=%@", rect, filePath);
-                        [result addObject: @{@"jpeg": @"", @"scale": scaleFactor}];
-                    }
-                    CGImageRelease(img);
-                    CFRelease(dest);
-                }
-                else
-                {
-                    DDLogError(@"Failed to finalize thumbnail image");
-                    [result addObject: @{}];
-                    
-                }
-                thumbJpegData = nil;
-                
-                CGContextRelease(bitmapContext);
-                CGColorSpaceRelease(colorspace);
-                ciContext = nil;
-
-            }
-            image = nil;
-        }
-    }
-    return result;
 }
 
 @end
