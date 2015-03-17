@@ -31,7 +31,7 @@ module Api
               @errors += ['Name not found']
             end
           else
-            @named_faces = @hsa.named_faces
+            @named_faces = @hsa.named_faces.includes(:face_icon)
           end
         else
           @errors += ['Account not found']

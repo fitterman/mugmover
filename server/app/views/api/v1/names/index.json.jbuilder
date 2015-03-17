@@ -1,3 +1,1 @@
-@named_faces.each do |name|
-  json.partial! 'show', name: name
-end
+json.partial! partial: "show", collection: @named_faces, as: :name
