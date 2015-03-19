@@ -60,7 +60,7 @@
 }
 
 - (MMPhoto *) initFromPhotoProperties: (NSDictionary *) photoProperties
-                       exifProperties: (NSDictionary *) exifProperties
+                       exifProperties: (NSMutableDictionary *) exifProperties
                               library: (MMPhotoLibrary *) library
 {
     self = [self init];
@@ -75,11 +75,6 @@
     _library = library;
     _verboseLogging = _library.verboseLogging;
     
-    _attributes = [[NSMutableDictionary alloc] initWithCapacity: 20];
-    [_attributes setObject: [_library sourceDictionary] forKey: @"source"];
-    [_attributes setObject: exifProperties forKey: @"exif"];
-    [_attributes setObject: [photoProperties mutableCopy] forKey: @"photo"];
-
     _masterUuid = [photoProperties valueForKey: @"masterUuid"];
     _masterHeight = [[photoProperties valueForKey: @"masterHeight"] doubleValue];
     _masterWidth = [[photoProperties valueForKey: @"masterWidth"] doubleValue];
@@ -91,6 +86,13 @@
     _iPhotoOriginalImagePath = [exifProperties valueForKey: @"_image"];
     
     [self populateDateFromExif: exifProperties];
+
+    _attributes = [[NSMutableDictionary alloc] initWithCapacity: 20];
+    [_attributes setObject: [_library sourceDictionary] forKey: @"source"];
+    [exifProperties removeObjectForKey: @"_image"];
+    [_attributes setObject: exifProperties forKey: @"exif"];
+    [_attributes setObject: [photoProperties mutableCopy] forKey: @"photo"];
+    
     return self;
 }
 

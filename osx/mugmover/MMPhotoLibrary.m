@@ -178,7 +178,7 @@ NSString *photosPath;
                 originalFileName = @"";
             }
             
-            NSDictionary *exif;
+            NSMutableDictionary *exif;
             if (hasAdjustments != 1)
             {
                 exif = [self versionExifFromMasterPath: imagePath];
@@ -194,7 +194,7 @@ NSString *photosPath;
             if (exif == NULL)
             {
                 DDLogInfo(@">>> isOriginal=%ld", isOriginal);
-                exif = @{};
+                exif = [[NSMutableDictionary alloc] init];
                 
             }
             
@@ -332,7 +332,7 @@ NSString *photosPath;
     NSString *fullMasterPath = [pathPieces componentsJoinedByString: @"/"];
     if (fullMasterPath)
     {
-        return [MMPhotoLibrary getImageExif: fullMasterPath];
+        return [[MMPhotoLibrary getImageExif: fullMasterPath] mutableCopy];
     }
     return nil;
 }
@@ -472,8 +472,6 @@ NSString *photosPath;
                     }
 
                     [exifDictionary setValue: filePath forKey: @"_image"];
-                    unsigned long long fileSize = [[[NSFileManager defaultManager] attributesOfItemAtPath: filePath error:nil] fileSize];
-                    [exifDictionary setValue: @(fileSize) forKey: @"_fileSize"];
                 }
             }
 

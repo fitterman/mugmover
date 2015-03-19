@@ -33,9 +33,9 @@
 
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 
-- (NSDictionary *) versionExifFromMasterPath: masterPath;
+- (NSMutableDictionary *) versionExifFromMasterPath: masterPath;
 
-- (NSDictionary *) versionExifFromMasterPath: (NSString *) masterPath
+- (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
                                  versionUuid: (NSString *) versionUuid
                              versionFilename: (NSString *) versionFilename
                                  versionName: (NSString *) versionName;
