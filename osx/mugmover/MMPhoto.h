@@ -58,7 +58,7 @@
                                  index: (NSInteger) index;
 
 - (MMPhoto *) initFromPhotoProperties: (NSDictionary *) photoProperties
-                       exifProperties: (NSDictionary *) exifProperties
+                       exifProperties: (NSMutableDictionary *) exifProperties
                               library: (MMPhotoLibrary *) library;
 
 - (void) adjustForStraightenCropAndGetFaces;

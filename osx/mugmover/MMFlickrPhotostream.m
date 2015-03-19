@@ -50,7 +50,7 @@ long                retryCount;
         self.handle = flickrHandle;
         _currentPhotoIndex = (_page - 1) * PHOTOS_PER_REQUEST;
         self.initializationProgress = 0.0;
-
+        
         [[NSAppleEventManager sharedAppleEventManager] setEventHandler: self
                                                            andSelector: @selector(handleIncomingURL:withReplyEvent:)
                                                          forEventClass: kInternetEventClass

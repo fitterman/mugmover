@@ -1198,7 +1198,7 @@
                            @"note_w": face.flickrNoteWidth,
                            @"note_h": face.flickrNoteHeight,
                            @"note_text": face.flickrNoteText,
-                           @"api_key": MUGMOVER_API_KEY_MACRO,
+                           @"api_key": MUGMOVER_FLICKR_API_KEY_MACRO,
                            };
     [_flickrRequest callAPIMethodWithPOST: @"flickr.photos.notes.add"
                                arguments: args];
@@ -1219,7 +1219,7 @@
     _flickrRequest.sessionInfo = [pieces componentsJoinedByString: @";"];
 
     NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys: noteId, @"note_id",
-                          MUGMOVER_API_KEY_MACRO, @"api_key",
+                          MUGMOVER_FLICKR_API_KEY_MACRO, @"api_key",
                           nil];
     [_flickrRequest callAPIMethodWithPOST: @"flickr.photos.notes.delete"
                                arguments: args];
