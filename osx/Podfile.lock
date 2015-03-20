@@ -13,15 +13,21 @@ PODS:
   - FMDB/standard (2.4):
     - FMDB/common
   - objectiveflickr (2.0.4)
+  - OMGHTTPURLRQ/UserAgent (2.1)
+  - TDOAuth (1.0.4):
+    - OMGHTTPURLRQ/UserAgent
 
 DEPENDENCIES:
   - CocoaLumberjack
   - FMDB (~> 2.4)
   - objectiveflickr
+  - TDOAuth
 
 SPEC CHECKSUMS:
   CocoaLumberjack: 6186e27827fc574b50b16c10102fcc591437f06c
   FMDB: 0b2fa25e5264ef177973c0cb8c02c711107979aa
   objectiveflickr: 39b43d8db58c75c82295d1babe4596f3e9b4493b
+  OMGHTTPURLRQ: f8c515dfd2f57a5d74c710978f600231f52afec5
+  TDOAuth: 3d02dc155fcb71572def39c05b80b4fbbe11d4f9
 
 COCOAPODS: 0.34.4

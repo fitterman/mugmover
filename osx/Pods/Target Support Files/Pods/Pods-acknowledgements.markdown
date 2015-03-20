@@ -49,6 +49,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
+## OMGHTTPURLRQ
+
+See README.markdown for full license text.
+
+## TDOAuth
+
+OHAI CocoaPods linter!
+
 ## objectiveflickr
 
 ObjectiveFlickr Copyright (c) 2006-2009 Lukhnos D. Liu.
