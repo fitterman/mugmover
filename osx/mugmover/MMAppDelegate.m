@@ -9,7 +9,9 @@
 
 #import "MMAppDelegate.h"
 #import "MMTrack.h"
+#import "MMFlickr.h"
 #import "MMFlickrPhotostream.h"
+#import "MMSmugmugOauth.h"
 #import "MMPhotoLibrary.h"
 #import "MMPhoto.h"
 #import "MMFace.h"
@@ -17,6 +19,8 @@
 @implementation MMAppDelegate
 
 MMFlickrPhotostream *stream = nil;
+MMFlickr *flickr = nil;
+MMSmugmugOauth *smugmug = nil;
 NSDictionary *flickrPhotoPointer;
 
 BOOL const MMdebugLevel;
@@ -30,9 +34,13 @@ BOOL const MMdebugLevel;
     [self setTrack: aTrack]; /* alternatively, self.track = aTrack; */
     [self updateUserInterface];
 
-    stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
-                                             libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
-//                                             libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
+//    flickr = [[MMFlickr alloc] initWithHandle: @"jayphillip"
+//                                    libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
+
+    smugmug = [[MMSmugmugOauth alloc] initAndStartAuthorization];
+//    stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
+//                                             libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
+//                                               libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
     if (stream)
     {
         // Register for KVO on some network-associated values

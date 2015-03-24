@@ -57,8 +57,8 @@ long                retryCount;
                                                             andEventID: kAEGetURL];
         DDLogInfo(@"STEP 1 Create the OFFlickr request object");
         self.initializationProgress = 0.2; // That's 1 out of 5 steps
-        _flickrContext = [[OFFlickrAPIContext alloc] initWithAPIKey: MUGMOVER_API_KEY_MACRO
-                                                       sharedSecret: MUGMOVER_SHARED_SECRET_MACRO];
+        _flickrContext = [[OFFlickrAPIContext alloc] initWithAPIKey: MUGMOVER_FLICKR_API_KEY_MACRO
+                                                       sharedSecret: MUGMOVER_FLICKR_SHARED_SECRET_MACRO];
         _requestPool = [[MMFlickrRequestPool alloc] initWithContext: _flickrContext];
         if (!_requestPool)
         {
