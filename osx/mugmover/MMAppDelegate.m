@@ -37,7 +37,18 @@ BOOL const MMdebugLevel;
 //    flickr = [[MMFlickr alloc] initWithHandle: @"jayphillip"
 //                                    libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
 
-    smugmug = [[MMSmugmugOauth alloc] initAndStartAuthorization];
+    smugmug = [[MMSmugmugOauth alloc] initAndStartAuthorization: ^(Float32 progress, NSString *statusText)
+               {
+                   if (progress == 1.0)
+                   {
+                       NSString *oauthToken = smugmug.accessToken;
+                       NSString *oauthSecret = smugmug.tokenSecret;
+                       NSLog(@"token=%@, secret=%@", oauthToken, oauthSecret);
+                       MMSmugmugOauth *smugmug2 = [[MMSmugmugOauth alloc] initWithStoredToken: oauthToken
+                                                                                       secret: oauthSecret];
+                   }
+               }];
+
 //    stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
 //                                             libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
 //                                               libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];

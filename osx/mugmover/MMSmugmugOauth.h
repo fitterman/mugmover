@@ -11,15 +11,23 @@
 
 @interface MMSmugmugOauth : TDOAuth
 
-@property (strong)              NSString *      accessToken;
-@property (assign, readonly)    float           initializationStatusValue;
-@property (strong, readonly)    NSString *      initializationStatusString;
-@property (strong)              NSString *      tokenSecret;
+typedef void (^ProgresBlockType)(Float32, NSString *);
 
-- (id) initAndStartAuthorization;
+@property (strong, readonly)    NSString *          accessToken;
+@property (assign, readonly)    float               initializationStatusValue;
+@property (strong, readonly)    NSString *          initializationStatusString;
+@property (strong, readonly)    NSString *          tokenSecret;
+@property (strong, readonly)    ProgresBlockType    progressBlock;
+
+- (id) initAndStartAuthorization: (ProgresBlockType) progressBlock;
+
+- (id) initWithStoredToken: (NSString *) token
+                    secret: (NSString *) secret;
+
+- (NSURLRequest *)apiRequest: (NSString *) api
+                  parameters: (NSDictionary *) parameters
+                        verb: (NSString *) verb;
 
 - (void) close;
 
-- (void) updateState: (float) state
-              asText: (NSString *) text;
 @end

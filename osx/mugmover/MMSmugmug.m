@@ -256,8 +256,6 @@ long                retryCount;
                                                                                                           dataEncoding:TDOAuthContentTypeJsonObject
                                                                                                           headerValues: @{@"Accept": @"application/json"}
                                                                                                        signatureMethod: TDOAuthSignatureMethodHmacSha1];
-                                                                    NSURLResponse* response;
-                                                                    NSError* error = nil;
   /*                                                                  NSData* result = [NSURLConnection sendSynchronousRequest: request
                                                                                                            returningResponse: &response
                                                                                                                        error: &error];
@@ -276,18 +274,7 @@ long                retryCount;
                                                                                              accessToken: _accessToken
                                                                                              tokenSecret: _tokenSecret];
     */
-                                                                 request = [TDOAuth URLRequestForPath: @"/api/v2/album/4RTMrj"
-                                                                                           parameters: @{@"Name": @"My New Title", @"_method": @"PATCH"}
-                                                                                                 host: @"secure.smugmug.com"
-                                                                                          consumerKey: MUGMOVER_SMUGMUG_API_KEY_MACRO
-                                                                                       consumerSecret: MUGMOVER_SMUGMUG_SHARED_SECRET_MACRO
-                                                                                          accessToken: _accessToken
-                                                                                          tokenSecret: _tokenSecret
-                                                                                               scheme:@"https"
-                                                                                        requestMethod:@"POST"
-                                                                                         dataEncoding:TDOAuthContentTypeJsonObject
-                                                                                         headerValues:@{@"Accept": @"application/json"}
-                                                                                      signatureMethod:TDOAuthSignatureMethodHmacSha1];
+                                                             
 
 /*                                                                    request = [TDOAuth URLRequestForPath: @"/api/v2/album/4RTMrj"
                                                                                               parameters: @{@"Name": @"My New Title"}
@@ -312,9 +299,7 @@ long                retryCount;
                                                                                                                 method: @"PATCH"
                                                                                                           headerValues: @{@"Accept": @"application/json"}
                                                                                                        signatureMethod: TDOAuthSignatureMethodHmacSha1];*/
-                                                                    result = [NSURLConnection sendSynchronousRequest: request
-                                                                                                           returningResponse: &response
-                                                                                                                       error: &error];
+
                                                                     //if (!error)
                                                                     {
                                                                         NSString *s = [[NSString alloc] initWithData: result encoding: NSUTF8StringEncoding];
