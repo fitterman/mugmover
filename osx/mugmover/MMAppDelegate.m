@@ -11,7 +11,7 @@
 #import "MMTrack.h"
 #import "MMFlickr.h"
 #import "MMFlickrPhotostream.h"
-#import "MMSmugmugOauth.h"
+#import "MMSmugmug.h"
 #import "MMPhotoLibrary.h"
 #import "MMPhoto.h"
 #import "MMFace.h"
@@ -20,7 +20,7 @@
 
 MMFlickrPhotostream *stream = nil;
 MMFlickr *flickr = nil;
-MMSmugmugOauth *smugmug = nil;
+MMSmugmug *smugmug = nil;
 NSDictionary *flickrPhotoPointer;
 
 BOOL const MMdebugLevel;
@@ -34,20 +34,11 @@ BOOL const MMdebugLevel;
     [self setTrack: aTrack]; /* alternatively, self.track = aTrack; */
     [self updateUserInterface];
 
-//    flickr = [[MMFlickr alloc] initWithHandle: @"jayphillip"
+//    flickr = [[MMFlickr alloc] initWithHandle: @"jayphillips"
 //                                    libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
 
-    smugmug = [[MMSmugmugOauth alloc] initAndStartAuthorization: ^(Float32 progress, NSString *statusText)
-               {
-                   if (progress == 1.0)
-                   {
-                       NSString *oauthToken = smugmug.accessToken;
-                       NSString *oauthSecret = smugmug.tokenSecret;
-                       NSLog(@"token=%@, secret=%@", oauthToken, oauthSecret);
-                       MMSmugmugOauth *smugmug2 = [[MMSmugmugOauth alloc] initWithStoredToken: oauthToken
-                                                                                       secret: oauthSecret];
-                   }
-               }];
+    smugmug = [[MMSmugmug alloc] initWithHandle: @"jayphillips"
+                                    libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
 
 //    stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
 //                                             libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];

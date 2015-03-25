@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "MMFace.h"
+@class MMSmugmugOauth;
 
 @interface MMSmugmug : NSObject
 
@@ -21,6 +22,7 @@
 @property (assign, readonly)    NSInteger               page;
 @property (strong)              NSMutableDictionary *   photoDictionary;
 @property (assign)              NSInteger               photosInStream;
+@property (strong, readonly)    MMSmugmugOauth *        smugmugOauth;
 @property (strong, readonly)    NSOperationQueue *      streamQueue;
 @property (strong, readonly)    NSString *              tokenSecret;
 
