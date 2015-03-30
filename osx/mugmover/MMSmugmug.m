@@ -15,6 +15,7 @@
 
 
 #define PHOTOS_PER_REQUEST (10)
+extern const NSInteger MMDefaultRetries;
 
 NSDictionary       *photoResponseDictionary;
 long                retryCount;
@@ -35,7 +36,7 @@ long                retryCount;
             [self close];
             return nil;
         }
-
+        _streamQueue = [NSOperationQueue mainQueue];
         _photoDictionary = [[NSMutableDictionary alloc] init];
         if (!_photoDictionary)
         {
@@ -47,6 +48,21 @@ long                retryCount;
         _smugmugOauth = [[MMOauthSmugmug alloc] initAndStartAuthorization: ^(Float32 progress, NSString *text)
         {
             self.initializationProgress = progress;
+            if (progress == 1.0)
+            {
+                NSString *path = @"/Users/Bob/Downloads/JULIUS STUCHINSKY WW1 Draft Registration 1917-1918.jpg";
+                NSURLRequest *uploadRequest = [_smugmugOauth upload: path
+                                                           albumUid: @"4RTMrj"];
+                ServiceResponseHandler processSmugmugUpload = ^(NSDictionary *responseDictionary)
+                {
+                    DDLogError(@"responseDictionary=%@", responseDictionary);
+                };
+                [_smugmugOauth  processUrlRequest: (NSURLRequest *) uploadRequest
+                                            queue: (NSOperationQueue *) _streamQueue
+                                remainingAttempts: MMDefaultRetries
+                                completionHandler: processSmugmugUpload];
+                
+            }
         }];
     }
     return self;
@@ -66,5 +82,6 @@ long                retryCount;
     _photoDictionary = nil;
     _streamQueue = nil;
 }
+
 
 @end

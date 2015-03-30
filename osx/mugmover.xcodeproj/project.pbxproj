@@ -8,14 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		8EE5090B10E91E9048578D4E /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33EBE9A01471814A3096BC04 /* libPods.a */; };
-		C411AA761AC197A30087D1FA /* MMSmugmugOauth.m in Sources */ = {isa = PBXBuildFile; fileRef = C411AA751AC197A30087D1FA /* MMSmugmugOauth.m */; };
+		C411AA761AC197A30087D1FA /* MMOauthSmugmug.m in Sources */ = {isa = PBXBuildFile; fileRef = C411AA751AC197A30087D1FA /* MMOauthSmugmug.m */; };
 		C42F7AD21A152F60006E38DD /* MMFlickrPhotostream.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7AD11A152F60006E38DD /* MMFlickrPhotostream.m */; };
 		C42F7AD51A1532FC006E38DD /* MMFace.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7AD41A1532FC006E38DD /* MMFace.m */; };
 		C42F7AD81A153368006E38DD /* MMPhotoLibrary.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */; };
 		C42F7ADB1A1533AB006E38DD /* MMPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7ADA1A1533AB006E38DD /* MMPoint.m */; };
-		C445D47B1ABB49EC0076B639 /* MMFlickr.m in Sources */ = {isa = PBXBuildFile; fileRef = C445D47A1ABB49EC0076B639 /* MMFlickr.m */; };
-		C460A0E81A5B1C1B00CF958F /* MMFlickrRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C460A0E61A5B1C1B00CF958F /* MMFlickrRequest.m */; };
-		C460A0EB1A5B2CC200CF958F /* MMFlickrRequestPool.m in Sources */ = {isa = PBXBuildFile; fileRef = C460A0EA1A5B2CC200CF958F /* MMFlickrRequestPool.m */; };
+		C47304211AC317320008E53E /* MMOauthAbstract.m in Sources */ = {isa = PBXBuildFile; fileRef = C473041F1AC317320008E53E /* MMOauthAbstract.m */; };
+		C47304241AC455600008E53E /* MMOauthFlickr.m in Sources */ = {isa = PBXBuildFile; fileRef = C47304231AC455600008E53E /* MMOauthFlickr.m */; };
 		C4836F921A5F14F5006EB567 /* MMApiRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C4836F911A5F14F5006EB567 /* MMApiRequest.m */; };
 		C4836F951A5F230E006EB567 /* NSString+Encode.m in Sources */ = {isa = PBXBuildFile; fileRef = C4836F941A5F230E006EB567 /* NSString+Encode.m */; };
 		C4836F991A6080DB006EB567 /* MMNetworkRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C4836F981A6080DB006EB567 /* MMNetworkRequest.m */; };
@@ -63,8 +62,8 @@
 /* Begin PBXFileReference section */
 		33EBE9A01471814A3096BC04 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4118EEE1A49E4F30057A72B /* MMEnvironment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MMEnvironment.h; sourceTree = "<group>"; };
-		C411AA741AC197A30087D1FA /* MMSmugmugOauth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMSmugmugOauth.h; sourceTree = "<group>"; };
-		C411AA751AC197A30087D1FA /* MMSmugmugOauth.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMSmugmugOauth.m; sourceTree = "<group>"; };
+		C411AA741AC197A30087D1FA /* MMOauthSmugmug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMOauthSmugmug.h; sourceTree = "<group>"; };
+		C411AA751AC197A30087D1FA /* MMOauthSmugmug.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMOauthSmugmug.m; sourceTree = "<group>"; };
 		C42F7AD01A152F60006E38DD /* MMFlickrPhotostream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFlickrPhotostream.h; sourceTree = "<group>"; };
 		C42F7AD11A152F60006E38DD /* MMFlickrPhotostream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFlickrPhotostream.m; sourceTree = "<group>"; };
 		C42F7AD31A1532FC006E38DD /* MMFace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFace.h; sourceTree = "<group>"; };
@@ -73,12 +72,10 @@
 		C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPhotoLibrary.m; sourceTree = "<group>"; };
 		C42F7AD91A1533AB006E38DD /* MMPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMPoint.h; sourceTree = "<group>"; };
 		C42F7ADA1A1533AB006E38DD /* MMPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPoint.m; sourceTree = "<group>"; };
-		C445D47A1ABB49EC0076B639 /* MMFlickr.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFlickr.m; sourceTree = "<group>"; };
-		C445D47C1ABB49F60076B639 /* MMFlickr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFlickr.h; sourceTree = "<group>"; };
-		C460A0E51A5B1C1B00CF958F /* MMFlickrRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFlickrRequest.h; sourceTree = "<group>"; };
-		C460A0E61A5B1C1B00CF958F /* MMFlickrRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFlickrRequest.m; sourceTree = "<group>"; };
-		C460A0E91A5B2CC200CF958F /* MMFlickrRequestPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFlickrRequestPool.h; sourceTree = "<group>"; };
-		C460A0EA1A5B2CC200CF958F /* MMFlickrRequestPool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFlickrRequestPool.m; sourceTree = "<group>"; };
+		C473041F1AC317320008E53E /* MMOauthAbstract.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMOauthAbstract.m; sourceTree = "<group>"; };
+		C47304201AC317320008E53E /* MMOauthAbstract.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMOauthAbstract.h; sourceTree = "<group>"; };
+		C47304221AC455500008E53E /* MMOauthFlickr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMOauthFlickr.h; sourceTree = "<group>"; };
+		C47304231AC455600008E53E /* MMOauthFlickr.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMOauthFlickr.m; sourceTree = "<group>"; };
 		C474FCA01A58A4D60054EEB0 /* secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = secrets.xcconfig; sourceTree = "<group>"; };
 		C4836F901A5F14F5006EB567 /* MMApiRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMApiRequest.h; sourceTree = "<group>"; };
 		C4836F911A5F14F5006EB567 /* MMApiRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMApiRequest.m; sourceTree = "<group>"; };
@@ -204,20 +201,18 @@
 				C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */,
 				C42F7AD01A152F60006E38DD /* MMFlickrPhotostream.h */,
 				C42F7AD11A152F60006E38DD /* MMFlickrPhotostream.m */,
-				C460A0E51A5B1C1B00CF958F /* MMFlickrRequest.h */,
-				C460A0E61A5B1C1B00CF958F /* MMFlickrRequest.m */,
-				C460A0E91A5B2CC200CF958F /* MMFlickrRequestPool.h */,
-				C460A0EA1A5B2CC200CF958F /* MMFlickrRequestPool.m */,
 				C4836F971A6080DB006EB567 /* MMNetworkRequest.h */,
 				C4836F981A6080DB006EB567 /* MMNetworkRequest.m */,
+				C47304201AC317320008E53E /* MMOauthAbstract.h */,
+				C473041F1AC317320008E53E /* MMOauthAbstract.m */,
+				C411AA741AC197A30087D1FA /* MMOauthSmugmug.h */,
+				C411AA751AC197A30087D1FA /* MMOauthSmugmug.m */,
+				C47304221AC455500008E53E /* MMOauthFlickr.h */,
+				C47304231AC455600008E53E /* MMOauthFlickr.m */,
 				C42F7AD91A1533AB006E38DD /* MMPoint.h */,
 				C42F7ADA1A1533AB006E38DD /* MMPoint.m */,
 				C48C5DD81AB89AD4007C10B0 /* MMSmugmug.h */,
 				C48C5DD41AB89AAB007C10B0 /* MMSmugmug.m */,
-				C411AA741AC197A30087D1FA /* MMSmugmugOauth.h */,
-				C411AA751AC197A30087D1FA /* MMSmugmugOauth.m */,
-				C445D47C1ABB49F60076B639 /* MMFlickr.h */,
-				C445D47A1ABB49EC0076B639 /* MMFlickr.m */,
 				C4968CEA1A151B0300F34E46 /* MMTrack.h */,
 				C4968CEB1A151B0300F34E46 /* MMTrack.m */,
 				C4968CCB1A15101500F34E46 /* MainMenu.xib */,
@@ -412,14 +407,13 @@
 				C4968CCA1A15101500F34E46 /* MMAppDelegate.m in Sources */,
 				C4968CEC1A151B0300F34E46 /* MMTrack.m in Sources */,
 				C4968CC31A15101500F34E46 /* main.m in Sources */,
-				C445D47B1ABB49EC0076B639 /* MMFlickr.m in Sources */,
-				C460A0E81A5B1C1B00CF958F /* MMFlickrRequest.m in Sources */,
+				C47304211AC317320008E53E /* MMOauthAbstract.m in Sources */,
+				C47304241AC455600008E53E /* MMOauthFlickr.m in Sources */,
 				C4836F951A5F230E006EB567 /* NSString+Encode.m in Sources */,
 				C4836F921A5F14F5006EB567 /* MMApiRequest.m in Sources */,
-				C460A0EB1A5B2CC200CF958F /* MMFlickrRequestPool.m in Sources */,
 				C42F7AD51A1532FC006E38DD /* MMFace.m in Sources */,
 				C42F7AD21A152F60006E38DD /* MMFlickrPhotostream.m in Sources */,
-				C411AA761AC197A30087D1FA /* MMSmugmugOauth.m in Sources */,
+				C411AA761AC197A30087D1FA /* MMOauthSmugmug.m in Sources */,
 				C4F3F1811A26E90900C2BE00 /* MMPhoto.m in Sources */,
 				C48C5DD51AB89AAB007C10B0 /* MMSmugmug.m in Sources */,
 				C42F7ADB1A1533AB006E38DD /* MMPoint.m in Sources */,

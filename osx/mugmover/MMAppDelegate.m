@@ -32,20 +32,20 @@ BOOL const MMdebugLevel;
     [self setTrack: aTrack]; /* alternatively, self.track = aTrack; */
     [self updateUserInterface];
 
-   // smugmug = [[MMSmugmug alloc] initWithHandle: @"jayphillips"
-   //                                 libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
+   smugmug = [[MMSmugmug alloc] initWithHandle: @"jayphillips"
+                                   libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
 
-    stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
-     //                                        libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
-                                               libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
-    if (stream)
-    {
-        // Register for KVO on some network-associated values
-        [stream addObserver: self
-                 forKeyPath: @"initializationProgress"
-                    options: (NSKeyValueObservingOptionNew)
-                    context: (__bridge void *)(self)];
-    }
+   // stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
+   //  //                                        libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
+   //                                            libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
+   // if (stream)
+   // {
+   //     // Register for KVO on some network-associated values
+   //     [stream addObserver: self
+   //              forKeyPath: @"initializationProgress"
+   //                 options: (NSKeyValueObservingOptionNew)
+   //                 context: (__bridge void *)(self)];
+   // }
 
 }
 

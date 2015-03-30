@@ -14,6 +14,10 @@
 typedef void (^ProgressBlockType)(Float32, NSString *);
 typedef void (^ServiceResponseHandler)(NSDictionary *serviceResponseDictionary);
 
++ (NSString *) md5ForFileAtPath: (NSString *) path;
+
++ (NSString *) mimeTypeForFileAtPath: (NSString *) path;
+
 - (id) initAndStartAuthorization: (ProgressBlockType) progressBlock;
 
 - (id) initWithStoredToken: (NSString *) token

@@ -10,4 +10,8 @@
 #import "MMOauthAbstract.h"
 
 @interface MMOauthSmugmug : MMOauthAbstract
+
+- (NSURLRequest *) upload: (NSString *) filePath
+                 albumUid: (NSString *) albumUid; // for example, @"4RTMrj"
+
 @end
