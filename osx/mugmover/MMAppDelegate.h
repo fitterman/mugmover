@@ -13,7 +13,6 @@
 #import "DDFileLogger.h"
 
 @class MMTrack;
-@class ObjectiveFlickr;
 
 @interface MMAppDelegate : NSObject <NSApplicationDelegate>
 

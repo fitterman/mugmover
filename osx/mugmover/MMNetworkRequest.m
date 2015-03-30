@@ -14,85 +14,53 @@
 #define DEFAULT_HEAD_TIMEOUT (10.0)
 #define MAX_RETRIES (5)
 
+extern const NSInteger MMDefaultRetries;
 
-- (id) initMakeHeadRequest: (NSString *) urlString
-                  delegate: (MMPhoto *) delegate
++ (void) getUrlByteLength: (NSString *) urlString
+                          photo: (MMPhoto *) photo
 {
-
-    self = [self init];
-    if (self)
+    NSURL *url = [NSURL URLWithString: urlString];
+    NSOperationQueue *tempQueue = [[NSOperationQueue alloc] init];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL: url
+                                                           cachePolicy: NSURLRequestUseProtocolCachePolicy
+                                                       timeoutInterval: DEFAULT_HEAD_TIMEOUT];
+    if (!request)
     {
-        NSURL *url = [NSURL URLWithString: urlString];
-
-        _request = [NSMutableURLRequest requestWithURL: url
-                                           cachePolicy: NSURLRequestUseProtocolCachePolicy
-                                       timeoutInterval: DEFAULT_HEAD_TIMEOUT];
-        if (!_request)
-        {
-            return nil;
-        }
-
-        // Designate the request a POST request and specify its body data
-        [_request setHTTPMethod: @"HEAD"];
-
-        _receivedData = [NSMutableData dataWithCapacity: 0];
-
-        // create the connection, starting the request
-        NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest: _request
-                                                      delegate: self];
-
-        if (!connection)
-        {
-            [self releaseStrongPointers];
-            return nil;
-        }
-        _delegate = delegate;
-        _retries = MAX_RETRIES;
+        return;
     }
-    return self;
-}
 
-- (void) connection: (NSURLConnection *) connection
- didReceiveResponse: (NSURLResponse *) response
-{
-    long long filesize = [response expectedContentLength];
-    [_delegate setByteLength: filesize];
-    [self releaseStrongPointers];
-}
+    // Designate the request a POST request and specify its body data
+    [request setHTTPMethod: @"HEAD"];
 
-- (BOOL) retryable
-{
-    if (_retries > 0)
+    __block NSInteger maxRetries = MMDefaultRetries;
+
+    AsyncCompletionHandler headCompletionHandler = ^(NSURLResponse *response, NSData *data, NSError *connectionError)
     {
-        _retries--;
-        NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest: _request
-                                                                      delegate: self];
-        if (!connection)
+        if (connectionError)
         {
-            _request = nil;
-            return NO;
+            DDLogError(@"ERROR      connectionError=%@", connectionError);
+            if (maxRetries <= 0)
+            {
+                DDLogError(@"ERROR      maxRetriesExceeded for %@", request);
+            }
+            else
+            {
+                maxRetries = maxRetries - 1;
+                [NSURLConnection sendAsynchronousRequest: request
+                                                   queue: tempQueue
+                                       completionHandler: headCompletionHandler];
+            }
         }
-        return YES;
-    }
-    return NO;
-
-}
-
-- (void) connection: (NSURLConnection *) connection
-   didFailWithError: (NSError *) error
-{
-    // Release the connection and the data object.
-
-    [_delegate mmNetworkRequest: self
-               didFailWithError: error];
-    [self releaseStrongPointers];
-}
-
-- (void) releaseStrongPointers
-{
-    _delegate = nil;
-    _receivedData = nil;
-    _request = nil;
+        else
+        {
+            long long filesize = [response expectedContentLength];
+            [photo setByteLength: filesize];
+        }
+        
+    };
+    [NSURLConnection sendAsynchronousRequest: request
+                                       queue: tempQueue
+                           completionHandler: headCompletionHandler];
 }
 
 @end

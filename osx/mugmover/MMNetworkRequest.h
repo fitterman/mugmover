@@ -10,19 +10,12 @@
 
 @class MMPhoto;
 
-@interface MMNetworkRequest : NSObject
+typedef void (^AsyncCompletionHandler)(NSURLResponse *, NSData *, NSError *);
 
-@property (strong)              MMPhoto *                delegate;
-@property (strong)              NSMutableData *          receivedData;
-@property (strong)              NSMutableURLRequest *    request;
-@property (assign)              NSInteger                retries;
+@interface MMNetworkRequest : NSObject
 
 // TODO Add retry count and automatic retries
 
-- (id) initMakeHeadRequest: (NSString *) stringUrl
-                  delegate: (MMPhoto *) delegate;
-
-- (void) releaseStrongPointers;
-- (BOOL) retryable;
-
++ (void) getUrlByteLength: (NSString *) urlString
+                    photo: (MMPhoto *) photo;
 @end

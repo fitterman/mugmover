@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ObjectiveFlickr/ObjectiveFlickr.h>
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
 
@@ -16,7 +15,7 @@
 @class MMPoint;
 @class MMNetworkRequest;
 
-@interface MMPhoto : NSObject <OFFlickrAPIRequestDelegate>
+@interface MMPhoto : NSObject
 
 @property (strong, readonly)    NSMutableArray *            adjustmentsArray;
 @property (strong)              MMApiRequest *              apiRequest;
@@ -31,7 +30,6 @@
 @property (assign, readonly)    BOOL                        didFetchSizes;
 @property (strong)              NSMutableArray *            faceArray;
 @property (strong)              NSMutableDictionary *       flickrDictionary;
-@property (strong)              OFFlickrAPIRequest *        flickrRequest;
 @property (assign)              NSInteger                   index;
 @property (strong)              NSString *                  iPhotoOriginalImagePath;
 @property (weak, readonly)      MMPhotoLibrary *            library;
@@ -66,12 +64,6 @@
 - (Float64) aspectRatio;
 
 - (void) performNextStep;
-
-- (void) mmNetworkRequest: (MMNetworkRequest *) request
-  didCompleteWithResponse: (NSDictionary *) dictionary;
-
-- (void) mmNetworkRequest: (MMNetworkRequest *) request
-         didFailWithError: (NSError *) error;
 
 - (void) processPhoto;
 

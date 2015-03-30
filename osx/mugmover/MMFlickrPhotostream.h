@@ -7,27 +7,25 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ObjectiveFlickr/ObjectiveFlickr.h>
 #import "MMFace.h"
 @class MMFace;
+@class MMOauthFlickr;
 @class MMPhoto;
 @class MMPhotoLibrary;
-@class MMFlickrRequestPool;
 
-@interface MMFlickrPhotostream : NSObject <OFFlickrAPIRequestDelegate>
+@interface MMFlickrPhotostream : NSObject
 
 @property (strong)              NSString *              accessSecret;
 @property (strong)              NSString *              accessToken;
 @property (strong)              MMPhoto *               currentPhoto;
 @property (assign)              NSInteger               currentPhotoIndex;
-@property (strong)              OFFlickrAPIContext *    flickrContext;
+@property (strong)              MMOauthFlickr *         flickrOauth;
 @property (strong)              NSString *              handle; /* TODO Verify reasoning for strong */
 @property (assign)              Float32                 initializationProgress;
 @property (strong)              MMPhotoLibrary *        library;
 @property (assign, readonly)    NSInteger               page;
 @property (strong)              NSMutableDictionary *   photoDictionary;
 @property (assign)              NSInteger               photosInStream;
-@property (strong)              MMFlickrRequestPool *   requestPool;
 @property (strong, readonly)    NSOperationQueue *      streamQueue;
 
 - (void) close;
@@ -40,11 +38,6 @@
 - (NSInteger) inQueue;
 
 - (void) removeFromPhotoDictionary: (MMPhoto *) photo;
-
-- (BOOL) trackFailedAPIRequest: (OFFlickrAPIRequest *) inRequest
-                         error: (NSError *) inError;
-
-- (NSURL *) urlFromDictionary: (NSDictionary *) photoDict;
 
 @end
 

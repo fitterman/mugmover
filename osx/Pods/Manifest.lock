@@ -1,18 +1,17 @@
 PODS:
-  - CocoaLumberjack (2.0.0-rc):
+  - CocoaLumberjack (2.0.0):
     - CocoaLumberjack/Default
     - CocoaLumberjack/Extensions
-  - CocoaLumberjack/Core (2.0.0-rc)
-  - CocoaLumberjack/Default (2.0.0-rc):
+  - CocoaLumberjack/Core (2.0.0)
+  - CocoaLumberjack/Default (2.0.0):
     - CocoaLumberjack/Core
-  - CocoaLumberjack/Extensions (2.0.0-rc):
+  - CocoaLumberjack/Extensions (2.0.0):
     - CocoaLumberjack/Default
-  - FMDB (2.4):
+  - FMDB (2.5):
     - FMDB/standard
-  - FMDB/common (2.4)
-  - FMDB/standard (2.4):
+  - FMDB/common (2.5)
+  - FMDB/standard (2.5):
     - FMDB/common
-  - objectiveflickr (2.0.4)
   - OMGHTTPURLRQ/UserAgent (2.1)
   - TDOAuth (1.0.4):
     - OMGHTTPURLRQ/UserAgent
@@ -20,14 +19,16 @@ PODS:
 DEPENDENCIES:
   - CocoaLumberjack
   - FMDB (~> 2.4)
-  - objectiveflickr
-  - TDOAuth
+  - TDOAuth (from `/work/fTDOAuth`)
+
+EXTERNAL SOURCES:
+  TDOAuth:
+    :path: /work/fTDOAuth
 
 SPEC CHECKSUMS:
-  CocoaLumberjack: 6186e27827fc574b50b16c10102fcc591437f06c
-  FMDB: 0b2fa25e5264ef177973c0cb8c02c711107979aa
-  objectiveflickr: 39b43d8db58c75c82295d1babe4596f3e9b4493b
+  CocoaLumberjack: fd2b1031c6c4e0f08b5ea928ef677fa0a5de517d
+  FMDB: 0efa188cf0dd1ce82c27a478cd5f5fa245308677
   OMGHTTPURLRQ: f8c515dfd2f57a5d74c710978f600231f52afec5
-  TDOAuth: 3d02dc155fcb71572def39c05b80b4fbbe11d4f9
+  TDOAuth: c7acc7968ba502e0a60787b03bcb66fa850bf6a0
 
 COCOAPODS: 0.34.4

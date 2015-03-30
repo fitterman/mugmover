@@ -22,9 +22,8 @@
 #import "FMDB/FMResultSet.h"
 #import "MMApiRequest.h"
 #import "MMFlickrPhotostream.h"
-#import "MMFlickrRequest.h"
-#import "MMFlickrRequestPool.h"
 #import "MMNetworkRequest.h"
+#import "MMOauthFlickr.h"
 #import "MMPhoto.h"
 #import "MMPhotolibrary.h"
 #import "MMPoint.h"
@@ -37,6 +36,8 @@
 @import QuartzCore.CoreImage.CIFilter;
 
 #define MAX_THUMB_DIM (100)
+
+extern const NSInteger MMDefaultRetries;
 
 @implementation MMPhoto
 
@@ -145,20 +146,7 @@
                 [self releaseStrongPointers];
                 return nil;
             }
-
-            for (NSString *key in flickrDictionary)
-            {
-                NSString *value = [flickrDictionary valueForKey: key];
-                if ([key hasPrefix: @"is"])
-                {
-                    NSNumber *boolValue = [[NSNumber alloc ] initWithBool: ([value isEqualToString: @"1"])];
-                    [_flickrDictionary setValue: boolValue forKey: key];
-                }
-                else
-                {
-                    [_flickrDictionary setValue: value forKey: key];
-                }
-            }
+            [_flickrDictionary addEntriesFromDictionary: flickrDictionary];
             [_flickrDictionary setValue: @"flickr" forKey: @"name"];
             _exifDictionary = [NSMutableDictionary new];
             if (!_exifDictionary)
@@ -172,8 +160,6 @@
                 [self releaseStrongPointers];
                 return nil;
             }
-            _flickrRequest = [_stream.requestPool getRequestFromPoolSettingDelegate: self];
-
             _didFetchExif = NO;
             _didFetchInfo = NO;
             _didFetchOriginalByteSize = NO;
@@ -190,36 +176,24 @@
 
 - (void) performNextStep
 {
-    // This sequentially performs each step, ensuring that it won't go to the next step
-    // from inside the network delegates by using block operations as needed.
-    NSBlockOperation *blockOperation;
+    // This structure forces the processing to happen serially, with the state being
+    // maintained in this class.
+
     if (!_didFetchExif)                     // STEP 1: Get the Exif data from Flickr
     {
         [self fetchFlickrExif];
     }
     else if (!_didFetchInfo)                // STEP 2: Perform the getInfo call to get the notes
     {
-        blockOperation = [NSBlockOperation blockOperationWithBlock:^
-                          {
-                              [self fetchFlickrInfo];
-                          }];
-        [_stream.streamQueue addOperation: blockOperation];
+        [self fetchFlickrInfo];
     }
     else if (!_didFetchSizes)               // STEP 3: Get the images sizes in hopes of accessing the original image
     {
-        blockOperation = [NSBlockOperation blockOperationWithBlock:^
-                          {
-                              [self fetchFlickrSizes];
-                          }];
-        [_stream.streamQueue addOperation: blockOperation];
+        [self fetchFlickrSizes];
     }
     else if (!_didFetchOriginalByteSize)    // STEP 4: Retrieve the size of the original image
     {
-        blockOperation = [NSBlockOperation blockOperationWithBlock:^
-                          {
-                              [self fetchImageByteSize];
-                          }];
-        [_stream.streamQueue addOperation: blockOperation];
+        [self fetchImageByteSize];
     }
     else
     {
@@ -242,6 +216,7 @@
 
 - (void) updateNotesOnFlickr
 {
+/*
     NSBlockOperation *blockOperation;
     if ((!_faceArray) || ([_faceArray count] == 0))
     {
@@ -275,13 +250,16 @@
                           }];
     }
     [_stream.streamQueue addOperation: blockOperation];
+*/
 }
 
 - (void) deleteOneNote
 {
+/*
     NSString *noteId = [_oldNotesToDelete objectAtIndex: 0];
     [_oldNotesToDelete removeObjectAtIndex: 0];
     [self deleteNote: noteId];
+*/
 }
 
 - (BOOL) findMatchingInIphotoLibraryByVersionUuidAndVersion
@@ -414,7 +392,6 @@
 - (void) setByteLength: (long long) length
 {
     [_flickrDictionary setValue: @(length) forKey: @"bytes"];
-    [_request releaseStrongPointers];
     _didFetchOriginalByteSize = YES;
     [self performNextStep];
 }
@@ -1066,11 +1043,6 @@
 
 - (void) releaseStrongPointers
 {
-    if (_flickrRequest)
-    {
-        [_stream.requestPool returnRequestToPool: _flickrRequest];
-    }
-    
     _adjustmentsArray = nil;
     _apiRequest = nil;
     [_attributes removeAllObjects];
@@ -1081,7 +1053,6 @@
     _faceArray = nil;
     [_flickrDictionary removeAllObjects];
     _flickrDictionary = nil;
-    _flickrRequest = nil;
     _iPhotoOriginalImagePath = nil;
     _masterUuid = nil;
     _oldNotesToDelete = nil;
@@ -1106,76 +1077,159 @@
 
 - (void) fetchImageByteSize
 {
-
-    _request = [[MMNetworkRequest alloc] initMakeHeadRequest: _originalUrl
-                                                    delegate: self];
-
+    // This kicks it off. It calls back through [MMPhoto setByteLength];
+    [MMNetworkRequest getUrlByteLength: _originalUrl photo: self];
 }
 
 - (void) fetchFlickrSizes
 {
-    if ([_flickrRequest isRunning])
+    NSURLRequest *request = [_stream.flickrOauth apiRequest: @"flickr.photos.getSizes"
+                                                 parameters: @{@"photo_id": [_flickrDictionary objectForKey: @"id"],
+                                                               @"secret":  [_flickrDictionary objectForKey: @"secret"],
+                                                               }
+                                                       verb: @"GET"];
+    ServiceResponseHandler processGetSizesResponse = ^(NSDictionary *responseDictionary)
     {
-        NSString *message = [NSString stringWithFormat: @"Pool request is still running, sessionInfo=%@",
-                                                        _flickrRequest.sessionInfo ];
-        @throw [NSException exceptionWithName: @"PoolManagement"
-                                       reason: message
-                                     userInfo: nil];
-    }
-
-    NSString *photoId = [_flickrDictionary valueForKey: @"id"];
-    NSString *secret = [_flickrDictionary valueForKey: @"secret"];
-    _flickrRequest.sessionInfo = @"fetchSizes";
-
-    [_flickrRequest callAPIMethodWithGET: @"flickr.photos.getSizes"
-                               arguments: [NSDictionary dictionaryWithObjectsAndKeys: photoId, @"photo_id",
-                                           secret, @"secret",
-                                           nil]];
+        NSArray *sizeArray = [responseDictionary valueForKeyPath: @"sizes.size"];
+        if (sizeArray)
+        {
+            for (NSDictionary *dict in sizeArray)
+            {
+                NSString *labelText = [dict objectForKey: @"label"];
+                if ([labelText isEqualToString: @"Original"])
+                {
+                    NSString *widthString = [dict valueForKey: @"width"];
+                    NSString *heightString = [dict objectForKey: @"height"];
+                    if (widthString && heightString)
+                    {
+                        [_flickrDictionary setValue: [NSNumber numberWithInteger: [widthString integerValue]]
+                                             forKey: @"width"];
+                        [_flickrDictionary setValue: [NSNumber numberWithInteger: [heightString integerValue]]
+                                             forKey: @"height"];
+                    }
+                }
+            }
+        }
+        _didFetchSizes = YES;
+        [self performNextStep];
+    };
+    [_stream.flickrOauth processUrlRequest: request
+                                     queue: _stream.streamQueue
+                         remainingAttempts: MMDefaultRetries
+                         completionHandler: processGetSizesResponse];
 
 }
 
 - (void) fetchFlickrInfo
 {
-    if ([_flickrRequest isRunning])
+    NSURLRequest *request = [_stream.flickrOauth apiRequest: @"flickr.photos.getInfo"
+                                                 parameters: @{@"photo_id": [_flickrDictionary objectForKey: @"id"],
+                                                               @"secret":  [_flickrDictionary objectForKey: @"secret"],
+                                                               }
+                                                       verb: @"GET"];
+    ServiceResponseHandler processGetInfoResponse = ^(NSDictionary *responseDictionary)
     {
-        NSString *message = [NSString stringWithFormat: @"Pool request is still running, sessionInfo=%@",
-                             _flickrRequest.sessionInfo ];
-        @throw [NSException exceptionWithName: @"PoolManagement"
-                                       reason: message
-                                     userInfo: nil];
-    }
-
-    _flickrRequest.sessionInfo = @"fetchInfo";
-    NSString *photoId = [_flickrDictionary objectForKey: @"id"];
-    NSString *secret = [_flickrDictionary objectForKey: @"secret"];
-    [_flickrRequest callAPIMethodWithGET: @"flickr.photos.getInfo"
-                               arguments: [NSDictionary dictionaryWithObjectsAndKeys: photoId, @"photo_id",
-                                           secret, @"secret",
-                                           nil]];
+        NSString *originalSecret = [responseDictionary valueForKeyPath: @"photo.originalsecret"];
+        NSString *originalFormat = [responseDictionary valueForKeyPath: @"photo.originalformat"];
+        NSString *dateUploaded = [responseDictionary valueForKeyPath: @"photo.dateuploaded"];
+        if (dateUploaded)
+        {
+            [_flickrDictionary setValue: [NSNumber numberWithUnsignedLong: [dateUploaded longLongValue]]
+                                 forKey: @"dateUploaded"];
+        }
+        
+        if (originalSecret && originalFormat)
+        {
+            _originalUrl = [NSString stringWithFormat: @"https://farm%@.staticflickr.com/%@/%@_%@_o.%@",
+                            [_flickrDictionary valueForKey: @"farm"],
+                            [_flickrDictionary valueForKey: @"server"],
+                            [_flickrDictionary valueForKey: @"id"],
+                            originalSecret,
+                            originalFormat];
+            [_flickrDictionary setValue: originalFormat
+                                 forKey: @"originalFormat"];
+        }
+        else
+        {
+            // If we can't get the original URL, bypass this step
+            _didFetchOriginalByteSize = YES;
+        }
+        /* CAUTION: FetchInfo operation implies all the mugmover notes will be deleted. */
+        NSArray *noteArray = [responseDictionary valueForKeyPath: @"photo.notes.note"];
+        if (noteArray)
+        {
+            for (NSDictionary *dict in noteArray)
+            {
+                NSString *noteId = [dict objectForKey: @"id"];
+                NSString *noteText = [dict valueForKey: @"_text"];
+                if (noteText)
+                {
+                    NSRange result = [noteText rangeOfString: @"mugmover" options: NSCaseInsensitiveSearch];
+                    if (result.location != NSNotFound)
+                    {
+                        [_oldNotesToDelete addObject: noteId];
+                    }
+                }
+            }
+        }
+        _didFetchInfo = YES;
+        [self performNextStep];
+    };
+    [_stream.flickrOauth processUrlRequest: request
+                                     queue: _stream.streamQueue
+                         remainingAttempts: MMDefaultRetries
+                         completionHandler: processGetInfoResponse];
 
 }
 
 - (void) fetchFlickrExif
 {
-    if ([_flickrRequest isRunning])
+    NSURLRequest *request = [_stream.flickrOauth apiRequest: @"flickr.photos.getExif"
+                                                 parameters: @{@"photo_id": [_flickrDictionary objectForKey: @"id"],
+                                                               @"secret":  [_flickrDictionary objectForKey: @"secret"],
+                                                              }
+                                                       verb: @"GET"];
+    ServiceResponseHandler processGetExifResponse = ^(NSDictionary *responseDictionary)
     {
-        NSString *message = [NSString stringWithFormat: @"Pool request is still running, sessionInfo=%@",
-                             _flickrRequest.sessionInfo ];
-        @throw [NSException exceptionWithName: @"PoolManagement"
-                                       reason: message
-                                     userInfo: nil];
-    }
-
-    _flickrRequest.sessionInfo = @"fetchExif";
-    NSString *photoId = [_flickrDictionary objectForKey: @"id"];
-    NSString *secret = [_flickrDictionary objectForKey: @"secret"];
-    [_flickrRequest callAPIMethodWithGET: @"flickr.photos.getExif"
-                              arguments: [NSDictionary dictionaryWithObjectsAndKeys: photoId, @"photo_id",
-                                          secret, @"secret",
-                                          nil]];
+        NSArray *exifArray = [responseDictionary valueForKeyPath: @"photo.exif"];
+        for (NSDictionary *dict in exifArray)
+        {
+            NSString *tag = [dict objectForKey: @"tag"];
+            NSString *tagspace = [dict objectForKey: @"tagspace"];
+            NSDictionary *raw = [dict objectForKey: @"raw"];
+            
+            NSDictionary *spaceDictionary = [_exifDictionary objectForKey: tagspace];
+            if (!spaceDictionary)
+            {
+                spaceDictionary = [[NSMutableDictionary alloc] init];
+                [_exifDictionary setObject: spaceDictionary forKey: tagspace];
+            }
+            [spaceDictionary setValue: [raw valueForKey: @"_text"] forKey: tag];
+        }
+        
+        // Store some things you will need later
+        _originalFilename = [_exifDictionary valueForKeyPath: @"IPTC.ObjectName"];
+        _originalDate = [_exifDictionary valueForKeyPath: @"ExifIFD.DateTimeOriginal"];
+        
+        // The versionUuid might be in one of two places. Check one if the other isn't there.
+        _versionUuid = [_exifDictionary valueForKeyPath: @"IPTC.SpecialInstructions"];
+        if (!_versionUuid)
+        {
+            _versionUuid = [_exifDictionary valueForKeyPath: @"XMP-photoshop.Instructions"];
+        }
+        NSObject *versionObject = [_exifDictionary valueForKeyPath: @"IPTC.ApplicationRecordVersion"];
+        _version = (versionObject) ? [(NSString *) versionObject integerValue] : -1;
+        
+        _didFetchExif = YES;
+        [self performNextStep];
+    };
+    [_stream.flickrOauth processUrlRequest: request
+                                     queue: _stream.streamQueue
+                         remainingAttempts: MMDefaultRetries
+                         completionHandler: processGetExifResponse];
 
 }
-
+/*
 - (void) addNoteForOneFace
 {
     // We add the first face in the faceArray
@@ -1225,123 +1279,7 @@
                                arguments: args];
 }
 
-
-#pragma mark ObjectiveFlickr delegate methods
-
-- (void) flickrAPIRequest: (OFFlickrAPIRequest *) inRequest
-  didCompleteWithResponse: (NSDictionary *) inResponseDictionary
-{
-    DDLogInfo(@"RESP RECEIVED request=%@", inRequest.sessionInfo);
-    NSArray *pieces = [inRequest.sessionInfo componentsSeparatedByString: @";"];
-
-    if ([pieces[0] isEqualToString: @"fetchExif"])
-    {
-        NSArray *exifArray = [inResponseDictionary valueForKeyPath: @"photo.exif"];
-        for (NSDictionary *dict in exifArray)
-        {
-            NSString *tag = [dict objectForKey: @"tag"];
-            NSString *tagspace = [dict objectForKey: @"tagspace"];
-            NSDictionary *raw = [dict objectForKey: @"raw"];
-
-            NSDictionary *spaceDictionary = [_exifDictionary objectForKey: tagspace];
-            if (!spaceDictionary)
-            {
-                spaceDictionary = [[NSMutableDictionary alloc] init];
-                [_exifDictionary setObject: spaceDictionary forKey: tagspace];
-            }
-            [spaceDictionary setValue: [raw valueForKey: @"_text"] forKey: tag];
-        }
-
-        // Store some things you will need later
-        _originalFilename = [_exifDictionary valueForKeyPath: @"IPTC.ObjectName"];
-        _originalDate = [_exifDictionary valueForKeyPath: @"ExifIFD.DateTimeOriginal"];
-
-        // The versionUuid might be in one of two places. Check one if the other isn't there.
-        _versionUuid = [_exifDictionary valueForKeyPath: @"IPTC.SpecialInstructions"];
-        if (!_versionUuid)
-        {
-            _versionUuid = [_exifDictionary valueForKeyPath: @"XMP-photoshop.Instructions"];
-        }
-        NSObject *versionObject = [_exifDictionary valueForKeyPath: @"IPTC.ApplicationRecordVersion"];
-        _version = (versionObject) ? [(NSString *) versionObject integerValue] : -1;
-
-        _didFetchExif = YES;
-        [self performNextStep];
-    }
-    else if ([pieces[0] isEqualToString: @"fetchInfo"])
-    {
-        NSString *originalSecret = [inResponseDictionary valueForKeyPath: @"photo.originalsecret"];
-        NSString *originalFormat = [inResponseDictionary valueForKeyPath: @"photo.originalformat"];
-        NSString *dateUploaded = [inResponseDictionary valueForKeyPath: @"photo.dateuploaded"];
-        if (dateUploaded)
-        {
-            [_flickrDictionary setValue: [NSNumber numberWithUnsignedLong: [dateUploaded longLongValue]]
-                                 forKey: @"dateUploaded"];
-        }
-
-        if (originalSecret && originalFormat)
-        {
-            _originalUrl = [NSString stringWithFormat: @"https://farm%@.staticflickr.com/%@/%@_%@_o.%@",
-                                        [_flickrDictionary valueForKey: @"farm"],
-                                        [_flickrDictionary valueForKey: @"server"],
-                                        [_flickrDictionary valueForKey: @"id"],
-                                        originalSecret,
-                                        originalFormat];
-            [_flickrDictionary setValue: originalFormat
-                                 forKey: @"originalFormat"];
-        }
-        else
-        {
-            // If we can't get the original URL, bypass this step
-            _didFetchOriginalByteSize = YES;
-        }
-        /* CAUTION: FetchInfo operation implies all the mugmover notes will be deleted. */
-        NSArray *noteArray = [inResponseDictionary valueForKeyPath: @"photo.notes.note"];
-        if (noteArray)
-        {
-            for (NSDictionary *dict in noteArray)
-            {
-                NSString *noteId = [dict objectForKey: @"id"];
-                NSString *noteText = [dict valueForKey: @"_text"];
-                if (noteText)
-                {
-                    NSRange result = [noteText rangeOfString: @"mugmover" options: NSCaseInsensitiveSearch];
-                    if (result.location != NSNotFound)
-                    {
-                        [_oldNotesToDelete addObject: noteId];
-                    }
-                }
-            }
-        }
-        _didFetchInfo = YES;
-        [self performNextStep];
-    }
-    else if ([pieces[0] isEqualToString: @"fetchSizes"])
-    {
-        NSArray *sizeArray = [inResponseDictionary valueForKeyPath: @"sizes.size"];
-        if (sizeArray)
-        {
-            for (NSDictionary *dict in sizeArray)
-            {
-                NSString *labelText = [dict objectForKey: @"label"];
-                if ([labelText isEqualToString: @"Original"])
-                {
-                    NSString *widthString = [dict valueForKey: @"width"];
-                    NSString *heightString = [dict objectForKey: @"height"];
-                    if (widthString && heightString)
-                    {
-                        [_flickrDictionary setValue: [NSNumber numberWithInteger: [widthString integerValue]]
-                                             forKey: @"width"];
-                        [_flickrDictionary setValue: [NSNumber numberWithInteger: [heightString integerValue]]
-                                             forKey: @"height"];
-                    }
-                }
-            }
-        }
-        _didFetchSizes = YES;
-        [self performNextStep];
-    }
-    else if ([pieces[0] isEqualToString: @"deleteNote"])
+    if ([pieces[0] isEqualToString: @"deleteNote"])
     {
         [self updateNotesOnFlickr]; // There is no cleanup because we delete the notes as we queue the requests
     }
@@ -1356,94 +1294,28 @@
     }
 }
 
-- (void) flickrAPIRequest: (OFFlickrAPIRequest *) inRequest
-         didFailWithError: (NSError *) inError
-{
-    DDLogError(@"      FAILED: request=%@", inRequest.sessionInfo);
-    BOOL retryable = [_stream trackFailedAPIRequest: inRequest
-                                              error: inError];
-    NSArray *pieces = [inRequest.sessionInfo componentsSeparatedByString: @";"];
-
-    if (retryable)
+    // TODO Report you are giving up.
+    DDLogError(@"ABANDONING  Unable to process request %@", pieces[0]);
+    if ([pieces[0] isEqualToString: @"deleteNote"])
     {
-        if ([pieces[0] isEqualToString: @"fetchSizes"])
-        {
-            [self fetchFlickrSizes];
-        }
-        else if ([pieces[0] isEqualToString: @"fetchExif"])
-        {
-            [self fetchFlickrExif];
-        }
-        else if ([pieces[0] isEqualToString: @"fetchInfo"])
-        {
-            [self fetchFlickrInfo];
-        }
-        else if ([pieces[0] isEqualToString: @"deleteNote"])
-        {
-            if (inError.code == 1) // Note not found
-            {
-                // TODO IMPORTANT! Reproduce this error to make sure it actually is the right error code
-                // TODO Log the error
-                // Do not retry
-                [self updateNotesOnFlickr]; // Get the next one
-            }
-            else
-            {
-                [self deleteNote: pieces[1]]; // Retry
-            }
-        }
-
-        else if ([pieces[0] isEqualToString: @"addNote"])
-        {
-            // This will try to add the same note, but do it outside the delegate method
-            [self updateNotesOnFlickr];
-
-        }
-
+        // If you are giving up on deleting a note, queue the next one.
+        // This is important as eventually that is what will release the photo object itself.
+        [self updateNotesOnFlickr]; // Get the next one
     }
+    //
+    else if ([pieces[0] isEqualToString: @"addNote"])
+    {
+        // If you can't add the note, blow it away and try the next one
+        MMFace *face = [_faceArray objectAtIndex: 0];
+        [face releaseStrongPointers];
+        [_faceArray removeObjectAtIndex: 0];
+        [self updateNotesOnFlickr];
+    }
+    // Need to do all the release stuff you do on the corresponding success event.
     else
     {
-        // TODO Report you are giving up.
-        DDLogError(@"ABANDONING  Unable to process request %@", pieces[0]);
-        if ([pieces[0] isEqualToString: @"deleteNote"])
-        {
-            // If you are giving up on deleting a note, queue the next one.
-            // This is important as eventually that is what will release the photo object itself.
-            [self updateNotesOnFlickr]; // Get the next one
-        }
-        //
-        else if ([pieces[0] isEqualToString: @"addNote"])
-        {
-            // If you can't add the note, blow it away and try the next one
-            MMFace *face = [_faceArray objectAtIndex: 0];
-            [face releaseStrongPointers];
-            [_faceArray removeObjectAtIndex: 0];
-            [self updateNotesOnFlickr];
-        }
-        // Need to do all the release stuff you do on the corresponding success event.
-        else
-        {
-            [self releaseStrongPointers];
-        }
+        [self releaseStrongPointers];
     }
-}
-
-- (void) mmNetworkRequest: (MMNetworkRequest *) request
-  didCompleteWithResponse: (NSDictionary *) responseDictionary
-{
-}
-
-- (void) mmNetworkRequest: (MMNetworkRequest *) request
-         didFailWithError: (NSError *) error
-{
-    DDLogError(@"Connection failed! Error - %@ %@",
-          [error localizedDescription],
-          [[error userInfo] objectForKey: NSURLErrorFailingURLStringErrorKey]);
-    if (![_request retryable])
-    {
-        [self performNextStep];
-    }
-
-}
+*/
 
 @end

@@ -9,7 +9,6 @@
 
 #import "MMAppDelegate.h"
 #import "MMTrack.h"
-#import "MMFlickr.h"
 #import "MMFlickrPhotostream.h"
 #import "MMSmugmug.h"
 #import "MMPhotoLibrary.h"
@@ -19,7 +18,6 @@
 @implementation MMAppDelegate
 
 MMFlickrPhotostream *stream = nil;
-MMFlickr *flickr = nil;
 MMSmugmug *smugmug = nil;
 NSDictionary *flickrPhotoPointer;
 
@@ -34,15 +32,12 @@ BOOL const MMdebugLevel;
     [self setTrack: aTrack]; /* alternatively, self.track = aTrack; */
     [self updateUserInterface];
 
-//    flickr = [[MMFlickr alloc] initWithHandle: @"jayphillips"
-//                                    libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
+   // smugmug = [[MMSmugmug alloc] initWithHandle: @"jayphillips"
+   //                                 libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
 
-    smugmug = [[MMSmugmug alloc] initWithHandle: @"jayphillips"
-                                    libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
-
-//    stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
-//                                             libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
-//                                               libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
+    stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
+     //                                        libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
+                                               libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
     if (stream)
     {
         // Register for KVO on some network-associated values
@@ -73,8 +68,8 @@ BOOL const MMdebugLevel;
             DDLogInfo(@"       initializationProgress=%@", newValue);
             if ([newValue floatValue] == 1.0)
             {
-                [stream.library getPhotos];    /* This kicks off the whole process from the database without a service */
-                // [stream getPhotos]; /* This kicks off the whole process with flickr */
+                //[stream.library getPhotos];    /* This kicks off the whole process from the database without a service */
+                [stream getPhotos]; /* This kicks off the whole process with flickr */
             }
         }
     }
