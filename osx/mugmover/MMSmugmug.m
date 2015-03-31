@@ -52,7 +52,10 @@ long                retryCount;
             {
                 NSString *path = @"/Users/Bob/Downloads/JULIUS STUCHINSKY WW1 Draft Registration 1917-1918.jpg";
                 NSURLRequest *uploadRequest = [_smugmugOauth upload: path
-                                                           albumUid: @"4RTMrj"];
+                                                           albumUid: @"4RTMrj"
+                                                              title: nil
+                                                            caption: nil
+                                                               tags: nil];
                 ServiceResponseHandler processSmugmugUpload = ^(NSDictionary *responseDictionary)
                 {
                     DDLogError(@"responseDictionary=%@", responseDictionary);

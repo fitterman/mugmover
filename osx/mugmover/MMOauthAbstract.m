@@ -70,6 +70,17 @@
     return s;
 }
 
++ (NSNumber *) lengthForFileAtPath: (NSString *) path
+{
+    NSError *error;
+    NSDictionary *dict = [[NSFileManager defaultManager] attributesOfItemAtPath: path error: &error];
+    if (error)
+    {
+        return nil;
+    }
+    return [dict objectForKey:NSFileSize];
+}
+
 #pragma mark Public Methods
 
 - (id) initAndStartAuthorization: (ProgressBlockType) progressBlock

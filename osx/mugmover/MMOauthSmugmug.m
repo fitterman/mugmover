@@ -54,30 +54,20 @@
  */
 - (NSURLRequest *) upload: (NSString *) filePath
                  albumUid: (NSString *) albumUid // for example, @"4RTMrj"
+                    title: (NSString *) title
+                  caption: (NSString *) caption
+                     tags: (NSArray *) tags
+
 {
     if (!filePath)
     {
         DDLogError(@"filePath is nil");
         return nil;
     }
-    if (!albumUid)
-    {
-        DDLogError(@"albumUid is nil");
-        return nil;
-    }
     NSURL* fileUrl = [NSURL fileURLWithPath: filePath];
     if (!fileUrl)
     {
         DDLogError(@"fileUrl is nil");
-        return nil;
-    }
-    // Turn this into a HEAD request so we do not read the data
-    NSURLRequest * localRequest = [[NSURLRequest alloc] initWithURL: fileUrl
-                                                        cachePolicy: NSURLCacheStorageNotAllowed
-                                                    timeoutInterval: 0.0]; // It will not load the data this way
-    if (!localRequest)
-    {
-        DDLogError(@"localRequest is nil");
         return nil;
     }
     NSString *md5 = [MMOauthAbstract md5ForFileAtPath: filePath];
@@ -92,12 +82,10 @@
         DDLogError(@"Unable to obtain MIME type of local file");
         return nil;
     }
-    NSError* error = nil;
-    unsigned long long fileSize = [[[NSFileManager defaultManager] attributesOfItemAtPath:filePath
-                                                                                    error: &error] fileSize];
-    if (error)
+    NSNumber *length = [MMOauthAbstract lengthForFileAtPath: filePath];
+    if (!length)
     {
-        DDLogError(@"Attempt to obtain local file size returned error %@", error);
+        DDLogError(@"Unable to obtain length of local file");
         return nil;
     }
     NSInputStream *inputStream = [NSInputStream inputStreamWithFileAtPath: filePath];
@@ -106,12 +94,28 @@
         DDLogError(@"Unable to create stream to local file");
         return nil;
     }
-    NSString *albumUri = [NSString stringWithFormat: @"/api/v2/album/%@", albumUid];
-    if (!inputStream)
+
+    if (!albumUid)
     {
-        DDLogError(@"Unable to create stream to local file");
+        DDLogError(@"albumUid is nil");
         return nil;
     }
+    NSString *albumUri = [NSString stringWithFormat: @"/api/v2/album/%@", albumUid];
+
+    NSMutableDictionary *headerValues = [[NSMutableDictionary alloc] init];
+    if (!headerValues)
+    {
+        DDLogError(@"Unable to create header dictionary");
+        return nil;
+    }
+    [headerValues setObject: @"application/json" forKey: @"Accept"];
+    [headerValues setObject: [NSString stringWithFormat: @"%@", length] forKey: @"Content-Length"];
+    [headerValues setObject: md5 forKey: @"Content-MD5"];
+    [headerValues setObject: mimeType forKey: @"Content-Type"];
+    [headerValues setObject: albumUri forKey: @"X-Smug-AlbumUri"];
+    [headerValues setObject: @"JSON" forKey: @"X-Smug-ResponseType"];
+    [headerValues setObject: @"v2" forKey: @"X-Smug-Version"];
+
     NSMutableURLRequest *request =  (NSMutableURLRequest *)[TDOAuth URLRequestForPath: @"/"
                                                                            parameters: nil
                                                                                  host: UPLOAD_ENDPOINT
@@ -122,14 +126,7 @@
                                                                                scheme: UPLOAD_SCHEME
                                                                         requestMethod: @"POST"
                                                                          dataEncoding: TDOAuthContentTypeJsonObject
-                                                                         headerValues: @{@"Accept":                 @"application/json",
-                                                                                         @"Content-Length":         [NSString stringWithFormat: @"%llu", fileSize],
-                                                                                         @"Content-MD5":            md5,
-                                                                                         @"Content-Type":           mimeType,
-                                                                                         @"X-Smug-AlbumUri":        albumUri,
-                                                                                         @"X-Smug-ResponseType":    @"JSON",
-                                                                                         @"X-Smug-Version":         @"v2",
-                                                                                         }
+                                                                         headerValues: headerValues
                                                                       signatureMethod: TDOAuthSignatureMethodHmacSha1];
     if (!request)
     {
@@ -137,8 +134,6 @@
         return nil;
     }
     request.HTTPBodyStream = inputStream;
-//    NSData *body = [[NSData alloc] initWithContentsOfFile: filePath];
-//    request.HTTPBody = body;
     return request;
 }
 #pragma mark Private Methods
