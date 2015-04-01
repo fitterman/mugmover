@@ -6,15 +6,13 @@
 //  Copyright (c) 2015 Dicentra LLC. All rights reserved.
 //
 
+#import "MMOauthAbstract.h"
 #import "MMOauthFlickr.h"
 
 #define SERVICE_SCHEME      @"https"
 #define SERVICE_ENDPOINT    @"www.flickr.com"
 
 @implementation MMOauthFlickr
-@synthesize accessToken=_accessToken;
-@synthesize tokenSecret=_tokenSecret;
-@synthesize progressBlock=_progressBlock;
 
 #pragma mark Public Methods
 
@@ -31,8 +29,8 @@
                                  host: SERVICE_ENDPOINT
                           consumerKey: MUGMOVER_FLICKR_API_KEY_MACRO
                        consumerSecret: MUGMOVER_FLICKR_SHARED_SECRET_MACRO
-                          accessToken: _accessToken
-                          tokenSecret: _tokenSecret
+                          accessToken: self.accessToken
+                          tokenSecret: self.tokenSecret
                                scheme: SERVICE_SCHEME
                         requestMethod: verb
                          dataEncoding: TDOAuthContentTypeJsonObject
@@ -49,8 +47,8 @@
     if (!params)
     {
         [self updateState: 0.0 asText: @"Unitialized"];
-        _accessToken = nil;
-        _tokenSecret = nil;
+        self.accessToken = nil;
+        self.tokenSecret = nil;
         requestSettings = @{
                             @"url":         @"/services/oauth/request_token",
                             @"parameters":  @{@"oauth_callback": @"mugmover://flickr"}
@@ -89,8 +87,8 @@
             }
             else
             {
-                _accessToken = [params objectForKey: @"oauth_token"];
-                _tokenSecret = [params objectForKey: @"oauth_token_secret"];
+                self.accessToken = [params objectForKey: @"oauth_token"];
+                self.tokenSecret = [params objectForKey: @"oauth_token_secret"];
                 [self updateState: 1.0 asText: @"Successfully initialized"];
             }
         };

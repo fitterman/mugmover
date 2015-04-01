@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 Dicentra LLC. All rights reserved.
 //
 
+#import "MMOauthAbstract.h"
 #import "MMOauthSmugmug.h"
 
 #define SERVICE_SCHEME      @"https"
@@ -14,9 +15,8 @@
 #define UPLOAD_ENDPOINT     @"upload.smugmug.com"
 
 @implementation MMOauthSmugmug
-@synthesize accessToken=_accessToken;
-@synthesize tokenSecret=_tokenSecret;
-@synthesize progressBlock=_progressBlock;
+
+extern const NSInteger MMDefaultRetries;
 
 #pragma mark Public Methods
 
@@ -33,13 +33,15 @@
                   parameters: (NSDictionary *)parameters
                         verb: (NSString *)verb
 {
+    NSMutableDictionary *revisedParameters = [parameters mutableCopy];
+    [revisedParameters setObject: @"true" forKey: @"_filteruri"];
     return [TDOAuth URLRequestForPath: [NSString stringWithFormat: @"/api/v2/%@", api]
-                           parameters: parameters
+                           parameters: revisedParameters
                                  host: SERVICE_ENDPOINT
                           consumerKey: MUGMOVER_SMUGMUG_API_KEY_MACRO
                        consumerSecret: MUGMOVER_SMUGMUG_SHARED_SECRET_MACRO
-                          accessToken: _accessToken
-                          tokenSecret: _tokenSecret
+                          accessToken: self.accessToken
+                          tokenSecret: self.tokenSecret
                                scheme: SERVICE_SCHEME
                         requestMethod: verb
                          dataEncoding: TDOAuthContentTypeJsonObject
@@ -121,8 +123,8 @@
                                                                                  host: UPLOAD_ENDPOINT
                                                                           consumerKey: MUGMOVER_SMUGMUG_API_KEY_MACRO
                                                                        consumerSecret: MUGMOVER_SMUGMUG_SHARED_SECRET_MACRO
-                                                                          accessToken: _accessToken
-                                                                          tokenSecret: _tokenSecret
+                                                                          accessToken: self.accessToken
+                                                                          tokenSecret: self.tokenSecret
                                                                                scheme: UPLOAD_SCHEME
                                                                         requestMethod: @"POST"
                                                                          dataEncoding: TDOAuthContentTypeJsonObject
@@ -136,6 +138,18 @@
     request.HTTPBodyStream = inputStream;
     return request;
 }
+
+- (NSDictionary *) getAllFoldersForUser
+{
+    // https://api.smugmug.com/api/v2/folder/user/jayphillips!folders
+    return nil;
+}
+
+- (NSDictionary *) getAllAlbumsForUser
+{
+    // #https://api/v2/user/cmac!albums?start=251&count=50
+    return nil;
+}
 #pragma mark Private Methods
 
 - (void)doOauthDance: (NSDictionary *)params;
@@ -145,8 +159,8 @@
     if (!params)
     {
         [self updateState: 0.0 asText: @"Unitialized"];
-        _accessToken = nil;
-        _tokenSecret = nil;
+        self.accessToken = nil;
+        self.tokenSecret = nil;
         requestSettings = @{
                             @"url":         @"/services/oauth/1.0a/getRequestToken",
                             @"parameters":  @{@"oauth_callback": @"mugmover://smugmug"}
@@ -181,8 +195,8 @@
             }
             else
             {
-                _accessToken = [params objectForKey: @"oauth_token"];
-                _tokenSecret = [params objectForKey: @"oauth_token_secret"];
+                self.accessToken = [params objectForKey: @"oauth_token"];
+                self.tokenSecret = [params objectForKey: @"oauth_token_secret"];
                 [self updateState: 1.0 asText: @"Successfully initialized"];
             }
         };

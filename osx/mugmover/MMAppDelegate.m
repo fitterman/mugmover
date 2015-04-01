@@ -68,8 +68,8 @@ BOOL const MMdebugLevel;
             DDLogInfo(@"       initializationProgress=%@", newValue);
             if ([newValue floatValue] == 1.0)
             {
-                //[stream.library getPhotos];    /* This kicks off the whole process from the database without a service */
-                [stream getPhotos]; /* This kicks off the whole process with flickr */
+                [stream.library getPhotos];    /* This kicks off the whole process from the database without a service */
+                //[stream getPhotos]; /* This kicks off the whole process with flickr */
             }
         }
     }

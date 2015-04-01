@@ -14,9 +14,11 @@
 
 @property (strong)              NSString *              accessSecret;
 @property (strong)              NSString *              accessToken;
+@property (strong, readonly)    NSString *              currentAccountHandle;
 @property (strong)              MMPhoto *               currentPhoto;
 @property (assign)              NSInteger               currentPhotoIndex;
-@property (strong)              NSString *              handle; /* TODO Verify reasoning for strong */
+@property (strong, readonly)    NSString *              defaultFolder;
+@property (strong)              NSString *              handle;
 @property (assign)              Float32                 initializationProgress;
 @property (strong)              MMPhotoLibrary *        library;
 @property (assign, readonly)    NSInteger               page;
@@ -25,6 +27,7 @@
 @property (strong, readonly)    MMOauthSmugmug *        smugmugOauth;
 @property (strong, readonly)    NSOperationQueue *      streamQueue;
 @property (strong, readonly)    NSString *              tokenSecret;
+
 
 - (void) close;
 

@@ -12,3 +12,4 @@
 @interface MMOauthFlickr : MMOauthAbstract
 @property (strong, readonly)    NSString *      interimTokenSecret;
 @end
+

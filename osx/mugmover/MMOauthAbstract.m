@@ -10,8 +10,11 @@
 #import <CommonCrypto/CommonDigest.h>
 
 @implementation MMOauthAbstract
+@synthesize accessToken = _accessToken;
 
-#pragma mark Class Methods
+extern const NSInteger MMDefaultRetries;
+
+#pragma mark Class (utility) Methods
 /**
  * From http://stackoverflow.com/questions/1363813/how-can-you-read-a-files-mime-type-in-objective-c
  */
@@ -81,6 +84,37 @@
     return [dict objectForKey:NSFileSize];
 }
 
+/**
+ This method ingests an NSData object that is expected to contain UTF-8 JSON-encoded data.
+ If it is successful, it returns the parsed data, which should always be an NSDictionary.
+ No attempt is made to validate that assumption in this routine. If an error occurs, it is
+ logged and nil is returned.
+ */
++ (NSDictionary *) parseJsonData: (NSData *)data
+{
+    if ([data length] > 0)
+    {
+        NSError *jsonParsingError = nil;
+        NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData: data
+                                                                   options: 0
+                                                                     error: &jsonParsingError];
+        if (jsonParsingError)
+        {
+            DDLogError(@"ERROR      malformed JSON");
+            DDLogError(@"%@", [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding]);
+        }
+        else
+        {
+            return dictionary;
+        }
+    }
+    else
+    {
+        DDLogError(@"ERROR      No data received");
+    }
+    return nil;
+}
+
 #pragma mark Public Methods
 
 - (id) initAndStartAuthorization: (ProgressBlockType) progressBlock
@@ -100,7 +134,13 @@
 {
     _accessToken = token;
     _tokenSecret = secret;
-    return self;
+    if (_accessToken && _tokenSecret && ([_accessToken length] > 0) && ([_tokenSecret length] > 0))
+    {
+        [self updateState: 1.0 asText: @"Successfully initialized"];    // We go right to the initialized state
+        return self;
+    }
+    [self close];
+    return nil;
 }
 
 - (NSURLRequest *)apiRequest: (NSString *)api
@@ -168,25 +208,10 @@
              }
              else
              {
-                 if ([serverData length] > 0)
+                 NSDictionary *parsedJsonData = [MMOauthAbstract parseJsonData: serverData];
+                 if (parsedJsonData)
                  {
-                     NSError *jsonParsingError = nil;
-                     NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData: serverData
-                                                                                options: 0
-                                                                                  error: &jsonParsingError];
-                     if (jsonParsingError)
-                     {
-                         DDLogError(@"ERROR      malformed JSON");
-                         DDLogError(@"%@", [[NSString alloc] initWithData: serverData encoding: NSUTF8StringEncoding]);
-                     }
-                     else
-                     {
-                         serviceResponseHandler(dictionary);
-                     }
-                 }
-                 else
-                 {
-                     DDLogError(@"ERROR      No data received");
+                     serviceResponseHandler(parsedJsonData);
                  }
              }
          }

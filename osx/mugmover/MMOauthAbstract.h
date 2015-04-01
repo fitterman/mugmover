@@ -14,11 +14,20 @@
 typedef void (^ProgressBlockType)(Float32, NSString *);
 typedef void (^ServiceResponseHandler)(NSDictionary *serviceResponseDictionary);
 
+@property (strong, readwrite)   NSString *          accessToken;
+@property (assign, readonly)    float               initializationStatusValue;
+@property (strong, readonly)    NSString *          initializationStatusString;
+@property (strong, readonly)    ProgressBlockType   progressBlock;
+@property (strong, readwrite)   NSString *          tokenSecret;
+
+
 + (NSNumber *) lengthForFileAtPath: (NSString *) path;
 
 + (NSString *) md5ForFileAtPath: (NSString *) path;
 
 + (NSString *) mimeTypeForFileAtPath: (NSString *) path;
+
++ (NSDictionary *) parseJsonData: (NSData *)data;
 
 - (id) initAndStartAuthorization: (ProgressBlockType) progressBlock;
 
@@ -38,15 +47,6 @@ typedef void (^ServiceResponseHandler)(NSDictionary *serviceResponseDictionary);
 
 @end
 
-@interface MMOauthAbstract()
-
-@property (strong, readonly)    NSString *          accessToken;
-@property (assign, readonly)    float               initializationStatusValue;
-@property (strong, readonly)    NSString *          initializationStatusString;
-@property (strong, readonly)    NSString *          tokenSecret;
-@property (strong, readonly)    ProgressBlockType   progressBlock;
-
-@end
 
 @interface MMOauthAbstract(protected)
 // They aren't really protected, but as a concept it's nice.
