@@ -12,7 +12,7 @@
 @implementation MMOauthAbstract
 @synthesize accessToken = _accessToken;
 
-extern const NSInteger MMDefaultRetries;
+extern NSInteger const MMDefaultRetries;
 
 
 #pragma mark Public Methods

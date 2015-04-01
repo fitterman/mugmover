@@ -14,7 +14,7 @@
 #define DEFAULT_HEAD_TIMEOUT (10.0)
 #define MAX_RETRIES (5)
 
-extern const NSInteger MMDefaultRetries;
+extern NSInteger const MMDefaultRetries;
 
 + (void) getUrlByteLength: (NSString *) urlString
                           photo: (MMPhoto *) photo

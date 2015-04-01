@@ -17,7 +17,7 @@
 @implementation MMFlickrPhotostream
 
 #define PHOTOS_PER_REQUEST (10)
-const NSInteger MMDefaultRetries = 3;
+NSInteger const MMDefaultRetries = 3;
 
 NSDictionary       *photoResponseDictionary;
 long                retryCount;

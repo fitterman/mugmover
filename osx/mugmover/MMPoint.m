@@ -8,7 +8,7 @@
 
 #import "MMPoint.h"
 
-const Float64 MMDegreesPerRadian = ((Float64)180.0 / 3.141592653589793238);
+Float64 const MMDegreesPerRadian = ((Float64)180.0 / 3.141592653589793238);
 
 @implementation MMPoint
 

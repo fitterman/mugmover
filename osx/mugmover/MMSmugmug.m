@@ -14,6 +14,8 @@
 
 @implementation MMSmugmug
 
+NSString * const handlePath = @"smugmug.currentAccountHandle";
+
 
 #define PHOTOS_PER_REQUEST (10)
 extern const NSInteger MMDefaultRetries;
@@ -47,7 +49,7 @@ long                retryCount;
         _handle = handle;
         _currentPhotoIndex = (_page - 1) * PHOTOS_PER_REQUEST;
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        _currentAccountHandle = [defaults stringForKey: @"smugmug.currentAccountHandle"];
+        _currentAccountHandle = [defaults stringForKey: handlePath];
         if (_currentAccountHandle)
         {
             NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _currentAccountHandle];
@@ -81,11 +83,11 @@ long                retryCount;
             self.initializationProgress = progress;
             if (progress == 1.0)
             {
-                _currentAccountHandle = [defaults stringForKey: @"smugmug.currentAccountHandle"];
+                _currentAccountHandle = [defaults stringForKey: handlePath];
                 if (!_currentAccountHandle)
                 {
                     _currentAccountHandle = @"jayphillipsstudio";
-                    [defaults setObject: _currentAccountHandle forKey: @"smugmug.currentAccountHandle"];
+                    [defaults setObject: _currentAccountHandle forKey: handlePath];
                 }
                 NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _currentAccountHandle];
                 NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", _currentAccountHandle];

@@ -36,8 +36,8 @@
 
 #define MAX_THUMB_DIM (100)
 
-extern const NSInteger MMDefaultRetries;
-extern const Float64 MMDegreesPerRadian;
+extern NSInteger const MMDefaultRetries;
+extern Float64 const MMDegreesPerRadian;
 
 @implementation MMPhoto
 

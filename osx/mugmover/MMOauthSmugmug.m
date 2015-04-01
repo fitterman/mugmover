@@ -17,7 +17,7 @@
 
 @implementation MMOauthSmugmug
 
-extern const NSInteger MMDefaultRetries;
+extern NSInteger const MMDefaultRetries;
 
 #pragma mark Public Methods
 
