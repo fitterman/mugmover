@@ -10,6 +10,7 @@
 #import "MMPhotoLibrary.h"
 #import "MMSmugmug.h"
 #import "MMOauthSmugmug.h"
+#import "MMDataUtility.h"
 
 @implementation MMSmugmug
 
@@ -172,7 +173,7 @@ long                retryCount;
         }
         else
         {
-            NSDictionary *parsedServerResponse = [MMOauthAbstract parseJsonData: serverData];
+            NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
             NSInteger httpStatus = [httpResponse statusCode];
             if (httpStatus == 200)
             {

@@ -25,8 +25,6 @@
 @property (strong)              CIContext *         ciContext;
 @property (strong)              NSArray *           exifDateFormatters;
 
-@property (assign)              unsigned long       page; // For looping through records
-
 - (id) initWithPath: (NSString *) path;
 
 - (void) close;
@@ -36,9 +34,9 @@
 - (NSMutableDictionary *) versionExifFromMasterPath: masterPath;
 
 - (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
-                                 versionUuid: (NSString *) versionUuid
-                             versionFilename: (NSString *) versionFilename
-                                 versionName: (NSString *) versionName;
+                                        versionUuid: (NSString *) versionUuid
+                                    versionFilename: (NSString *) versionFilename
+                                        versionName: (NSString *) versionName;
 
 
 - (NSString *) versionPathFromMasterPath: (NSString *) masterPath

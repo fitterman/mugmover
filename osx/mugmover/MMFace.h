@@ -10,8 +10,6 @@
 @class MMPhoto;
 @class MMPoint;
 
-#define DEGREES_PER_RADIAN ((double)180.0 / 3.141592653589793238)
-
 @interface MMFace : NSObject
 
 // The location of a face is actually based on polar coordinates (from the master's center)

@@ -8,6 +8,7 @@
 
 #import "MMOauthAbstract.h"
 #import "MMOauthSmugmug.h"
+#import "MMFileUtility.h"
 
 #define SERVICE_SCHEME      @"https"
 #define SERVICE_ENDPOINT    @"secure.smugmug.com"
@@ -72,19 +73,19 @@ extern const NSInteger MMDefaultRetries;
         DDLogError(@"fileUrl is nil");
         return nil;
     }
-    NSString *md5 = [MMOauthAbstract md5ForFileAtPath: filePath];
+    NSString *md5 = [MMFileUtility md5ForFileAtPath: filePath];
     if (!md5)
     {
         DDLogError(@"Unable to obtain MIME type of local file");
         return nil;
     }
-    NSString* mimeType = [MMOauthAbstract mimeTypeForFileAtPath: filePath];
+    NSString* mimeType = [MMFileUtility mimeTypeForFileAtPath: filePath];
     if (!mimeType)
     {
         DDLogError(@"Unable to obtain MIME type of local file");
         return nil;
     }
-    NSNumber *length = [MMOauthAbstract lengthForFileAtPath: filePath];
+    NSNumber *length = [MMFileUtility lengthForFileAtPath: filePath];
     if (!length)
     {
         DDLogError(@"Unable to obtain length of local file");

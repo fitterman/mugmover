@@ -8,8 +8,7 @@
 
 #import "MMPoint.h"
 
-#define DEGREES_PER_RADIAN ((double)180.0 / 3.141592653589793238)
-
+const Float64 MMDegreesPerRadian = ((Float64)180.0 / 3.141592653589793238);
 
 @implementation MMPoint
 
@@ -37,7 +36,7 @@
         Float64 deltaX = self.x - origin.x;
         Float64 deltaY = self.y - origin.y;
 
-        Float64 angle = atan(deltaY / deltaX) * DEGREES_PER_RADIAN;
+        Float64 angle = atan(deltaY / deltaX) * MMDegreesPerRadian;
         if (deltaX < 0)
         {
             angle += 180.0;
@@ -47,7 +46,7 @@
 
         // See note above about why degrees is subtracted
         angle += degrees;                       // Rotated to the new angle
-        angle = angle / DEGREES_PER_RADIAN;     // in radians
+        angle = angle / MMDegreesPerRadian;     // in radians
         Float64 newDeltaX = distance * cos(angle);
         Float64 newDeltaY = distance * sin(angle);
         self.x = origin.x + newDeltaX;

@@ -32,6 +32,8 @@
 		C4968CDF1A15101500F34E46 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C4968CDD1A15101500F34E46 /* InfoPlist.strings */; };
 		C4968CE11A15101500F34E46 /* mugmoverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CE01A15101500F34E46 /* mugmoverTests.m */; };
 		C4968CEC1A151B0300F34E46 /* MMTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CEB1A151B0300F34E46 /* MMTrack.m */; };
+		C4A687A71ACC7682007CDC6D /* MMFileUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A61ACC7682007CDC6D /* MMFileUtility.m */; };
+		C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A91ACC773E007CDC6D /* MMDataUtility.m */; };
 		C4F3F1811A26E90900C2BE00 /* MMPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = C4F3F1801A26E90900C2BE00 /* MMPhoto.m */; };
 		C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B01A589D7100472CAF /* Debug.xcconfig */; };
 		C4FF95B41A589D7100472CAF /* mugmover.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B11A589D7100472CAF /* mugmover.xcconfig */; };
@@ -106,6 +108,10 @@
 		C4968CE01A15101500F34E46 /* mugmoverTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = mugmoverTests.m; sourceTree = "<group>"; };
 		C4968CEA1A151B0300F34E46 /* MMTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMTrack.h; sourceTree = "<group>"; };
 		C4968CEB1A151B0300F34E46 /* MMTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMTrack.m; sourceTree = "<group>"; };
+		C4A687A51ACC7682007CDC6D /* MMFileUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFileUtility.h; sourceTree = "<group>"; };
+		C4A687A61ACC7682007CDC6D /* MMFileUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFileUtility.m; sourceTree = "<group>"; };
+		C4A687A81ACC773E007CDC6D /* MMDataUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMDataUtility.h; sourceTree = "<group>"; };
+		C4A687A91ACC773E007CDC6D /* MMDataUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMDataUtility.m; sourceTree = "<group>"; };
 		C4F3F17F1A26E90900C2BE00 /* MMPhoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMPhoto.h; sourceTree = "<group>"; };
 		C4F3F1801A26E90900C2BE00 /* MMPhoto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPhoto.m; sourceTree = "<group>"; };
 		C4FF95B01A589D7100472CAF /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
@@ -189,32 +195,21 @@
 		C4968CBC1A15101500F34E46 /* mugmover */ = {
 			isa = PBXGroup;
 			children = (
-				C4836F901A5F14F5006EB567 /* MMApiRequest.h */,
-				C4836F911A5F14F5006EB567 /* MMApiRequest.m */,
 				C4968CC81A15101500F34E46 /* MMAppDelegate.h */,
 				C4968CC91A15101500F34E46 /* MMAppDelegate.m */,
-				C42F7AD31A1532FC006E38DD /* MMFace.h */,
-				C42F7AD41A1532FC006E38DD /* MMFace.m */,
-				C4F3F17F1A26E90900C2BE00 /* MMPhoto.h */,
-				C4F3F1801A26E90900C2BE00 /* MMPhoto.m */,
-				C42F7AD61A153368006E38DD /* MMPhotoLibrary.h */,
-				C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */,
+				C4968CEA1A151B0300F34E46 /* MMTrack.h */,
+				C4968CEB1A151B0300F34E46 /* MMTrack.m */,
+				C4836F901A5F14F5006EB567 /* MMApiRequest.h */,
+				C4836F911A5F14F5006EB567 /* MMApiRequest.m */,
+				C4A687AC1ACC7877007CDC6D /* iPhoto CLasses */,
 				C42F7AD01A152F60006E38DD /* MMFlickrPhotostream.h */,
 				C42F7AD11A152F60006E38DD /* MMFlickrPhotostream.m */,
 				C4836F971A6080DB006EB567 /* MMNetworkRequest.h */,
 				C4836F981A6080DB006EB567 /* MMNetworkRequest.m */,
-				C47304201AC317320008E53E /* MMOauthAbstract.h */,
-				C473041F1AC317320008E53E /* MMOauthAbstract.m */,
-				C411AA741AC197A30087D1FA /* MMOauthSmugmug.h */,
-				C411AA751AC197A30087D1FA /* MMOauthSmugmug.m */,
-				C47304221AC455500008E53E /* MMOauthFlickr.h */,
-				C47304231AC455600008E53E /* MMOauthFlickr.m */,
-				C42F7AD91A1533AB006E38DD /* MMPoint.h */,
-				C42F7ADA1A1533AB006E38DD /* MMPoint.m */,
 				C48C5DD81AB89AD4007C10B0 /* MMSmugmug.h */,
 				C48C5DD41AB89AAB007C10B0 /* MMSmugmug.m */,
-				C4968CEA1A151B0300F34E46 /* MMTrack.h */,
-				C4968CEB1A151B0300F34E46 /* MMTrack.m */,
+				C4A687A41ACC72B4007CDC6D /* OAuth Classes */,
+				C4A687AB1ACC77E1007CDC6D /* Utility Classes */,
 				C4968CCB1A15101500F34E46 /* MainMenu.xib */,
 				C4968CCE1A15101500F34E46 /* Images.xcassets */,
 				C4836F961A5F231C006EB567 /* Categories */,
@@ -251,6 +246,45 @@
 				C4968CDD1A15101500F34E46 /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		C4A687A41ACC72B4007CDC6D /* OAuth Classes */ = {
+			isa = PBXGroup;
+			children = (
+				C47304201AC317320008E53E /* MMOauthAbstract.h */,
+				C473041F1AC317320008E53E /* MMOauthAbstract.m */,
+				C411AA741AC197A30087D1FA /* MMOauthSmugmug.h */,
+				C411AA751AC197A30087D1FA /* MMOauthSmugmug.m */,
+				C47304221AC455500008E53E /* MMOauthFlickr.h */,
+				C47304231AC455600008E53E /* MMOauthFlickr.m */,
+			);
+			name = "OAuth Classes";
+			sourceTree = "<group>";
+		};
+		C4A687AB1ACC77E1007CDC6D /* Utility Classes */ = {
+			isa = PBXGroup;
+			children = (
+				C4A687A81ACC773E007CDC6D /* MMDataUtility.h */,
+				C4A687A91ACC773E007CDC6D /* MMDataUtility.m */,
+				C4A687A51ACC7682007CDC6D /* MMFileUtility.h */,
+				C4A687A61ACC7682007CDC6D /* MMFileUtility.m */,
+			);
+			name = "Utility Classes";
+			sourceTree = "<group>";
+		};
+		C4A687AC1ACC7877007CDC6D /* iPhoto CLasses */ = {
+			isa = PBXGroup;
+			children = (
+				C42F7AD31A1532FC006E38DD /* MMFace.h */,
+				C42F7AD41A1532FC006E38DD /* MMFace.m */,
+				C4F3F17F1A26E90900C2BE00 /* MMPhoto.h */,
+				C4F3F1801A26E90900C2BE00 /* MMPhoto.m */,
+				C42F7AD61A153368006E38DD /* MMPhotoLibrary.h */,
+				C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */,
+				C42F7AD91A1533AB006E38DD /* MMPoint.h */,
+				C42F7ADA1A1533AB006E38DD /* MMPoint.m */,
+			);
+			name = "iPhoto CLasses";
 			sourceTree = "<group>";
 		};
 		C4FF95AF1A589D7100472CAF /* Config */ = {
@@ -403,6 +437,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */,
 				C42F7AD81A153368006E38DD /* MMPhotoLibrary.m in Sources */,
 				C4968CCA1A15101500F34E46 /* MMAppDelegate.m in Sources */,
 				C4968CEC1A151B0300F34E46 /* MMTrack.m in Sources */,
@@ -411,6 +446,7 @@
 				C47304241AC455600008E53E /* MMOauthFlickr.m in Sources */,
 				C4836F951A5F230E006EB567 /* NSString+Encode.m in Sources */,
 				C4836F921A5F14F5006EB567 /* MMApiRequest.m in Sources */,
+				C4A687A71ACC7682007CDC6D /* MMFileUtility.m in Sources */,
 				C42F7AD51A1532FC006E38DD /* MMFace.m in Sources */,
 				C42F7AD21A152F60006E38DD /* MMFlickrPhotostream.m in Sources */,
 				C411AA761AC197A30087D1FA /* MMOauthSmugmug.m in Sources */,

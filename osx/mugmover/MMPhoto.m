@@ -27,7 +27,6 @@
 #import "MMPhoto.h"
 #import "MMPhotolibrary.h"
 #import "MMPoint.h"
-#import "MMFace.h"
 #import "MMEnvironment.h"
 #import "MMNetworkRequest.h"
 
@@ -38,6 +37,7 @@
 #define MAX_THUMB_DIM (100)
 
 extern const NSInteger MMDefaultRetries;
+extern const Float64 MMDegreesPerRadian;
 
 @implementation MMPhoto
 
@@ -611,7 +611,7 @@ extern const NSInteger MMDefaultRetries;
             // When we straighten the image, the canvas size grows just enough to allow the image to
             // still fit inside the new canvas when rotated. This formula gives you the new dimensions.
 
-            Float64 absStraightenAngleInRadians = fabs(straightenAngle) / DEGREES_PER_RADIAN;
+            Float64 absStraightenAngleInRadians = fabs(straightenAngle) / MMDegreesPerRadian;
             Float64 newWidth =  (_masterWidth * cos(absStraightenAngleInRadians)) +
                                 (_masterHeight * sin(absStraightenAngleInRadians));
             Float64 newHeight = (_masterHeight * cos(absStraightenAngleInRadians)) +

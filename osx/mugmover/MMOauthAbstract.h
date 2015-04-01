@@ -20,15 +20,6 @@ typedef void (^ServiceResponseHandler)(NSDictionary *serviceResponseDictionary);
 @property (strong, readonly)    ProgressBlockType   progressBlock;
 @property (strong, readwrite)   NSString *          tokenSecret;
 
-
-+ (NSNumber *) lengthForFileAtPath: (NSString *) path;
-
-+ (NSString *) md5ForFileAtPath: (NSString *) path;
-
-+ (NSString *) mimeTypeForFileAtPath: (NSString *) path;
-
-+ (NSDictionary *) parseJsonData: (NSData *)data;
-
 - (id) initAndStartAuthorization: (ProgressBlockType) progressBlock;
 
 - (id) initWithStoredToken: (NSString *) token
