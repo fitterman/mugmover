@@ -29,6 +29,7 @@
 #import "MMPoint.h"
 #import "MMEnvironment.h"
 #import "MMNetworkRequest.h"
+#import "MMDataUtility.h"
 
 @import QuartzCore.CIFilter;
 @import QuartzCore.CoreImage.CIContext;
@@ -995,37 +996,7 @@ extern Float64 const MMDegreesPerRadian;
                                                                                    
                                                                                      (long)[(NSHTTPURLResponse *)response statusCode],
                                                                                      !!data);
-                                                                           NSDictionary *results = nil;
-                                                                           if (data)
-                                                                           {
-                                                                               // Attempt to parse the data as JSON
-                                                                               NSError *deserializationError = nil;
-                                                                               id object = [NSJSONSerialization JSONObjectWithData: data
-                                                                                                                           options: 0
-                                                                                                                             error: &deserializationError];
-                                                                               if (deserializationError)
-                                                                               {
-                                                                                   NSString *formattedString = [[NSString alloc] initWithData: data
-                                                                                                                                     encoding: NSASCIIStringEncoding];
-                                                                                   NSInteger strLen = [formattedString length];
-                                                                                   if (strLen > 60)
-                                                                                   {
-                                                                                       formattedString = [NSString stringWithFormat: @"%@...", [formattedString substringToIndex: 60]];
-                                                                                   }
-                                                                                   DDLogError(@"            Malformed JSON %@ (%ld bytes)", formattedString, strLen);
-                                                                               }
-                                                                               else
-                                                                               {
-                                                                                   if([object isKindOfClass:[NSDictionary class]])
-                                                                                   {
-                                                                                       results = object;
-                                                                                   }
-                                                                                   else
-                                                                                   {
-                                                                                       DDLogInfo(@"        Valid JSON, but not an Object. Ignored.");
-                                                                                   }
-                                                                               }
-                                                                           }
+                                                                           NSDictionary *results = [MMDataUtility parseJsonData: data];
                                                                            if (netError)
                                                                            {
                                                                                DDLogError(@"NETWORK ERROR error=%@", netError);

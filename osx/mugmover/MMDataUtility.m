@@ -11,14 +11,13 @@
 @implementation MMDataUtility
 
 /**
- This method ingests an NSData object that is expected to contain UTF-8 JSON-encoded data.
+ This method ingests an NSData object that is expected to contain UTF-8 JSON-encoded Object.
  If it is successful, it returns the parsed data, which should always be an NSDictionary.
- No attempt is made to validate that assumption in this routine. If an error occurs, it is
- logged and nil is returned.
+ If valid JSON is parsed and it is not a JSON Object (e.g., Array), nil will be returned.
  */
 + (NSDictionary *) parseJsonData: (NSData *)data
 {
-    if ([data length] > 0)
+    if (data && ([data length] > 0))
     {
         NSError *jsonParsingError = nil;
         NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData: data
@@ -26,20 +25,32 @@
                                                                      error: &jsonParsingError];
         if (jsonParsingError)
         {
-            DDLogError(@"ERROR      malformed JSON");
-            DDLogError(@"%@", [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding]);
+            NSString *formattedString = [[NSString alloc] initWithData: data
+                                                              encoding: NSASCIIStringEncoding];
+            NSInteger strLen = [formattedString length];
+            if (strLen > 60)
+            {
+                formattedString = [NSString stringWithFormat: @"%@...", [formattedString substringToIndex: 60]];
+            }
+            DDLogError(@"ERROR         Malformed JSON %@ (%ld bytes)", formattedString, strLen);
         }
         else
         {
-            return dictionary;
+            if([dictionary isKindOfClass:[NSDictionary class]])
+            {
+                return dictionary;
+            }
+            else
+            {
+                DDLogInfo(@"ERROR         Valid JSON, but not an Object. Ignored.");
+            }
         }
     }
     else
     {
-        DDLogError(@"ERROR      No data received");
+        DDLogError(@"ERROR         No data received");
     }
     return nil;
 }
-
 
 @end
