@@ -31,6 +31,15 @@ URL Scheme: account/obfuscated-service-account-id
 
 // Research tags, both in iPhoto and Flickr. Use them to suppress or categorize how uploads are treated.
 
+# Smugmug
+Each iPhoto database will map to a single folder on Smugmug. Each iPhoto event will map to a single album on Smugmug. By default, that Album will be placed inside folder for that particular database, but if the user chooses to move that Album somewhere else, that's fine: it still works (confirm). This information just needs to persist somewhere.
+
+    // Top-level folder: https://api.smugmug.com/api/v2/folder/user/cmac
+    // All albums for this user: https://api.smugmug.com/api/v2/folder/user/cmac!albumlist
+    // Folders in this folder: https://api.smugmug.com/api/v2/folder/user/cmac!folderlist ?count=10&start=11
+    // Albums in this folder: https://api.smugmug.com/api/v2/folder/user/cmac!albums
+    // Images in an album: https://api.smugmug.com/api/v2/album/FQTm9n!images
+
 
 
 # Data model

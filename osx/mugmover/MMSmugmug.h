@@ -31,6 +31,8 @@
 
 - (void) close;
 
+- (void) configureOauth;
+
 - (id) initWithHandle: (NSString *) handle
           libraryPath: (NSString *) libraryPath;
 

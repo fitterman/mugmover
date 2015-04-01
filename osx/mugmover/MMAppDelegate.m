@@ -38,15 +38,15 @@ BOOL const MMdebugLevel;
    // stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
    //  //                                        libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
    //                                            libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
-   // if (stream)
-   // {
-   //     // Register for KVO on some network-associated values
-   //     [stream addObserver: self
-   //              forKeyPath: @"initializationProgress"
-   //                 options: (NSKeyValueObservingOptionNew)
-   //                 context: (__bridge void *)(self)];
-   // }
-
+    if (smugmug)
+    {
+        // Register for KVO on some network-associated values
+        [smugmug addObserver: self
+                  forKeyPath: @"initializationProgress"
+                     options: (NSKeyValueObservingOptionNew)
+                     context: (__bridge void *)(self)];
+    }
+    [smugmug configureOauth];
 }
 
 /* TODO
@@ -68,7 +68,7 @@ BOOL const MMdebugLevel;
             DDLogInfo(@"       initializationProgress=%@", newValue);
             if ([newValue floatValue] == 1.0)
             {
-                [stream.library getPhotos];    /* This kicks off the whole process from the database without a service */
+                [smugmug.library getPhotos];    /* This kicks off the whole process from the database without a service */
                 //[stream getPhotos]; /* This kicks off the whole process with flickr */
             }
         }

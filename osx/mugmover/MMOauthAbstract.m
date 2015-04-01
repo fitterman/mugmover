@@ -36,7 +36,6 @@ extern NSInteger const MMDefaultRetries;
     _tokenSecret = secret;
     if (_accessToken && _tokenSecret && ([_accessToken length] > 0) && ([_tokenSecret length] > 0))
     {
-        [self updateState: 1.0 asText: @"Successfully initialized"];    // We go right to the initialized state
         return self;
     }
     [self close];

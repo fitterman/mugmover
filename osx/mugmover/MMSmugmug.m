@@ -48,82 +48,6 @@ long                retryCount;
         }
         _handle = handle;
         _currentPhotoIndex = (_page - 1) * PHOTOS_PER_REQUEST;
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        _currentAccountHandle = [defaults stringForKey: handlePath];
-        if (_currentAccountHandle)
-        {
-            NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _currentAccountHandle];
-            NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", _currentAccountHandle];
-            _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: [defaults objectForKey: atKey]
-                                                                 secret: [defaults objectForKey: tsKey]];
-
-            // Now try to find the default folder. If that fails, force a whole login process again,
-            // because either the token has been revoked or the permissions were reduced manually by
-            // the user.
-            _defaultFolder = [self createOrFindDefaultFolder];
-            if (!_defaultFolder) // Still not set? Reset the authorization
-            {
-                _smugmugOauth = nil;
-            }
-            else
-            {
-                NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _currentAccountHandle];
-                [defaults setObject: _defaultFolder forKey: dfKey];
-            }
-            [defaults synchronize];
-        }
-        if (_smugmugOauth)
-        {
-            return self;
-        }
-
-        // Otherwise we start the whole process over again...
-        _smugmugOauth = [[MMOauthSmugmug alloc] initAndStartAuthorization: ^(Float32 progress, NSString *text)
-        {
-            self.initializationProgress = progress;
-            if (progress == 1.0)
-            {
-                _currentAccountHandle = [defaults stringForKey: handlePath];
-                if (!_currentAccountHandle)
-                {
-                    _currentAccountHandle = @"jayphillipsstudio";
-                    [defaults setObject: _currentAccountHandle forKey: handlePath];
-                }
-                NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _currentAccountHandle];
-                NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", _currentAccountHandle];
-                [defaults setObject: _smugmugOauth.accessToken forKey: atKey];
-                [defaults setObject: _smugmugOauth.tokenSecret forKey: tsKey];
-                _defaultFolder = [self createOrFindDefaultFolder];
-                if (!_defaultFolder) // Still not set? report error
-                {
-                    DDLogError(@"unable to create default folder");
-                }
-                else
-                {
-                    NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _currentAccountHandle];
-                    [defaults setObject: _defaultFolder forKey: dfKey];
-                }
-                [defaults synchronize];
-
-
-/**
-                NSString *path = @"/Users/Bob/Downloads/JULIUS STUCHINSKY WW1 Draft Registration 1917-1918.jpg";
-                NSURLRequest *uploadRequest = [_smugmugOauth upload: path
-                                                           albumUid: @"4RTMrj"
-                                                              title: nil
-                                                            caption: nil
-                                                               tags: nil];
-                ServiceResponseHandler processSmugmugUpload = ^(NSDictionary *responseDictionary)
-                {
-                    DDLogError(@"responseDictionary=%@", responseDictionary);
-                };
-                [_smugmugOauth  processUrlRequest:  uploadRequest
-                                            queue: _streamQueue
-                                remainingAttempts: MMDefaultRetries
-                                completionHandler: processSmugmugUpload];
-   */
-            }
-        }];
     }
     return self;
 }
@@ -145,6 +69,98 @@ long                retryCount;
     _streamQueue = nil;
 }
 
+#pragma mark "Public methods"
+/**
+ This either reconsitutes an Oauth token from the stored preferences (NSDefault) or
+ triggers a new Oauth dance. You know the outcome by observing "initializationProgress".
+ */
+
+- (void) configureOauth
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    _currentAccountHandle = [defaults stringForKey: handlePath];
+    if (_currentAccountHandle)
+    {
+        NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _currentAccountHandle];
+        NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", _currentAccountHandle];
+        _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: [defaults objectForKey: atKey]
+                                                             secret: [defaults objectForKey: tsKey]];
+        if (_smugmugOauth)
+        {
+            self.initializationProgress = 1.0; // Mark it as completed
+            // Now try to find the default folder. If that fails, force a whole login process again,
+            // because either the token has been revoked or the permissions were reduced manually by
+            // the user.
+            _defaultFolder = [self createOrFindDefaultFolder];
+            if (!_defaultFolder) // Still not set? Reset the authorization
+            {
+                _smugmugOauth = nil;
+            }
+            else
+            {
+                NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _currentAccountHandle];
+                [defaults setObject: _defaultFolder forKey: dfKey];
+            }
+        }
+        else
+        {
+            [defaults removeObjectForKey: atKey];
+            [defaults removeObjectForKey: tsKey];
+            [defaults removeObjectForKey: handlePath];
+        }
+        [defaults synchronize];
+    }
+    if (_smugmugOauth)
+    {
+        return; // after synchronize
+    }
+
+    // Otherwise we start the whole process over again...
+    _smugmugOauth = [[MMOauthSmugmug alloc] initAndStartAuthorization: ^(Float32 progress, NSString *text)
+                     {
+                         self.initializationProgress = progress;
+                         if (progress == 1.0)
+                         {
+                             _currentAccountHandle = [defaults stringForKey: handlePath];
+                             if (!_currentAccountHandle)
+                             {
+                                 _currentAccountHandle = @"jayphillipsstudio";
+                                 [defaults setObject: _currentAccountHandle forKey: handlePath];
+                             }
+                             NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _currentAccountHandle];
+                             NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", _currentAccountHandle];
+                             [defaults setObject: _smugmugOauth.accessToken forKey: atKey];
+                             [defaults setObject: _smugmugOauth.tokenSecret forKey: tsKey];
+                             _defaultFolder = [self createOrFindDefaultFolder];
+                             if (!_defaultFolder) // Still not set? report error
+                             {
+                                 DDLogError(@"unable to create default folder");
+                             }
+                             else
+                             {
+                                 NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _currentAccountHandle];
+                                 [defaults setObject: _defaultFolder forKey: dfKey];
+                             }
+                             [defaults synchronize];
+     /**
+      NSString *path = @"/Users/Bob/Downloads/JULIUS STUCHINSKY WW1 Draft Registration 1917-1918.jpg";
+      NSURLRequest *uploadRequest = [_smugmugOauth upload: path
+      albumUid: @"4RTMrj"
+      title: nil
+      caption: nil
+      tags: nil];
+      ServiceResponseHandler processSmugmugUpload = ^(NSDictionary *responseDictionary)
+      {
+      DDLogError(@"responseDictionary=%@", responseDictionary);
+      };
+      [_smugmugOauth  processUrlRequest:  uploadRequest
+      queue: _streamQueue
+      remainingAttempts: MMDefaultRetries
+      completionHandler: processSmugmugUpload];
+      */
+                         }
+                     }];
+}
 #pragma mark "Private methods"
 
 - (NSString *) createOrFindDefaultFolder
