@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Dicentra LLC. All rights reserved.
 //
 
+#import "MMLibraryEvent.h"
 #import "MMPhotoLibrary.h"
 #import "MMPhoto.h"
 #import "MMFace.h"

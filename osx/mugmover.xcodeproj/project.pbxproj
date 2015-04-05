@@ -20,6 +20,10 @@
 		C4836F991A6080DB006EB567 /* MMNetworkRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C4836F981A6080DB006EB567 /* MMNetworkRequest.m */; };
 		C48C5DD51AB89AAB007C10B0 /* MMSmugmug.m in Sources */ = {isa = PBXBuildFile; fileRef = C48C5DD41AB89AAB007C10B0 /* MMSmugmug.m */; };
 		C48C5DD91AB89AD4007C10B0 /* MMSmugmug.h in Resources */ = {isa = PBXBuildFile; fileRef = C48C5DD81AB89AD4007C10B0 /* MMSmugmug.h */; };
+		C49376E41ACEF1C9006DB77D /* MMMasterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C49376E21ACEF1C9006DB77D /* MMMasterViewController.m */; };
+		C49376E51ACEF1C9006DB77D /* MMMasterViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C49376E31ACEF1C9006DB77D /* MMMasterViewController.xib */; };
+		C49377111AD04C8F006DB77D /* MMLibraryEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = C49377101AD04C8F006DB77D /* MMLibraryEvent.m */; };
+		C49377141AD05D4E006DB77D /* MMComplexTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */; };
 		C4968CB71A15101500F34E46 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4968CB61A15101500F34E46 /* Cocoa.framework */; };
 		C4968CC11A15101500F34E46 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C4968CBF1A15101500F34E46 /* InfoPlist.strings */; };
 		C4968CC31A15101500F34E46 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CC21A15101500F34E46 /* main.m */; };
@@ -31,7 +35,6 @@
 		C4968CD71A15101500F34E46 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4968CB61A15101500F34E46 /* Cocoa.framework */; };
 		C4968CDF1A15101500F34E46 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C4968CDD1A15101500F34E46 /* InfoPlist.strings */; };
 		C4968CE11A15101500F34E46 /* mugmoverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CE01A15101500F34E46 /* mugmoverTests.m */; };
-		C4968CEC1A151B0300F34E46 /* MMTrack.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CEB1A151B0300F34E46 /* MMTrack.m */; };
 		C4A687A71ACC7682007CDC6D /* MMFileUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A61ACC7682007CDC6D /* MMFileUtility.m */; };
 		C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A91ACC773E007CDC6D /* MMDataUtility.m */; };
 		C4F3F1811A26E90900C2BE00 /* MMPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = C4F3F1801A26E90900C2BE00 /* MMPhoto.m */; };
@@ -87,6 +90,13 @@
 		C4836F981A6080DB006EB567 /* MMNetworkRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMNetworkRequest.m; sourceTree = "<group>"; };
 		C48C5DD41AB89AAB007C10B0 /* MMSmugmug.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMSmugmug.m; sourceTree = "<group>"; };
 		C48C5DD81AB89AD4007C10B0 /* MMSmugmug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMSmugmug.h; sourceTree = "<group>"; };
+		C49376E11ACEF1C9006DB77D /* MMMasterViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMMasterViewController.h; sourceTree = "<group>"; };
+		C49376E21ACEF1C9006DB77D /* MMMasterViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMMasterViewController.m; sourceTree = "<group>"; };
+		C49376E31ACEF1C9006DB77D /* MMMasterViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMMasterViewController.xib; sourceTree = "<group>"; };
+		C493770F1AD04C8F006DB77D /* MMLibraryEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMLibraryEvent.h; sourceTree = "<group>"; };
+		C49377101AD04C8F006DB77D /* MMLibraryEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMLibraryEvent.m; sourceTree = "<group>"; };
+		C49377121AD05D4E006DB77D /* MMComplexTableCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMComplexTableCellView.h; sourceTree = "<group>"; };
+		C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMComplexTableCellView.m; sourceTree = "<group>"; };
 		C4968CB31A15101500F34E46 /* mugmover.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mugmover.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4968CB61A15101500F34E46 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		C4968CB91A15101500F34E46 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -106,8 +116,6 @@
 		C4968CDC1A15101500F34E46 /* mugmoverTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "mugmoverTests-Info.plist"; sourceTree = "<group>"; };
 		C4968CDE1A15101500F34E46 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C4968CE01A15101500F34E46 /* mugmoverTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = mugmoverTests.m; sourceTree = "<group>"; };
-		C4968CEA1A151B0300F34E46 /* MMTrack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMTrack.h; sourceTree = "<group>"; };
-		C4968CEB1A151B0300F34E46 /* MMTrack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMTrack.m; sourceTree = "<group>"; };
 		C4A687A51ACC7682007CDC6D /* MMFileUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFileUtility.h; sourceTree = "<group>"; };
 		C4A687A61ACC7682007CDC6D /* MMFileUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFileUtility.m; sourceTree = "<group>"; };
 		C4A687A81ACC773E007CDC6D /* MMDataUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMDataUtility.h; sourceTree = "<group>"; };
@@ -148,6 +156,30 @@
 				C4836F941A5F230E006EB567 /* NSString+Encode.m */,
 			);
 			name = Categories;
+			sourceTree = "<group>";
+		};
+		C49376E61ACEF1F9006DB77D /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				C4968CC81A15101500F34E46 /* MMAppDelegate.h */,
+				C4968CC91A15101500F34E46 /* MMAppDelegate.m */,
+				C4968CCB1A15101500F34E46 /* MainMenu.xib */,
+				C49376E11ACEF1C9006DB77D /* MMMasterViewController.h */,
+				C49376E21ACEF1C9006DB77D /* MMMasterViewController.m */,
+				C49376E31ACEF1C9006DB77D /* MMMasterViewController.xib */,
+				C49377121AD05D4E006DB77D /* MMComplexTableCellView.h */,
+				C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */,
+			);
+			name = UI;
+			sourceTree = "<group>";
+		};
+		C49376E71ACEF444006DB77D /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				C493770F1AD04C8F006DB77D /* MMLibraryEvent.h */,
+				C49377101AD04C8F006DB77D /* MMLibraryEvent.m */,
+			);
+			name = Model;
 			sourceTree = "<group>";
 		};
 		C4968CAA1A15101500F34E46 = {
@@ -195,13 +227,11 @@
 		C4968CBC1A15101500F34E46 /* mugmover */ = {
 			isa = PBXGroup;
 			children = (
-				C4968CC81A15101500F34E46 /* MMAppDelegate.h */,
-				C4968CC91A15101500F34E46 /* MMAppDelegate.m */,
-				C4968CEA1A151B0300F34E46 /* MMTrack.h */,
-				C4968CEB1A151B0300F34E46 /* MMTrack.m */,
+				C49376E71ACEF444006DB77D /* Model */,
+				C49376E61ACEF1F9006DB77D /* UI */,
 				C4836F901A5F14F5006EB567 /* MMApiRequest.h */,
 				C4836F911A5F14F5006EB567 /* MMApiRequest.m */,
-				C4A687AC1ACC7877007CDC6D /* iPhoto CLasses */,
+				C4A687AC1ACC7877007CDC6D /* iPhoto Classes */,
 				C42F7AD01A152F60006E38DD /* MMFlickrPhotostream.h */,
 				C42F7AD11A152F60006E38DD /* MMFlickrPhotostream.m */,
 				C4836F971A6080DB006EB567 /* MMNetworkRequest.h */,
@@ -210,7 +240,6 @@
 				C48C5DD41AB89AAB007C10B0 /* MMSmugmug.m */,
 				C4A687A41ACC72B4007CDC6D /* OAuth Classes */,
 				C4A687AB1ACC77E1007CDC6D /* Utility Classes */,
-				C4968CCB1A15101500F34E46 /* MainMenu.xib */,
 				C4968CCE1A15101500F34E46 /* Images.xcassets */,
 				C4836F961A5F231C006EB567 /* Categories */,
 				C4968CBD1A15101500F34E46 /* Supporting Files */,
@@ -272,7 +301,7 @@
 			name = "Utility Classes";
 			sourceTree = "<group>";
 		};
-		C4A687AC1ACC7877007CDC6D /* iPhoto CLasses */ = {
+		C4A687AC1ACC7877007CDC6D /* iPhoto Classes */ = {
 			isa = PBXGroup;
 			children = (
 				C42F7AD31A1532FC006E38DD /* MMFace.h */,
@@ -284,7 +313,7 @@
 				C42F7AD91A1533AB006E38DD /* MMPoint.h */,
 				C42F7ADA1A1533AB006E38DD /* MMPoint.m */,
 			);
-			name = "iPhoto CLasses";
+			name = "iPhoto Classes";
 			sourceTree = "<group>";
 		};
 		C4FF95AF1A589D7100472CAF /* Config */ = {
@@ -386,6 +415,7 @@
 				C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */,
 				C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */,
 				C4968CCD1A15101500F34E46 /* MainMenu.xib in Resources */,
+				C49376E51ACEF1C9006DB77D /* MMMasterViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -440,7 +470,8 @@
 				C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */,
 				C42F7AD81A153368006E38DD /* MMPhotoLibrary.m in Sources */,
 				C4968CCA1A15101500F34E46 /* MMAppDelegate.m in Sources */,
-				C4968CEC1A151B0300F34E46 /* MMTrack.m in Sources */,
+				C49377141AD05D4E006DB77D /* MMComplexTableCellView.m in Sources */,
+				C49376E41ACEF1C9006DB77D /* MMMasterViewController.m in Sources */,
 				C4968CC31A15101500F34E46 /* main.m in Sources */,
 				C47304211AC317320008E53E /* MMOauthAbstract.m in Sources */,
 				C47304241AC455600008E53E /* MMOauthFlickr.m in Sources */,
@@ -454,6 +485,7 @@
 				C48C5DD51AB89AAB007C10B0 /* MMSmugmug.m in Sources */,
 				C42F7ADB1A1533AB006E38DD /* MMPoint.m in Sources */,
 				C4836F991A6080DB006EB567 /* MMNetworkRequest.m in Sources */,
+				C49377111AD04C8F006DB77D /* MMLibraryEvent.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

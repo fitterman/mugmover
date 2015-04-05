@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 @class FMDatabase;
+@class MMLibraryEvent;
 
 @interface MMPhotoLibrary : NSObject
 
@@ -15,8 +16,8 @@
 @property (strong, readonly)    NSString *          databaseUuid;
 @property (strong, readonly)    NSString *          databaseVersion;
 @property (strong, readonly)    NSString *          libraryBasePath;
-@property (strong)              FMDatabase *        facesDatabase;
-@property (strong)              FMDatabase *        photosDatabase;
+@property (strong, readonly)    FMDatabase *        facesDatabase;
+@property (strong, readonly)    FMDatabase *        photosDatabase;
 @property (strong)              NSDictionary *      sourceDictionary;
 @property (assign)              BOOL                verboseLogging;
 
@@ -28,6 +29,8 @@
 - (id) initWithPath: (NSString *) path;
 
 - (void) close;
+
+- (void) getPhotos;
 
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 
@@ -43,7 +46,5 @@
                              versionUuid: (NSString *) versionUuid
                          versionFilename: (NSString *) versionFilename
                              versionName: (NSString *) versionName;
-
-- (void) getPhotos;
 
 @end

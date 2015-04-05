@@ -12,18 +12,14 @@
 #import "DDTTYLogger.h"
 #import "DDFileLogger.h"
 
-@class MMTrack;
+@class MMPhotoLibrary;
 
 @interface MMAppDelegate : NSObject <NSApplicationDelegate>
 
-@property (weak) IBOutlet NSWindow *window;
-@property (weak) IBOutlet NSTextField *textField;
-@property (weak) IBOutlet NSSlider *slider;
-@property (strong) MMTrack *track;
+@property (weak)    IBOutlet    NSWindow *window;
+@property (strong)              MMPhotoLibrary *        library;
 
-- (IBAction) mute: (id) sender;
 
-- (IBAction) takeFloatValueForVolumeFrom: (id) sender;
+- (void) close;
 
-- (void) updateUserInterface;
 @end

@@ -20,7 +20,6 @@
 @property (strong, readonly)    NSString *              defaultFolder;
 @property (strong)              NSString *              handle;
 @property (assign)              Float32                 initializationProgress;
-@property (strong)              MMPhotoLibrary *        library;
 @property (assign, readonly)    NSInteger               page;
 @property (strong)              NSMutableDictionary *   photoDictionary;
 @property (assign)              NSInteger               photosInStream;
@@ -31,10 +30,9 @@
 
 - (void) close;
 
-- (void) configureOauth;
+- (void) configureOauth: (NSString *) uploadFolderUrlName;
 
-- (id) initWithHandle: (NSString *) handle
-          libraryPath: (NSString *) libraryPath;
+- (id) initWithHandle: (NSString *) handle;
 
 @end
 

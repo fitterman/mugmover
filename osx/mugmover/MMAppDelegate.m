@@ -8,12 +8,17 @@
 
 
 #import "MMAppDelegate.h"
-#import "MMTrack.h"
 #import "MMFlickrPhotostream.h"
 #import "MMSmugmug.h"
+#import "MMLibraryEvent.h"
 #import "MMPhotoLibrary.h"
 #import "MMPhoto.h"
 #import "MMFace.h"
+
+#import "MMMasterViewController.h"
+@interface MMAppDelegate()
+@property (nonatomic,strong) IBOutlet MMMasterViewController *masterViewController;
+@end
 
 @implementation MMAppDelegate
 
@@ -28,12 +33,17 @@ BOOL const MMdebugLevel;
     [DDLog addLogger:[DDASLLogger sharedInstance]];
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
 
-    MMTrack *aTrack = [[MMTrack alloc] init];
-    [self setTrack: aTrack]; /* alternatively, self.track = aTrack; */
-    [self updateUserInterface];
+    // 1. Create the master View Controller
+    self.masterViewController = [[MMMasterViewController alloc] initWithNibName:@"MMMasterViewController" bundle:nil];
 
-   smugmug = [[MMSmugmug alloc] initWithHandle: @"jayphillips"
-                                   libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
+    _library = [[MMPhotoLibrary alloc] initWithPath: (NSString *) @"/Users/Bob/Pictures/Jay Phillips"];
+    self.masterViewController.libraryEvents = [MMLibraryEvent getEventsFromLibrary: _library];
+
+    // 3. Add the view controller to the Window's content view
+    [self.window.contentView addSubview:self.masterViewController.view];
+    self.masterViewController.view.frame = ((NSView*)self.window.contentView).bounds;
+/*
+   smugmug = [[MMSmugmug alloc] initWithHandle: @"jayphillips"];
 
    // stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
    //  //                                        libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
@@ -46,7 +56,8 @@ BOOL const MMdebugLevel;
                      options: (NSKeyValueObservingOptionNew)
                      context: (__bridge void *)(self)];
     }
-    [smugmug configureOauth];
+    [smugmug configureOauth: [_library.databaseUuid uppercaseString]];
+ */
 }
 
 /* TODO
@@ -68,7 +79,7 @@ BOOL const MMdebugLevel;
             DDLogInfo(@"       initializationProgress=%@", newValue);
             if ([newValue floatValue] == 1.0)
             {
-                [smugmug.library getPhotos];    /* This kicks off the whole process from the database without a service */
+                [_library getPhotos];    /* This kicks off the whole process from the database without a service */
                 //[stream getPhotos]; /* This kicks off the whole process with flickr */
             }
         }
@@ -80,37 +91,13 @@ BOOL const MMdebugLevel;
     }
 }
 
-- (IBAction) mute: (id) sender
+- (void) close
 {
-    self.track.volume = 0.0;
-    /* WAS [self.track setVolume: 0.0]; */
-    [self updateUserInterface];
-}
-
-- (IBAction) takeFloatValueForVolumeFrom: (id) sender
-{
-    float newValue = [sender floatValue];
-    [self.track setVolume: newValue];
-    [self updateUserInterface];
-
-    NSString *senderName = nil;
-    if (sender == self.textField)
+    if (_library)
     {
-        senderName = @"textField";
+        [_library close];
+        _library = nil;
     }
-    else
-    {
-        senderName = @"slider";
-    }
-    DDLogInfo(@"%@ sent takeFloatValueForVolumeFrom: with value %1.2f", senderName, [sender floatValue]);
-}
-
-- (void) updateUserInterface
-{
-
-    float volume = [self.track volume];
-    [self.textField setFloatValue: volume];
-    [self.slider setFloatValue: volume];
 }
 
 
