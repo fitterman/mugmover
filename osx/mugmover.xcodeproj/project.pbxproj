@@ -173,13 +173,21 @@
 			name = UI;
 			sourceTree = "<group>";
 		};
-		C49376E71ACEF444006DB77D /* Model */ = {
+		C49376E71ACEF444006DB77D /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				C42F7AD31A1532FC006E38DD /* MMFace.h */,
+				C42F7AD41A1532FC006E38DD /* MMFace.m */,
 				C493770F1AD04C8F006DB77D /* MMLibraryEvent.h */,
 				C49377101AD04C8F006DB77D /* MMLibraryEvent.m */,
+				C4F3F17F1A26E90900C2BE00 /* MMPhoto.h */,
+				C4F3F1801A26E90900C2BE00 /* MMPhoto.m */,
+				C42F7AD91A1533AB006E38DD /* MMPoint.h */,
+				C42F7ADA1A1533AB006E38DD /* MMPoint.m */,
+				C42F7AD61A153368006E38DD /* MMPhotoLibrary.h */,
+				C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */,
 			);
-			name = Model;
+			name = Models;
 			sourceTree = "<group>";
 		};
 		C4968CAA1A15101500F34E46 = {
@@ -227,11 +235,10 @@
 		C4968CBC1A15101500F34E46 /* mugmover */ = {
 			isa = PBXGroup;
 			children = (
-				C49376E71ACEF444006DB77D /* Model */,
+				C49376E71ACEF444006DB77D /* Models */,
 				C49376E61ACEF1F9006DB77D /* UI */,
 				C4836F901A5F14F5006EB567 /* MMApiRequest.h */,
 				C4836F911A5F14F5006EB567 /* MMApiRequest.m */,
-				C4A687AC1ACC7877007CDC6D /* iPhoto Classes */,
 				C42F7AD01A152F60006E38DD /* MMFlickrPhotostream.h */,
 				C42F7AD11A152F60006E38DD /* MMFlickrPhotostream.m */,
 				C4836F971A6080DB006EB567 /* MMNetworkRequest.h */,
@@ -299,21 +306,6 @@
 				C4A687A61ACC7682007CDC6D /* MMFileUtility.m */,
 			);
 			name = "Utility Classes";
-			sourceTree = "<group>";
-		};
-		C4A687AC1ACC7877007CDC6D /* iPhoto Classes */ = {
-			isa = PBXGroup;
-			children = (
-				C42F7AD31A1532FC006E38DD /* MMFace.h */,
-				C42F7AD41A1532FC006E38DD /* MMFace.m */,
-				C4F3F17F1A26E90900C2BE00 /* MMPhoto.h */,
-				C4F3F1801A26E90900C2BE00 /* MMPhoto.m */,
-				C42F7AD61A153368006E38DD /* MMPhotoLibrary.h */,
-				C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */,
-				C42F7AD91A1533AB006E38DD /* MMPoint.h */,
-				C42F7ADA1A1533AB006E38DD /* MMPoint.m */,
-			);
-			name = "iPhoto Classes";
 			sourceTree = "<group>";
 		};
 		C4FF95AF1A589D7100472CAF /* Config */ = {

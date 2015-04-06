@@ -14,9 +14,7 @@
 @implementation MMLibraryEvent
 
 /**
- Returns an array of dictionaries, each containing the keys "uuid", "name", "dateRange"
- for an event. Note that name may be a nil value, indicating that the event has not
- been named, in which case...
+ Returns an array of MMLibraryEvents
  */
 + (NSArray *) getEventsFromLibrary: (MMPhotoLibrary *) library
 {
@@ -27,12 +25,11 @@
     NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: upperRecordCount];
     
     NSString *query =  @"SELECT minImageDate, minImageTimeZoneName, "
-    "maxImageDate, maxImageTimeZoneName, name, versionCount "
-    "FROM RKFolder "
-    "WHERE isMagic != 1 AND isHidden != 1 AND isInTrash != 1 "
-    "ORDER BY minImageDate, maxImageDate, uuid;";
-    
-    
+                        "maxImageDate, maxImageTimeZoneName, name, versionCount "
+                        "FROM RKFolder "
+                        "WHERE isMagic != 1 AND isHidden != 1 AND isInTrash != 1 "
+                        "ORDER BY minImageDate, maxImageDate, uuid;";
+
     // NOTE: It has been observed that in some cases, the minImageDate or maxImageDate
     //       might be a NULL value if the database didn't update that yet.
     
@@ -94,7 +91,7 @@
     {
         [results removeLastObject];
     }
-    return [results componentsJoinedByString: @" to "];
+    return [results componentsJoinedByString: @" – "];
 }
 - (NSString *) name
 {

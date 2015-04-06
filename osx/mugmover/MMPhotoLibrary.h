@@ -30,8 +30,6 @@
 
 - (void) close;
 
-- (void) getPhotos;
-
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 
 - (NSMutableDictionary *) versionExifFromMasterPath: masterPath;

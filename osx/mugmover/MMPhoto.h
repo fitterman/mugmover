@@ -51,6 +51,8 @@
 @property (assign)              NSInteger                   version;
 @property (strong)              NSString *                  versionUuid;
 
++ (void) getPhotosFromLibrary: (MMPhotoLibrary *) library;
+
 - (MMPhoto *) initWithFlickrDictionary: (NSDictionary *) flickrDictionary
                                 stream: (MMFlickrPhotostream *) stream
                                  index: (NSInteger) index;
