@@ -8,6 +8,7 @@
 
 #import "MMPhoto.h"
 #import "MMLibraryEvent.h"
+#import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
 #import "MMSmugmug.h"
 #import "MMOauthSmugmug.h"
@@ -141,27 +142,12 @@ long                retryCount;
                                  library.serviceApi = self;
                              }
                              [defaults synchronize];
-     /**
-      NSString *path = @"/Users/Bob/Downloads/JULIUS STUCHINSKY WW1 Draft Registration 1917-1918.jpg";
-      NSURLRequest *uploadRequest = [_smugmugOauth upload: path
-      albumUid: @"4RTMrj"
-      title: nil
-      caption: nil
-      tags: nil];
-      ServiceResponseHandler processSmugmugUpload = ^(NSDictionary *responseDictionary)
-      {
-      DDLogError(@"responseDictionary=%@", responseDictionary);
-      };
-      [_smugmugOauth  processUrlRequest:  uploadRequest
-      queue: _streamQueue
-      remainingAttempts: MMDefaultRetries
-      completionHandler: processSmugmugUpload];
-      */
                          }
                      }];
 }
 - (BOOL) startUploading: (NSArray *) photos
                forEvent: (MMLibraryEvent *) event
+             uiDelegate: (NSViewController *) uiDelegate
 {
     if (_isUploading)
     {
@@ -173,30 +159,134 @@ long                retryCount;
     {
         name = [event dateRange];
     }
-    NSString *newFolder = [self findOrCreateFolder: [[event uuid] uppercaseString]
-                                           beneath: _defaultFolder
-                                       displayName: [event name]
-                                       description: @"Photos uploaded via Mugmover"];    
+    NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via MugMover", name];
+    NSString *newAlbumUri = [self findOrCreateAlbum: [[event uuid] uppercaseString]
+                                            beneath: _defaultFolder
+                                        displayName: name
+                                        description: description];
+    for (MMPhoto *photo in photos)
+    {
+        [photo processPhoto];
+        // This must be declared inside the loop because it references "photo"
+        ServiceResponseHandler processSmugmugUpload = ^(NSDictionary *response)
+        {
+            if ([[response valueForKeyPath: @"stat"] isEqualToString: @"ok"])
+            {
+                NSMutableDictionary *serviceDictionary = [[response objectForKey: @"Image"] mutableCopy];
+                [serviceDictionary setObject: @"smugmug" forKey: @"service"];
+                [photo attachServiceDictionary: serviceDictionary];
+            }
+            NSLog(@"response=%@", response);
+        };
+        NSURLRequest *uploadRequest = [_smugmugOauth upload: photo.iPhotoOriginalImagePath
+                                                   albumUri: newAlbumUri
+                                                      title: @"photo title"
+                                                    caption: @"photo caption"
+                                                       tags: @[@"foo", @"bar"]];
+        [_smugmugOauth  processUrlRequest:  uploadRequest
+                                    queue: _streamQueue
+                        remainingAttempts: MMDefaultRetries
+                        completionHandler: processSmugmugUpload];
+       
+    }
     return YES;
 }
 #pragma mark "Private methods"
 
 /**
+ * Returns the albumId of an album. The identity of the album is determined by the folder path
+ * into which it is to be place. The arguments are
+ *   +urlName+, which is part of the URL and is constrained by the related rules
+ *   +partialPath+ which is the path portion beneath the username, for example "default/foo"
+ *                 If +partialPath+ is nil, the album will be created at the top level.
+ *   +displayName+ which the displayed title for the album
+ */
+- (NSString *) findOrCreateAlbum: (NSString *) urlName
+                         beneath: (NSString *) partialPath
+                     displayName: (NSString *) displayName
+                     description: (NSString *) description
+{
+
+    NSMutableString *apiRequest = [@"folder/user/jayphillips" mutableCopy];
+    if (partialPath)
+    {
+        [apiRequest appendString: @"/"];
+        [apiRequest appendString: partialPath];
+    }
+    [apiRequest appendString: @"!albums"];
+    NSURLRequest *createAlbumRequest = [_smugmugOauth apiRequest: apiRequest
+                                                       parameters: @{@"Description":        description,
+                                                                     @"NiceName":           urlName,
+                                                                     @"Title":              displayName,
+                                                                     @"Privacy":            @"Private",
+                                                                     @"SmugSearchable":     @"No",
+                                                                     @"WorldSearchable":    @"No",
+                                                                     }
+                                                             verb: @"POST"];
+    NSURLResponse *response;
+    NSError *error;
+    NSInteger retries = MMDefaultRetries;
+    while (retries > 0)
+    {
+        NSData *serverData = [NSURLConnection sendSynchronousRequest: createAlbumRequest
+                                                   returningResponse: &response
+                                                               error: &error];
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        if (error)
+        {
+            DDLogError(@"System error: %@", error);
+            retries--;
+        }
+        else
+        {
+            NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
+            NSInteger httpStatus = [httpResponse statusCode];
+            if (httpStatus == 200)
+            {
+                return [parsedServerResponse valueForKeyPath: @"Response.Uri"];
+            }
+            else if (httpStatus == 409) // Conflict, it exists
+            {
+                // Cannot use valueForKeyPath because the handle might contain a period
+                NSArray *pieces = @[@"Conflicts",
+                                    [parsedServerResponse valueForKeyPath: @"Response.Uri"],
+                                    @"Album",
+                                    @"Uri"];
+                NSObject *object = parsedServerResponse;
+                for (NSString *piece in pieces)
+                {
+                    object = [(NSDictionary *)object objectForKey: piece];
+                }
+                return (NSString *)object;
+            }
+            else
+            {
+                DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+                retries--;
+                DDLogError(@"response=%@", parsedServerResponse);
+            }
+        }
+    }
+    return nil;
+}
+ 
+/**
  * Returns the "urlName" value (one piece of the path) for a folder. If the +levelOneFolder+ is nil
- * the result will be a top-level folder creation. If the +levelOneFolder+ is present, then it will
- * be inserted as part of the path.
+ * the result will be a top-level folder creation. If the +partialPath+ is present, then it will
+ * be inserted as part of the path. When used, "+partialPath+ should only contain embedded slashes,
+ * no initial or terminal ones, for example: "abc/def".
  * If something really goes wrong, nil is returned.
  */
 - (NSString *) findOrCreateFolder: (NSString *) urlName
-                          beneath: (NSString *) levelOneFolder
+                          beneath: (NSString *) partialPath
                       displayName: (NSString *) displayName
                       description: (NSString *) description
 {
     NSMutableString *apiRequest = [@"folder/user/jayphillips" mutableCopy];
-    if (levelOneFolder)
+    if (partialPath)
     {
         [apiRequest appendString: @"/"];
-        [apiRequest appendString: levelOneFolder];
+        [apiRequest appendString: partialPath];
     }
     [apiRequest appendString: @"!folders"];
     NSURLRequest *createFolderRequest = [_smugmugOauth apiRequest: apiRequest

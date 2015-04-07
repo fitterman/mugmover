@@ -95,7 +95,8 @@
     if (sender == _transmitButton)
     {
         if ([_library.serviceApi startUploading: _photos
-                                       forEvent: _selectedEvent])
+                                       forEvent: _selectedEvent
+                                     uiDelegate: self])
         {
             _transmitButton.enabled = NO;
         }

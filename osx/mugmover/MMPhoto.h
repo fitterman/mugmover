@@ -57,6 +57,8 @@
 
 - (void) adjustForStraightenCropAndGetFaces;
 
+- (void) attachServiceDictionary: (NSDictionary *) serviceDictionary;
+
 - (Float64) aspectRatio;
 
 - (void) close;

@@ -56,7 +56,7 @@ extern NSInteger const MMDefaultRetries;
  +filePath+ should be a fully-qualified path to a local file.
  */
 - (NSURLRequest *) upload: (NSString *) filePath
-                 albumUid: (NSString *) albumUid // for example, @"4RTMrj"
+                 albumUri: (NSString *) albumUri // Full URI to the album, e.g., /api/v2/album/jX5d1
                     title: (NSString *) title
                   caption: (NSString *) caption
                      tags: (NSArray *) tags
@@ -98,12 +98,11 @@ extern NSInteger const MMDefaultRetries;
         return nil;
     }
 
-    if (!albumUid)
+    if (!albumUri)
     {
-        DDLogError(@"albumUid is nil");
+        DDLogError(@"albumUri is nil");
         return nil;
     }
-    NSString *albumUri = [NSString stringWithFormat: @"/api/v2/album/%@", albumUid];
 
     NSMutableDictionary *headerValues = [[NSMutableDictionary alloc] init];
     if (!headerValues)

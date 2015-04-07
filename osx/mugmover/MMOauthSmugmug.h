@@ -12,7 +12,7 @@
 @interface MMOauthSmugmug : MMOauthAbstract
 
 - (NSURLRequest *) upload: (NSString *) filePath
-                 albumUid: (NSString *) albumUid // for example, @"4RTMrj"
+                 albumUri: (NSString *) albumUri // full Uri to the album
                     title: (NSString *) title
                   caption: (NSString *) caption
                      tags: (NSArray *) tags;

@@ -37,7 +37,8 @@
 - (id) initWithHandle: (NSString *) handle;
 
 - (BOOL) startUploading: (NSArray *) photos
-               forEvent: (MMLibraryEvent *) event;
+               forEvent: (MMLibraryEvent *) event
+             uiDelegate: (NSViewController *) uiDelegate;
 
 @end
 

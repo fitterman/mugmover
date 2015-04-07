@@ -216,9 +216,9 @@ extern Float64 const MMDegreesPerRadian;
         versionName = [_attributes valueForKeyPath: @"photo.versionName"];
     }
     _iPhotoOriginalImagePath = [_library versionPathFromMasterPath: imagePath
-                                                       versionUuid: nil
-                                                   versionFilename: nil
-                                                       versionName: nil];
+                                                       versionUuid: versionUuid
+                                                   versionFilename: versionFilename
+                                                       versionName: versionName];
     if (_iPhotoOriginalImagePath)
     {
         exifProperties = [MMFileUtility exifForFileAtPath: _iPhotoOriginalImagePath];
@@ -287,13 +287,7 @@ extern Float64 const MMDegreesPerRadian;
             _thumbnail = [self createPhotoThumbnail: image];
             [self fetchThumbnailsFromOriginal: image];
         }
-        [self sendPhotoToMugmover];
     }
-    
-    // Note that we discard the hidden/rejected faces _after_ uploading to mugmover.
-    // This is not an error: we intentionally hold onto those.
-    // [self discardHiddenFaces];
-    // As we have no further processing, the discardHiddenFaces call is commented out.
 }
 
 - (void) adjustForStraightenCropAndGetFaces
@@ -784,6 +778,12 @@ extern Float64 const MMDegreesPerRadian;
         }
     }
     return YES;
+}
+
+- (void) attachServiceDictionary: (NSDictionary *) serviceDictionary
+{
+    [_attributes setObject: serviceDictionary forKey: @"service"];
+    [self sendPhotoToMugmover];
 }
 
 - (void) sendPhotoToMugmover
