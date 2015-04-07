@@ -19,7 +19,6 @@
 @property (weak)    IBOutlet    NSWindow *window;
 @property (strong)              MMPhotoLibrary *        library;
 
-
 - (void) close;
 
 @end

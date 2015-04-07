@@ -9,16 +9,17 @@
 #import <Foundation/Foundation.h>
 @class FMDatabase;
 @class MMLibraryEvent;
+@class MMSmugmug;
 
 @interface MMPhotoLibrary : NSObject
 
 @property (strong, readonly)    NSString *          databaseAppId;
 @property (strong, readonly)    NSString *          databaseUuid;
 @property (strong, readonly)    NSString *          databaseVersion;
-@property (assign)              BOOL                isUploading;
 @property (strong, readonly)    NSString *          libraryBasePath;
 @property (strong, readonly)    FMDatabase *        facesDatabase;
 @property (strong, readonly)    FMDatabase *        photosDatabase;
+@property (strong)              MMSmugmug *         serviceApi;
 @property (strong)              NSDictionary *      sourceDictionary;
 @property (assign)              BOOL                verboseLogging;
 
@@ -31,7 +32,9 @@
 
 - (void) close;
 
-- (BOOL) startUploading;
+- (NSString *) description;
+
+- (NSString *) displayName;
 
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 

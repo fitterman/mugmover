@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 @class MMPhotoLibrary;
+@class MMLibraryEvent;
 
 @interface MMMasterViewController : NSViewController
 
@@ -17,6 +18,7 @@
 
 @property (strong)              MMPhotoLibrary *        library;
 @property (strong)              NSArray *               libraryEvents;
+@property (strong)              MMLibraryEvent *        selectedEvent;
 @property (strong)              NSArray *               photos;
 
 @end

@@ -7,6 +7,7 @@
 //
 
 #import "MMPhoto.h"
+#import "MMLibraryEvent.h"
 #import "MMPhotoLibrary.h"
 #import "MMSmugmug.h"
 #import "MMOauthSmugmug.h"
@@ -28,6 +29,7 @@ long                retryCount;
     self = [self init];
     if (self)
     {
+        _isUploading = NO;
         if (!handle)
         {
             return nil;
@@ -63,7 +65,7 @@ long                retryCount;
  triggers a new Oauth dance. You know the outcome by observing "initializationProgress".
  */
 
-- (void) configureOauth: (NSString *) uploadFolderUrlName
+- (void) configureOauthForLibrary: (MMPhotoLibrary *) library
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     _currentAccountHandle = [defaults stringForKey: handlePath];
@@ -79,7 +81,11 @@ long                retryCount;
             // Now try to find the default folder. If that fails, force a whole login process again,
             // because either the token has been revoked or the permissions were reduced manually by
             // the user.
-            _defaultFolder = [self createOrFindDefaultFolder: uploadFolderUrlName];
+            
+            _defaultFolder = [self findOrCreateFolder: [library.databaseUuid uppercaseString]
+                                              beneath: nil
+                                          displayName: [library displayName]
+                                          description: [library description]];
             if (!_defaultFolder) // Still not set? Reset the authorization
             {
                 _smugmugOauth = nil;
@@ -88,6 +94,7 @@ long                retryCount;
             {
                 NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _currentAccountHandle];
                 [defaults setObject: _defaultFolder forKey: dfKey];
+                library.serviceApi = self;
             }
         }
         else
@@ -119,7 +126,10 @@ long                retryCount;
                              NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", _currentAccountHandle];
                              [defaults setObject: _smugmugOauth.accessToken forKey: atKey];
                              [defaults setObject: _smugmugOauth.tokenSecret forKey: tsKey];
-                             _defaultFolder = [self createOrFindDefaultFolder: uploadFolderUrlName];
+                             _defaultFolder = [self findOrCreateFolder: [library.databaseUuid uppercaseString]
+                                                               beneath: nil
+                                                           displayName: [library displayName]
+                                                           description: [library description]];
                              if (!_defaultFolder) // Still not set? report error
                              {
                                  DDLogError(@"unable to create default folder");
@@ -128,6 +138,7 @@ long                retryCount;
                              {
                                  NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _currentAccountHandle];
                                  [defaults setObject: _defaultFolder forKey: dfKey];
+                                 library.serviceApi = self;
                              }
                              [defaults synchronize];
      /**
@@ -149,13 +160,48 @@ long                retryCount;
                          }
                      }];
 }
+- (BOOL) startUploading: (NSArray *) photos
+               forEvent: (MMLibraryEvent *) event
+{
+    if (_isUploading)
+    {
+        return NO;
+    }
+    _isUploading = YES;
+    NSString *name = [event name];
+    if (!name)
+    {
+        name = [event dateRange];
+    }
+    NSString *newFolder = [self findOrCreateFolder: [[event uuid] uppercaseString]
+                                           beneath: _defaultFolder
+                                       displayName: [event name]
+                                       description: @"Photos uploaded via Mugmover"];    
+    return YES;
+}
 #pragma mark "Private methods"
 
-- (NSString *) createOrFindDefaultFolder: (NSString *) urlName
+/**
+ * Returns the "urlName" value (one piece of the path) for a folder. If the +levelOneFolder+ is nil
+ * the result will be a top-level folder creation. If the +levelOneFolder+ is present, then it will
+ * be inserted as part of the path.
+ * If something really goes wrong, nil is returned.
+ */
+- (NSString *) findOrCreateFolder: (NSString *) urlName
+                          beneath: (NSString *) levelOneFolder
+                      displayName: (NSString *) displayName
+                      description: (NSString *) description
 {
-    NSURLRequest *createFolderRequest = [_smugmugOauth apiRequest: @"folder/user/jayphillips!folders"
-                                                       parameters: @{@"Description":        @"Photos via MugMover from...",
-                                                                     @"Name":               @"Photo Library Name",
+    NSMutableString *apiRequest = [@"folder/user/jayphillips" mutableCopy];
+    if (levelOneFolder)
+    {
+        [apiRequest appendString: @"/"];
+        [apiRequest appendString: levelOneFolder];
+    }
+    [apiRequest appendString: @"!folders"];
+    NSURLRequest *createFolderRequest = [_smugmugOauth apiRequest: apiRequest
+                                                       parameters: @{@"Description":        description,
+                                                                     @"Name":               displayName,
                                                                      @"Privacy":            @"Private",
                                                                      @"SmugSearchable":     @"No",
                                                                      @"SortIndex":          @"SortIndex",

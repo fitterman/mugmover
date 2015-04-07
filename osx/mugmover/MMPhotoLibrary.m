@@ -245,17 +245,6 @@ NSString *photosPath;
     return nil;
 }
 
-- (BOOL) startUploading
-{
-    if (_isUploading)
-    {
-        return NO;
-    }
-    _isUploading = YES;
-    
-    return YES;
-}
-
 - (void) close
 {
     if (_facesDatabase)
@@ -276,8 +265,24 @@ NSString *photosPath;
     CGColorSpaceRelease(_colorspace);
     _ciContext = nil;
     _exifDateFormatters = nil;
-
+    _serviceApi = nil;
 
 }
+
+- (NSString *) baseName
+{
+    return [[NSURL fileURLWithPath: _libraryBasePath] lastPathComponent];
+}
+
+- (NSString *) description
+{
+    return [NSString stringWithFormat: @"Photos via MugMover from %@", [self baseName]];
+}
+
+- (NSString *) displayName
+{
+    return [NSString stringWithFormat: @"%@ via MugMover", [self baseName]];
+}
+
 
 @end

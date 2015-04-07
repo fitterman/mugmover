@@ -21,7 +21,6 @@
 
 @implementation MMAppDelegate
 
-MMSmugmug *smugmug = nil;
 NSDictionary *flickrPhotoPointer;
 
 BOOL const MMdebugLevel;
@@ -44,20 +43,19 @@ BOOL const MMdebugLevel;
         // 3. Add the view controller to the Window's content view
         [self.window.contentView addSubview:self.masterViewController.view];
         self.masterViewController.view.frame = ((NSView*)self.window.contentView).bounds;
+        
+        MMSmugmug *serviceApi = [[MMSmugmug alloc] initWithHandle: @"jayphillips"];
+        
+        if (serviceApi)
+        {
+            // Register for KVO on some network-associated values
+            [serviceApi addObserver: self
+                         forKeyPath: @"initializationProgress"
+                            options: (NSKeyValueObservingOptionNew)
+                            context: (__bridge void *)(self)];
+            [serviceApi configureOauthForLibrary: _library];
+        }
     }
-/*
-   smugmug = [[MMSmugmug alloc] initWithHandle: @"jayphillips"];
-
-    if (smugmug)
-    {
-        // Register for KVO on some network-associated values
-        [smugmug addObserver: self
-                  forKeyPath: @"initializationProgress"
-                     options: (NSKeyValueObservingOptionNew)
-                     context: (__bridge void *)(self)];
-    }
-    [smugmug configureOauth: [_library.databaseUuid uppercaseString]];
- */
 }
 
 /* TODO

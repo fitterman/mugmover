@@ -11,6 +11,7 @@
 #import "MMLibraryEvent.h"
 #import "MMPhoto.h"
 #import "MMUiUtility.h"
+#import "MMSmugmug.h"
 
 @implementation MMMasterViewController
 
@@ -93,7 +94,8 @@
 - (IBAction)transmitButtonWasPressed: (id) sender {
     if (sender == _transmitButton)
     {
-        if ([_library startUploading])
+        if ([_library.serviceApi startUploading: _photos
+                                       forEvent: _selectedEvent])
         {
             _transmitButton.enabled = NO;
         }
@@ -116,12 +118,12 @@
     if (tableView == _eventsTable)
     {
         NSInteger row = tableView.selectedRow;
-        MMLibraryEvent *event = _libraryEvents[row];
+        _selectedEvent = _libraryEvents[row];
         for (MMPhoto *photo in _photos)
         {
             [photo close];
         }
-        _photos = [MMPhoto getPhotosFromLibrary: _library forEvent: event];
+        _photos = [MMPhoto getPhotosFromLibrary: _library forEvent: _selectedEvent];
         [_photosTable reloadData];
         _transmitButton.enabled = YES;
     }
