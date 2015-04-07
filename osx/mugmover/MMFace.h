@@ -56,7 +56,7 @@
 - (void) rotate: (Float64) degrees
          origin: (MMPoint *) centerPoint;
 
-- (void) releaseStrongPointers;
+- (void) close;
 
 - (void) setName: (NSString *) name
     faceNameUuid: (NSString *) faceNameUuid

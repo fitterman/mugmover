@@ -68,6 +68,8 @@
 
 - (Float64) aspectRatio;
 
+- (void) close;
+
 - (NSString *) fileName;
 
 - (NSNumber *) fileSize;

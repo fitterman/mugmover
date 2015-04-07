@@ -365,13 +365,13 @@ extern Float64 const MMDegreesPerRadian;
     _cropOrigin = [[MMPoint alloc] initWithX: 0.0 y: 0.0];
     if (!_cropOrigin)
     {
-        [self releaseStrongPointers];
+        [self close];
         return nil;
     }
     _adjustmentsArray = [[NSMutableArray alloc] init];
     if (!_adjustmentsArray)
     {
-        [self releaseStrongPointers];
+        [self close];
         return nil;
     }
     return self;
@@ -386,7 +386,7 @@ extern Float64 const MMDegreesPerRadian;
     {
         if ([self commonInitialization] == nil)
         {
-            [self releaseStrongPointers];
+            [self close];
             return nil;
         }
     }
@@ -460,7 +460,7 @@ extern Float64 const MMDegreesPerRadian;
             _library = stream.library;
             if ([self commonInitialization] == nil)
             {
-                [self releaseStrongPointers];
+                [self close];
                 return nil;
             }
             [_flickrDictionary addEntriesFromDictionary: flickrDictionary];
@@ -468,13 +468,13 @@ extern Float64 const MMDegreesPerRadian;
             _exifDictionary = [NSMutableDictionary new];
             if (!_exifDictionary)
             {
-                [self releaseStrongPointers];
+                [self close];
                 return nil;
             }
             _oldNotesToDelete = [[NSMutableArray alloc] init];
             if (!_oldNotesToDelete)
             {
-                [self releaseStrongPointers];
+                [self close];
                 return nil;
             }
             _didFetchExif = NO;
@@ -521,7 +521,7 @@ extern Float64 const MMDegreesPerRadian;
         }
         else
         {
-            [self releaseStrongPointers];
+            [self close];
             DDLogError(@"ORPHAN PHOTO  index=%ld, remaining=%ld", (long)_index, [_stream inQueue]);
 
             // TODO May want to start deleting any mugmover comments as a cleanup step.
@@ -542,7 +542,7 @@ extern Float64 const MMDegreesPerRadian;
             // We can't do this one from the delegate callback, so we queue it as well
             blockOperation = [NSBlockOperation blockOperationWithBlock:^
                               {
-                                [self releaseStrongPointers];
+                                [self close];
                               }];
         }
         else
@@ -1328,7 +1328,7 @@ extern Float64 const MMDegreesPerRadian;
 
 }
 
-- (void) releaseStrongPointers
+- (void) close
 {
     _adjustmentsArray = nil;
     _apiRequest = nil;
@@ -1601,7 +1601,7 @@ extern Float64 const MMDegreesPerRadian;
     {
         // We can now remove the face.
         MMFace *face = [_faceArray objectAtIndex: 0];
-        [face releaseStrongPointers];
+        [face close];
         [_faceArray removeObjectAtIndex: 0];
         [self updateNotesOnFlickr];
     }
@@ -1620,14 +1620,14 @@ extern Float64 const MMDegreesPerRadian;
     {
         // If you can't add the note, blow it away and try the next one
         MMFace *face = [_faceArray objectAtIndex: 0];
-        [face releaseStrongPointers];
+        [face close];
         [_faceArray removeObjectAtIndex: 0];
         [self updateNotesOnFlickr];
     }
     // Need to do all the release stuff you do on the corresponding success event.
     else
     {
-        [self releaseStrongPointers];
+        [self close];
     }
 */
 

@@ -117,6 +117,10 @@
     {
         NSInteger row = tableView.selectedRow;
         MMLibraryEvent *event = _libraryEvents[row];
+        for (MMPhoto *photo in _photos)
+        {
+            [photo close];
+        }
         _photos = [MMPhoto getPhotosFromLibrary: _library forEvent: event];
         [_photosTable reloadData];
         _transmitButton.enabled = YES;

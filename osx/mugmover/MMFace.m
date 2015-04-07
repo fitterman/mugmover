@@ -223,7 +223,7 @@
     return [NSString stringWithFormat: @"%ld", (NSInteger) result];
 }
 
-- (void) releaseStrongPointers
+- (void) close
 {
     _centerPoint = nil;
     _faceNameUuid = nil;
