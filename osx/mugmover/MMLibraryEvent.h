@@ -19,6 +19,10 @@
 
 - (NSString *) dateRange;
 
+- (NSNumber *) filecount;
+
 - (NSString *) name;
+
+- (NSString *) uuid;
 
 @end

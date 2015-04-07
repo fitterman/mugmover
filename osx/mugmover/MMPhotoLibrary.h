@@ -30,6 +30,10 @@
 
 - (void) close;
 
+- (NSString *) fullMasterPath: (NSString *) partialMasterPath;
+
+- (BOOL) startUploading;
+
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 
 - (NSMutableDictionary *) versionExifFromMasterPath: masterPath;

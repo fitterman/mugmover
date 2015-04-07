@@ -7,9 +7,16 @@
 //
 
 #import <Cocoa/Cocoa.h>
+@class MMPhotoLibrary;
 
 @interface MMMasterViewController : NSViewController
 
-@property (strong) NSArray *libraryEvents;
+@property (weak)    IBOutlet    NSTableView *           eventsTable;
+@property (weak)    IBOutlet    NSTableView *           photosTable;
+@property (weak)    IBOutlet    NSButton *              transmitButton;
+
+@property (strong)              MMPhotoLibrary *        library;
+@property (strong)              NSArray *               libraryEvents;
+@property (strong)              NSArray *               photos;
 
 @end

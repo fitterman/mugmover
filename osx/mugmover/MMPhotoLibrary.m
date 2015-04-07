@@ -208,8 +208,7 @@ NSString *photosPath;
                 }
                 else
                 {
-                    DDLogError(@"NO VERSION FOUND! KEEP SEARCHING FOR THE TRUTH.");
-                    return NULL;
+                    return [self fullMasterPath: masterPath];
                 }
 
             }
@@ -218,6 +217,13 @@ NSString *photosPath;
     }
     return NULL;
 
+}
+
+- (NSString *) fullMasterPath: (NSString *) partialMasterPath
+{
+    return [@[_libraryBasePath,
+              @"Masters",
+              partialMasterPath] componentsJoinedByString: @"/"];
 }
 
 - (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
@@ -307,6 +313,11 @@ NSString *photosPath;
     }
 
     return exifDictionary;
+}
+
+- (BOOL) startUploading
+{
+    return NO;
 }
 
 - (void) close

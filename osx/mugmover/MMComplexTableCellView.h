@@ -7,17 +7,12 @@
 //
 
 #import <Cocoa/Cocoa.h>
+@class NSTableView;
 
 @interface MMComplexTableCellView : NSTableCellView
-{
-@private
-    IBOutlet NSTextField *firstTitleTextField;
-    IBOutlet NSTextField *secondTextField;
-    IBOutlet NSTextField *thirdTextField;
-}
 
-@property(assign) NSTextField *firstTitleTextField;
-@property(assign) NSTextField *secondTextField;
-@property(assign) NSTextField *thirdTextField;
+@property (weak) IBOutlet       NSTextField *       firstTitleTextField;
+@property (weak) IBOutlet       NSTextField *       secondTextField;
+@property (weak) IBOutlet       NSTextField *       thirdTextField;
 
 @end

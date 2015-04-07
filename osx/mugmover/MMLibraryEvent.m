@@ -20,15 +20,20 @@
 {
     NSInteger upperRecordCount  = [library.photosDatabase
                                    intForQuery: @"SELECT count(*) FROM RKFolder "
-                                   "WHERE isMagic != 1 AND isHidden != 1 AND isInTrash != 1 "];
+                                   "WHERE parentFolderUuid = 'AllProjectsItem' AND "
+                                   "    isMagic != 1 AND isHidden != 1 AND isInTrash != 1 "];
     
     NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: upperRecordCount];
     
     NSString *query =  @"SELECT minImageDate, minImageTimeZoneName, "
-                        "maxImageDate, maxImageTimeZoneName, name, versionCount "
-                        "FROM RKFolder "
-                        "WHERE isMagic != 1 AND isHidden != 1 AND isInTrash != 1 "
-                        "ORDER BY minImageDate, maxImageDate, uuid;";
+                        "    maxImageDate, maxImageTimeZoneName, f.name, f.uuid, versionCount, "
+                        "    count(*) filecount "
+                        "FROM RKFolder f "
+                        "JOIN RKMaster m ON m.projectUuid = f.uuid "
+                        "WHERE parentFolderUuid = 'AllProjectsItem' AND "
+                        "    isMagic != 1 AND isHidden != 1 AND f.isInTrash != 1 "
+                        "GROUP BY f.uuid "
+                        "ORDER BY minImageDate, maxImageDate, f.uuid;";
 
     // NOTE: It has been observed that in some cases, the minImageDate or maxImageDate
     //       might be a NULL value if the database didn't update that yet.
@@ -93,8 +98,19 @@
     }
     return [results componentsJoinedByString: @" – "];
 }
+
+- (NSNumber *) filecount
+{
+    return [_dictionary objectForKey: @"filecount"];
+}
+
 - (NSString *) name
 {
     return [_dictionary objectForKey: @"name"];
+}
+
+- (NSString *) uuid
+{
+    return [_dictionary objectForKey: @"uuid"];
 }
 @end

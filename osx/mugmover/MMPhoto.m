@@ -21,6 +21,7 @@
 #import "FMDB/FMDatabaseAdditions.h"
 #import "FMDB/FMResultSet.h"
 #import "MMApiRequest.h"
+#import "MMLibraryEvent.h"
 #import "MMFlickrPhotostream.h"
 #import "MMNetworkRequest.h"
 #import "MMOauthFlickr.h"
@@ -51,7 +52,8 @@ extern Float64 const MMDegreesPerRadian;
     
     NSInteger recordCount  = [library.photosDatabase
                               intForQuery: @"SELECT count(*) FROM RKMaster "
-                              "WHERE isInTrash != 1"];
+                              "WHERE v.isHidden != 1 AND v.showInLibrary = 1 "
+                             ];
     
     
     NSInteger counter = 0;
@@ -174,9 +176,9 @@ extern Float64 const MMDegreesPerRadian;
                                                @"rotation": @(rotation),
                                                };
             
-            MMPhoto *photo = [[MMPhoto alloc] initFromPhotoProperties: photoProperties
-                                                       exifProperties: exif
-                                                              library: library];
+            MMPhoto *photo = [[MMPhoto alloc] initFromDictionary: photoProperties
+                                                  exifProperties: exif
+                                                         library: library];
             
             DDLogInfo(@"%5ld %@ %@ %ld %lu", counter, masterUuid, versionUuid, versionNumber, (unsigned long)[exif count]);
             DDLogInfo(@"      createDateTimestamp       %@", [dateFormat stringFromDate: createDateTimestamp]);
@@ -221,6 +223,141 @@ extern Float64 const MMDegreesPerRadian;
     DDLogInfo(@"TODO Look into using imageTimezoneName for time conversions");
 }
 
++ (NSArray *) getPhotosFromLibrary: (MMPhotoLibrary *) library
+                          forEvent: (MMLibraryEvent *) event
+{
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    [dateFormat setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
+    dateFormat.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
+    
+    NSInteger recordCount  = [library.photosDatabase
+                              intForQuery: @"SELECT count(*) FROM RKMaster "
+                              "WHERE isInTrash != 1"];
+    
+    NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: recordCount];
+
+    NSInteger counter = 0;
+    NSInteger exifDiscrepancyCounter = 0;
+    NSInteger exifPositiveCounter = 0;
+    NSInteger exifNegativeCounter = 0;
+    
+    NSString *query =  @"SELECT  m.uuid masterUuid, m.createDate,"
+                        "        m.fileName, m.imagePath, m.originalVersionName, "
+                        "        m.colorSpaceName, m.fileCreationDate, m.fileModificationDate, "
+                        "        m.fileSize, m.imageDate, m.isMissing, "
+                        "        m.originalFileName originalFilename, " /* Change the name */
+                        "        m.originalFileSize, m.name, m.projectUuid, m.subtype, m.type, "
+                        "        v.uuid versionUuid, v.versionNumber, "
+                        "        v.fileName versionFilename, "
+                        "        v.isOriginal, v.hasAdjustments, "
+                        "        v.masterHeight, v.masterWidth, "
+                        "        v.name versionName, v.processedHeight, v.processedWidth, v.rotation "
+                        "FROM RKVersion v JOIN RKMaster m  ON v.masterUuid = m.uuid "
+                        "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and m.projectUuid = ? ";
+    
+    NSString *eventUuid = [event uuid];
+    FMResultSet *resultSet = [library.photosDatabase executeQuery: query
+                                             withArgumentsInArray: @[eventUuid]];
+    while (resultSet && [resultSet next])
+    {
+        counter++;
+        Float64 createDate = [resultSet doubleForColumn: @"createDate"];
+        NSDate *createDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) createDate];
+        
+        long long int fileCreationDate = [resultSet longLongIntForColumn: @"fileCreationDate"];
+        NSDate *fileCreationDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) fileCreationDate];
+        long long int fileModificationDate = [resultSet longLongIntForColumn: @"fileModificationDate"];
+        NSDate *fileModificationDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) fileModificationDate];
+        long long int imageDate = [resultSet longLongIntForColumn: @"imageDate"];
+        NSDate *imageDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) imageDate];
+
+        
+        NSMutableDictionary *exif;
+        NSDictionary *resultDictionary = [resultSet resultDictionary];
+        NSString *imagePath = [resultDictionary valueForKey: @"imagePath"];
+        NSInteger hasAdjustments = [[resultDictionary valueForKey: @"hasAdjustments"] integerValue];
+        if (hasAdjustments != 1)
+        {
+            exif = [library versionExifFromMasterPath: imagePath];
+        }
+        else
+        {
+            NSString *versionUuid = [resultDictionary valueForKey: @"versionUuid"];
+            NSString *versionFilename = [resultDictionary valueForKey: @"versionFilename"];
+            NSString *versionName = [resultDictionary valueForKey: @"versionName"];
+            exif = [library versionExifFromMasterPath: imagePath
+                                          versionUuid: versionUuid
+                                      versionFilename: versionFilename
+                                          versionName: versionName];
+            
+        }
+        if (!exif)
+        {
+            DDLogInfo(@">>> isOriginal=%ld", [[resultDictionary valueForKey: @"isOriginal"] integerValue]);
+            exif = [[NSMutableDictionary alloc] init];
+            
+        }
+        MMPhoto *photo = [[MMPhoto alloc] initFromDictionary: resultDictionary
+                                              exifProperties: exif
+                                                     library: library];
+        NSDictionary *photoProperties =  @{
+                                           // From the master
+                                           @"createDateTimestamp": [dateFormat stringFromDate: createDateTimestamp],
+                                           @"imagePath": [@[library.libraryBasePath, imagePath] componentsJoinedByString: @"/"],
+                                           @"fileCreationDate": [dateFormat stringFromDate: fileCreationDateTimestamp],
+                                           @"fileModificationDate": [dateFormat stringFromDate: fileModificationDateTimestamp],
+                                           @"imageDate": [dateFormat stringFromDate: imageDateTimestamp],
+                                           };
+        if (photo)
+        {
+            [result addObject: photo];
+        }
+        
+        
+        DDLogInfo(@"      createDateTimestamp       %@", [dateFormat stringFromDate: createDateTimestamp]);
+        DDLogInfo(@"      fileCreationDateTimestamp %@", [dateFormat stringFromDate: fileCreationDateTimestamp]);
+        DDLogInfo(@"      imageDateTimestamp        %@", [dateFormat stringFromDate: imageDateTimestamp]);
+        
+        
+        /*
+         After, compare photo.originalDate against imateDateTimestamp
+         
+         DDLogInfo(@"      Exif/DateTimeOriginal     %@", [dateFormat stringFromDate: exifDateTimestamp]);
+         NSTimeInterval deltaTime = [exifDateTimestamp timeIntervalSinceDate: imageDateTimestamp];
+         
+         if (deltaTime != 0.0)
+         {
+         exifDiscrepancyCounter++;
+         DDLogInfo(@"                                ^^^^^^^^^^^^^^^^^^^ %@", name);
+         if (deltaTime > 0)
+         {
+         exifPositiveCounter++;
+         }
+         else
+         {
+         exifNegativeCounter++;
+         }
+         };
+         */
+        
+        //DDLogInfo(@"Master/Version   %@", jsonString);
+        
+        // DDLogInfo(@"MASTER     %ld %@ %@ %ld %@", counter, masterUuid, createDateTimestamp, versionNumber, versionUuid);
+        
+    }
+    if (resultSet)
+    {
+        [resultSet close];
+    }
+    DDLogInfo(@"MASTER     DONE");
+    DDLogInfo(@"  Date/time mismatches detected=%ld (postive=%ld, negative=%ld)",
+              exifDiscrepancyCounter, exifPositiveCounter, exifNegativeCounter);
+    DDLogInfo(@"  counter=%ld", counter);
+    DDLogInfo(@"TODO ImageIO: CreateMeThrew error #203 (Duplicate property or field node)");
+    DDLogInfo(@"TODO Look into using imageTimezoneName for time conversions");
+    return result;
+}
+
 - (MMPhoto *) commonInitialization
 {
     _rotationAngle = 0.0;
@@ -240,9 +377,9 @@ extern Float64 const MMDegreesPerRadian;
     return self;
 }
 
-- (MMPhoto *) initFromPhotoProperties: (NSDictionary *) photoProperties
-                       exifProperties: (NSMutableDictionary *) exifProperties
-                              library: (MMPhotoLibrary *) library
+- (MMPhoto *) initFromDictionary: (NSDictionary *) inDictionary
+                  exifProperties: (NSMutableDictionary *) exifProperties
+                         library: (MMPhotoLibrary *) library
 {
     self = [self init];
     if (self)
@@ -256,14 +393,14 @@ extern Float64 const MMDegreesPerRadian;
     _library = library;
     _verboseLogging = _library.verboseLogging;
     
-    _masterUuid = [photoProperties valueForKey: @"masterUuid"];
-    _masterHeight = [[photoProperties valueForKey: @"masterHeight"] doubleValue];
-    _masterWidth = [[photoProperties valueForKey: @"masterWidth"] doubleValue];
-    _processedHeight = [[photoProperties valueForKey: @"processedHeight"] doubleValue];
-    _processedWidth = [[photoProperties valueForKey: @"processedWidth"] doubleValue];
-    _rotationAngle = [[photoProperties valueForKey: @"rotation"] doubleValue];
-    _versionUuid = [photoProperties valueForKey: @"versionUuid"];
-    _version = [[photoProperties valueForKey: @"versionNumber"] longValue];
+    _masterUuid = [inDictionary valueForKey: @"masterUuid"];
+    _masterHeight = [[inDictionary valueForKey: @"masterHeight"] doubleValue];
+    _masterWidth = [[inDictionary valueForKey: @"masterWidth"] doubleValue];
+    _processedHeight = [[inDictionary valueForKey: @"processedHeight"] doubleValue];
+    _processedWidth = [[inDictionary valueForKey: @"processedWidth"] doubleValue];
+    _rotationAngle = [[inDictionary valueForKey: @"rotation"] doubleValue];
+    _versionUuid = [inDictionary valueForKey: @"versionUuid"];
+    _version = [[inDictionary valueForKey: @"versionNumber"] longValue];
     _iPhotoOriginalImagePath = [exifProperties valueForKey: @"_image"];
     
     [self populateDateFromExif: exifProperties];
@@ -272,7 +409,7 @@ extern Float64 const MMDegreesPerRadian;
     [_attributes setObject: [_library sourceDictionary] forKey: @"source"];
     [exifProperties removeObjectForKey: @"_image"];
     [_attributes setObject: exifProperties forKey: @"exif"];
-    [_attributes setObject: [photoProperties mutableCopy] forKey: @"photo"];
+    [_attributes setObject: [inDictionary mutableCopy] forKey: @"photo"];
     
     return self;
 }
@@ -468,9 +605,9 @@ extern Float64 const MMDegreesPerRadian;
             NSString *versionUuid = [resultSet stringForColumn: @"versionUuid"];
 
             _iPhotoOriginalImagePath = [_library versionPathFromMasterPath: (NSString *) masterPath
-                                                                      versionUuid: versionUuid
-                                                                  versionFilename: versionFilename
-                                                                      versionName: versionName];
+                                                               versionUuid: versionUuid
+                                                           versionFilename: versionFilename
+                                                               versionName: versionName];
             [resultSet close];
             return YES;
         }
@@ -1378,6 +1515,32 @@ extern Float64 const MMDegreesPerRadian;
                          remainingAttempts: MMDefaultRetries
                          completionHandler: processGetExifResponse];
 
+}
+
+- (NSString *) fileName
+{
+    return [_attributes valueForKeyPath: @"photo.fileName"];
+}
+
+- (NSNumber *) fileSize
+{
+    return [_attributes valueForKeyPath: @"photo.fileSize"];
+}
+
+- (NSString *) fullImagePath
+{
+    NSString *versionUuid = [_attributes valueForKeyPath: @"photo.versionUuid"];
+    if (!versionUuid)
+    {
+        return [_library fullMasterPath: [_attributes valueForKeyPath: @"photo.imagePath"]];
+    }
+    else
+    {
+        return [_library versionPathFromMasterPath: [_attributes valueForKeyPath: @"photo.imagePath"]
+                                       versionUuid: versionUuid
+                                   versionFilename: [_attributes valueForKeyPath: @"photo.versionFilename"]
+                                       versionName: [_attributes valueForKeyPath: @"photo.versionName"]];
+    }
 }
 /*
 - (void) addNoteForOneFace

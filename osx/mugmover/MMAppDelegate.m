@@ -36,12 +36,17 @@ BOOL const MMdebugLevel;
     // 1. Create the master View Controller
     self.masterViewController = [[MMMasterViewController alloc] initWithNibName:@"MMMasterViewController" bundle:nil];
 
+    // 2. Populate the library and libraryEvents
     _library = [[MMPhotoLibrary alloc] initWithPath: (NSString *) @"/Users/Bob/Pictures/Jay Phillips"];
-    self.masterViewController.libraryEvents = [MMLibraryEvent getEventsFromLibrary: _library];
+    if (_library)
+    {
+        self.masterViewController.library = _library;
+        self.masterViewController.libraryEvents = [MMLibraryEvent getEventsFromLibrary: _library];
 
-    // 3. Add the view controller to the Window's content view
-    [self.window.contentView addSubview:self.masterViewController.view];
-    self.masterViewController.view.frame = ((NSView*)self.window.contentView).bounds;
+        // 3. Add the view controller to the Window's content view
+        [self.window.contentView addSubview:self.masterViewController.view];
+        self.masterViewController.view.frame = ((NSView*)self.window.contentView).bounds;
+    }
 /*
    smugmug = [[MMSmugmug alloc] initWithHandle: @"jayphillips"];
 

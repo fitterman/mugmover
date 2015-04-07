@@ -53,17 +53,26 @@
 
 + (void) getPhotosFromLibrary: (MMPhotoLibrary *) library;
 
++ (NSArray *) getPhotosFromLibrary: (MMPhotoLibrary *) library
+                          forEvent: (MMLibraryEvent *) eventUuid;
+
 - (MMPhoto *) initWithFlickrDictionary: (NSDictionary *) flickrDictionary
                                 stream: (MMFlickrPhotostream *) stream
                                  index: (NSInteger) index;
 
-- (MMPhoto *) initFromPhotoProperties: (NSDictionary *) photoProperties
-                       exifProperties: (NSMutableDictionary *) exifProperties
-                              library: (MMPhotoLibrary *) library;
+- (id) initFromDictionary: (NSDictionary *) inDictionary
+           exifProperties: (NSMutableDictionary *) exifProperties
+                  library: (MMPhotoLibrary *) library;
 
 - (void) adjustForStraightenCropAndGetFaces;
 
 - (Float64) aspectRatio;
+
+- (NSString *) fileName;
+
+- (NSNumber *) fileSize;
+
+- (NSString *) fullImagePath;
 
 - (void) performNextStep;
 

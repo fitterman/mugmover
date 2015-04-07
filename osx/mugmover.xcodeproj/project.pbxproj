@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		8EE5090B10E91E9048578D4E /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33EBE9A01471814A3096BC04 /* libPods.a */; };
+		C404A9BF1AD410C600E197F1 /* MMUiUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C404A9BE1AD410C600E197F1 /* MMUiUtility.m */; };
 		C411AA761AC197A30087D1FA /* MMOauthSmugmug.m in Sources */ = {isa = PBXBuildFile; fileRef = C411AA751AC197A30087D1FA /* MMOauthSmugmug.m */; };
 		C42F7AD21A152F60006E38DD /* MMFlickrPhotostream.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7AD11A152F60006E38DD /* MMFlickrPhotostream.m */; };
 		C42F7AD51A1532FC006E38DD /* MMFace.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7AD41A1532FC006E38DD /* MMFace.m */; };
@@ -66,6 +67,8 @@
 
 /* Begin PBXFileReference section */
 		33EBE9A01471814A3096BC04 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		C404A9BD1AD410C600E197F1 /* MMUiUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMUiUtility.h; sourceTree = "<group>"; };
+		C404A9BE1AD410C600E197F1 /* MMUiUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMUiUtility.m; sourceTree = "<group>"; };
 		C4118EEE1A49E4F30057A72B /* MMEnvironment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MMEnvironment.h; sourceTree = "<group>"; };
 		C411AA741AC197A30087D1FA /* MMOauthSmugmug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMOauthSmugmug.h; sourceTree = "<group>"; };
 		C411AA751AC197A30087D1FA /* MMOauthSmugmug.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMOauthSmugmug.m; sourceTree = "<group>"; };
@@ -304,6 +307,8 @@
 				C4A687A91ACC773E007CDC6D /* MMDataUtility.m */,
 				C4A687A51ACC7682007CDC6D /* MMFileUtility.h */,
 				C4A687A61ACC7682007CDC6D /* MMFileUtility.m */,
+				C404A9BD1AD410C600E197F1 /* MMUiUtility.h */,
+				C404A9BE1AD410C600E197F1 /* MMUiUtility.m */,
 			);
 			name = "Utility Classes";
 			sourceTree = "<group>";
@@ -459,6 +464,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C404A9BF1AD410C600E197F1 /* MMUiUtility.m in Sources */,
 				C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */,
 				C42F7AD81A153368006E38DD /* MMPhotoLibrary.m in Sources */,
 				C4968CCA1A15101500F34E46 /* MMAppDelegate.m in Sources */,
