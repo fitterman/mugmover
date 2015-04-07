@@ -25,6 +25,19 @@ extern const NSInteger MMDefaultRetries;
 NSDictionary       *photoResponseDictionary;
 long                retryCount;
 
+/**
+ * We are using UUIDs in many places for URL names. The UUID character-space consists
+ * of the characters A-Z, a-z, 0-9 and 2 pieces of punctuation: "+", "%", each of which
+ * is problematic. We remap "+" and "%" both to "-". This is the only non alpha-numeric
+ * character SmugMug will accept. We also map everything to uppercase. Asking for a
+ * collision? Yes, it's possible, but statistically prettty unlikely to happen.
+ */
++ (NSString *) sanitizeUuid: (NSString *) inUrl
+{
+  return [[[inUrl stringByReplacingOccurrencesOfString:@"+" withString:@"-"]
+           stringByReplacingOccurrencesOfString:@"%" withString:@"-"] uppercaseString];
+}
+
 - (id) initWithHandle: (NSString *) handle
 {
     self = [self init];
@@ -83,7 +96,7 @@ long                retryCount;
             // because either the token has been revoked or the permissions were reduced manually by
             // the user.
             
-            _defaultFolder = [self findOrCreateFolder: [library.databaseUuid uppercaseString]
+            _defaultFolder = [self findOrCreateFolder: [MMSmugmug sanitizeUuid: library.databaseUuid]
                                               beneath: nil
                                           displayName: [library displayName]
                                           description: [library description]];
@@ -127,7 +140,7 @@ long                retryCount;
                              NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", _currentAccountHandle];
                              [defaults setObject: _smugmugOauth.accessToken forKey: atKey];
                              [defaults setObject: _smugmugOauth.tokenSecret forKey: tsKey];
-                             _defaultFolder = [self findOrCreateFolder: [library.databaseUuid uppercaseString]
+                             _defaultFolder = [self findOrCreateFolder: [MMSmugmug sanitizeUuid: library.databaseUuid]
                                                                beneath: nil
                                                            displayName: [library displayName]
                                                            description: [library description]];
@@ -160,7 +173,7 @@ long                retryCount;
         name = [event dateRange];
     }
     NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via MugMover", name];
-    NSString *newAlbumUri = [self findOrCreateAlbum: [[event uuid] uppercaseString]
+    NSString *newAlbumUri = [self findOrCreateAlbum: [MMSmugmug sanitizeUuid: [event uuid]]
                                             beneath: _defaultFolder
                                         displayName: name
                                         description: description];
@@ -206,7 +219,6 @@ long                retryCount;
                      displayName: (NSString *) displayName
                      description: (NSString *) description
 {
-
     NSMutableString *apiRequest = [@"folder/user/jayphillips" mutableCopy];
     if (partialPath)
     {
@@ -216,8 +228,9 @@ long                retryCount;
     [apiRequest appendString: @"!albums"];
     NSURLRequest *createAlbumRequest = [_smugmugOauth apiRequest: apiRequest
                                                        parameters: @{@"Description":        description,
-                                                                     @"NiceName":           urlName,
-                                                                     @"Title":              displayName,
+                                                                     @"UrlName":            urlName,
+                                                                     @"UrlName":            urlName,
+                                                                     @"Name":               displayName,
                                                                      @"Privacy":            @"Private",
                                                                      @"SmugSearchable":     @"No",
                                                                      @"WorldSearchable":    @"No",

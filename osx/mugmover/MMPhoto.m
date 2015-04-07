@@ -196,7 +196,6 @@ extern Float64 const MMDegreesPerRadian;
     _attributes = [[NSMutableDictionary alloc] initWithCapacity: 20];
     [_attributes setObject: [_library sourceDictionary] forKey: @"source"];
     [_attributes setObject: [inDictionary mutableCopy] forKey: @"photo"];
-    [self populateExifFromSourceFile];
     return self;
 }
 
@@ -272,6 +271,7 @@ extern Float64 const MMDegreesPerRadian;
 - (void) processPhoto
 {
     @autoreleasepool {
+        [self populateExifFromSourceFile];
         [self findRelevantAdjustments];
         [self adjustForStraightenCropAndGetFaces];
         [self moveFacesRelativeToTopLeftOrigin];

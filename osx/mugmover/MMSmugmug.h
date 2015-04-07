@@ -30,6 +30,8 @@
 @property (strong, readonly)    NSString *              tokenSecret;
 
 
++ (NSString *) sanitizeUuid: (NSString *) inUrl;
+
 - (void) close;
 
 - (void) configureOauthForLibrary: (MMPhotoLibrary *) library;
