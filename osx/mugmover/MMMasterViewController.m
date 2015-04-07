@@ -95,7 +95,7 @@
     {
         if ([_library startUploading])
         {
-            
+            _transmitButton.enabled = NO;
         }
         else
         {

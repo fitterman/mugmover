@@ -15,6 +15,7 @@
 @property (strong, readonly)    NSString *          databaseAppId;
 @property (strong, readonly)    NSString *          databaseUuid;
 @property (strong, readonly)    NSString *          databaseVersion;
+@property (assign)              BOOL                isUploading;
 @property (strong, readonly)    NSString *          libraryBasePath;
 @property (strong, readonly)    FMDatabase *        facesDatabase;
 @property (strong, readonly)    FMDatabase *        photosDatabase;
@@ -29,8 +30,6 @@
 - (id) initWithPath: (NSString *) path;
 
 - (void) close;
-
-- (NSString *) fullMasterPath: (NSString *) partialMasterPath;
 
 - (BOOL) startUploading;
 

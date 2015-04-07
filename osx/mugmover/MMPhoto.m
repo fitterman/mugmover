@@ -1,15 +1,9 @@
-
 //
-//  MMPhoto.m
-//  This class handles the overall processing of photos. Photos can be
-//  initialized from a Flickr dictionary, which passes over a collection
-//  of data values that are contained in the photostream request itself
-//  (see MMFlickrPhotostream for details). Once the photo is init'd, the
-//  "performNextStep" method is called repeatedly as each step completes,
-//  and it embodies the knowledge of what happens next -- specifically
-//  with regard to steps requiring network access. Finally, "processPhoto"
-//  is invoked, which performs all the local processing against the
-//  iPhoto library.
+// MMPhoto.m
+// This class is the model for a photo as stored in iPhoto. It is closely allied with the MMFace
+// class. Perhaps the relationship is too close. In any case, it instantiates and manipulates
+// Photo objects. Note that the process begins with the extraction of a result dictionary from
+// the database, whis handled by the MMPhotoLibrary class.
 //
 //  Created by Bob Fitterman on 11/27/14.
 //  Copyright (c) 2014 Dicentra LLC. All rights reserved.
@@ -22,15 +16,15 @@
 #import "FMDB/FMResultSet.h"
 #import "MMApiRequest.h"
 #import "MMLibraryEvent.h"
-#import "MMFlickrPhotostream.h"
 #import "MMNetworkRequest.h"
 #import "MMOauthFlickr.h"
+#import "MMFace.h"
 #import "MMPhoto.h"
 #import "MMPhotolibrary.h"
 #import "MMPoint.h"
 #import "MMEnvironment.h"
-#import "MMNetworkRequest.h"
 #import "MMDataUtility.h"
+#import "MMFileUtility.h"
 
 @import QuartzCore.CIFilter;
 @import QuartzCore.CoreImage.CIContext;
@@ -39,189 +33,10 @@
 #define PAGESIZE (50)
 #define MAX_THUMB_DIM (100)
 
-extern NSInteger const MMDefaultRetries;
+NSInteger const MMDefaultRetries = 3;
 extern Float64 const MMDegreesPerRadian;
 
 @implementation MMPhoto
-
-+ (void) getPhotosFromLibrary: (MMPhotoLibrary *) library
-{
-    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
-    [dateFormat setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
-    dateFormat.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
-    
-    NSInteger recordCount  = [library.photosDatabase
-                              intForQuery: @"SELECT count(*) FROM RKMaster "
-                              "WHERE v.isHidden != 1 AND v.showInLibrary = 1 "
-                             ];
-    
-    
-    NSInteger counter = 0;
-    NSInteger exifDiscrepancyCounter = 0;
-    NSInteger exifPositiveCounter = 0;
-    NSInteger exifNegativeCounter = 0;
-    for (NSInteger offset = 0; offset < recordCount; offset += PAGESIZE)
-    {
-        NSString *query =  @"SELECT  m.uuid masterUuid, m.createDate,"
-        "        m.fileName, m.imagePath, m.originalVersionName, "
-        "        m.colorSpaceName, m.fileCreationDate, m.fileModificationDate, "
-        "        m.fileSize, m.imageDate, m.isMissing, m.originalFileName, "
-        "        m.originalFileSize, m.name, m.projectUuid, m.subtype, m.type, "
-        "        v.uuid versionUuid, v.versionNumber, "
-        "        v.fileName versionFilename, v.isOriginal, v.hasAdjustments, "
-        "        v.masterHeight, v.masterWidth, "
-        "        v.name versionName, v.processedHeight, v.processedWidth, v.rotation "
-        "FROM RKVersion v JOIN RKMaster m  ON v.masterUuid = m.uuid "
-        "WHERE v.isHidden != 1 AND v.showInLibrary = 1 "
-        //        "AND m.uuid IN ('BXJwbAn%R8Sk+T1p5KXncA') "
-        "ORDER BY m.createDate, m.uuid LIMIT ? OFFSET ? ";
-        
-        FMResultSet *resultSet = [library.photosDatabase executeQuery: query
-                                                 withArgumentsInArray: @[@PAGESIZE, @(offset)]];
-        while (resultSet && [resultSet next])
-        {
-            counter++;
-            NSString *masterUuid = [resultSet stringForColumn: @"masterUuid"];
-            Float64 createDate = [resultSet doubleForColumn: @"createDate"];
-            NSDate *createDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) createDate];
-            NSString *fileName = [resultSet stringForColumn: @"fileName"];
-            NSString *imagePath = [resultSet stringForColumn: @"imagePath"];
-            NSString *originalVersionName = [resultSet stringForColumn: @"originalVersionName"];
-            
-            NSString *colorSpaceName = [resultSet stringForColumn: @"colorSpaceName"];
-            long long int fileCreationDate = [resultSet longLongIntForColumn: @"fileCreationDate"];
-            NSDate *fileCreationDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) fileCreationDate];
-            long long int fileModificationDate = [resultSet longLongIntForColumn: @"fileModificationDate"];
-            NSDate *fileModificationDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) fileModificationDate];
-            long long int fileSize = [resultSet longLongIntForColumn: @"fileSize"];
-            long long int imageDate = [resultSet longLongIntForColumn: @"imageDate"];
-            NSDate *imageDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) imageDate];
-            long isMissing = [resultSet longForColumn: @"isMissing"];
-            NSString *originalFileName = [resultSet stringForColumn: @"originalFileName"];
-            long long int originalFileSize = [resultSet longLongIntForColumn: @"originalFileSize"];
-            NSString *name = [resultSet stringForColumn: @"name"];
-            NSString *projectUuid  = [resultSet stringForColumn: @"projectUuid"];
-            NSString *subtype = [resultSet stringForColumn: @"subtype"];
-            NSString *type = [resultSet stringForColumn: @"type"];
-            
-            NSString *versionUuid = [resultSet stringForColumn: @"versionUuid"];
-            long versionNumber = [resultSet longForColumn: @"versionNumber"];
-            
-            NSString *versionFilename = [resultSet stringForColumn: @"versionFilename"];
-            long isOriginal = [resultSet longForColumn: @"isOriginal"];
-            long hasAdjustments = [resultSet longForColumn: @"hasAdjustments"];
-            long masterHeight = [resultSet longForColumn: @"masterHeight"];
-            long masterWidth = [resultSet longForColumn: @"masterWidth"];
-            NSString *versionName = [resultSet stringForColumn: @"versionName"];
-            long processedHeight = [resultSet longForColumn: @"processedHeight"];
-            long processedWidth = [resultSet longForColumn: @"processedWidth"];
-            long rotation = [resultSet longForColumn: @"rotation"];
-            
-            
-            if (originalFileName == NULL)
-            {
-                originalFileName = @"";
-            }
-            
-            NSMutableDictionary *exif;
-            if (hasAdjustments != 1)
-            {
-                exif = [library versionExifFromMasterPath: imagePath];
-            }
-            else
-            {
-                exif = [library versionExifFromMasterPath: imagePath
-                                              versionUuid: versionUuid
-                                          versionFilename: versionFilename
-                                              versionName: versionName];
-                
-            }
-            if (exif == NULL)
-            {
-                DDLogInfo(@">>> isOriginal=%ld", isOriginal);
-                exif = [[NSMutableDictionary alloc] init];
-                
-            }
-            
-            NSDictionary *photoProperties =  @{
-                                               // From the master
-                                               @"masterUuid": masterUuid,
-                                               @"createDateTimestamp": [dateFormat stringFromDate: createDateTimestamp],
-                                               @"fileName": fileName,
-                                               @"imagePath": [@[library.libraryBasePath, imagePath] componentsJoinedByString: @"/"],
-                                               @"originalVersionName": originalVersionName,
-                                               // Not currently used, but of great interest
-                                               @"colorSpaceName": (colorSpaceName ? colorSpaceName : @""),
-                                               @"fileCreationDate": [dateFormat stringFromDate: fileCreationDateTimestamp],
-                                               @"fileModificationDate": [dateFormat stringFromDate: fileModificationDateTimestamp],
-                                               @"fileSize": @(fileSize),
-                                               @"imageDate": [dateFormat stringFromDate: imageDateTimestamp],
-                                               @"isMissing": @(isMissing),
-                                               @"originalFilename": originalFileName,
-                                               @"originalFileSize": @(originalFileSize),
-                                               @"name": name,
-                                               @"projectUuid": projectUuid,
-                                               @"subtype": subtype,
-                                               @"type": type,
-                                               
-                                               // From the version
-                                               @"versionNumber": @(versionNumber),
-                                               @"versionUuid": versionUuid,
-                                               @"versionFilename":  versionFilename,
-                                               @"isOriginal": @(isOriginal),
-                                               @"masterHeight": @(masterHeight),
-                                               @"masterWidth": @(masterWidth),
-                                               @"processedHeight": @(processedHeight),
-                                               @"processedWidth": @(processedWidth),
-                                               @"rotation": @(rotation),
-                                               };
-            
-            MMPhoto *photo = [[MMPhoto alloc] initFromDictionary: photoProperties
-                                                  exifProperties: exif
-                                                         library: library];
-            
-            DDLogInfo(@"%5ld %@ %@ %ld %lu", counter, masterUuid, versionUuid, versionNumber, (unsigned long)[exif count]);
-            DDLogInfo(@"      createDateTimestamp       %@", [dateFormat stringFromDate: createDateTimestamp]);
-            DDLogInfo(@"      fileCreationDateTimestamp %@", [dateFormat stringFromDate: fileCreationDateTimestamp]);
-            DDLogInfo(@"      imageDateTimestamp        %@", [dateFormat stringFromDate: imageDateTimestamp]);
-            
-            [photo processPhoto];
-            
-            
-            /*
-             After, compare photo.originalDate against imateDateTimestamp
-             
-             DDLogInfo(@"      Exif/DateTimeOriginal     %@", [dateFormat stringFromDate: exifDateTimestamp]);
-             NSTimeInterval deltaTime = [exifDateTimestamp timeIntervalSinceDate: imageDateTimestamp];
-             
-             if (deltaTime != 0.0)
-             {
-             exifDiscrepancyCounter++;
-             DDLogInfo(@"                                ^^^^^^^^^^^^^^^^^^^ %@", name);
-             if (deltaTime > 0)
-             {
-             exifPositiveCounter++;
-             }
-             else
-             {
-             exifNegativeCounter++;
-             }
-             };
-             */
-            
-            //DDLogInfo(@"Master/Version   %@", jsonString);
-            
-            // DDLogInfo(@"MASTER     %ld %@ %@ %ld %@", counter, masterUuid, createDateTimestamp, versionNumber, versionUuid);
-        }
-        [resultSet close];
-    }
-    DDLogInfo(@"MASTER     DONE");
-    DDLogInfo(@"  Date/time mismatches detected=%ld (postive=%ld, negative=%ld)",
-              exifDiscrepancyCounter, exifPositiveCounter, exifNegativeCounter);
-    DDLogInfo(@"  counter=%ld", counter);
-    DDLogInfo(@"TODO ImageIO: CreateMeThrew error #203 (Duplicate property or field node)");
-    DDLogInfo(@"TODO Look into using imageTimezoneName for time conversions");
-}
 
 + (NSArray *) getPhotosFromLibrary: (MMPhotoLibrary *) library
                           forEvent: (MMLibraryEvent *) event
@@ -272,34 +87,12 @@ extern Float64 const MMDegreesPerRadian;
         NSDate *imageDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) imageDate];
 
         
-        NSMutableDictionary *exif;
         NSDictionary *resultDictionary = [resultSet resultDictionary];
-        NSString *imagePath = [resultDictionary valueForKey: @"imagePath"];
-        NSInteger hasAdjustments = [[resultDictionary valueForKey: @"hasAdjustments"] integerValue];
-        if (hasAdjustments != 1)
-        {
-            exif = [library versionExifFromMasterPath: imagePath];
-        }
-        else
-        {
-            NSString *versionUuid = [resultDictionary valueForKey: @"versionUuid"];
-            NSString *versionFilename = [resultDictionary valueForKey: @"versionFilename"];
-            NSString *versionName = [resultDictionary valueForKey: @"versionName"];
-            exif = [library versionExifFromMasterPath: imagePath
-                                          versionUuid: versionUuid
-                                      versionFilename: versionFilename
-                                          versionName: versionName];
-            
-        }
-        if (!exif)
-        {
-            DDLogInfo(@">>> isOriginal=%ld", [[resultDictionary valueForKey: @"isOriginal"] integerValue]);
-            exif = [[NSMutableDictionary alloc] init];
-            
-        }
         MMPhoto *photo = [[MMPhoto alloc] initFromDictionary: resultDictionary
-                                              exifProperties: exif
                                                      library: library];
+ /* ################################################################################################
+  * TODO Restore this functionality
+  
         NSDictionary *photoProperties =  @{
                                            // From the master
                                            @"createDateTimestamp": [dateFormat stringFromDate: createDateTimestamp],
@@ -308,53 +101,49 @@ extern Float64 const MMDegreesPerRadian;
                                            @"fileModificationDate": [dateFormat stringFromDate: fileModificationDateTimestamp],
                                            @"imageDate": [dateFormat stringFromDate: imageDateTimestamp],
                                            };
+        DDLogInfo(@"      createDateTimestamp       %@", [dateFormat stringFromDate: createDateTimestamp]);
+        DDLogInfo(@"      fileCreationDateTimestamp %@", [dateFormat stringFromDate: fileCreationDateTimestamp]);
+        DDLogInfo(@"      imageDateTimestamp        %@", [dateFormat stringFromDate: imageDateTimestamp]);
+
+    // After, compare photo.originalDate against imateDateTimestamp
+  
+        DDLogInfo(@"      Exif/DateTimeOriginal     %@", [dateFormat stringFromDate: exifDateTimestamp]);
+        NSTimeInterval deltaTime = [exifDateTimestamp timeIntervalSinceDate: imageDateTimestamp];
+  
+        if (deltaTime != 0.0)
+        {
+            exifDiscrepancyCounter++;
+            DDLogInfo(@"                                ^^^^^^^^^^^^^^^^^^^ %@", name);
+            if (deltaTime > 0)
+            {
+                exifPositiveCounter++;
+            }
+            else
+            {
+                exifNegativeCounter++;
+            }
+        };
+
+        //DDLogInfo(@"Master/Version   %@", jsonString);
+        // DDLogInfo(@"MASTER     %ld %@ %@ %ld %@", counter, masterUuid, createDateTimestamp, versionNumber, versionUuid);
+  */
         if (photo)
         {
             [result addObject: photo];
         }
         
-        
-        DDLogInfo(@"      createDateTimestamp       %@", [dateFormat stringFromDate: createDateTimestamp]);
-        DDLogInfo(@"      fileCreationDateTimestamp %@", [dateFormat stringFromDate: fileCreationDateTimestamp]);
-        DDLogInfo(@"      imageDateTimestamp        %@", [dateFormat stringFromDate: imageDateTimestamp]);
-        
-        
-        /*
-         After, compare photo.originalDate against imateDateTimestamp
-         
-         DDLogInfo(@"      Exif/DateTimeOriginal     %@", [dateFormat stringFromDate: exifDateTimestamp]);
-         NSTimeInterval deltaTime = [exifDateTimestamp timeIntervalSinceDate: imageDateTimestamp];
-         
-         if (deltaTime != 0.0)
-         {
-         exifDiscrepancyCounter++;
-         DDLogInfo(@"                                ^^^^^^^^^^^^^^^^^^^ %@", name);
-         if (deltaTime > 0)
-         {
-         exifPositiveCounter++;
-         }
-         else
-         {
-         exifNegativeCounter++;
-         }
-         };
-         */
-        
-        //DDLogInfo(@"Master/Version   %@", jsonString);
-        
-        // DDLogInfo(@"MASTER     %ld %@ %@ %ld %@", counter, masterUuid, createDateTimestamp, versionNumber, versionUuid);
-        
     }
+    // DDLogInfo(@"MASTER     DONE");
+    // DDLogInfo(@"  Date/time mismatches detected=%ld (postive=%ld, negative=%ld)",
+    //          exifDiscrepancyCounter, exifPositiveCounter, exifNegativeCounter);
+    // DDLogInfo(@"  counter=%ld", counter);
+    // DDLogInfo(@"TODO ImageIO: CreateMeThrew error #203 (Duplicate property or field node)");
+    // DDLogInfo(@"TODO Look into using imageTimezoneName for time conversions");
+
     if (resultSet)
     {
         [resultSet close];
     }
-    DDLogInfo(@"MASTER     DONE");
-    DDLogInfo(@"  Date/time mismatches detected=%ld (postive=%ld, negative=%ld)",
-              exifDiscrepancyCounter, exifPositiveCounter, exifNegativeCounter);
-    DDLogInfo(@"  counter=%ld", counter);
-    DDLogInfo(@"TODO ImageIO: CreateMeThrew error #203 (Duplicate property or field node)");
-    DDLogInfo(@"TODO Look into using imageTimezoneName for time conversions");
     return result;
 }
 
@@ -377,8 +166,11 @@ extern Float64 const MMDegreesPerRadian;
     return self;
 }
 
+/**
+ * Constructs an MMPhoto object from a hash. Note that some elements, like the
+ * exif data, are filled in later.
+ */
 - (MMPhoto *) initFromDictionary: (NSDictionary *) inDictionary
-                  exifProperties: (NSMutableDictionary *) exifProperties
                          library: (MMPhotoLibrary *) library
 {
     self = [self init];
@@ -401,17 +193,47 @@ extern Float64 const MMDegreesPerRadian;
     _rotationAngle = [[inDictionary valueForKey: @"rotation"] doubleValue];
     _versionUuid = [inDictionary valueForKey: @"versionUuid"];
     _version = [[inDictionary valueForKey: @"versionNumber"] longValue];
-    _iPhotoOriginalImagePath = [exifProperties valueForKey: @"_image"];
-    
-    [self populateDateFromExif: exifProperties];
-
     _attributes = [[NSMutableDictionary alloc] initWithCapacity: 20];
     [_attributes setObject: [_library sourceDictionary] forKey: @"source"];
-    [exifProperties removeObjectForKey: @"_image"];
-    [_attributes setObject: exifProperties forKey: @"exif"];
     [_attributes setObject: [inDictionary mutableCopy] forKey: @"photo"];
-    
+    [self populateExifFromSourceFile];
     return self;
+}
+
+- (BOOL) populateExifFromSourceFile
+{
+    BOOL result = YES;
+    NSMutableDictionary *exifProperties;
+    NSString *imagePath = [_attributes valueForKeyPath: @"photo.imagePath"];
+    NSInteger hasAdjustments = [[_attributes valueForKeyPath: @"photo.hasAdjustments"] integerValue];
+    NSString *versionUuid = nil;
+    NSString *versionFilename = nil;
+    NSString *versionName = nil;
+    if (hasAdjustments == 1)
+    {
+        versionUuid = [_attributes valueForKeyPath: @"photo.versionUuid"];
+        versionFilename = [_attributes valueForKeyPath: @"photo.versionFilename"];
+        versionName = [_attributes valueForKeyPath: @"photo.versionName"];
+    }
+    _iPhotoOriginalImagePath = [_library versionPathFromMasterPath: imagePath
+                                                       versionUuid: nil
+                                                   versionFilename: nil
+                                                       versionName: nil];
+    if (_iPhotoOriginalImagePath)
+    {
+        exifProperties = [MMFileUtility exifForFileAtPath: _iPhotoOriginalImagePath];
+    }
+
+    if (!exifProperties)
+    {
+        DDLogInfo(@">>> isOriginal=%ld", [[_attributes valueForKeyPath: @"photo.isOriginal"] integerValue]);
+        exifProperties = [[NSMutableDictionary alloc] init];
+        result = NO;
+    }
+
+    [self populateDateFromExif: exifProperties];
+    [_attributes setObject: exifProperties forKey: @"exif"];
+    return result;
 }
 
 - (void) populateDateFromExif: (NSDictionary *) exifProperties
@@ -428,6 +250,7 @@ extern Float64 const MMDegreesPerRadian;
     
     NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
     [dateFormat setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
+    // TODO Use the same logic here as in the MMLibraryEvent for determining zone.
     dateFormat.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
 
     if (exifDateString)
@@ -445,272 +268,32 @@ extern Float64 const MMDegreesPerRadian;
     }
 }
 
-- (MMPhoto *) initWithFlickrDictionary: (NSDictionary *) flickrDictionary
-                                stream: (MMFlickrPhotostream *) stream
-                                 index: (NSInteger) index
+#pragma mark Rotation and cropping code
+- (void) processPhoto
 {
-    self = [self init];
-    if (self)
-    {
-        _index = index;
-        _flickrDictionary = [[NSMutableDictionary alloc] init];
-        if (_flickrDictionary && stream && flickrDictionary)
+    @autoreleasepool {
+        [self findRelevantAdjustments];
+        [self adjustForStraightenCropAndGetFaces];
+        [self moveFacesRelativeToTopLeftOrigin];
+        
+        NSURL* fileUrl = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
+        _thumbnail = @""; // It cannot be null, so just in case this fails.
+        
+        if (fileUrl)
         {
-            _stream = stream;
-            _library = stream.library;
-            if ([self commonInitialization] == nil)
-            {
-                [self close];
-                return nil;
-            }
-            [_flickrDictionary addEntriesFromDictionary: flickrDictionary];
-            [_flickrDictionary setValue: @"flickr" forKey: @"name"];
-            _exifDictionary = [NSMutableDictionary new];
-            if (!_exifDictionary)
-            {
-                [self close];
-                return nil;
-            }
-            _oldNotesToDelete = [[NSMutableArray alloc] init];
-            if (!_oldNotesToDelete)
-            {
-                [self close];
-                return nil;
-            }
-            _didFetchExif = NO;
-            _didFetchInfo = NO;
-            _didFetchOriginalByteSize = NO;
-            _didFetchSizes = NO;
+            CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileUrl];
+            fileUrl = nil;
+            
+            _thumbnail = [self createPhotoThumbnail: image];
+            [self fetchThumbnailsFromOriginal: image];
         }
-        else
-        {
-            return nil;
-        }
-
+        [self sendPhotoToMugmover];
     }
-    return self;
-}
-
-- (void) performNextStep
-{
-    // This structure forces the processing to happen serially, with the state being
-    // maintained in this class.
-
-    if (!_didFetchExif)                     // STEP 1: Get the Exif data from Flickr
-    {
-        [self fetchFlickrExif];
-    }
-    else if (!_didFetchInfo)                // STEP 2: Perform the getInfo call to get the notes
-    {
-        [self fetchFlickrInfo];
-    }
-    else if (!_didFetchSizes)               // STEP 3: Get the images sizes in hopes of accessing the original image
-    {
-        [self fetchFlickrSizes];
-    }
-    else if (!_didFetchOriginalByteSize)    // STEP 4: Retrieve the size of the original image
-    {
-        [self fetchImageByteSize];
-    }
-    else
-    {
-        if ([self findMatchingInIphotoLibraryByVersionUuidAndVersion] ||
-            [self findMatchingVersionInIphotoLibraryByAttributes])
-        {
-            [self processPhoto]; // This does everything
-        }
-        else
-        {
-            [self close];
-            DDLogError(@"ORPHAN PHOTO  index=%ld, remaining=%ld", (long)_index, [_stream inQueue]);
-
-            // TODO May want to start deleting any mugmover comments as a cleanup step.
-            // If so, call [self updateNotesOnFlickr]] but not sure about that.
-            // If you call it, remember that it still adds and deletes notes, with NO optimization.
-        }
-    }
-}
-
-- (void) updateNotesOnFlickr
-{
-/*
-    NSBlockOperation *blockOperation;
-    if ((!_faceArray) || ([_faceArray count] == 0))
-    {
-        if ([_oldNotesToDelete count] == 0)
-        {
-            // We can't do this one from the delegate callback, so we queue it as well
-            blockOperation = [NSBlockOperation blockOperationWithBlock:^
-                              {
-                                [self close];
-                              }];
-        }
-        else
-        {
-            blockOperation = [NSBlockOperation blockOperationWithBlock:^
-                              {
-                                  // When you are done adding all the new faces, delete the old notes
-                                  [self deleteOneNote];
-                              }];
-        }
-    }
-    else
-    {
-        blockOperation = [NSBlockOperation blockOperationWithBlock:^
-                          {
-                              MMFace *face = [_faceArray objectAtIndex: 0];
-                              if (_library.verboseLogging)
-                              {
-                                  DDLogInfo (@"  BLOCK adding face uuid=%@", face.faceUuid);
-                              }
-                              [self addNoteForOneFace];
-                          }];
-    }
-    [_stream.streamQueue addOperation: blockOperation];
-*/
-}
-
-- (void) deleteOneNote
-{
-/*
-    NSString *noteId = [_oldNotesToDelete objectAtIndex: 0];
-    [_oldNotesToDelete removeObjectAtIndex: 0];
-    [self deleteNote: noteId];
-*/
-}
-
-- (BOOL) findMatchingInIphotoLibraryByVersionUuidAndVersion
-{
-    // Try to find the matching object in the library
-    if ((_version != -1) && _versionUuid)
-    {
-        NSNumber *number = [NSNumber numberWithInteger: _version - 1];
-        NSString *query =  @"SELECT masterUuid, masterHeight, masterWidth, processedHeight, "
-                                "processedWidth, rotation, imagePath, v.fileName versionFilename, "
-                                "v.name versionName, versionUuid "
-                            "FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid "
-                            "WHERE uuid = ? AND versionNumber = ? ";
-        NSArray *args = @[_versionUuid, number];
-
-        FMResultSet *resultSet = [_library.photosDatabase executeQuery: query
-                                                         withArgumentsInArray: args];
-
-        if (resultSet && [resultSet next])
-        {
-            [self updateFromIphotoLibraryVersionRecord: resultSet];
-
-            NSString *masterPath = [resultSet stringForColumn: @"imagePath"];            
-            NSString *versionFilename = [resultSet stringForColumn: @"versionFilename"];
-            NSString *versionName = [resultSet stringForColumn: @"versionName"];
-            NSString *versionUuid = [resultSet stringForColumn: @"versionUuid"];
-
-            _iPhotoOriginalImagePath = [_library versionPathFromMasterPath: (NSString *) masterPath
-                                                               versionUuid: versionUuid
-                                                           versionFilename: versionFilename
-                                                               versionName: versionName];
-            [resultSet close];
-            return YES;
-        }
-        [resultSet close];
-    }
-    return NO;
-}
-
-// Using the width, height and date (already acquired), look for a match
-- (BOOL) findMatchingVersionInIphotoLibraryByAttributes
-{
-
-    // This process is problematic. Using the image dimensions and its original name,
-    // we can find any number of matches. In some cases we may not have the name!
-    // To narrow those down to the right image, it is necessary to find images
-    // that have matching EXIF data or have the same byte length (when available).
-    // In fact, we may find multiple matches and will have to take a guess
-    // which is the best match.
-
-    NSString *query = @"SELECT v.versionNumber version, v.uuid versionUuid, m.uuid, imagePath, v.name versionFilename, "
-                             "masterUuid, masterHeight, masterWidth, processedHeight, processedWidth, "
-                              "rotation, isOriginal "
-                       "FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid "
-                       "WHERE m.isInTrash != 1 AND m.originalVersionName  = ? AND "
-                             "v.processedWidth = ? AND v.processedHeight = ? "
-                       "ORDER BY v.versionNumber DESC ";
-            ;
-
-    // TODO  See notes here
-
-    NSString *width = [_flickrDictionary objectForKey: @"width"];
-    NSString *height = [_flickrDictionary objectForKey: @"height"];
-    if ((!_originalFilename) || (!width) || (!height))
-    {
-        // TODO Research in what cases these are unavailable.
-        return NO;
-    }
-    NSArray *args = @[_originalFilename, width, height];
-    FMResultSet *resultSet = [_library.photosDatabase executeQuery: query
-                                             withArgumentsInArray: args];
-
-    NSString *flickrModifyTime = [_exifDictionary valueForKeyPath: @"IFD0.ModifyDate"];
-    NSString *flickrOriginalTime = [_exifDictionary valueForKeyPath: @"ExifIFD.DateTimeOriginal"];
-
-    if (resultSet)
-    {
-        while ([resultSet next])
-        {
-            NSDictionary *exif = nil;
-
-            NSString *masterPath = [resultSet stringForColumn: @"imagePath"];
-            NSString *versionFilename = [resultSet stringForColumn: @"versionFilename"];
-            NSString *versionName = [resultSet stringForColumn: @"versionName"];
-            NSString *versionUuid = [resultSet stringForColumn: @"versionUuid"];
-
-            if ([resultSet boolForColumn: @"isOriginal"])
-            {
-                exif = [_library versionExifFromMasterPath: masterPath];
-            }
-            else
-            {
-
-                exif = [_library versionExifFromMasterPath: masterPath
-                                               versionUuid: versionUuid
-                                           versionFilename: versionFilename
-                                               versionName: versionName];
-            }
-
-            if (exif)
-            {
-                NSString *iphotoModifyTime = [[exif objectForKey: @"{TIFF}"] valueForKey: @"DateTime"];
-                NSString *iphotoOriginalTime = [[exif objectForKey: @"{Exif}"] valueForKey: @"DateTimeOriginal"];
-                _iPhotoOriginalImagePath = [exif objectForKey: @"_image"];
-
-                if ((iphotoModifyTime && [iphotoModifyTime isEqualToString: flickrModifyTime]) &&
-                    (iphotoOriginalTime && [iphotoOriginalTime isEqualToString: flickrOriginalTime]))
-
-                {
-                    _versionUuid = versionUuid;
-                    _version = [[resultSet stringForColumn: @"version"] intValue];
-                    [self updateFromIphotoLibraryVersionRecord: resultSet];
-                    DDLogInfo(@"VERSION MATCH");
-                    return YES;
-                }
-                DDLogInfo(@"POSS MATCH REJD iphotoModifyTime=%@, flickrModifyTime=%@, iphotoOriginalTime=%@, flickrOriginalTime=%@",
-                            iphotoModifyTime, flickrModifyTime, iphotoOriginalTime, flickrOriginalTime);
-            }
-            else
-            {
-                DDLogWarn(@"NO MATCH FOUND");
-                continue;
-            }
-        }
-        [resultSet close];
-    }
-    return NO;
-}
-
-- (void) setByteLength: (long long) length
-{
-    [_flickrDictionary setValue: @(length) forKey: @"bytes"];
-    _didFetchOriginalByteSize = YES;
-    [self performNextStep];
+    
+    // Note that we discard the hidden/rejected faces _after_ uploading to mugmover.
+    // This is not an error: we intentionally hold onto those.
+    // [self discardHiddenFaces];
+    // As we have no further processing, the discardHiddenFaces call is commented out.
 }
 
 - (void) adjustForStraightenCropAndGetFaces
@@ -730,20 +313,6 @@ extern Float64 const MMDegreesPerRadian;
         DDLogError(@"Failed to create center point(s) for crop or rotation");
     }
 }
-
-- (void) updateFromIphotoLibraryVersionRecord: (FMResultSet *) resultSet
-{
-    if (resultSet)
-    {
-        _masterUuid      = [resultSet stringForColumn: @"masterUuid"];
-        _masterHeight    = (Float64)[resultSet intForColumn: @"masterHeight"];
-        _masterWidth     = (Float64)[resultSet intForColumn: @"masterWidth"];
-        _processedHeight = (Float64)[resultSet intForColumn: @"processedHeight"];
-        _processedWidth  = (Float64)[resultSet intForColumn: @"processedWidth"];
-        _rotationAngle   = (Float64)[resultSet intForColumn: @"rotation"];
-    }
-}
-
 - (NSArray *) findRelevantAdjustments
 {
     /* Be sure these are initialized each time */
@@ -1024,53 +593,6 @@ extern Float64 const MMDegreesPerRadian;
 
 }
 
-- (Float64) aspectRatio
-{
-    return _processedWidth / _processedHeight;
-}
-
-- (void) processPhoto
-{
-    @autoreleasepool {
-        [self findRelevantAdjustments];
-        [self adjustForStraightenCropAndGetFaces];
-        [self moveFacesRelativeToTopLeftOrigin];
-
-        NSURL* fileUrl = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
-        _thumbnail = @""; // It cannot be null, so just in case this fails.
-        
-        if (fileUrl)
-        {
-            CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileUrl];
-            fileUrl = nil;
-            
-            _thumbnail = [self createPhotoThumbnail: image];
-            [self fetchThumbnailsFromOriginal: image];
-        }
-        [self sendPhotoToMugmover];
-    }
-    // Note that we discard the hidden/rejected faces _after_ uploading to mugmover.
-    // This is not an error: we intentionally hold onto those.
-    [self discardHiddenFaces];
-
-    // TODO Some day we will reinstate the following line. When you do, be sure to look into
-    // optimizing the note generation so that we don't keep deleting and adding the same notes.
-    // Without that we will use up our API quota very quickly.
-
-    // To restore Flickr note-writing, remove the next two operations. It's by virtual of
-    // deleting all fo this data that we inhibit the Flickr note-writing.
-    if (_oldNotesToDelete)
-    {
-        [_oldNotesToDelete removeAllObjects];
-    }
-    if (_faceArray)
-    {
-        [_faceArray removeAllObjects];
-    }
-
-    [self updateNotesOnFlickr];
-}
-
 - (void) moveFacesRelativeToTopLeftOrigin
 {
     for (MMFace *face in _faceArray)
@@ -1349,9 +871,16 @@ extern Float64 const MMDegreesPerRadian;
     _request = nil;
     _thumbnail = nil;
     _versionUuid = nil;
-    [_stream removeFromPhotoDictionary: self];
 }
 
+#pragma mark Utility methods
+- (Float64) aspectRatio
+{
+    return _processedWidth / _processedHeight;
+}
+
+
+#pragma mark Attribute Accessors
 - (NSString *) title
 {
     NSString *title = [self.flickrDictionary  objectForKey: @"title"];
@@ -1360,161 +889,6 @@ extern Float64 const MMDegreesPerRadian;
         title = @"No title";
     }
     return title;
-}
-
-- (void) fetchImageByteSize
-{
-    // This kicks it off. It calls back through [MMPhoto setByteLength];
-    [MMNetworkRequest getUrlByteLength: _originalUrl photo: self];
-}
-
-- (void) fetchFlickrSizes
-{
-    NSURLRequest *request = [_stream.flickrOauth apiRequest: @"flickr.photos.getSizes"
-                                                 parameters: @{@"photo_id": [_flickrDictionary objectForKey: @"id"],
-                                                               @"secret":  [_flickrDictionary objectForKey: @"secret"],
-                                                               }
-                                                       verb: @"GET"];
-    ServiceResponseHandler processGetSizesResponse = ^(NSDictionary *responseDictionary)
-    {
-        NSArray *sizeArray = [responseDictionary valueForKeyPath: @"sizes.size"];
-        if (sizeArray)
-        {
-            for (NSDictionary *dict in sizeArray)
-            {
-                NSString *labelText = [dict objectForKey: @"label"];
-                if ([labelText isEqualToString: @"Original"])
-                {
-                    NSString *widthString = [dict valueForKey: @"width"];
-                    NSString *heightString = [dict objectForKey: @"height"];
-                    if (widthString && heightString)
-                    {
-                        [_flickrDictionary setValue: [NSNumber numberWithInteger: [widthString integerValue]]
-                                             forKey: @"width"];
-                        [_flickrDictionary setValue: [NSNumber numberWithInteger: [heightString integerValue]]
-                                             forKey: @"height"];
-                    }
-                }
-            }
-        }
-        _didFetchSizes = YES;
-        [self performNextStep];
-    };
-    [_stream.flickrOauth processUrlRequest: request
-                                     queue: _stream.streamQueue
-                         remainingAttempts: MMDefaultRetries
-                         completionHandler: processGetSizesResponse];
-
-}
-
-- (void) fetchFlickrInfo
-{
-    NSURLRequest *request = [_stream.flickrOauth apiRequest: @"flickr.photos.getInfo"
-                                                 parameters: @{@"photo_id": [_flickrDictionary objectForKey: @"id"],
-                                                               @"secret":  [_flickrDictionary objectForKey: @"secret"],
-                                                               }
-                                                       verb: @"GET"];
-    ServiceResponseHandler processGetInfoResponse = ^(NSDictionary *responseDictionary)
-    {
-        NSString *originalSecret = [responseDictionary valueForKeyPath: @"photo.originalsecret"];
-        NSString *originalFormat = [responseDictionary valueForKeyPath: @"photo.originalformat"];
-        NSString *dateUploaded = [responseDictionary valueForKeyPath: @"photo.dateuploaded"];
-        if (dateUploaded)
-        {
-            [_flickrDictionary setValue: [NSNumber numberWithUnsignedLong: [dateUploaded longLongValue]]
-                                 forKey: @"dateUploaded"];
-        }
-        
-        if (originalSecret && originalFormat)
-        {
-            _originalUrl = [NSString stringWithFormat: @"https://farm%@.staticflickr.com/%@/%@_%@_o.%@",
-                            [_flickrDictionary valueForKey: @"farm"],
-                            [_flickrDictionary valueForKey: @"server"],
-                            [_flickrDictionary valueForKey: @"id"],
-                            originalSecret,
-                            originalFormat];
-            [_flickrDictionary setValue: originalFormat
-                                 forKey: @"originalFormat"];
-        }
-        else
-        {
-            // If we can't get the original URL, bypass this step
-            _didFetchOriginalByteSize = YES;
-        }
-        /* CAUTION: FetchInfo operation implies all the mugmover notes will be deleted. */
-        NSArray *noteArray = [responseDictionary valueForKeyPath: @"photo.notes.note"];
-        if (noteArray)
-        {
-            for (NSDictionary *dict in noteArray)
-            {
-                NSString *noteId = [dict objectForKey: @"id"];
-                NSString *noteText = [dict valueForKey: @"_text"];
-                if (noteText)
-                {
-                    NSRange result = [noteText rangeOfString: @"mugmover" options: NSCaseInsensitiveSearch];
-                    if (result.location != NSNotFound)
-                    {
-                        [_oldNotesToDelete addObject: noteId];
-                    }
-                }
-            }
-        }
-        _didFetchInfo = YES;
-        [self performNextStep];
-    };
-    [_stream.flickrOauth processUrlRequest: request
-                                     queue: _stream.streamQueue
-                         remainingAttempts: MMDefaultRetries
-                         completionHandler: processGetInfoResponse];
-
-}
-
-- (void) fetchFlickrExif
-{
-    NSURLRequest *request = [_stream.flickrOauth apiRequest: @"flickr.photos.getExif"
-                                                 parameters: @{@"photo_id": [_flickrDictionary objectForKey: @"id"],
-                                                               @"secret":  [_flickrDictionary objectForKey: @"secret"],
-                                                              }
-                                                       verb: @"GET"];
-    ServiceResponseHandler processGetExifResponse = ^(NSDictionary *responseDictionary)
-    {
-        NSArray *exifArray = [responseDictionary valueForKeyPath: @"photo.exif"];
-        for (NSDictionary *dict in exifArray)
-        {
-            NSString *tag = [dict objectForKey: @"tag"];
-            NSString *tagspace = [dict objectForKey: @"tagspace"];
-            NSDictionary *raw = [dict objectForKey: @"raw"];
-            
-            NSDictionary *spaceDictionary = [_exifDictionary objectForKey: tagspace];
-            if (!spaceDictionary)
-            {
-                spaceDictionary = [[NSMutableDictionary alloc] init];
-                [_exifDictionary setObject: spaceDictionary forKey: tagspace];
-            }
-            [spaceDictionary setValue: [raw valueForKey: @"_text"] forKey: tag];
-        }
-        
-        // Store some things you will need later
-        _originalFilename = [_exifDictionary valueForKeyPath: @"IPTC.ObjectName"];
-        _originalDate = [_exifDictionary valueForKeyPath: @"ExifIFD.DateTimeOriginal"];
-        
-        // The versionUuid might be in one of two places. Check one if the other isn't there.
-        _versionUuid = [_exifDictionary valueForKeyPath: @"IPTC.SpecialInstructions"];
-        if (!_versionUuid)
-        {
-            _versionUuid = [_exifDictionary valueForKeyPath: @"XMP-photoshop.Instructions"];
-        }
-        NSObject *versionObject = [_exifDictionary valueForKeyPath: @"IPTC.ApplicationRecordVersion"];
-        _version = (versionObject) ? [(NSString *) versionObject integerValue] : -1;
-        
-        _didFetchExif = YES;
-        [self performNextStep];
-    };
-    [_stream.flickrOauth processUrlRequest: request
-                                     queue: _stream.streamQueue
-                         remainingAttempts: MMDefaultRetries
-                         completionHandler: processGetExifResponse];
-
 }
 
 - (NSString *) fileName
@@ -1529,106 +903,11 @@ extern Float64 const MMDegreesPerRadian;
 
 - (NSString *) fullImagePath
 {
-    NSString *versionUuid = [_attributes valueForKeyPath: @"photo.versionUuid"];
-    if (!versionUuid)
-    {
-        return [_library fullMasterPath: [_attributes valueForKeyPath: @"photo.imagePath"]];
-    }
-    else
-    {
-        return [_library versionPathFromMasterPath: [_attributes valueForKeyPath: @"photo.imagePath"]
-                                       versionUuid: versionUuid
-                                   versionFilename: [_attributes valueForKeyPath: @"photo.versionFilename"]
-                                       versionName: [_attributes valueForKeyPath: @"photo.versionName"]];
-    }
-}
-/*
-- (void) addNoteForOneFace
-{
-    // We add the first face in the faceArray
-    MMFace *face = [_faceArray objectAtIndex: 0];
-
-    if ([_flickrRequest isRunning])
-    {
-        NSString *message = [NSString stringWithFormat: @"Pool request is still running, sessionInfo=%@",
-                             _flickrRequest.sessionInfo ];
-        @throw [NSException exceptionWithName: @"PoolManagement"
-                                       reason: message
-                                     userInfo: nil];
-    }
-    _flickrRequest.sessionInfo = @"addNote";
-
-    // add a note for this face
-    NSDictionary *args = @{@"photo_id": [_flickrDictionary valueForKey: @"id"],
-                           @"note_x": face.flickrNoteX,
-                           @"note_y": face.flickrNoteY,
-                           @"note_w": face.flickrNoteWidth,
-                           @"note_h": face.flickrNoteHeight,
-                           @"note_text": face.flickrNoteText,
-                           @"api_key": MUGMOVER_FLICKR_API_KEY_MACRO,
-                           };
-    [_flickrRequest callAPIMethodWithPOST: @"flickr.photos.notes.add"
-                               arguments: args];
-
+    return [_library versionPathFromMasterPath: [_attributes valueForKeyPath: @"photo.imagePath"]
+                                   versionUuid: [_attributes valueForKeyPath: @"photo.versionUuid"]
+                               versionFilename: [_attributes valueForKeyPath: @"photo.versionFilename"]
+                                   versionName: [_attributes valueForKeyPath: @"photo.versionName"]];
 }
 
-- (void) deleteNote: (NSString *) noteId
-{
-    if ([_flickrRequest isRunning])
-    {
-        NSString *message = [NSString stringWithFormat: @"Pool request is still running, sessionInfo=%@",
-                             _flickrRequest.sessionInfo ];
-        @throw [NSException exceptionWithName: @"PoolManagement"
-                                       reason: message
-                                     userInfo: nil];
-    }
-    NSArray  *pieces = @[@"deleteNote", noteId];
-    _flickrRequest.sessionInfo = [pieces componentsJoinedByString: @";"];
-
-    NSDictionary *args = [NSDictionary dictionaryWithObjectsAndKeys: noteId, @"note_id",
-                          MUGMOVER_FLICKR_API_KEY_MACRO, @"api_key",
-                          nil];
-    [_flickrRequest callAPIMethodWithPOST: @"flickr.photos.notes.delete"
-                               arguments: args];
-}
-
-    if ([pieces[0] isEqualToString: @"deleteNote"])
-    {
-        [self updateNotesOnFlickr]; // There is no cleanup because we delete the notes as we queue the requests
-    }
-
-    else if ([pieces[0] isEqualToString: @"addNote"])
-    {
-        // We can now remove the face.
-        MMFace *face = [_faceArray objectAtIndex: 0];
-        [face close];
-        [_faceArray removeObjectAtIndex: 0];
-        [self updateNotesOnFlickr];
-    }
-}
-
-    // TODO Report you are giving up.
-    DDLogError(@"ABANDONING  Unable to process request %@", pieces[0]);
-    if ([pieces[0] isEqualToString: @"deleteNote"])
-    {
-        // If you are giving up on deleting a note, queue the next one.
-        // This is important as eventually that is what will release the photo object itself.
-        [self updateNotesOnFlickr]; // Get the next one
-    }
-    //
-    else if ([pieces[0] isEqualToString: @"addNote"])
-    {
-        // If you can't add the note, blow it away and try the next one
-        MMFace *face = [_faceArray objectAtIndex: 0];
-        [face close];
-        [_faceArray removeObjectAtIndex: 0];
-        [self updateNotesOnFlickr];
-    }
-    // Need to do all the release stuff you do on the corresponding success event.
-    else
-    {
-        [self close];
-    }
-*/
 
 @end

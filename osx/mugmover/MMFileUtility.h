@@ -10,6 +10,8 @@
 
 @interface MMFileUtility : NSObject
 
++ (NSMutableDictionary*) exifForFileAtPath: (NSString*) filePath;
+
 + (NSNumber *) lengthForFileAtPath: (NSString *) path;
 
 + (NSString *) md5ForFileAtPath: (NSString *) path;

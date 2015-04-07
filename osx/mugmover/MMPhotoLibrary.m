@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Dicentra LLC. All rights reserved.
 //
 
+#import "MMFileUtility.h"
 #import "MMLibraryEvent.h"
 #import "MMPhotoLibrary.h"
 #import "MMPhoto.h"
@@ -147,30 +148,27 @@ NSString *photosPath;
                                versionName: versionName];
 }
 
-- (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
-{
-    NSArray *pathPieces = @[_libraryBasePath, @"Masters", masterPath];
-
-    NSString *fullMasterPath = [pathPieces componentsJoinedByString: @"/"];
-    if (fullMasterPath)
-    {
-        return [[MMPhotoLibrary getImageExif: fullMasterPath] mutableCopy];
-    }
-    return nil;
-}
-
-- (NSString *) versionPathFromMasterPath: (NSString *) masterPath
+- (NSString *) versionPathFromMasterPath: (NSString *) partialMasterPath
                              versionUuid: (NSString *) versionUuid
                          versionFilename: (NSString *) versionFilename
                              versionName: (NSString *) versionName
 {
  
+    // If there's no uuid, then just return the master path. It should never
+    // happen, but life doesn't work that way.
+    
+    if (!versionUuid)
+    {
+        return [@[_libraryBasePath,
+                  @"Masters",
+                  partialMasterPath] componentsJoinedByString: @"/"];
+    }
     /*
         This is a thorny problem. There are a few possibilities to look for.
         The versionUuid is used as part of the path, in which case we
         expect to find the versionName + ".jpg" as part of the filename.
      */
-    NSArray *masterPathPieces = [masterPath componentsSeparatedByString: @"/"];
+    NSArray *masterPathPieces = [partialMasterPath componentsSeparatedByString: @"/"];
     if (masterPathPieces)
     {
         NSString *versionNamePlusJpg = [NSString stringWithFormat: @"%@.jpg", versionName];
@@ -208,7 +206,11 @@ NSString *photosPath;
                 }
                 else
                 {
-                    return [self fullMasterPath: masterPath];
+                    // Yet another case, apparently...
+                    return [@[_libraryBasePath,
+                              @"Masters",
+                              partialMasterPath] componentsJoinedByString: @"/"];
+
                 }
 
             }
@@ -219,11 +221,12 @@ NSString *photosPath;
 
 }
 
-- (NSString *) fullMasterPath: (NSString *) partialMasterPath
+- (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
 {
-    return [@[_libraryBasePath,
-              @"Masters",
-              partialMasterPath] componentsJoinedByString: @"/"];
+    return [self versionExifFromMasterPath: masterPath
+                               versionUuid: nil
+                           versionFilename: nil
+                               versionName: nil];
 }
 
 - (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
@@ -237,87 +240,20 @@ NSString *photosPath;
                                                 versionName: versionName];
     if (versionPath)
     {
-        return [MMPhotoLibrary getImageExif: versionPath];
+        return [MMFileUtility exifForFileAtPath: versionPath];
     }
     return nil;
 }
 
-// This method extracts Exif data from a local file
-+(NSMutableDictionary*) getImageExif: (NSString*) filePath
-{
-    NSMutableDictionary* exifDictionary = nil;
-    NSURL* fileUrl = [NSURL fileURLWithPath : filePath];
-
-    if (fileUrl)
-    {
-
-        // load the bit image from the file url
-        CGImageSourceRef source = CGImageSourceCreateWithURL ( (__bridge CFURLRef) fileUrl, NULL);
-
-        if (source)
-        {
-
-            // get image properties into a dictionary
-            CFDictionaryRef metadataRef = CGImageSourceCopyPropertiesAtIndex(source, 0, NULL);
-
-            if (metadataRef)
-            {
-
-                // cast CFDictonaryRef to NSDictionary
-                exifDictionary = [NSMutableDictionary dictionaryWithDictionary : (__bridge NSDictionary *) metadataRef];
-                CFRelease(metadataRef);
-
-                if (exifDictionary)
-                {
-                    NSError *error = NULL;
-                    NSMutableDictionary *oldNew = [[NSMutableDictionary alloc] init];
-                    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern: @"\\A\\{([^}]+)\\}\\Z"
-                                                                                           options: 0
-                                                                                             error: &error];
-                    if (error)
-                    {
-                        DDLogError(@"Unable to create regex: error=%@", error);
-                    }
-                    for (NSString * key in [exifDictionary allKeys])
-                    {
-                        NSTextCheckingResult *match = [regex firstMatchInString: key
-                                                                        options: 0
-                                                                          range: NSMakeRange(0, [key length])];
-                        {
-                            if (match)
-                            {
-                                [oldNew setObject: [key substringWithRange: NSMakeRange(match.range.location + 1, match.range.length - 2)]
-                                           forKey: key];
-                            }
-                        }
-                    }
-                    for (NSString *key in oldNew)
-                    {
-                        NSString *newKey = [oldNew objectForKey: key];
-                        id objectToPreserve = [exifDictionary objectForKey: key];
-                        [exifDictionary setObject:objectToPreserve forKey: newKey];
-                        [exifDictionary removeObjectForKey: key];
-                    }
-
-                    [exifDictionary setValue: filePath forKey: @"_image"];
-                }
-            }
-
-            CFRelease(source);
-            source = nil;
-        }
-    }
-    else
-    {
-        DDLogError(@"Error in reading local image file %@", filePath);
-    }
-
-    return exifDictionary;
-}
-
 - (BOOL) startUploading
 {
-    return NO;
+    if (_isUploading)
+    {
+        return NO;
+    }
+    _isUploading = YES;
+    
+    return YES;
 }
 
 - (void) close

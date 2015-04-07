@@ -12,6 +12,94 @@
 @implementation MMFileUtility
 #pragma mark Class (utility) Methods
 /**
+ This method extracts Exif data from a local file, return a dictionary. The keys of the
+ dictionary have paths that are values like "EXIF", "TIFF", etc. at the first level.
+ */
++(NSMutableDictionary*) exifForFileAtPath: (NSString*) filePath
+{
+    NSMutableDictionary* exifDictionary = nil;
+    NSURL* fileUrl = [NSURL fileURLWithPath : filePath];
+    
+    if (fileUrl)
+    {
+        
+        // load the bit image from the file url
+        CGImageSourceRef source = CGImageSourceCreateWithURL ( (__bridge CFURLRef) fileUrl, NULL);
+        
+        if (source)
+        {
+            
+            // get image properties into a dictionary
+            CFDictionaryRef metadataRef = CGImageSourceCopyPropertiesAtIndex(source, 0, NULL);
+            
+            if (metadataRef)
+            {
+                
+                // cast CFDictonaryRef to NSDictionary
+                exifDictionary = [NSMutableDictionary dictionaryWithDictionary : (__bridge NSDictionary *) metadataRef];
+                CFRelease(metadataRef);
+                
+                if (exifDictionary)
+                {
+                    NSError *error = NULL;
+                    NSMutableDictionary *oldNew = [[NSMutableDictionary alloc] init];
+                    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern: @"\\A\\{([^}]+)\\}\\Z"
+                                                                                           options: 0
+                                                                                             error: &error];
+                    if (error)
+                    {
+                        DDLogError(@"Unable to create regex: error=%@", error);
+                    }
+                    for (NSString * key in [exifDictionary allKeys])
+                    {
+                        NSTextCheckingResult *match = [regex firstMatchInString: key
+                                                                        options: 0
+                                                                          range: NSMakeRange(0, [key length])];
+                        {
+                            if (match)
+                            {
+                                [oldNew setObject: [key substringWithRange: NSMakeRange(match.range.location + 1, match.range.length - 2)]
+                                           forKey: key];
+                            }
+                        }
+                    }
+                    for (NSString *key in oldNew)
+                    {
+                        NSString *newKey = [oldNew objectForKey: key];
+                        id objectToPreserve = [exifDictionary objectForKey: key];
+                        [exifDictionary setObject:objectToPreserve forKey: newKey];
+                        [exifDictionary removeObjectForKey: key];
+                    }
+                }
+            }
+            
+            CFRelease(source);
+            source = nil;
+        }
+    }
+    else
+    {
+        DDLogError(@"Error in reading local image file %@", filePath);
+    }
+    
+    return exifDictionary;
+}
+
+/**
+ Returns the byte length of a file.
+ */
++ (NSNumber *) lengthForFileAtPath: (NSString *) path
+{
+    NSError *error;
+    NSDictionary *dict = [[NSFileManager defaultManager] attributesOfItemAtPath: path error: &error];
+    if (error)
+    {
+        return nil;
+    }
+    return [dict objectForKey:NSFileSize];
+}
+
+/**
  * From http://stackoverflow.com/questions/1363813/how-can-you-read-a-files-mime-type-in-objective-c
  */
 + (NSString *) mimeTypeForFileAtPath: (NSString *) path
@@ -67,17 +155,6 @@
                    digest[12], digest[13],
                    digest[14], digest[15]];
     return s;
-}
-
-+ (NSNumber *) lengthForFileAtPath: (NSString *) path
-{
-    NSError *error;
-    NSDictionary *dict = [[NSFileManager defaultManager] attributesOfItemAtPath: path error: &error];
-    if (error)
-    {
-        return nil;
-    }
-    return [dict objectForKey:NSFileSize];
 }
 
 @end

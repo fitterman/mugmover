@@ -8,7 +8,6 @@
 
 
 #import "MMAppDelegate.h"
-#import "MMFlickrPhotostream.h"
 #import "MMSmugmug.h"
 #import "MMLibraryEvent.h"
 #import "MMPhotoLibrary.h"
@@ -22,7 +21,6 @@
 
 @implementation MMAppDelegate
 
-MMFlickrPhotostream *stream = nil;
 MMSmugmug *smugmug = nil;
 NSDictionary *flickrPhotoPointer;
 
@@ -50,9 +48,6 @@ BOOL const MMdebugLevel;
 /*
    smugmug = [[MMSmugmug alloc] initWithHandle: @"jayphillips"];
 
-   // stream = [[MMFlickrPhotostream alloc] initWithHandle: @"jayphillipsstudio" //barackobamadotcom"
-   //  //                                        libraryPath: @"/Users/Bob/Pictures/Laks and Schwartz Family Photos"];
-   //                                            libraryPath: @"/Users/Bob/Pictures/Jay Phillips"];
     if (smugmug)
     {
         // Register for KVO on some network-associated values
@@ -84,7 +79,7 @@ BOOL const MMdebugLevel;
             DDLogInfo(@"       initializationProgress=%@", newValue);
             if ([newValue floatValue] == 1.0)
             {
-                [MMPhoto getPhotosFromLibrary: _library];    /* This kicks off the whole process from the database without a service */
+                //[MMPhoto getPhotosFromLibrary: _library];    /* This kicks off the whole process from the database without a service */
                 //[stream getPhotos]; /* This kicks off the whole process with flickr */
             }
         }

@@ -11,7 +11,6 @@
 #import "MMPhotoLibrary.h"
 
 @class MMApiRequest;
-@class MMFlickrPhotostream;
 @class MMPoint;
 @class MMNetworkRequest;
 
@@ -45,23 +44,15 @@
 @property (strong)              MMNetworkRequest *          request;
 @property (assign, readonly)    Float64                     rotationAngle;
 @property (assign, readonly)    Float64                     straightenAngle;
-@property (weak)                MMFlickrPhotostream *       stream;
 @property (strong)              NSString *                  thumbnail;
 @property (assign)              BOOL                        verboseLogging;
 @property (assign)              NSInteger                   version;
 @property (strong)              NSString *                  versionUuid;
 
-+ (void) getPhotosFromLibrary: (MMPhotoLibrary *) library;
-
 + (NSArray *) getPhotosFromLibrary: (MMPhotoLibrary *) library
                           forEvent: (MMLibraryEvent *) eventUuid;
 
-- (MMPhoto *) initWithFlickrDictionary: (NSDictionary *) flickrDictionary
-                                stream: (MMFlickrPhotostream *) stream
-                                 index: (NSInteger) index;
-
 - (id) initFromDictionary: (NSDictionary *) inDictionary
-           exifProperties: (NSMutableDictionary *) exifProperties
                   library: (MMPhotoLibrary *) library;
 
 - (void) adjustForStraightenCropAndGetFaces;
@@ -75,8 +66,6 @@
 - (NSNumber *) fileSize;
 
 - (NSString *) fullImagePath;
-
-- (void) performNextStep;
 
 - (void) processPhoto;
 
