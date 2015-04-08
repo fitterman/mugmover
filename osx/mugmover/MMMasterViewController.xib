@@ -8,6 +8,7 @@
         <customObject id="-2" userLabel="File's Owner" customClass="MMMasterViewController">
             <connections>
                 <outlet property="eventsTable" destination="ae0-oz-hxA" id="EID-Ta-h9I"/>
+                <outlet property="interruptButton" destination="iVd-Tc-sNI" id="c5P-D3-1zf"/>
                 <outlet property="photosTable" destination="zrW-or-1OX" id="Z8W-4W-5lm"/>
                 <outlet property="transmitButton" destination="vj0-rp-sGR" id="PjQ-Pe-E5W"/>
                 <outlet property="view" destination="Hz6-mo-xeY" id="0bl-1N-x8E"/>
@@ -191,6 +192,17 @@
                     <connections>
                         <action selector="transmitButtonWasPressed:" target="-2" id="oOO-v0-mVb"/>
                     </connections>
+                </button>
+                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iVd-Tc-sNI">
+                    <rect key="frame" x="259" y="13" width="82" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="push" title="Interrupt" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ENU-DI-9Ag">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                        <connections>
+                            <action selector="interruptButtonWasPressed:" target="-2" id="q1w-XG-Xxr"/>
+                        </connections>
+                    </buttonCell>
                 </button>
             </subviews>
             <constraints>

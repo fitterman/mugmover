@@ -12,16 +12,28 @@
 #import "MMPhoto.h"
 #import "MMUiUtility.h"
 #import "MMSmugmug.h"
+#import "MMUploadOperation.h"
 
 @implementation MMMasterViewController
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+- (id) initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self)
     {
+        // TODO How to release this before Yosemite as there is no viewWillDisappear
+        _uploadOperationQueue = [[NSOperationQueue alloc] init];
+        _uploadOperationQueue.name = @"Upload Queue";
+        _uploadOperationQueue.MaxConcurrentOperationCount = 1;
+        
+        _outstandingRequests = 0;
     }
     return self;
+}
+
+- (void) dealloc
+{
+    _uploadOperationQueue = nil;
 }
 
 - (NSView *) tableView:(NSTableView *) tableView
@@ -66,7 +78,7 @@
 }
 
 
-- (NSInteger)numberOfRowsInTableView: (NSTableView *) tableView
+- (NSInteger) numberOfRowsInTableView: (NSTableView *) tableView
 {
     if (tableView == _eventsTable)
     {
@@ -82,7 +94,7 @@
     return 0;
 }
 
-- (BOOL)selectionShouldChangeInTableView: (NSTableView * ) tableView
+- (BOOL) selectionShouldChangeInTableView: (NSTableView * ) tableView
 {
     if (tableView == _photosTable)
     {
@@ -91,29 +103,28 @@
     return YES;
     
 }
-- (IBAction)transmitButtonWasPressed: (id) sender {
+- (IBAction) transmitButtonWasPressed: (id) sender {
     if (sender == _transmitButton)
     {
-        if ([_library.serviceApi startUploading: _photos
-                                       forEvent: _selectedEvent
-                                     uiDelegate: self])
-        {
-            _transmitButton.enabled = NO;
-        }
-        else
-        {
-            if ([MMUiUtility alertWithText: @"Uploading already in progress."
-                              withQuestion: nil
-                                     style: NSWarningAlertStyle])
-            {
-                
-            }
-        }
-        NSLog(@"sender=%@", sender);
+        _transmitButton.enabled = NO;
+        _eventsTable.enabled = NO;
+        MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithPhotos: _photos
+                                                                              forEvent: _selectedEvent
+                                                                               service: _library.serviceApi
+                                                                        viewController: self];
+        [_uploadOperationQueue addOperation: uploadOperation];
+        _interruptButton.enabled = YES;
     }
 }
 
-- (void)tableViewSelectionDidChange: (NSNotification *) notification
+- (IBAction) interruptButtonWasPressed: (id) sender {
+    if (sender == _interruptButton)
+    {
+        [_uploadOperationQueue cancelAllOperations];
+    }
+}
+
+- (void) tableViewSelectionDidChange: (NSNotification *) notification
 {
     NSTableView *tableView = notification.object;
     if (tableView == _eventsTable)
@@ -127,6 +138,14 @@
         _photos = [MMPhoto getPhotosFromLibrary: _library forEvent: _selectedEvent];
         [_photosTable reloadData];
         _transmitButton.enabled = YES;
+        _eventsTable.enabled = YES;
     }
+}
+
+- (void) uploadCompletedWithStatus: (BOOL) status
+{
+    _transmitButton.enabled = YES;
+    _eventsTable.enabled = YES;
+    _interruptButton.enabled = NO;
 }
 @end

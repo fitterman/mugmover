@@ -71,6 +71,8 @@
 
 - (void) processPhoto;
 
+- (BOOL) sendPhotoToMugmover;
+
 - (void) setByteLength: (long long) length;
 
 - (NSString *) title;

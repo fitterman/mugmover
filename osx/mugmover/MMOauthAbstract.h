@@ -31,10 +31,14 @@ typedef void (^ServiceResponseHandler)(NSDictionary *serviceResponseDictionary);
 
 - (void) close;
 
-- (void) processUrlRequest: (NSURLRequest *) request
-                     queue: (NSOperationQueue *) queue
-         remainingAttempts: (NSInteger) remainingAttempts
-         completionHandler: (ServiceResponseHandler) serviceResponseHandler;
+- (void) asynchronousUrlRequest: (NSURLRequest *) request
+                          queue: (NSOperationQueue *) queue
+              remainingAttempts: (NSInteger) remainingAttempts
+              completionHandler: (ServiceResponseHandler) serviceResponseHandler;
+
+- (BOOL) synchronousUrlRequest: (NSURLRequest *) request
+             remainingAttempts: (NSInteger) remainingAttempts
+             completionHandler: (ServiceResponseHandler) serviceResponseHandler;
 
 @end
 

@@ -13,12 +13,17 @@
 @interface MMMasterViewController : NSViewController
 
 @property (weak)    IBOutlet    NSTableView *           eventsTable;
+@property (weak)    IBOutlet    NSButton *              interruptButton;
 @property (weak)    IBOutlet    NSTableView *           photosTable;
 @property (weak)    IBOutlet    NSButton *              transmitButton;
 
 @property (strong)              MMPhotoLibrary *        library;
 @property (strong)              NSArray *               libraryEvents;
-@property (strong)              MMLibraryEvent *        selectedEvent;
+@property (assign)              NSInteger               outstandingRequests;
 @property (strong)              NSArray *               photos;
+@property (strong)              MMLibraryEvent *        selectedEvent;
+@property (strong)              NSOperationQueue *      uploadOperationQueue;
+
+- (void) uploadCompletedWithStatus: (BOOL) status;
 
 @end

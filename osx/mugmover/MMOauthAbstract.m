@@ -59,10 +59,10 @@ extern NSInteger const MMDefaultRetries;
     _tokenSecret = nil;
 }
 
-- (void) processUrlRequest: (NSURLRequest *) request
-                     queue: (NSOperationQueue *) queue
-         remainingAttempts: (NSInteger) remainingAttempts
-         completionHandler: (ServiceResponseHandler) serviceResponseHandler;
+- (void) asynchronousUrlRequest: (NSURLRequest *) request
+                          queue: (NSOperationQueue *) queue
+              remainingAttempts: (NSInteger) remainingAttempts
+              completionHandler: (ServiceResponseHandler) serviceResponseHandler
 {
     if (remainingAttempts <= 0)
     {
@@ -86,10 +86,10 @@ extern NSInteger const MMDefaultRetries;
              else
              {
                  DDLogInfo(@"RETRYING   remainingAttempts=%ld", (long)remainingAttempts);
-                 [self processUrlRequest: request
-                                   queue: queue
-                       remainingAttempts: remainingAttempts - 1
-                       completionHandler: serviceResponseHandler];
+                 [self asynchronousUrlRequest: request
+                                        queue: queue
+                            remainingAttempts: remainingAttempts - 1
+                            completionHandler: serviceResponseHandler];
                  return;
              }
          }
@@ -115,6 +115,47 @@ extern NSInteger const MMDefaultRetries;
              }
          }
      }];
+}
+
+- (BOOL) synchronousUrlRequest: (NSURLRequest *) request
+             remainingAttempts: (NSInteger) remainingAttempts
+             completionHandler: (ServiceResponseHandler) serviceResponseHandler;
+{
+    NSURLResponse *response;
+    NSError *connectionError;
+    NSInteger retries = remainingAttempts;
+    while (retries > 0)
+    {
+        NSData *serverData = [NSURLConnection sendSynchronousRequest: request
+                                                   returningResponse: &response
+                                                               error: &connectionError];
+        if (connectionError)
+        {
+            DDLogError(@"ERROR      connectionError=%@", connectionError);
+            // TODO BE SURE YOU CHECK FOR AN AUTH ERROR AND DO NO RETRY ON AN AUTH ERROR
+            continue;
+        }
+
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        if ([httpResponse statusCode] != 200)
+        {
+             DDLogError(@"ERROR      httpError=%ld", (long)[httpResponse statusCode]);
+             if ([serverData length] > 0)
+             {
+                 NSString *s = [[NSString alloc] initWithData: serverData encoding: NSUTF8StringEncoding];
+                 DDLogError(@"response=%@", s);
+             }
+            continue;
+        }
+        NSDictionary *parsedJsonData = [MMDataUtility parseJsonData: serverData];
+        if (parsedJsonData)
+        {
+            serviceResponseHandler(parsedJsonData);
+            return YES;
+        }
+    }
+    DDLogError(@"ERROR      maxRetriesExceeded for %@", request);
+    return NO;
 }
 
 #pragma mark Private Methods

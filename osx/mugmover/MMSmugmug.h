@@ -10,6 +10,7 @@
 #import "MMFace.h"
 @class MMOauthSmugmug;
 @class MMLibraryEvent;
+@class MMMasterViewController;
 
 @interface MMSmugmug : NSObject
 
@@ -21,7 +22,6 @@
 @property (strong, readonly)    NSString *              defaultFolder;
 @property (strong)              NSString *              handle;
 @property (assign)              Float32                 initializationProgress;
-@property (assign)              BOOL                    isUploading;
 @property (assign, readonly)    NSInteger               page;
 @property (strong)              NSMutableDictionary *   photoDictionary;
 @property (assign)              NSInteger               photosInStream;
@@ -36,11 +36,17 @@
 
 - (void) configureOauthForLibrary: (MMPhotoLibrary *) library;
 
-- (id) initWithHandle: (NSString *) handle;
+- (NSString *) findOrCreateAlbum: (NSString *) urlName
+                         beneath: (NSString *) partialPath
+                     displayName: (NSString *) displayName
+                     description: (NSString *) description;
 
-- (BOOL) startUploading: (NSArray *) photos
-               forEvent: (MMLibraryEvent *) event
-             uiDelegate: (NSViewController *) uiDelegate;
+- (NSString *) findOrCreateFolder: (NSString *) urlName
+                          beneath: (NSString *) partialPath
+                      displayName: (NSString *) displayName
+                      description: (NSString *) description;
+
+- (id) initWithHandle: (NSString *) handle;
 
 @end
 

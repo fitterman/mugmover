@@ -13,6 +13,7 @@
 #import "MMSmugmug.h"
 #import "MMOauthSmugmug.h"
 #import "MMDataUtility.h"
+#import "MMMasterViewController.h"
 
 @implementation MMSmugmug
 
@@ -28,14 +29,14 @@ long                retryCount;
 /**
  * We are using UUIDs in many places for URL names. The UUID character-space consists
  * of the characters A-Z, a-z, 0-9 and 2 pieces of punctuation: "+", "%", each of which
- * is problematic. We remap "+" and "%" both to "-". This is the only non alpha-numeric
- * character SmugMug will accept. We also map everything to uppercase. Asking for a
- * collision? Yes, it's possible, but statistically prettty unlikely to happen.
+ * is problematic. We replace "+" with "-" and replace "%" with "--". The UUIDs are
+ * short enough they will not exceed the Smugmug limit with this approach. As they 
+ * must start with an uppercase letter, we are prefixing them all with "MM"
  */
 + (NSString *) sanitizeUuid: (NSString *) inUrl
 {
-  return [[[inUrl stringByReplacingOccurrencesOfString:@"+" withString:@"-"]
-           stringByReplacingOccurrencesOfString:@"%" withString:@"-"] uppercaseString];
+  return [@"MM" stringByAppendingString: [[inUrl stringByReplacingOccurrencesOfString:@"+" withString:@"-"]
+          stringByReplacingOccurrencesOfString:@"%" withString:@"--"]];
 }
 
 - (id) initWithHandle: (NSString *) handle
@@ -43,7 +44,6 @@ long                retryCount;
     self = [self init];
     if (self)
     {
-        _isUploading = NO;
         if (!handle)
         {
             return nil;
@@ -158,52 +158,7 @@ long                retryCount;
                          }
                      }];
 }
-- (BOOL) startUploading: (NSArray *) photos
-               forEvent: (MMLibraryEvent *) event
-             uiDelegate: (NSViewController *) uiDelegate
-{
-    if (_isUploading)
-    {
-        return NO;
-    }
-    _isUploading = YES;
-    NSString *name = [event name];
-    if (!name)
-    {
-        name = [event dateRange];
-    }
-    NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via MugMover", name];
-    NSString *newAlbumUri = [self findOrCreateAlbum: [MMSmugmug sanitizeUuid: [event uuid]]
-                                            beneath: _defaultFolder
-                                        displayName: name
-                                        description: description];
-    for (MMPhoto *photo in photos)
-    {
-        [photo processPhoto];
-        // This must be declared inside the loop because it references "photo"
-        ServiceResponseHandler processSmugmugUpload = ^(NSDictionary *response)
-        {
-            if ([[response valueForKeyPath: @"stat"] isEqualToString: @"ok"])
-            {
-                NSMutableDictionary *serviceDictionary = [[response objectForKey: @"Image"] mutableCopy];
-                [serviceDictionary setObject: @"smugmug" forKey: @"service"];
-                [photo attachServiceDictionary: serviceDictionary];
-            }
-            NSLog(@"response=%@", response);
-        };
-        NSURLRequest *uploadRequest = [_smugmugOauth upload: photo.iPhotoOriginalImagePath
-                                                   albumUri: newAlbumUri
-                                                      title: @"photo title"
-                                                    caption: @"photo caption"
-                                                       tags: @[@"foo", @"bar"]];
-        [_smugmugOauth  processUrlRequest:  uploadRequest
-                                    queue: _streamQueue
-                        remainingAttempts: MMDefaultRetries
-                        completionHandler: processSmugmugUpload];
-       
-    }
-    return YES;
-}
+
 #pragma mark "Private methods"
 
 /**

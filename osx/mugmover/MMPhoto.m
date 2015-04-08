@@ -208,7 +208,7 @@ extern Float64 const MMDegreesPerRadian;
     NSString *versionUuid = nil;
     NSString *versionFilename = nil;
     NSString *versionName = nil;
-    if (hasAdjustments == 1)
+    if ((hasAdjustments == 1) || (_rotationAngle != 0.0))
     {
         versionUuid = [_attributes valueForKeyPath: @"photo.versionUuid"];
         versionFilename = [_attributes valueForKeyPath: @"photo.versionFilename"];
@@ -783,11 +783,11 @@ extern Float64 const MMDegreesPerRadian;
 - (void) attachServiceDictionary: (NSDictionary *) serviceDictionary
 {
     [_attributes setObject: serviceDictionary forKey: @"service"];
-    [self sendPhotoToMugmover];
 }
 
-- (void) sendPhotoToMugmover
+- (BOOL) sendPhotoToMugmover
 {
+    NSLog(@"--");
     NSDictionary *cropProperties = @{
                                         @"cropOrigin":           [_cropOrigin asDictionary],
                                         @"croppedHeight":        [NSNumber numberWithLong: _croppedHeight],
@@ -795,9 +795,15 @@ extern Float64 const MMDegreesPerRadian;
                                         @"rotationAngle":        [NSNumber numberWithDouble: _rotationAngle],
                                         @"straightenAngle":      [NSNumber numberWithDouble: _straightenAngle],
                                     };
-    [_attributes setObject: _library.sourceDictionary forKey: @"source"];
     [_attributes setObject: cropProperties forKey: @"crop"];
-    [_attributes setObject: _adjustmentsArray forKey: @"adjustments"];
+    if (_library.sourceDictionary)
+    {
+        [_attributes setObject: _library.sourceDictionary forKey: @"source"];
+    }
+    if (_adjustmentsArray)
+    {
+        [_attributes setObject: _adjustmentsArray forKey: @"adjustments"];
+    }
     [[_attributes objectForKey: @"photo" ] setObject: _thumbnail forKey: @"thumbnail"];
 
     if (_faceArray)
@@ -820,34 +826,19 @@ extern Float64 const MMDegreesPerRadian;
     if (!jsonData)
     {
         DDLogError(@"ERROR JSON Serialization returned: %@", error);
-    }
-    else
-    {
-        NSString *jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
-        jsonData = nil;
-        NSDictionary *postData = @{@"data": jsonString};
-        _apiRequest = [[MMApiRequest alloc] initUploadForApiVersion: 1
-                                                           bodyData: postData
-                                                  completionHandler: ^(NSURLResponse *response, NSData *data, NSError *netError)
-                                                                       {
-                                                                           DDLogInfo(@"MM RESPONSE   status=%ld, hasData?=%d",
-                                                                                   
-                                                                                     (long)[(NSHTTPURLResponse *)response statusCode],
-                                                                                     !!data);
-                                                                           NSDictionary *results = [MMDataUtility parseJsonData: data];
-                                                                           if (netError)
-                                                                           {
-                                                                               DDLogError(@"NETWORK ERROR error=%@", netError);
-                                                                               if (results)
-                                                                               {
-                                                                                   DDLogInfo(@"             JSON Object %@", results);
-                                                                               }
-                                                                           }
-                                                                       }
-                                                ];
-        postData = nil;
+        return NO;
     }
 
+    NSString *jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
+    jsonData = nil;
+    NSDictionary *postData = @{@"data": jsonString};
+    ServiceResponseHandler uploadResponseHandler = ^(NSDictionary *responseData)
+    {
+        DDLogInfo(@"responseData = %@", responseData);
+    };
+    BOOL response = [MMApiRequest synchronousUpload: postData // values should NOT be URLEncoded
+                                  completionHandler: uploadResponseHandler];
+    return response;
 }
 
 - (void) close

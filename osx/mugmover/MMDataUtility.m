@@ -15,7 +15,7 @@
  If it is successful, it returns the parsed data, which should always be an NSDictionary.
  If valid JSON is parsed and it is not a JSON Object (e.g., Array), nil will be returned.
  */
-+ (NSDictionary *) parseJsonData: (NSData *)data
++ (NSDictionary *) parseJsonData: (NSData *) data
 {
     if (data && ([data length] > 0))
     {
