@@ -21,9 +21,13 @@ class NamedFace < ActiveRecord::Base
     if self.note.blank? && self.private_name.present?
       # Look for something in the private name in parens and if it's there,
       # name what's in the parens, the note, removing it from the private_name
-      self.private_name.sub!(%r{\(([^\)]+)\)}) do |match|
-        self.note = $1;
-        ''
+      unless self.private_name =~ /^[\s]*\(/
+        # HOWEVER, we do not do this if the name field starts with a left paren,
+        # or whitespace + left paren, as it can leave the name field blank.
+        self.private_name.sub!(%r{\(([^\)]+)\)}) do |match|
+          self.note = $1;
+          ''
+        end
       end
     end
 
