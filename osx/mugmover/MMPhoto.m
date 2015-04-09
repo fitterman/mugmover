@@ -34,10 +34,37 @@
 #define MAX_THUMB_DIM (100)
 
 NSInteger const MMDefaultRetries = 3;
+#define BASE_QUERY  "SELECT  m.uuid masterUuid, m.createDate," \
+                    "        m.fileName, m.imagePath, m.originalVersionName, " \
+                    "        m.colorSpaceName, m.fileCreationDate, m.fileModificationDate, " \
+                    "        m.fileSize, m.imageDate, m.isMissing, " \
+                    "        m.originalFileName originalFilename, " /* Change the name */ \
+                    "        m.originalFileSize, m.name, m.projectUuid, m.subtype, m.type, " \
+                    "        v.uuid versionUuid, v.versionNumber, " \
+                    "        v.fileName versionFilename, " \
+                    "        v.isOriginal, v.hasAdjustments, " \
+                    "        v.masterHeight, v.masterWidth, " \
+                    "        v.name versionName, v.processedHeight, v.processedWidth, v.rotation " \
+                    "FROM RKVersion v JOIN RKMaster m  ON v.masterUuid = m.uuid "
+#define QUERY_BY_VERSION_UUID  BASE_QUERY "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and v.uuid = ? "
+#define QUERY_BY_EVENT_UUID    BASE_QUERY "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and m.projectUuid = ? "
 extern Float64 const MMDegreesPerRadian;
 
 @implementation MMPhoto
 
++ (MMPhoto *) getPhotoByVersionUuid: (NSString *) versionUuid
+                        fromLibrary: (MMPhotoLibrary *) library
+{
+    FMResultSet *resultSet = [library.photosDatabase executeQuery: @QUERY_BY_VERSION_UUID
+                                             withArgumentsInArray: @[versionUuid]];
+    if (resultSet && [resultSet next])
+    {
+        NSDictionary *resultDictionary = [resultSet resultDictionary];
+        return [[MMPhoto alloc] initFromDictionary: resultDictionary
+                                           library: library];
+    }
+    return nil;
+}
 + (NSArray *) getPhotosFromLibrary: (MMPhotoLibrary *) library
                           forEvent: (MMLibraryEvent *) event
 {
@@ -56,22 +83,8 @@ extern Float64 const MMDegreesPerRadian;
     NSInteger exifPositiveCounter = 0;
     NSInteger exifNegativeCounter = 0;
     
-    NSString *query =  @"SELECT  m.uuid masterUuid, m.createDate,"
-                        "        m.fileName, m.imagePath, m.originalVersionName, "
-                        "        m.colorSpaceName, m.fileCreationDate, m.fileModificationDate, "
-                        "        m.fileSize, m.imageDate, m.isMissing, "
-                        "        m.originalFileName originalFilename, " /* Change the name */
-                        "        m.originalFileSize, m.name, m.projectUuid, m.subtype, m.type, "
-                        "        v.uuid versionUuid, v.versionNumber, "
-                        "        v.fileName versionFilename, "
-                        "        v.isOriginal, v.hasAdjustments, "
-                        "        v.masterHeight, v.masterWidth, "
-                        "        v.name versionName, v.processedHeight, v.processedWidth, v.rotation "
-                        "FROM RKVersion v JOIN RKMaster m  ON v.masterUuid = m.uuid "
-                        "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and m.projectUuid = ? ";
-    
     NSString *eventUuid = [event uuid];
-    FMResultSet *resultSet = [library.photosDatabase executeQuery: query
+    FMResultSet *resultSet = [library.photosDatabase executeQuery: @QUERY_BY_EVENT_UUID
                                              withArgumentsInArray: @[eventUuid]];
     while (resultSet && [resultSet next])
     {
@@ -898,6 +911,15 @@ extern Float64 const MMDegreesPerRadian;
                                    versionUuid: [_attributes valueForKeyPath: @"photo.versionUuid"]
                                versionFilename: [_attributes valueForKeyPath: @"photo.versionFilename"]
                                    versionName: [_attributes valueForKeyPath: @"photo.versionName"]];
+}
+
+- (NSString *) originalImagePath
+{
+    if (!_exifDictionary)
+    {
+        [self populateExifFromSourceFile];
+    }
+    return self.iPhotoOriginalImagePath;
 }
 
 

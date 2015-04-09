@@ -10,18 +10,21 @@
 
 @class MMLibraryEvent;
 @class MMMasterViewController;
+@class MMPhotoLibrary;
 @class MMSmugmug;
 
 @interface MMUploadOperation : NSOperation
 
 @property (weak, readonly)      MMLibraryEvent *            event;
-@property (weak, readonly)      NSArray *                   photos;
+@property (weak, readonly)      MMPhotoLibrary *            library;
+@property (assign)              NSInteger                   row;
 @property (weak, readonly)      MMSmugmug *                 service;
 @property (weak)                MMMasterViewController *    viewController;
 
-- (id) initWithPhotos: (NSArray *) photos
-             forEvent: (MMLibraryEvent *) event
-              service: (MMSmugmug *) service
-       viewController: (MMMasterViewController *) viewController;
+- (id) initWithEvent: (MMLibraryEvent *) event
+                from: (MMPhotoLibrary *) library
+                 row: (NSInteger) row
+             service: (MMSmugmug *) service
+      viewController: (MMMasterViewController *) viewController;
 
 @end

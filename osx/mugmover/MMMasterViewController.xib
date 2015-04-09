@@ -20,10 +20,10 @@
             <rect key="frame" x="0.0" y="0.0" width="701" height="341"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
-                <scrollView ambiguous="YES" misplaced="YES" autohidesScrollers="YES" horizontalLineScroll="50" horizontalPageScroll="10" verticalLineScroll="50" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Wh-uk-i0x">
+                <scrollView autohidesScrollers="YES" horizontalLineScroll="50" horizontalPageScroll="10" verticalLineScroll="50" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Wh-uk-i0x">
                     <rect key="frame" x="20" y="81" width="397" height="243"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <clipView key="contentView" ambiguous="YES" misplaced="YES" id="dZy-F3-QBB">
+                    <clipView key="contentView" id="dZy-F3-QBB">
                         <rect key="frame" x="1" y="1" width="395" height="241"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -74,9 +74,15 @@
                                                             <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                         </textFieldCell>
                                                     </textField>
+                                                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="m1e-fJ-ihj">
+                                                        <rect key="frame" x="30" y="28" width="19" height="19"/>
+                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="j8l-Jn-7qi"/>
+                                                    </imageView>
                                                 </subviews>
                                                 <connections>
                                                     <outlet property="firstTitleTextField" destination="Nm2-5C-SoO" id="8oE-bp-2QN"/>
+                                                    <outlet property="iconField" destination="j8l-Jn-7qi" id="muj-ck-6Zl"/>
                                                     <outlet property="imageView" destination="rmj-Kn-BSZ" id="Zp0-Uq-ZbK"/>
                                                     <outlet property="secondTextField" destination="tlc-eN-SMT" id="Tyk-lJ-laV"/>
                                                 </connections>
@@ -101,10 +107,10 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
                 </scrollView>
-                <scrollView ambiguous="YES" misplaced="YES" autohidesScrollers="YES" horizontalLineScroll="52" horizontalPageScroll="10" verticalLineScroll="52" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tuw-5b-muO">
+                <scrollView autohidesScrollers="YES" horizontalLineScroll="52" horizontalPageScroll="10" verticalLineScroll="52" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tuw-5b-muO">
                     <rect key="frame" x="439" y="81" width="242" height="243"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <clipView key="contentView" ambiguous="YES" misplaced="YES" id="qS2-IS-xJ3">
+                    <clipView key="contentView" id="qS2-IS-xJ3">
                         <rect key="frame" x="1" y="1" width="240" height="241"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -182,9 +188,12 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
                 </scrollView>
-                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vj0-rp-sGR">
+                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vj0-rp-sGR">
                     <rect key="frame" x="341" y="13" width="82" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="70" id="CZn-I7-Wj9"/>
+                    </constraints>
                     <buttonCell key="cell" type="push" title="Transmit" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="bZX-dx-d5o">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
@@ -193,7 +202,7 @@
                         <action selector="transmitButtonWasPressed:" target="-2" id="oOO-v0-mVb"/>
                     </connections>
                 </button>
-                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iVd-Tc-sNI">
+                <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iVd-Tc-sNI">
                     <rect key="frame" x="259" y="13" width="82" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                     <buttonCell key="cell" type="push" title="Interrupt" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ENU-DI-9Ag">
@@ -206,8 +215,18 @@
                 </button>
             </subviews>
             <constraints>
-                <constraint firstItem="Tuw-5b-muO" firstAttribute="leading" secondItem="9Wh-uk-i0x" secondAttribute="trailing" constant="20" id="KdC-Ka-W5i"/>
+                <constraint firstItem="vj0-rp-sGR" firstAttribute="leading" secondItem="iVd-Tc-sNI" secondAttribute="trailing" constant="12" symbolic="YES" id="3tw-vX-Qv4"/>
+                <constraint firstItem="9Wh-uk-i0x" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" constant="20" symbolic="YES" id="3uL-XL-epb"/>
+                <constraint firstAttribute="trailing" secondItem="Tuw-5b-muO" secondAttribute="trailing" constant="20" symbolic="YES" id="9mY-h1-SOP"/>
+                <constraint firstItem="vj0-rp-sGR" firstAttribute="baseline" secondItem="iVd-Tc-sNI" secondAttribute="baseline" id="FIE-U4-gNd"/>
+                <constraint firstItem="iVd-Tc-sNI" firstAttribute="top" secondItem="9Wh-uk-i0x" secondAttribute="bottom" constant="40" id="FtQ-eb-fT1"/>
+                <constraint firstItem="Tuw-5b-muO" firstAttribute="leading" secondItem="9Wh-uk-i0x" secondAttribute="trailing" constant="22" id="S4N-FO-XFU"/>
                 <constraint firstItem="9Wh-uk-i0x" firstAttribute="bottom" secondItem="Tuw-5b-muO" secondAttribute="bottom" id="TF5-hO-5ae"/>
+                <constraint firstItem="9Wh-uk-i0x" firstAttribute="trailing" secondItem="vj0-rp-sGR" secondAttribute="trailing" id="Zv9-b6-OzB"/>
+                <constraint firstItem="Tuw-5b-muO" firstAttribute="top" secondItem="9Wh-uk-i0x" secondAttribute="top" id="b7s-qh-BNK"/>
+                <constraint firstAttribute="bottom" secondItem="Tuw-5b-muO" secondAttribute="bottom" constant="81" id="kmH-4m-3ex"/>
+                <constraint firstItem="Tuw-5b-muO" firstAttribute="top" secondItem="Hz6-mo-xeY" secondAttribute="top" constant="17" id="nae-ch-so6"/>
+                <constraint firstItem="Tuw-5b-muO" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" constant="439" id="tqS-UX-GFu"/>
             </constraints>
         </customView>
     </objects>

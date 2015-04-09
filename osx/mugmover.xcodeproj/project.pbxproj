@@ -11,6 +11,8 @@
 		C404A9BF1AD410C600E197F1 /* MMUiUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C404A9BE1AD410C600E197F1 /* MMUiUtility.m */; };
 		C404A9C21AD44BFA00E197F1 /* MMSmugmugFolder.m in Sources */ = {isa = PBXBuildFile; fileRef = C404A9C11AD44BFA00E197F1 /* MMSmugmugFolder.m */; };
 		C404A9C51AD5B7DB00E197F1 /* MMUploadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C404A9C41AD5B7DB00E197F1 /* MMUploadOperation.m */; };
+		C404A9CD1AD6C90400E197F1 /* Active-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C404A9CB1AD6C90400E197F1 /* Active-128.png */; };
+		C404A9CE1AD6C90400E197F1 /* Completed-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C404A9CC1AD6C90400E197F1 /* Completed-128.png */; };
 		C411AA761AC197A30087D1FA /* MMOauthSmugmug.m in Sources */ = {isa = PBXBuildFile; fileRef = C411AA751AC197A30087D1FA /* MMOauthSmugmug.m */; };
 		C42F7AD51A1532FC006E38DD /* MMFace.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7AD41A1532FC006E38DD /* MMFace.m */; };
 		C42F7AD81A153368006E38DD /* MMPhotoLibrary.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */; };
@@ -74,6 +76,8 @@
 		C404A9C11AD44BFA00E197F1 /* MMSmugmugFolder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMSmugmugFolder.m; sourceTree = "<group>"; };
 		C404A9C31AD5B7DB00E197F1 /* MMUploadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMUploadOperation.h; sourceTree = "<group>"; };
 		C404A9C41AD5B7DB00E197F1 /* MMUploadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMUploadOperation.m; sourceTree = "<group>"; };
+		C404A9CB1AD6C90400E197F1 /* Active-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Active-128.png"; sourceTree = "<group>"; };
+		C404A9CC1AD6C90400E197F1 /* Completed-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Completed-128.png"; sourceTree = "<group>"; };
 		C4118EEE1A49E4F30057A72B /* MMEnvironment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MMEnvironment.h; sourceTree = "<group>"; };
 		C411AA741AC197A30087D1FA /* MMOauthSmugmug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMOauthSmugmug.h; sourceTree = "<group>"; };
 		C411AA751AC197A30087D1FA /* MMOauthSmugmug.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMOauthSmugmug.m; sourceTree = "<group>"; };
@@ -155,6 +159,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C404A9CA1AD6C63600E197F1 /* Assets */ = {
+			isa = PBXGroup;
+			children = (
+				C404A9CB1AD6C90400E197F1 /* Active-128.png */,
+				C404A9CC1AD6C90400E197F1 /* Completed-128.png */,
+			);
+			name = Assets;
+			sourceTree = "<group>";
+		};
 		C4836F961A5F231C006EB567 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
@@ -245,6 +258,7 @@
 		C4968CBC1A15101500F34E46 /* mugmover */ = {
 			isa = PBXGroup;
 			children = (
+				C404A9CA1AD6C63600E197F1 /* Assets */,
 				C49376E71ACEF444006DB77D /* Models */,
 				C49376E61ACEF1F9006DB77D /* UI */,
 				C4836F901A5F14F5006EB567 /* MMApiRequest.h */,
@@ -418,6 +432,8 @@
 				C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */,
 				C4968CCD1A15101500F34E46 /* MainMenu.xib in Resources */,
 				C49376E51ACEF1C9006DB77D /* MMMasterViewController.xib in Resources */,
+				C404A9CE1AD6C90400E197F1 /* Completed-128.png in Resources */,
+				C404A9CD1AD6C90400E197F1 /* Active-128.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

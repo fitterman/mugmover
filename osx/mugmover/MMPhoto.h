@@ -23,10 +23,6 @@
 @property (assign, readonly)    Float64                     croppedHeight;
 @property (assign, readonly)    Float64                     croppedWidth;
 @property (strong)              NSMutableDictionary *       exifDictionary;
-@property (assign, readonly)    BOOL                        didFetchOriginalByteSize;
-@property (assign, readonly)    BOOL                        didFetchExif;
-@property (assign, readonly)    BOOL                        didFetchInfo;
-@property (assign, readonly)    BOOL                        didFetchSizes;
 @property (strong)              NSMutableArray *            faceArray;
 @property (strong)              NSMutableDictionary *       flickrDictionary;
 @property (assign)              NSInteger                   index;
@@ -52,6 +48,9 @@
 + (NSArray *) getPhotosFromLibrary: (MMPhotoLibrary *) library
                           forEvent: (MMLibraryEvent *) eventUuid;
 
++ (MMPhoto *) getPhotoByVersionUuid: (NSString *) versionUuid
+                        fromLibrary: (MMPhotoLibrary *) library;
+
 - (id) initFromDictionary: (NSDictionary *) inDictionary
                   library: (MMPhotoLibrary *) library;
 
@@ -68,6 +67,8 @@
 - (NSNumber *) fileSize;
 
 - (NSString *) fullImagePath;
+
+- (NSString *) originalImagePath;
 
 - (void) processPhoto;
 

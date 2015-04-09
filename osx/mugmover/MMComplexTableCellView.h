@@ -14,5 +14,6 @@
 @property (weak) IBOutlet       NSTextField *       firstTitleTextField;
 @property (weak) IBOutlet       NSTextField *       secondTextField;
 @property (weak) IBOutlet       NSTextField *       thirdTextField;
+@property (weak) IBOutlet       NSImageCell *       iconField;
 
 @end

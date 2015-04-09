@@ -7,6 +7,7 @@
 //
 
 #import "MMLibraryEvent.h"
+#import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
 #import <FMDatabase.h>
 #import <FMDB/FMDatabaseAdditions.h>
@@ -26,7 +27,8 @@
     NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: upperRecordCount];
     
     NSString *query =  @"SELECT minImageDate, minImageTimeZoneName, "
-                        "    maxImageDate, maxImageTimeZoneName, f.name, f.uuid, versionCount, "
+                        "    maxImageDate, maxImageTimeZoneName, f.name, f.uuid, "
+                        "    posterVersionUuid, versionCount, "
                         "    count(*) filecount "
                         "FROM RKFolder f "
                         "JOIN RKMaster m ON m.projectUuid = f.uuid "
@@ -41,21 +43,43 @@
     FMResultSet *resultSet = [library.photosDatabase executeQuery: query withArgumentsInArray: @[]];
     while (resultSet && [resultSet next])
     {
-        [result addObject: [[MMLibraryEvent alloc] initFromDictionary: [resultSet resultDictionary]]];
+        [result addObject: [[MMLibraryEvent alloc] initFromDictionary: [resultSet resultDictionary]
+                                                              library: library]];
     }
     [resultSet close];
     return (NSArray *)result;
 }
 
 - (id) initFromDictionary: (NSDictionary *) inDictionary
+                  library: (MMPhotoLibrary *) library
 {
     _dictionary = inDictionary;
+    _library = library;
     return self;
 }
 
 - (void) close
 {
     _dictionary = nil;
+}
+
+- (NSString *) iconImagePath
+{
+    NSString *versionUuid = [_dictionary objectForKey: @"posterVersionUuid"];
+    if (versionUuid)
+    {
+        MMPhoto *photo = [MMPhoto getPhotoByVersionUuid: versionUuid
+                                            fromLibrary: _library];
+        if (photo)
+        {
+            NSString *path = [photo originalImagePath];
+            if (path)
+            {
+                return path;
+            }
+        }
+    }
+    return [[NSBundle mainBundle] pathForResource: @"Active-128" ofType: @"png"];
 }
 
 - (NSString *) dateRange

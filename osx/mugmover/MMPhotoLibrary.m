@@ -281,7 +281,7 @@ NSString *photosPath;
 
 - (NSString *) displayName
 {
-    return [NSString stringWithFormat: @"%@ via MugMover", [self baseName]];
+    return [NSString stringWithFormat: @"%@ via Mugmover", [self baseName]];
 }
 
 

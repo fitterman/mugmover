@@ -8,6 +8,7 @@
 
 #import "MMUploadOperation.h"
 #import "MMPhoto.h"
+#import "MMPhotoLibrary.h"
 #import "MMLibraryEvent.h"
 #import "MMMasterViewController.h"
 #import "MMSmugmug.h"
@@ -18,16 +19,18 @@ extern const NSInteger MMDefaultRetries;
 
 @implementation MMUploadOperation
 
-- (id) initWithPhotos: (NSArray *) photos
-             forEvent: (MMLibraryEvent *) event
-              service: (MMSmugmug *) service
-       viewController: (MMMasterViewController *) viewController
+- (id) initWithEvent: (MMLibraryEvent *) event
+                from: (MMPhotoLibrary *) library
+                 row: (NSInteger) row
+             service: (MMSmugmug *) service
+      viewController: (MMMasterViewController *) viewController
 {
     self = [self init];
     if (self)
     {
-        _photos = photos;
         _event = event;
+        _library = library;
+        _row = row;
         _service = service;
         _viewController = viewController;
     }
@@ -37,6 +40,13 @@ extern const NSInteger MMDefaultRetries;
 - (void) main
 {
     BOOL status = NO;
+    [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
+     {
+         [_viewController markEventRow: _row
+                                    as: MMEVentStatusActive];
+     }
+    ];
+
     @autoreleasepool
     {
         NSString *name = [_event name];
@@ -49,7 +59,9 @@ extern const NSInteger MMDefaultRetries;
                                                     beneath: _service.defaultFolder
                                                 displayName: name
                                                 description: description];
-        for (MMPhoto *photo in _photos)
+        NSArray *photos = [MMPhoto getPhotosFromLibrary: _library
+                                                forEvent: _event];
+        for (MMPhoto *photo in photos)
         {
             [photo processPhoto];
             // This must be declared inside the loop because it references "photo"
@@ -92,6 +104,8 @@ extern const NSInteger MMDefaultRetries;
     }
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
         {
+            [_viewController markEventRow: _row
+                                       as: MMEventStatusCompleted];
             [_viewController uploadCompletedWithStatus: status];
         }
      ];
