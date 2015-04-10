@@ -46,8 +46,13 @@ NSInteger const MMDefaultRetries = 3;
                     "        v.masterHeight, v.masterWidth, " \
                     "        v.name versionName, v.processedHeight, v.processedWidth, v.rotation " \
                     "FROM RKVersion v JOIN RKMaster m  ON v.masterUuid = m.uuid "
-#define QUERY_BY_VERSION_UUID  BASE_QUERY "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and v.uuid = ? "
-#define QUERY_BY_EVENT_UUID    BASE_QUERY "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and m.projectUuid = ? "
+#define QUERY_BY_VERSION_UUID   BASE_QUERY \
+                                "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and v.uuid = ? "
+#define QUERY_BY_EVENT_UUID     BASE_QUERY \
+                                "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and m.projectUuid = ? " \
+                                "ORDER BY m.fileCreationDate "
+
+
 extern Float64 const MMDegreesPerRadian;
 
 @implementation MMPhoto

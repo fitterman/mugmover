@@ -1,4 +1,4 @@
-//
+    //
 //  MMMasterViewController.m
 //  mugmover
 //
@@ -7,6 +7,7 @@
 //
 
 #import "MMMasterViewController.h"
+#import "MMCheckboxTableCellView.h"
 #import "MMComplexTableCellView.h"
 #import "MMLibraryEvent.h"
 #import "MMPhoto.h"
@@ -41,17 +42,21 @@
     _uploadOperationQueue = nil;
 }
 
-- (NSView *) tableView:(NSTableView *) tableView
-    viewForTableColumn:(NSTableColumn *) tableColumn
-                   row:(NSInteger)row
+- (NSView *) tableView: (NSTableView *) tableView
+    viewForTableColumn: (NSTableColumn *) tableColumn
+                   row: (NSInteger) row
 {
-    MMComplexTableCellView *cellView = [tableView makeViewWithIdentifier: tableColumn.identifier
-                                                            owner: self];
+    NSTableCellView *baseCellView = [tableView makeViewWithIdentifier: tableColumn.identifier
+                                                                owner: self];
+    MMComplexTableCellView *cellView = (MMComplexTableCellView *)baseCellView;
+    MMCheckboxTableCellView *checkboxCellView = (MMCheckboxTableCellView *)baseCellView;
+   
+
     if ((tableView == _eventsTable) && _libraryEvents)
     {
-        if ([tableColumn.identifier isEqualToString:@"OnlyColumn"])
+        MMLibraryEvent *event = _libraryEvents[row];
+        if ([tableColumn.identifier isEqualToString: @"DisplayColumn"])
         {
-            MMLibraryEvent *event = _libraryEvents[row];
             cellView.firstTitleTextField.stringValue = [event name];
             if ((!cellView.firstTitleTextField.stringValue) ||
                 ([cellView.firstTitleTextField.stringValue length] == 0))
@@ -62,6 +67,11 @@
                                                                 [event dateRange],
                                                                 [event filecount]];
             cellView.imageView.image = [[NSImage alloc] initByReferencingFile: [event iconImagePath]];
+            cellView.iconField.image = nil;
+        }
+        else if ([tableColumn.identifier isEqualToString: @"CheckboxColumn"])
+        {
+            [checkboxCellView.checkboxField setState:event.toBeProcessed];
         }
     }
     else if ((tableView == _photosTable) && _photos)
@@ -114,19 +124,52 @@
         NSInteger row = 0;
         for (MMLibraryEvent *event in _libraryEvents)
         {
-            MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
-                                                                                     from: _library
-                                                                                      row: row
-                                                                                  service: _library.serviceApi
-                                                                           viewController: self];
-            [_uploadOperationQueue addOperation: uploadOperation];
+            if (event.toBeProcessed)
+            {
+                MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
+                                                                                         from: _library
+                                                                                          row: row
+                                                                                      service: _library.serviceApi
+                                                                               viewController: self];
+                [_uploadOperationQueue addOperation: uploadOperation];
+            }
             row++;
         }
         _interruptButton.enabled = YES;
     }
 }
 
-- (IBAction) interruptButtonWasPressed: (id) sender {
+- (IBAction) checkBoxWasChecked: (id)sender
+{
+    NSInteger row = [_eventsTable rowForView: sender];
+    if (row >= 0)
+    {
+        MMLibraryEvent *event = _libraryEvents[row];
+        event.toBeProcessed = ((NSButton *)sender).state;
+        
+        // If the one they just clicked is a YES, then enable the transmit button
+        if (event.toBeProcessed)
+        {
+            _transmitButton.enabled = YES;
+            return;
+        }
+        // Otherwise we have to inspect all of them
+        for (MMLibraryEvent *event in _libraryEvents)
+        {
+            if (event.toBeProcessed)
+            {
+                // and if one is marked for processing, enable the transmit button
+                _transmitButton.enabled = YES;
+                return;
+            }
+        }
+        _transmitButton.enabled = NO;
+    }
+    
+}
+
+- (IBAction) interruptButtonWasPressed: (id) sender
+{
     if (sender == _interruptButton)
     {
         [_uploadOperationQueue cancelAllOperations];
@@ -146,7 +189,6 @@
         }
         _photos = [MMPhoto getPhotosFromLibrary: _library forEvent: _selectedEvent];
         [_photosTable reloadData];
-        _transmitButton.enabled = YES;
         _eventsTable.enabled = YES;
     }
 }
@@ -154,10 +196,10 @@
 - (void) markEventRow: (NSInteger) row
                    as: (MMEventStatus) status
 {
-    NSInteger colId = [_eventsTable columnWithIdentifier: @"OnlyColumn"];
+    NSInteger colId = [_eventsTable columnWithIdentifier: @"DisplayColumn"];
     MMComplexTableCellView *selectedCellView = [_eventsTable viewAtColumn: colId
                                                                       row: row
-                                                          makeIfNecessary: NO];
+                                                          makeIfNecessary: YES];
     if (selectedCellView)
     {
         if (status == MMEventStatusCompleted)
@@ -177,7 +219,6 @@
 
 - (void) uploadCompletedWithStatus: (BOOL) status
 {
-    _transmitButton.enabled = YES;
     _eventsTable.enabled = YES;
     _interruptButton.enabled = NO;
 }

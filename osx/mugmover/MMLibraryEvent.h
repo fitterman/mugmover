@@ -13,6 +13,7 @@
 
 @property (strong, readonly)    NSDictionary *      dictionary;
 @property (weak)                MMPhotoLibrary *    library;
+@property (assign)              BOOL                toBeProcessed;
 
 + (NSArray *) getEventsFromLibrary: (MMPhotoLibrary *) library;
 

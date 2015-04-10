@@ -137,4 +137,5 @@
 {
     return [_dictionary objectForKey: @"uuid"];
 }
+
 @end

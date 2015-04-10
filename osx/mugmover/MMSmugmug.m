@@ -133,7 +133,7 @@ long                retryCount;
                              _currentAccountHandle = [defaults stringForKey: handlePath];
                              if (!_currentAccountHandle)
                              {
-                                 _currentAccountHandle = @"jayphillipsstudio";
+                                 _currentAccountHandle = _handle;
                                  [defaults setObject: _currentAccountHandle forKey: handlePath];
                              }
                              NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _currentAccountHandle];
@@ -174,7 +174,8 @@ long                retryCount;
                      displayName: (NSString *) displayName
                      description: (NSString *) description
 {
-    NSMutableString *apiRequest = [@"folder/user/jayphillips" mutableCopy];
+    NSMutableString *apiRequest = [[NSMutableString alloc] initWithString: @"folder/user/"];
+    [apiRequest appendString: _handle];
     if (partialPath)
     {
         [apiRequest appendString: @"/"];
@@ -209,9 +210,10 @@ long                retryCount;
         {
             NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
             NSInteger httpStatus = [httpResponse statusCode];
+            NSString *uri = nil;
             if (httpStatus == 200)
             {
-                return [parsedServerResponse valueForKeyPath: @"Response.Uri"];
+                uri = [parsedServerResponse valueForKeyPath: @"Response.Uri"];
             }
             else if (httpStatus == 409) // Conflict, it exists
             {
@@ -225,13 +227,17 @@ long                retryCount;
                 {
                     object = [(NSDictionary *)object objectForKey: piece];
                 }
-                return (NSString *)object;
+                uri = (NSString *)object;
             }
             else
             {
                 DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
                 retries--;
                 DDLogError(@"response=%@", parsedServerResponse);
+            }
+            if (uri)
+            {
+                return [[uri componentsSeparatedByString: @"/"] lastObject];
             }
         }
     }
@@ -250,7 +256,8 @@ long                retryCount;
                       displayName: (NSString *) displayName
                       description: (NSString *) description
 {
-    NSMutableString *apiRequest = [@"folder/user/jayphillips" mutableCopy];
+    NSMutableString *apiRequest = [[NSMutableString alloc] initWithString: @"folder/user/"];
+    [apiRequest appendString: _handle];
     if (partialPath)
     {
         [apiRequest appendString: @"/"];

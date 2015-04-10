@@ -56,7 +56,7 @@ extern NSInteger const MMDefaultRetries;
  +filePath+ should be a fully-qualified path to a local file.
  */
 - (NSURLRequest *) upload: (NSString *) filePath
-                 albumUri: (NSString *) albumUri // Full URI to the album, e.g., /api/v2/album/jX5d1
+                  albumId: (NSString *) albumId // for example /api/v2/album/jX5d1
                     title: (NSString *) title
                   caption: (NSString *) caption
                      tags: (NSArray *) tags
@@ -98,12 +98,12 @@ extern NSInteger const MMDefaultRetries;
         return nil;
     }
 
-    if (!albumUri)
+    if (!albumId)
     {
-        DDLogError(@"albumUri is nil");
+        DDLogError(@"albumId is nil");
         return nil;
     }
-
+    NSString *albumUri = [NSString stringWithFormat: @"/api/v2/album/%@", albumId];
     NSMutableDictionary *headerValues = [[NSMutableDictionary alloc] init];
     if (!headerValues)
     {
@@ -139,17 +139,6 @@ extern NSInteger const MMDefaultRetries;
     return request;
 }
 
-- (NSDictionary *) getAllFoldersForUser
-{
-    // https://api.smugmug.com/api/v2/folder/user/jayphillips!folders
-    return nil;
-}
-
-- (NSDictionary *) getAllAlbumsForUser
-{
-    // #https://api/v2/user/cmac!albums?start=251&count=50
-    return nil;
-}
 #pragma mark Private Methods
 
 - (void)doOauthDance: (NSDictionary *)params;

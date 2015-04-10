@@ -42,6 +42,8 @@
 		C4A687A71ACC7682007CDC6D /* MMFileUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A61ACC7682007CDC6D /* MMFileUtility.m */; };
 		C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A91ACC773E007CDC6D /* MMDataUtility.m */; };
 		C4F3F1811A26E90900C2BE00 /* MMPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = C4F3F1801A26E90900C2BE00 /* MMPhoto.m */; };
+		C4F934FE1AD728E500AB465B /* MMCheckboxTableCellView.h in Sources */ = {isa = PBXBuildFile; fileRef = C4F934FD1AD728E500AB465B /* MMCheckboxTableCellView.h */; };
+		C4F935001AD7290600AB465B /* MMCheckboxTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */; };
 		C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B01A589D7100472CAF /* Debug.xcconfig */; };
 		C4FF95B41A589D7100472CAF /* mugmover.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B11A589D7100472CAF /* mugmover.xcconfig */; };
 		C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B21A589D7100472CAF /* Release.xcconfig */; };
@@ -132,6 +134,8 @@
 		C4A687A91ACC773E007CDC6D /* MMDataUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMDataUtility.m; sourceTree = "<group>"; };
 		C4F3F17F1A26E90900C2BE00 /* MMPhoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMPhoto.h; sourceTree = "<group>"; };
 		C4F3F1801A26E90900C2BE00 /* MMPhoto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPhoto.m; sourceTree = "<group>"; };
+		C4F934FD1AD728E500AB465B /* MMCheckboxTableCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMCheckboxTableCellView.h; sourceTree = "<group>"; };
+		C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMCheckboxTableCellView.m; sourceTree = "<group>"; };
 		C4FF95B01A589D7100472CAF /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		C4FF95B11A589D7100472CAF /* mugmover.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = mugmover.xcconfig; sourceTree = "<group>"; };
 		C4FF95B21A589D7100472CAF /* Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
@@ -183,6 +187,8 @@
 				C4968CC81A15101500F34E46 /* MMAppDelegate.h */,
 				C4968CC91A15101500F34E46 /* MMAppDelegate.m */,
 				C4968CCB1A15101500F34E46 /* MainMenu.xib */,
+				C4F934FD1AD728E500AB465B /* MMCheckboxTableCellView.h */,
+				C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */,
 				C49376E11ACEF1C9006DB77D /* MMMasterViewController.h */,
 				C49376E21ACEF1C9006DB77D /* MMMasterViewController.m */,
 				C49376E31ACEF1C9006DB77D /* MMMasterViewController.xib */,
@@ -489,8 +495,10 @@
 				C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */,
 				C42F7AD81A153368006E38DD /* MMPhotoLibrary.m in Sources */,
 				C4968CCA1A15101500F34E46 /* MMAppDelegate.m in Sources */,
+				C4F934FE1AD728E500AB465B /* MMCheckboxTableCellView.h in Sources */,
 				C49377141AD05D4E006DB77D /* MMComplexTableCellView.m in Sources */,
 				C49376E41ACEF1C9006DB77D /* MMMasterViewController.m in Sources */,
+				C4F935001AD7290600AB465B /* MMCheckboxTableCellView.m in Sources */,
 				C4968CC31A15101500F34E46 /* main.m in Sources */,
 				C47304211AC317320008E53E /* MMOauthAbstract.m in Sources */,
 				C47304241AC455600008E53E /* MMOauthFlickr.m in Sources */,
