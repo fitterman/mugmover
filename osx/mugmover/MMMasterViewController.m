@@ -29,7 +29,7 @@
         
         _outstandingRequests = 0;
         
-        NSString* imageName = [[NSBundle mainBundle] pathForResource: @"Active-128" ofType: @"png"];
+        NSString* imageName = [[NSBundle mainBundle] pathForResource: @"Active-128" ofType: @"gif"];
         _activeIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
         imageName = [[NSBundle mainBundle] pathForResource: @"Completed-128" ofType: @"png"];
         _completedIcon = [[NSImage alloc] initWithContentsOfFile:imageName];

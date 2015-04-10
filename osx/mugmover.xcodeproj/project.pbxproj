@@ -44,6 +44,7 @@
 		C4F3F1811A26E90900C2BE00 /* MMPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = C4F3F1801A26E90900C2BE00 /* MMPhoto.m */; };
 		C4F934FE1AD728E500AB465B /* MMCheckboxTableCellView.h in Sources */ = {isa = PBXBuildFile; fileRef = C4F934FD1AD728E500AB465B /* MMCheckboxTableCellView.h */; };
 		C4F935001AD7290600AB465B /* MMCheckboxTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */; };
+		C4F935041AD884C200AB465B /* Active-128.gif in Resources */ = {isa = PBXBuildFile; fileRef = C4F935031AD884C200AB465B /* Active-128.gif */; };
 		C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B01A589D7100472CAF /* Debug.xcconfig */; };
 		C4FF95B41A589D7100472CAF /* mugmover.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B11A589D7100472CAF /* mugmover.xcconfig */; };
 		C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B21A589D7100472CAF /* Release.xcconfig */; };
@@ -136,6 +137,7 @@
 		C4F3F1801A26E90900C2BE00 /* MMPhoto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPhoto.m; sourceTree = "<group>"; };
 		C4F934FD1AD728E500AB465B /* MMCheckboxTableCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMCheckboxTableCellView.h; sourceTree = "<group>"; };
 		C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMCheckboxTableCellView.m; sourceTree = "<group>"; };
+		C4F935031AD884C200AB465B /* Active-128.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "Active-128.gif"; sourceTree = "<group>"; };
 		C4FF95B01A589D7100472CAF /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		C4FF95B11A589D7100472CAF /* mugmover.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = mugmover.xcconfig; sourceTree = "<group>"; };
 		C4FF95B21A589D7100472CAF /* Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
@@ -167,6 +169,7 @@
 			isa = PBXGroup;
 			children = (
 				C404A9CB1AD6C90400E197F1 /* Active-128.png */,
+				C4F935031AD884C200AB465B /* Active-128.gif */,
 				C404A9CC1AD6C90400E197F1 /* Completed-128.png */,
 			);
 			name = Assets;
@@ -437,6 +440,7 @@
 				C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */,
 				C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */,
 				C4968CCD1A15101500F34E46 /* MainMenu.xib in Resources */,
+				C4F935041AD884C200AB465B /* Active-128.gif in Resources */,
 				C49376E51ACEF1C9006DB77D /* MMMasterViewController.xib in Resources */,
 				C404A9CE1AD6C90400E197F1 /* Completed-128.png in Resources */,
 				C404A9CD1AD6C90400E197F1 /* Active-128.png in Resources */,
