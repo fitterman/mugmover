@@ -153,6 +153,10 @@
 - (IBAction) transmitButtonWasPressed: (id) sender {
     if (sender == _transmitButton)
     {
+        // In theory, we should do this somewhere else, but in fact, it doesn't matter whether we
+        // set the delegate until the button finally gets pressed.
+        [_eventsTable setDelegate:self];
+
         _transmitButton.enabled = NO;
         _eventsTable.enabled = NO;
         NSInteger row = 0;
@@ -231,5 +235,22 @@
     _eventsTable.enabled = YES;
     _transmitButton.enabled = YES;
     _interruptButton.enabled = NO;
+}
+
+#pragma mark NSTableView delegate methods
+
+/** 
+ * This delegate method is only registered to the _eventsTable, so we do not bother
+ * checking which table is coming in.
+ */
+- (void )tableView: (NSTableView *) eventsTable
+   willDisplayCell: (id) aCell
+    forTableColumn: (NSTableColumn *) aTableColumn
+               row: (NSInteger) rowIndex
+{
+    if(([[aTableColumn identifier] isEqualToString:@"checkboxes"]))
+    {
+        [aCell setEnabled: [eventsTable isEnabled]];
+    }
 }
 @end

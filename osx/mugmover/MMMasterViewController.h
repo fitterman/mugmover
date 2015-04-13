@@ -12,7 +12,7 @@
 @class MMLibraryEvent;
 @class MMSmugmug;
 
-@interface MMMasterViewController : NSViewController
+@interface MMMasterViewController : NSViewController <NSTableViewDelegate>
 
 @property (weak)    IBOutlet    NSTableView *           eventsTable;
 @property (weak)    IBOutlet    NSButton *              interruptButton;
