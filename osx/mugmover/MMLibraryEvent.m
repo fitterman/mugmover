@@ -87,20 +87,14 @@
             }
         }
     }
-    return [[NSBundle mainBundle] pathForResource: @"Active-128" ofType: @"png"];
+    return [[NSBundle mainBundle] pathForResource: @"Photograph-128" ofType: @"png"];
 }
 
 - (void) setActivePhoto: (MMPhoto *) photo
+             withStatus: (MMEventStatus) status
 {
     _activePhoto = photo;
-    if (_activePhoto)
-    {
-        _status = MMEventStatusActive;
-    }
-    else
-    {
-        _status = MMEventStatusCompleted;
-    }
+    _status = status;
 }
 
 - (NSString *) dateRange

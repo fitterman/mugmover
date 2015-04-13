@@ -64,6 +64,11 @@ extern const NSInteger MMDefaultRetries;
             NSMutableDictionary *mappingDictionary = [[NSMutableDictionary alloc] initWithCapacity: [photos count]];
             [albumState setValue: mappingDictionary forKey: @"mapping"];
         }
+
+        // We use these next two to keep track of whether everything completes
+        NSInteger completedTransfers = 0;
+        MMEventStatus finalStatus = MMEventStatusIncomplete; // Assume something goes wrong
+
         for (MMPhoto *photo in photos)
         {
             // The +mappingKeyPath+ points to the Smugmug photo ID associated with this photo the
@@ -72,10 +77,12 @@ extern const NSInteger MMDefaultRetries;
             NSString *mappingKeyPath = [NSString stringWithFormat: @"mapping.%@", photo.versionUuid];
             if (mappingKeyPath && [albumState valueForKeyPath: mappingKeyPath])
             {
-                continue; // Skip everything if you've done it all before
+                completedTransfers++;   // We consider it sent already so we can get the icons right
+                continue;               // And then we skip the processing
             }
             [photo processPhoto];
-            [_event setActivePhoto: photo];
+            [_event setActivePhoto: photo
+                        withStatus: MMEventStatusActive];
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
                {
                    [_viewController.eventsTable reloadData]; // TODO Optimize to single cell
@@ -123,25 +130,32 @@ extern const NSInteger MMDefaultRetries;
                         [albumState setValue: smugmugImageId forKey: mappingKeyPath];
                         [defaults setObject: albumState forKey: albumKey];
                         [defaults synchronize];
+                        completedTransfers++;
                     }
                 }
             }
             uploadRequest = nil;
-            if ((!status) || self.isCancelled)
+            if (self.isCancelled)
             {
                 break;
             }
         }
-        // And at the end we have to do it in case some change did not get
+        if (completedTransfers == [photos count])
+        {
+            finalStatus = MMEventStatusCompleted;
+        }
+
+        // And at the end we have to do it in case some change did not get stored
         [defaults setObject: albumState forKey: albumKey];
         [defaults synchronize];
+
+        [_event setActivePhoto: nil withStatus: finalStatus];
+        [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
+         {
+             [_viewController.eventsTable reloadData]; // TODO Optimize to single cell
+         }
+         ];
     }
-    [_event setActivePhoto: nil]; // This resets it back to the original photo
-    [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
-     {
-         [_viewController.eventsTable reloadData]; // TODO Optimize to single cell
-     }
-    ];
     NSOperationQueue *queue = [NSOperationQueue currentQueue];
     if (queue.operationCount == 1)
     {

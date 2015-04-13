@@ -13,6 +13,7 @@
 typedef NS_ENUM(NSInteger, MMEventStatus) {
     MMEventStatusNone,
     MMEventStatusActive,
+    MMEventStatusIncomplete,
     MMEventStatusCompleted,
 };
 
@@ -39,7 +40,8 @@ typedef NS_ENUM(NSInteger, MMEventStatus) {
 
 - (NSString *) name;
 
-- (void) setActivePhoto: (MMPhoto *) photo;
+- (void) setActivePhoto: (MMPhoto *) photo
+             withStatus: (MMEventStatus) status;
 
 - (NSString *) uuid;
 

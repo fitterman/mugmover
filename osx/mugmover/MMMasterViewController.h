@@ -21,6 +21,7 @@
 
 @property (strong)              NSImage *               activeIcon;
 @property (strong)              NSImage *               completedIcon;
+@property (strong)              NSImage *               incompleteIcon;
 @property (strong)              NSArray *               libraryEvents;
 @property (assign)              NSInteger               outstandingRequests;
 @property (strong)              NSArray *               photos;

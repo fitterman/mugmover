@@ -33,6 +33,8 @@
         _activeIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
         imageName = [[NSBundle mainBundle] pathForResource: @"Completed-128" ofType: @"png"];
         _completedIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
+        imageName = [[NSBundle mainBundle] pathForResource: @"Incomplete-128" ofType: @"png"];
+        _incompleteIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
     }
     return self;
 }
@@ -87,6 +89,10 @@
                 {
                     cellView.iconField.image = _activeIcon;
                 }
+            }
+            else if (event.status == MMEventStatusIncomplete)
+            {
+                cellView.iconField.image = _incompleteIcon;
             }
             else
             {
