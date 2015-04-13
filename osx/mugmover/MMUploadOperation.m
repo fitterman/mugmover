@@ -43,7 +43,8 @@ extern const NSInteger MMDefaultRetries;
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
      {
          [_viewController markEventRow: _row
-                                    as: MMEVentStatusActive];
+                                status: MMEVentStatusActive
+                                 photo: nil];
      }
     ];
 
@@ -84,6 +85,10 @@ extern const NSInteger MMDefaultRetries;
                 continue; // Skip everything if you've done it all before
             }
             [photo processPhoto];
+            [_viewController markEventRow: _row
+                                   status: MMEVentStatusActive
+                                    photo: photo];
+
             __block NSString *smugmugImageId = nil;
             // This must be declared inside the loop because it references "photo"
             ServiceResponseHandler processSmugmugUpload = ^(NSDictionary *response)
@@ -141,7 +146,8 @@ extern const NSInteger MMDefaultRetries;
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
         {
             [_viewController markEventRow: _row
-                                       as: MMEventStatusCompleted];
+                                   status: MMEventStatusCompleted
+                                    photo: nil];
             [_viewController uploadCompletedWithStatus: status];
         }
      ];

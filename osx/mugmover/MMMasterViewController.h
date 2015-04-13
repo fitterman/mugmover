@@ -7,6 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
+@class MMPhoto;
 @class MMPhotoLibrary;
 @class MMLibraryEvent;
 
@@ -34,7 +35,8 @@ typedef NS_ENUM(NSInteger, MMEventStatus) {
 @property (strong)              NSOperationQueue *      uploadOperationQueue;
 
 - (void) markEventRow: (NSInteger) row
-                   as: (MMEventStatus) status;
+               status: (MMEventStatus) status
+                photo: (MMPhoto *) photo;
 
 - (void) uploadCompletedWithStatus: (BOOL) status;
 

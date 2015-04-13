@@ -90,7 +90,7 @@ extern Float64 const MMDegreesPerRadian;
 
     NSString *sortOrder =  [library.photosDatabase
                             stringForQuery: @"SELECT sortKeyPath FROM RKAlbum WHERE uuid = 'eventFilterBarAlbum'"];
-    NSString *orderClause = @"ORDER BY imageDate ";
+    NSString *orderClause = @"ORDER BY v.imageDate ";
     if ([sortOrder hasSuffix: @"&exifProperties.ImageDate"])
     {
         orderClause = @"ORDER BY v.imageDate ";

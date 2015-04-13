@@ -81,10 +81,13 @@
         {
             if ([tableColumn.identifier isEqualToString: @"NameColumn"])
             {
-                NSArray *pieces = @[[NSNumber numberWithInteger:row], [photo fileName], [photo versionName]];
-                cellView.firstTitleTextField.stringValue = [pieces componentsJoinedByString: @"; "];
+                cellView.firstTitleTextField.stringValue = [photo versionName];
                 cellView.imageView.image = [[NSImage alloc] initByReferencingFile: [photo fullImagePath]];
-                cellView.secondTextField.stringValue = [[photo fileSize] stringValue];
+                NSString *byteSize = [NSByteCountFormatter stringFromByteCount: [[photo fileSize] longLongValue]
+                                                                    countStyle: NSByteCountFormatterCountStyleFile];
+                cellView.secondTextField.stringValue = [NSString stringWithFormat: @"%@ (%@)",
+                                                                    [photo fileName],
+                                                                    byteSize];
             }
         }
     }
@@ -195,7 +198,8 @@
 }
 
 - (void) markEventRow: (NSInteger) row
-                   as: (MMEventStatus) status
+               status: (MMEventStatus) status
+                photo: (MMPhoto *) photo
 {
     NSInteger colId = [_eventsTable columnWithIdentifier: @"DisplayColumn"];
     MMComplexTableCellView *selectedCellView = [_eventsTable viewAtColumn: colId
@@ -209,7 +213,17 @@
         }
         else if (status == MMEVentStatusActive)
         {
-            selectedCellView.iconField.image = _activeIcon;
+            if (photo)
+            {
+                selectedCellView.imageView.image = [[NSImage alloc] initByReferencingFile: photo.iPhotoOriginalImagePath];
+            }
+            // We "optimize" this update primarily so the animation doesn't start over each
+            // time a photo is sent. This can cause the animation to only show the first frame or
+            // two when photos are being transmitted quickly.
+            if (selectedCellView.iconField.image != _activeIcon)
+            {
+                selectedCellView.iconField.image = _activeIcon;
+            }
         }
         else
         {
