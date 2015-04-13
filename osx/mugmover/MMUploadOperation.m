@@ -40,13 +40,6 @@ extern const NSInteger MMDefaultRetries;
 - (void) main
 {
     BOOL status = NO;
-    [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
-     {
-         [_viewController markEventRow: _row
-                                status: MMEVentStatusActive
-                                 photo: nil];
-     }
-    ];
 
     @autoreleasepool
     {
@@ -85,9 +78,12 @@ extern const NSInteger MMDefaultRetries;
                 continue; // Skip everything if you've done it all before
             }
             [photo processPhoto];
-            [_viewController markEventRow: _row
-                                   status: MMEVentStatusActive
-                                    photo: photo];
+            [_event setActivePhoto: photo];
+            [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
+               {
+                   [_viewController.eventsTable reloadData]; // TODO Optimize to single cell
+               }
+             ];
 
             __block NSString *smugmugImageId = nil;
             // This must be declared inside the loop because it references "photo"
@@ -143,13 +139,15 @@ extern const NSInteger MMDefaultRetries;
         [defaults setObject: albumState forKey: albumKey];
         [defaults synchronize];
     }
-    [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
-        {
-            [_viewController markEventRow: _row
-                                   status: MMEventStatusCompleted
-                                    photo: nil];
-            [_viewController uploadCompletedWithStatus: status];
-        }
-     ];
+    [_event setActivePhoto: nil]; // To mark we are done
+    NSOperationQueue *queue = [NSOperationQueue currentQueue];
+    if (queue.operationCount == 1)
+    {
+        [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
+         {
+             [_viewController uploadCompleted];
+         }
+         ];
+    }
 }
 @end

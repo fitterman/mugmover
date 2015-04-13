@@ -16,8 +16,8 @@
 
 @interface MMAppDelegate : NSObject <NSApplicationDelegate>
 
-@property (weak)    IBOutlet    NSWindow *window;
-@property (strong)              MMPhotoLibrary *        library;
+@property (weak)                IBOutlet    NSWindow *window;
+@property (strong)                          MMPhotoLibrary *            library;
 
 - (void) close;
 

@@ -16,7 +16,7 @@
 
 #import "MMMasterViewController.h"
 @interface MMAppDelegate()
-@property (nonatomic,strong) IBOutlet MMMasterViewController *masterViewController;
+@property (nonatomic, strong) IBOutlet MMMasterViewController *masterViewController;
 @end
 
 @implementation MMAppDelegate

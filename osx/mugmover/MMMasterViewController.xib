@@ -11,7 +11,7 @@
                 <outlet property="interruptButton" destination="iVd-Tc-sNI" id="c5P-D3-1zf"/>
                 <outlet property="photosTable" destination="zrW-or-1OX" id="Z8W-4W-5lm"/>
                 <outlet property="transmitButton" destination="vj0-rp-sGR" id="PjQ-Pe-E5W"/>
-                <outlet property="view" destination="Hz6-mo-xeY" id="0bl-1N-x8E"/>
+                <outlet property="view" destination="Hz6-mo-xeY" id="jmq-Pq-amT"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
@@ -237,9 +237,12 @@
                         <action selector="transmitButtonWasPressed:" target="-2" id="oOO-v0-mVb"/>
                     </connections>
                 </button>
-                <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iVd-Tc-sNI">
+                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iVd-Tc-sNI">
                     <rect key="frame" x="259" y="13" width="82" height="32"/>
                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="70" id="06b-lY-3Mt"/>
+                    </constraints>
                     <buttonCell key="cell" type="push" title="Interrupt" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ENU-DI-9Ag">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
@@ -250,15 +253,15 @@
                 </button>
             </subviews>
             <constraints>
-                <constraint firstItem="vj0-rp-sGR" firstAttribute="leading" secondItem="iVd-Tc-sNI" secondAttribute="trailing" constant="12" symbolic="YES" id="3tw-vX-Qv4"/>
                 <constraint firstItem="9Wh-uk-i0x" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" constant="20" symbolic="YES" id="3uL-XL-epb"/>
+                <constraint firstItem="iVd-Tc-sNI" firstAttribute="baseline" secondItem="vj0-rp-sGR" secondAttribute="baseline" id="8cY-pT-ufk"/>
                 <constraint firstAttribute="trailing" secondItem="Tuw-5b-muO" secondAttribute="trailing" constant="20" symbolic="YES" id="9mY-h1-SOP"/>
-                <constraint firstItem="vj0-rp-sGR" firstAttribute="baseline" secondItem="iVd-Tc-sNI" secondAttribute="baseline" id="FIE-U4-gNd"/>
-                <constraint firstItem="iVd-Tc-sNI" firstAttribute="top" secondItem="9Wh-uk-i0x" secondAttribute="bottom" constant="40" id="FtQ-eb-fT1"/>
+                <constraint firstItem="vj0-rp-sGR" firstAttribute="leading" secondItem="iVd-Tc-sNI" secondAttribute="trailing" constant="12" symbolic="YES" id="MXz-eP-0vW"/>
                 <constraint firstItem="Tuw-5b-muO" firstAttribute="leading" secondItem="9Wh-uk-i0x" secondAttribute="trailing" constant="22" id="S4N-FO-XFU"/>
                 <constraint firstItem="9Wh-uk-i0x" firstAttribute="bottom" secondItem="Tuw-5b-muO" secondAttribute="bottom" id="TF5-hO-5ae"/>
                 <constraint firstItem="9Wh-uk-i0x" firstAttribute="trailing" secondItem="vj0-rp-sGR" secondAttribute="trailing" id="Zv9-b6-OzB"/>
                 <constraint firstItem="Tuw-5b-muO" firstAttribute="top" secondItem="9Wh-uk-i0x" secondAttribute="top" id="b7s-qh-BNK"/>
+                <constraint firstAttribute="bottom" secondItem="iVd-Tc-sNI" secondAttribute="bottom" constant="20" symbolic="YES" id="d0l-km-51n"/>
                 <constraint firstAttribute="bottom" secondItem="Tuw-5b-muO" secondAttribute="bottom" constant="81" id="kmH-4m-3ex"/>
                 <constraint firstItem="Tuw-5b-muO" firstAttribute="top" secondItem="Hz6-mo-xeY" secondAttribute="top" constant="17" id="nae-ch-so6"/>
                 <constraint firstItem="Tuw-5b-muO" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" constant="439" id="tqS-UX-GFu"/>

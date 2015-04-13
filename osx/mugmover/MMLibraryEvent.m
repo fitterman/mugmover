@@ -9,6 +9,7 @@
 #import "MMLibraryEvent.h"
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
+#import "MMMasterViewController.h"
 #import <FMDatabase.h>
 #import <FMDB/FMDatabaseAdditions.h>
 
@@ -47,6 +48,7 @@
     while (resultSet && [resultSet next])
     {
         [result addObject: [[MMLibraryEvent alloc] initFromDictionary: [resultSet resultDictionary]
+                                                                  row: [result count] + 1
                                                               library: library]];
     }
     [resultSet close];
@@ -54,10 +56,13 @@
 }
 
 - (id) initFromDictionary: (NSDictionary *) inDictionary
+                      row: (NSInteger) row
                   library: (MMPhotoLibrary *) library
 {
     _dictionary = inDictionary;
     _library = library;
+    _row = row;
+    _status = MMEventStatusNone;
     return self;
 }
 
@@ -83,6 +88,19 @@
         }
     }
     return [[NSBundle mainBundle] pathForResource: @"Active-128" ofType: @"png"];
+}
+
+- (void) setActivePhoto: (MMPhoto *) photo
+{
+    _activePhoto = photo;
+    if (_activePhoto)
+    {
+        _status = MMEventStatusActive;
+    }
+    else
+    {
+        _status = MMEventStatusCompleted;
+    }
 }
 
 - (NSString *) dateRange
@@ -125,6 +143,8 @@
     }
     return [results componentsJoinedByString: @" – "];
 }
+
+#pragma mark Attribute Accessors
 
 - (NSNumber *) filecount
 {

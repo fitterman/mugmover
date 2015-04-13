@@ -13,12 +13,6 @@
 
 @interface MMMasterViewController : NSViewController
 
-typedef NS_ENUM(NSInteger, MMEventStatus) {
-    MMEventStatusNone,
-    MMEVentStatusActive,
-    MMEventStatusCompleted,
-};
-
 @property (weak)    IBOutlet    NSTableView *           eventsTable;
 @property (weak)    IBOutlet    NSButton *              interruptButton;
 @property (weak)    IBOutlet    NSTableView *           photosTable;
@@ -34,10 +28,6 @@ typedef NS_ENUM(NSInteger, MMEventStatus) {
 @property (assign)              NSInteger               selectedRow;
 @property (strong)              NSOperationQueue *      uploadOperationQueue;
 
-- (void) markEventRow: (NSInteger) row
-               status: (MMEventStatus) status
-                photo: (MMPhoto *) photo;
-
-- (void) uploadCompletedWithStatus: (BOOL) status;
+- (void) uploadCompleted;
 
 @end

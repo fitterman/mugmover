@@ -66,8 +66,32 @@
             cellView.secondTextField.stringValue = [NSString stringWithFormat: @"%@ (%@)",
                                                                 [event dateRange],
                                                                 [event filecount]];
-            cellView.imageView.image = [[NSImage alloc] initByReferencingFile: [event iconImagePath]];
-            cellView.iconField.image = nil;
+            if (event.activePhoto && event.activePhoto.iPhotoOriginalImagePath)
+            {
+                cellView.imageView.image = [[NSImage alloc] initByReferencingFile: event.activePhoto.iPhotoOriginalImagePath];
+            }
+            else
+            {
+                cellView.imageView.image = [[NSImage alloc] initByReferencingFile: [event iconImagePath]];
+            }
+            if (event.status == MMEventStatusCompleted)
+            {
+                cellView.iconField.image = _completedIcon;
+            }
+            else if (event.status == MMEventStatusActive)
+            {
+                // We "optimize" this update primarily so the animation doesn't start over each
+                // time a photo is sent. This can cause the animation to only show the first frame or
+                // two when photos are being transmitted quickly.
+                if (cellView.iconField.image != _activeIcon)
+                {
+                    cellView.iconField.image = _activeIcon;
+                }
+            }
+            else
+            {
+                cellView.iconField.image = nil;
+            }
         }
         else if ([tableColumn.identifier isEqualToString: @"CheckboxColumn"])
         {
@@ -197,44 +221,10 @@
     }
 }
 
-- (void) markEventRow: (NSInteger) row
-               status: (MMEventStatus) status
-                photo: (MMPhoto *) photo
-{
-    NSInteger colId = [_eventsTable columnWithIdentifier: @"DisplayColumn"];
-    MMComplexTableCellView *selectedCellView = [_eventsTable viewAtColumn: colId
-                                                                      row: row
-                                                          makeIfNecessary: YES];
-    if (selectedCellView)
-    {
-        if (status == MMEventStatusCompleted)
-        {
-            selectedCellView.iconField.image = _completedIcon;
-        }
-        else if (status == MMEVentStatusActive)
-        {
-            if (photo)
-            {
-                selectedCellView.imageView.image = [[NSImage alloc] initByReferencingFile: photo.iPhotoOriginalImagePath];
-            }
-            // We "optimize" this update primarily so the animation doesn't start over each
-            // time a photo is sent. This can cause the animation to only show the first frame or
-            // two when photos are being transmitted quickly.
-            if (selectedCellView.iconField.image != _activeIcon)
-            {
-                selectedCellView.iconField.image = _activeIcon;
-            }
-        }
-        else
-        {
-            selectedCellView.iconField.image = nil;
-        }
-    }
-}
-
-- (void) uploadCompletedWithStatus: (BOOL) status
+- (void) uploadCompleted
 {
     _eventsTable.enabled = YES;
+    _transmitButton.enabled = YES;
     _interruptButton.enabled = NO;
 }
 @end
