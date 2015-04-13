@@ -78,4 +78,6 @@
 
 - (NSString *) title;
 
+- (NSString *) versionName;
+
 @end

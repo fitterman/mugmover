@@ -81,7 +81,8 @@
         {
             if ([tableColumn.identifier isEqualToString: @"NameColumn"])
             {
-                cellView.firstTitleTextField.stringValue = [photo fileName];
+                NSArray *pieces = @[[NSNumber numberWithInteger:row], [photo fileName], [photo versionName]];
+                cellView.firstTitleTextField.stringValue = [pieces componentsJoinedByString: @"; "];
                 cellView.imageView.image = [[NSImage alloc] initByReferencingFile: [photo fullImagePath]];
                 cellView.secondTextField.stringValue = [[photo fileSize] stringValue];
             }

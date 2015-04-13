@@ -49,8 +49,7 @@ NSInteger const MMDefaultRetries = 3;
 #define QUERY_BY_VERSION_UUID   BASE_QUERY \
                                 "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and v.uuid = ? "
 #define QUERY_BY_EVENT_UUID     BASE_QUERY \
-                                "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and m.projectUuid = ? " \
-                                "ORDER BY m.fileCreationDate "
+                                "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and m.projectUuid = ? "
 
 
 extern Float64 const MMDegreesPerRadian;
@@ -77,9 +76,8 @@ extern Float64 const MMDegreesPerRadian;
     [dateFormat setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
     dateFormat.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
     
-    NSInteger recordCount  = [library.photosDatabase
-                              intForQuery: @"SELECT count(*) FROM RKMaster "
-                              "WHERE isInTrash != 1"];
+    NSInteger recordCount  = [library.photosDatabase intForQuery: @"SELECT count(*) FROM RKMaster "
+                                                                   "WHERE isInTrash != 1"];
     
     NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: recordCount];
 
@@ -89,7 +87,43 @@ extern Float64 const MMDegreesPerRadian;
     NSInteger exifNegativeCounter = 0;
     
     NSString *eventUuid = [event uuid];
-    FMResultSet *resultSet = [library.photosDatabase executeQuery: @QUERY_BY_EVENT_UUID
+
+    NSString *sortOrder =  [library.photosDatabase
+                            stringForQuery: @"SELECT sortKeyPath FROM RKAlbum WHERE uuid = 'eventFilterBarAlbum'"];
+    NSString *orderClause = @"ORDER BY imageDate ";
+    if ([sortOrder hasSuffix: @"&exifProperties.ImageDate"])
+    {
+        orderClause = @"ORDER BY v.imageDate ";
+    }
+    else if ([sortOrder hasSuffix: @"&iptcProperties.Keywords"])
+    {
+        // TODO this is unsupported because (a) it is complicated and (b) I don't believe many people use this.
+        // NOTE: Aperture supports hierarchical keywords
+    }
+    else if ([sortOrder hasSuffix: @"&basicProperties.MainRating"])
+    {
+        orderClause = @"ORDER BY v.mainRating ";
+    }
+    else if ([sortOrder hasSuffix: @"&basicProperties.VersionName"])
+    {
+        orderClause = @"ORDER BY v.name ";
+    }
+    NSInteger sortAscending =  [library.photosDatabase
+                                intForQuery: @"SELECT sortAscending FROM RKAlbum WHERE uuid = 'eventFilterBarAlbum'"];
+
+    // This looks a little odd, but it's easier to just put in two tie-breakers without bothering
+    // to see if one of the keys is redundant.
+    if (!sortAscending)
+    {
+        orderClause = [orderClause stringByAppendingString: @" DESC, v.imageDate DESC, v.name DESC "];
+    }
+    else
+    {
+        orderClause = [orderClause stringByAppendingString: @", v.imageDate, v.name "];
+    }
+
+    NSString *query = [@QUERY_BY_EVENT_UUID stringByAppendingString: orderClause];
+    FMResultSet *resultSet = [library.photosDatabase executeQuery: query
                                              withArgumentsInArray: @[eventUuid]];
     while (resultSet && [resultSet next])
     {
@@ -925,6 +959,11 @@ extern Float64 const MMDegreesPerRadian;
         [self populateExifFromSourceFile];
     }
     return self.iPhotoOriginalImagePath;
+}
+
+- (NSString *) versionName
+{
+    return [_attributes valueForKeyPath: @"photo.versionName"];
 }
 
 
