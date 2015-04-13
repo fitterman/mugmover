@@ -69,15 +69,14 @@ extern Float64 const MMDegreesPerRadian;
     }
     return nil;
 }
-+ (NSArray *) getPhotosFromLibrary: (MMPhotoLibrary *) library
-                          forEvent: (MMLibraryEvent *) event
++ (NSArray *) getPhotosForEvent: (MMLibraryEvent *) event
 {
     NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
     [dateFormat setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
     dateFormat.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
     
-    NSInteger recordCount  = [library.photosDatabase intForQuery: @"SELECT count(*) FROM RKMaster "
-                                                                   "WHERE isInTrash != 1"];
+    NSInteger recordCount  = [event.library.photosDatabase intForQuery: @"SELECT count(*) FROM RKMaster "
+                                                                         "WHERE isInTrash != 1"];
     
     NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: recordCount];
 
@@ -88,7 +87,7 @@ extern Float64 const MMDegreesPerRadian;
     
     NSString *eventUuid = [event uuid];
 
-    NSString *sortOrder =  [library.photosDatabase
+    NSString *sortOrder =  [event.library.photosDatabase
                             stringForQuery: @"SELECT sortKeyPath FROM RKAlbum WHERE uuid = 'eventFilterBarAlbum'"];
     NSString *orderClause = @"ORDER BY v.imageDate ";
     if ([sortOrder hasSuffix: @"&exifProperties.ImageDate"])
@@ -108,7 +107,7 @@ extern Float64 const MMDegreesPerRadian;
     {
         orderClause = @"ORDER BY v.name ";
     }
-    NSInteger sortAscending =  [library.photosDatabase
+    NSInteger sortAscending =  [event.library.photosDatabase
                                 intForQuery: @"SELECT sortAscending FROM RKAlbum WHERE uuid = 'eventFilterBarAlbum'"];
 
     // This looks a little odd, but it's easier to just put in two tie-breakers without bothering
@@ -123,8 +122,8 @@ extern Float64 const MMDegreesPerRadian;
     }
 
     NSString *query = [@QUERY_BY_EVENT_UUID stringByAppendingString: orderClause];
-    FMResultSet *resultSet = [library.photosDatabase executeQuery: query
-                                             withArgumentsInArray: @[eventUuid]];
+    FMResultSet *resultSet = [event.library.photosDatabase executeQuery: query
+                                                   withArgumentsInArray: @[eventUuid]];
     while (resultSet && [resultSet next])
     {
         counter++;
@@ -141,7 +140,7 @@ extern Float64 const MMDegreesPerRadian;
         
         NSDictionary *resultDictionary = [resultSet resultDictionary];
         MMPhoto *photo = [[MMPhoto alloc] initFromDictionary: resultDictionary
-                                                     library: library];
+                                                     library: event.library];
  /* ################################################################################################
   * TODO Restore this functionality
   

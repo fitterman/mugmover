@@ -155,9 +155,8 @@
             if (event.toBeProcessed)
             {
                 MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
-                                                                                         from: _library
                                                                                           row: row
-                                                                                      service: _library.serviceApi
+                                                                                      service: _serviceApi
                                                                                viewController: self];
                 [_uploadOperationQueue addOperation: uploadOperation];
             }
@@ -215,7 +214,7 @@
         {
             [photo close];
         }
-        _photos = [MMPhoto getPhotosFromLibrary: _library forEvent: _selectedEvent];
+        _photos = [MMPhoto getPhotosForEvent: _selectedEvent];
         [_photosTable reloadData];
         _eventsTable.enabled = YES;
     }

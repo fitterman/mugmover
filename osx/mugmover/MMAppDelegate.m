@@ -37,23 +37,22 @@ BOOL const MMdebugLevel;
     _library = [[MMPhotoLibrary alloc] initWithPath: (NSString *) @"/Users/Bob/Pictures/Jay Phillips"];
     if (_library)
     {
-        self.masterViewController.library = _library;
         self.masterViewController.libraryEvents = [MMLibraryEvent getEventsFromLibrary: _library];
 
         // 3. Add the view controller to the Window's content view
         [self.window.contentView addSubview:self.masterViewController.view];
         self.masterViewController.view.frame = ((NSView*)self.window.contentView).bounds;
         
-        MMSmugmug *serviceApi = [[MMSmugmug alloc] initWithHandle: @"jayphillips"];
+        _serviceApi = [[MMSmugmug alloc] initWithHandle: @"jayphillips"];
         
-        if (serviceApi)
+        if (_serviceApi)
         {
             // Register for KVO on some network-associated values
-            [serviceApi addObserver: self
-                         forKeyPath: @"initializationProgress"
-                            options: (NSKeyValueObservingOptionNew)
-                            context: (__bridge void *)(self)];
-            [serviceApi configureOauthForLibrary: _library];
+            [_serviceApi addObserver: self
+                          forKeyPath: @"initializationProgress"
+                             options: (NSKeyValueObservingOptionNew)
+                             context: (__bridge void *)(self)];
+            [_serviceApi configureOauthForLibrary: _library];
         }
     }
 }
@@ -77,6 +76,7 @@ BOOL const MMdebugLevel;
             DDLogInfo(@"       initializationProgress=%@", newValue);
             if ([newValue floatValue] == 1.0)
             {
+                self.masterViewController.serviceApi = _serviceApi;
                 //[MMPhoto getPhotosFromLibrary: _library];    /* This kicks off the whole process from the database without a service */
                 //[stream getPhotos]; /* This kicks off the whole process with flickr */
             }
@@ -95,6 +95,11 @@ BOOL const MMdebugLevel;
     {
         [_library close];
         _library = nil;
+    }
+    if (_serviceApi)
+    {
+        [_serviceApi close];
+        _serviceApi = nil;
     }
 }
 

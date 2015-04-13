@@ -10,6 +10,7 @@
 @class MMPhoto;
 @class MMPhotoLibrary;
 @class MMLibraryEvent;
+@class MMSmugmug;
 
 @interface MMMasterViewController : NSViewController
 
@@ -20,12 +21,12 @@
 
 @property (strong)              NSImage *               activeIcon;
 @property (strong)              NSImage *               completedIcon;
-@property (strong)              MMPhotoLibrary *        library;
 @property (strong)              NSArray *               libraryEvents;
 @property (assign)              NSInteger               outstandingRequests;
 @property (strong)              NSArray *               photos;
 @property (strong)              MMLibraryEvent *        selectedEvent;
 @property (assign)              NSInteger               selectedRow;
+@property (strong)              MMSmugmug *             serviceApi;
 @property (strong)              NSOperationQueue *      uploadOperationQueue;
 
 - (void) uploadCompleted;

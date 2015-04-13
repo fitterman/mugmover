@@ -20,7 +20,6 @@ extern const NSInteger MMDefaultRetries;
 @implementation MMUploadOperation
 
 - (id) initWithEvent: (MMLibraryEvent *) event
-                from: (MMPhotoLibrary *) library
                  row: (NSInteger) row
              service: (MMSmugmug *) service
       viewController: (MMMasterViewController *) viewController
@@ -29,7 +28,6 @@ extern const NSInteger MMDefaultRetries;
     if (self)
     {
         _event = event;
-        _library = library;
         _row = row;
         _service = service;
         _viewController = viewController;
@@ -57,8 +55,7 @@ extern const NSInteger MMDefaultRetries;
         NSString *albumKey = [NSString stringWithFormat: @"smugmug.%@.albums.%@",
                                                           _service.currentAccountHandle,
                                                           [_event uuid]];
-        NSArray *photos = [MMPhoto getPhotosFromLibrary: _library
-                                               forEvent: _event];
+        NSArray *photos = [MMPhoto getPhotosForEvent: _event];
         NSMutableDictionary *albumState = [[defaults objectForKey: albumKey] mutableCopy];
         if (!albumState)
         {
@@ -139,7 +136,12 @@ extern const NSInteger MMDefaultRetries;
         [defaults setObject: albumState forKey: albumKey];
         [defaults synchronize];
     }
-    [_event setActivePhoto: nil]; // To mark we are done
+    [_event setActivePhoto: nil]; // This resets it back to the original photo
+    [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
+     {
+         [_viewController.eventsTable reloadData]; // TODO Optimize to single cell
+     }
+    ];
     NSOperationQueue *queue = [NSOperationQueue currentQueue];
     if (queue.operationCount == 1)
     {

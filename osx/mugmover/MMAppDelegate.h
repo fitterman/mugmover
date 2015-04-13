@@ -13,11 +13,13 @@
 #import "DDFileLogger.h"
 
 @class MMPhotoLibrary;
+@class MMSmugmug;
 
 @interface MMAppDelegate : NSObject <NSApplicationDelegate>
 
 @property (weak)                IBOutlet    NSWindow *window;
-@property (strong)                          MMPhotoLibrary *            library;
+@property (strong)                          MMPhotoLibrary *        library;
+@property (strong)                          MMSmugmug *             serviceApi;
 
 - (void) close;
 

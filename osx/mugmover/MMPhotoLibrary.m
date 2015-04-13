@@ -265,8 +265,6 @@ NSString *photosPath;
     CGColorSpaceRelease(_colorspace);
     _ciContext = nil;
     _exifDateFormatters = nil;
-    _serviceApi = nil;
-
 }
 
 - (NSString *) baseName

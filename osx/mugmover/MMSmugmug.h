@@ -11,6 +11,7 @@
 @class MMOauthSmugmug;
 @class MMLibraryEvent;
 @class MMMasterViewController;
+@class MMPhotoLibrary;
 
 @interface MMSmugmug : NSObject
 
@@ -26,7 +27,6 @@
 @property (strong)              NSMutableDictionary *   photoDictionary;
 @property (assign)              NSInteger               photosInStream;
 @property (strong, readonly)    MMOauthSmugmug *        smugmugOauth;
-@property (strong, readonly)    NSOperationQueue *      streamQueue;
 @property (strong, readonly)    NSString *              tokenSecret;
 
 

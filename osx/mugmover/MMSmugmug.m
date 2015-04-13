@@ -48,7 +48,6 @@ long                retryCount;
         {
             return nil;
         }
-        _streamQueue = [NSOperationQueue mainQueue];
         _photoDictionary = [[NSMutableDictionary alloc] init];
         if (!_photoDictionary)
         {
@@ -70,7 +69,6 @@ long                retryCount;
     _defaultFolder = nil;
     _handle = nil;
     _photoDictionary = nil;
-    _streamQueue = nil;
 }
 
 #pragma mark "Public methods"
@@ -109,7 +107,6 @@ long                retryCount;
             {
                 NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _currentAccountHandle];
                 [defaults setObject: _defaultFolder forKey: dfKey];
-                library.serviceApi = self;
             }
         }
         else
@@ -153,7 +150,6 @@ long                retryCount;
                              {
                                  NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _currentAccountHandle];
                                  [defaults setObject: _defaultFolder forKey: dfKey];
-                                 library.serviceApi = self;
                              }
                              [defaults synchronize];
                          }

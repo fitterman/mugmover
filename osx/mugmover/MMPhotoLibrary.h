@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 @class FMDatabase;
 @class MMLibraryEvent;
-@class MMSmugmug;
 
 @interface MMPhotoLibrary : NSObject
 
@@ -19,7 +18,6 @@
 @property (strong, readonly)    NSString *          libraryBasePath;
 @property (strong, readonly)    FMDatabase *        facesDatabase;
 @property (strong, readonly)    FMDatabase *        photosDatabase;
-@property (strong)              MMSmugmug *         serviceApi;
 @property (strong)              NSDictionary *      sourceDictionary;
 @property (assign)              BOOL                verboseLogging;
 

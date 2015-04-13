@@ -45,8 +45,7 @@
 @property (assign)              NSInteger                   version;
 @property (strong)              NSString *                  versionUuid;
 
-+ (NSArray *) getPhotosFromLibrary: (MMPhotoLibrary *) library
-                          forEvent: (MMLibraryEvent *) eventUuid;
++ (NSArray *) getPhotosForEvent: (MMLibraryEvent *) eventUuid;
 
 + (MMPhoto *) getPhotoByVersionUuid: (NSString *) versionUuid
                         fromLibrary: (MMPhotoLibrary *) library;
