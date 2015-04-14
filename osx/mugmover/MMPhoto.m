@@ -52,7 +52,7 @@ NSInteger const MMDefaultRetries = 3;
                     "        m.originalFileSize, m.name, m.projectUuid, m.subtype, m.type, " \
                     "        v.uuid versionUuid, v.versionNumber, " \
                     "        v.fileName versionFilename, " \
-                    "        v.isOriginal, v.hasAdjustments, " \
+                    "        v.isOriginal, v.hasAdjustments, v.hasKeywords, " \
                     "        v.masterHeight, v.masterWidth, " \
                     "        v.name versionName, v.processedHeight, v.processedWidth, v.rotation, " \
                     "        v.modelId versionModelId " /* For keywords */ \
@@ -527,9 +527,13 @@ extern Float64 const MMDegreesPerRadian;
 
 - (NSString *) getKeywordList
 {
-    NSNumber *modelId = [_attributes valueForKeyPath: @"photo.versionModelId"];
-    NSString *keywords = [_library.photosDatabase stringForQuery: @KEYWORD_QUERY, modelId];
-    return keywords;
+    if ([[_attributes valueForKeyPath: @"photo.hasKeywords"] isEqualToNumber: @1])
+    {
+        NSNumber *modelId = [_attributes valueForKeyPath: @"photo.versionModelId"];
+        NSString *keywords = [_library.photosDatabase stringForQuery: @KEYWORD_QUERY, modelId];
+        return keywords;
+    }
+    return nil;
 }
 
 - (NSMutableArray *) straighten: (Float64) straightenAngle
