@@ -54,12 +54,13 @@ extern NSInteger const MMDefaultRetries;
  This prepares a request to upload an image. The caller must then begin the transmission
  of the request to the server.
  +filePath+ should be a fully-qualified path to a local file.
+ +tags+ should be a comma-separated list
  */
 - (NSURLRequest *) upload: (NSString *) filePath
                   albumId: (NSString *) albumId // for example /api/v2/album/jX5d1
                     title: (NSString *) title
                   caption: (NSString *) caption
-                     tags: (NSArray *) tags
+                     tags: (NSString *) tags
 
 {
     if (!filePath)
@@ -117,6 +118,10 @@ extern NSInteger const MMDefaultRetries;
     [headerValues setObject: albumUri forKey: @"X-Smug-AlbumUri"];
     [headerValues setObject: @"JSON" forKey: @"X-Smug-ResponseType"];
     [headerValues setObject: @"v2" forKey: @"X-Smug-Version"];
+    if (tags)
+    {
+        [headerValues setObject: tags forKey: @"X-Smug-Keywords"];
+    }
 
     NSMutableURLRequest *request =  (NSMutableURLRequest *)[TDOAuth URLRequestForPath: @"/"
                                                                            parameters: nil

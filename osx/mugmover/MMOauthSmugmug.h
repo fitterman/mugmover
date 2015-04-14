@@ -15,6 +15,6 @@
                   albumId: (NSString *) albumId // a string like "jF8kf"
                     title: (NSString *) title
                   caption: (NSString *) caption
-                     tags: (NSArray *) tags;
+                     tags: (NSString *) tags; // comma-separated
 
 @end

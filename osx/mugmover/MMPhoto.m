@@ -34,6 +34,16 @@
 #define MAX_THUMB_DIM (100)
 
 NSInteger const MMDefaultRetries = 3;
+
+/**
+ * This query finds the displayed Version and its corresponding Master, and the WHERE clause
+ * that is appended to it ignores Versions that are not marked "showInLibrary". It also ignores
+ * Hidden images always, although in iPhoto that decision is controlled by a user setting.
+ * 
+ * An attempt was made to do this and the keyword list query in one query, but it required
+ * too much time to run. To speed things up, it is done as a separate query and indexed
+ * at runtime.
+ */
 #define BASE_QUERY  "SELECT  m.uuid masterUuid, m.createDate," \
                     "        m.fileName, m.imagePath, m.originalVersionName, " \
                     "        m.colorSpaceName, m.fileCreationDate, m.fileModificationDate, " \
@@ -44,12 +54,34 @@ NSInteger const MMDefaultRetries = 3;
                     "        v.fileName versionFilename, " \
                     "        v.isOriginal, v.hasAdjustments, " \
                     "        v.masterHeight, v.masterWidth, " \
-                    "        v.name versionName, v.processedHeight, v.processedWidth, v.rotation " \
-                    "FROM RKVersion v JOIN RKMaster m  ON v.masterUuid = m.uuid "
+                    "        v.name versionName, v.processedHeight, v.processedWidth, v.rotation, " \
+                    "        v.modelId versionModelId " /* For keywords */ \
+                    "FROM RKVersion v " \
+                    "    JOIN RKMaster m  ON v.masterUuid = m.uuid " 
 #define QUERY_BY_VERSION_UUID   BASE_QUERY \
-                                "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and v.uuid = ? "
+                                "WHERE v.isHidden != 1 AND v.showInLibrary = 1 AND v.uuid = ? "
 #define QUERY_BY_EVENT_UUID     BASE_QUERY \
-                                "WHERE v.isHidden != 1 AND v.showInLibrary = 1 and m.projectUuid = ? "
+                                "WHERE v.isHidden != 1 AND v.showInLibrary = 1 AND m.projectUuid = ? "
+
+/**
+ * This query locates all the keywords assigned to one version, sorting them by their display value
+ * and then grouping them into a single field separated by commas (which are not allowed in keyword
+ * names). This query takes in a comma-separated list of Version modelID values to restrict the
+ * size of the result set.
+ * 
+ * I previously had this joined to the BASE_QUERY (took too long to run) and then considered
+ * having a single query using "IN" to get a bunch of them for an event response set (required
+ * an extra query or an extra pass through the data). I settled for just getting them one at a time
+ * as it's probably pretty fast with the existing indices.
+ */
+#define KEYWORD_QUERY   "SELECT group_concat(kwname) AS keywordList FROM ( " \
+                        "       SELECT RKVersion.modelId AS versionModelId, RKKeyword.name AS kwname " \
+                        "       FROM RKKeywordForVersion m2m " \
+                        "           JOIN RKVersion ON m2m.versionId = RKVersion.modelId " \
+                        "           JOIN RKKeyword on m2m.keywordId = RKKeyword.modelId " \
+                        "           WHERE RKVersion.modelID = ? " \
+                        "       ORDER BY RKKeyword.name " \
+                        "   ) GROUP BY versionModelId "
 
 
 extern Float64 const MMDegreesPerRadian;
@@ -98,6 +130,8 @@ extern Float64 const MMDegreesPerRadian;
     {
         // TODO this is unsupported because (a) it is complicated and (b) I don't believe many people use this.
         // NOTE: Aperture supports hierarchical keywords
+        // NOTE: Not so hard to do now the KEYWORD_QUERY is done, but it needs to be attached as a subquery.
+        //       I tested that and it works, but it's pretty slow. Consider adding it back in.
     }
     else if ([sortOrder hasSuffix: @"&basicProperties.MainRating"])
     {
@@ -124,6 +158,7 @@ extern Float64 const MMDegreesPerRadian;
     NSString *query = [@QUERY_BY_EVENT_UUID stringByAppendingString: orderClause];
     FMResultSet *resultSet = [event.library.photosDatabase executeQuery: query
                                                    withArgumentsInArray: @[eventUuid]];
+    
     while (resultSet && [resultSet next])
     {
         counter++;
@@ -325,6 +360,11 @@ extern Float64 const MMDegreesPerRadian;
         [self populateExifFromSourceFile];
         [self findRelevantAdjustments];
         [self adjustForStraightenCropAndGetFaces];
+        _keywordList = [self getKeywordList];
+        if (_keywordList)
+        {
+            [_attributes setValue: _keywordList forKeyPath: @"photo.keywordList"];
+        }
         [self moveFacesRelativeToTopLeftOrigin];
         
         NSURL* fileUrl = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
@@ -483,6 +523,13 @@ extern Float64 const MMDegreesPerRadian;
         return  nil;
     }
     return nil;
+}
+
+- (NSString *) getKeywordList
+{
+    NSNumber *modelId = [_attributes valueForKeyPath: @"photo.versionModelId"];
+    NSString *keywords = [_library.photosDatabase stringForQuery: @KEYWORD_QUERY, modelId];
+    return keywords;
 }
 
 - (NSMutableArray *) straighten: (Float64) straightenAngle
@@ -905,6 +952,7 @@ extern Float64 const MMDegreesPerRadian;
     [_flickrDictionary removeAllObjects];
     _flickrDictionary = nil;
     _iPhotoOriginalImagePath = nil;
+    _keywordList = nil;
     _masterUuid = nil;
     _oldNotesToDelete = nil;
     _originalDate = nil;

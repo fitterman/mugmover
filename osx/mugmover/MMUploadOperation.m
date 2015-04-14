@@ -107,7 +107,7 @@ extern const NSInteger MMDefaultRetries;
                                                                 albumId: newAlbumId
                                                                   title: @"photo title"
                                                                 caption: @"photo caption"
-                                                                   tags: @[@"foo", @"bar"]];
+                                                                   tags: photo.keywordList];
             status = [_service.smugmugOauth synchronousUrlRequest: uploadRequest
                                                 remainingAttempts: MMDefaultRetries
                                                 completionHandler: processSmugmugUpload];

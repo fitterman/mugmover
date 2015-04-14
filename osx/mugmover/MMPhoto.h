@@ -27,6 +27,7 @@
 @property (strong)              NSMutableDictionary *       flickrDictionary;
 @property (assign)              NSInteger                   index;
 @property (strong)              NSString *                  iPhotoOriginalImagePath;
+@property (strong)              NSString *                  keywordList;
 @property (weak, readonly)      MMPhotoLibrary *            library;
 @property (assign, readonly)    Float64                     masterHeight;
 @property (strong)              NSString *                  masterUuid;
