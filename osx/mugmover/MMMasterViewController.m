@@ -150,7 +150,29 @@
     return YES;
     
 }
-- (IBAction) transmitButtonWasPressed: (id) sender {
+
+- (IBAction) checkAllButtonWasPressed: (id) sender
+{
+    for (MMLibraryEvent *event in _libraryEvents)
+    {
+        event.toBeProcessed = YES;
+    }
+    [_eventsTable reloadData];
+    _transmitButton.enabled = YES;
+}
+
+- (IBAction) uncheckAllButtonWasPressed: (id) sender
+{
+    for (MMLibraryEvent *event in _libraryEvents)
+    {
+        event.toBeProcessed = NO;
+    }
+    [_eventsTable reloadData];
+    _transmitButton.enabled = NO;
+}
+
+- (IBAction) transmitButtonWasPressed: (id) sender
+{
     if (sender == _transmitButton)
     {
         // In theory, we should do this somewhere else, but in fact, it doesn't matter whether we
@@ -175,6 +197,7 @@
         _interruptButton.enabled = YES;
     }
 }
+
 
 - (IBAction) checkBoxWasChecked: (id)sender
 {

@@ -14,10 +14,12 @@
 
 @interface MMMasterViewController : NSViewController <NSTableViewDelegate>
 
+@property (weak)    IBOutlet    NSButton *              checkAllButton;
 @property (weak)    IBOutlet    NSTableView *           eventsTable;
 @property (weak)    IBOutlet    NSButton *              interruptButton;
 @property (weak)    IBOutlet    NSTableView *           photosTable;
 @property (weak)    IBOutlet    NSButton *              transmitButton;
+@property (weak)    IBOutlet    NSButton *              uncheckAllButton;
 
 @property (strong)              NSImage *               activeIcon;
 @property (strong)              NSImage *               completedIcon;
