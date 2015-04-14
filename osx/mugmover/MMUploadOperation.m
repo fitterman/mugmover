@@ -157,7 +157,8 @@ extern const NSInteger MMDefaultRetries;
          ];
     }
     NSOperationQueue *queue = [NSOperationQueue currentQueue];
-    if (queue.operationCount == 1)
+    if ((queue.operationCount == 1) ||  // The end was reached
+        [self isCancelled])             // The user clicked "interrupt" button
     {
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
          {
