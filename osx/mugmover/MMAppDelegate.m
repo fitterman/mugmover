@@ -30,9 +30,11 @@ BOOL const MMdebugLevel;
     [DDLog addLogger:[DDASLLogger sharedInstance]];
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
 
+    [_window setDelegate: self];
+
     // 1. Create the master View Controller
     self.masterViewController = [[MMMasterViewController alloc] initWithNibName:@"MMMasterViewController" bundle:nil];
-
+    
     // 2. Populate the library and libraryEvents
     _library = [[MMPhotoLibrary alloc] initWithPath: (NSString *) @"/Users/Bob/Pictures/Jay Phillips"];
     if (_library)
@@ -40,8 +42,9 @@ BOOL const MMdebugLevel;
         self.masterViewController.libraryEvents = [MMLibraryEvent getEventsFromLibrary: _library];
 
         // 3. Add the view controller to the Window's content view
-        [self.window.contentView addSubview:self.masterViewController.view];
-        self.masterViewController.view.frame = ((NSView*)self.window.contentView).bounds;
+        [_window.contentView addSubview:_masterViewController.view];
+        _masterViewController.view.frame = ((NSView*)_window.contentView).bounds;
+        [_window.contentView setAutoresizesSubviews:YES];
         
         _serviceApi = [[MMSmugmug alloc] initWithHandle: @"jayphillips"];
         
@@ -103,5 +106,10 @@ BOOL const MMdebugLevel;
     }
 }
 
+- (void) windowDidResize: (NSNotification *) notification
+{
+    _masterViewController.view.frame = ((NSView*)_window.contentView).bounds;
+    NSLog(@"%@", notification);
+}
 
 @end

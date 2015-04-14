@@ -15,7 +15,7 @@
 @class MMPhotoLibrary;
 @class MMSmugmug;
 
-@interface MMAppDelegate : NSObject <NSApplicationDelegate>
+@interface MMAppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate>
 
 @property (weak)                IBOutlet    NSWindow *window;
 @property (strong)                          MMPhotoLibrary *        library;
