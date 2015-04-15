@@ -47,10 +47,10 @@ NSInteger const MMDefaultRetries = 3;
                     "        m.fileName, m.imagePath, m.originalVersionName, " \
                     "        m.colorSpaceName, m.fileCreationDate, m.fileModificationDate, " \
                     "        m.fileSize, m.imageDate, m.isMissing, " \
-                    "        m.originalFileName originalFilename, " /* Change the name */ \
+                    "        m.originalFileName, " \
                     "        m.originalFileSize, m.name, m.projectUuid, m.subtype, m.type, " \
                     "        v.uuid versionUuid, v.versionNumber, " \
-                    "        v.fileName versionFilename, " \
+                    "        v.fileName versionFileName, " \
                     "        v.isOriginal, v.hasAdjustments, v.hasKeywords, " \
                     "        v.masterHeight, v.masterWidth, " \
                     "        v.name versionName, v.processedHeight, v.processedWidth, v.rotation, " \
@@ -311,17 +311,17 @@ extern Float64 const MMDegreesPerRadian;
     NSString *imagePath = [_attributes valueForKeyPath: @"photo.imagePath"];
     NSInteger hasAdjustments = [[_attributes valueForKeyPath: @"photo.hasAdjustments"] integerValue];
     NSString *versionUuid = nil;
-    NSString *versionFilename = nil;
+    NSString *versionFileName = nil;
     NSString *versionName = nil;
     if ((hasAdjustments == 1) || (_rotationAngle != 0.0))
     {
         versionUuid = [_attributes valueForKeyPath: @"photo.versionUuid"];
-        versionFilename = [_attributes valueForKeyPath: @"photo.versionFilename"];
+        versionFileName = [_attributes valueForKeyPath: @"photo.versionFileName"];
         versionName = [_attributes valueForKeyPath: @"photo.versionName"];
     }
     _iPhotoOriginalImagePath = [_library versionPathFromMasterPath: imagePath
                                                        versionUuid: versionUuid
-                                                   versionFilename: versionFilename
+                                                   versionFileName: versionFileName
                                                        versionName: versionName];
     if (_iPhotoOriginalImagePath)
     {
@@ -564,15 +564,15 @@ extern Float64 const MMDegreesPerRadian;
 
 /**
  * This method determines the title associated with the uploaded picture. If the base part of the
- * filename is the same as the "name" (title) field, then we upload no title. This allows the user
- * to regulate it on the service, as most of them allow for display of the filename when no
+ * file name is the same as the "name" (title) field, then we upload no title. This allows the user
+ * to regulate it on the service, as most of them allow for display of the file name when no
  * title is provided.
  */
 - (NSString *) titleForUpload
 {
-    NSString *baseFilename = [[_attributes valueForKeyPath: @"photo.versionFilename"] stringByDeletingPathExtension];
+    NSString *baseFileName = [[_attributes valueForKeyPath: @"photo.versionFileName"] stringByDeletingPathExtension];
     NSString *versionName = [_attributes valueForKeyPath: @"photo.versionName"];
-    if ([baseFilename isEqualToString: versionName])
+    if ([baseFileName isEqualToString: versionName])
     {
         return nil;
     }
@@ -1002,7 +1002,7 @@ extern Float64 const MMDegreesPerRadian;
     _masterUuid = nil;
     _oldNotesToDelete = nil;
     _originalDate = nil;
-    _originalFilename = nil;
+    _originalFileName = nil;
     _originalUrl = nil;
     _request = nil;
     _thumbnail = nil;
@@ -1031,7 +1031,7 @@ extern Float64 const MMDegreesPerRadian;
 {
     return [_library versionPathFromMasterPath: [_attributes valueForKeyPath: @"photo.imagePath"]
                                    versionUuid: [_attributes valueForKeyPath: @"photo.versionUuid"]
-                               versionFilename: [_attributes valueForKeyPath: @"photo.versionFilename"]
+                               versionFileName: [_attributes valueForKeyPath: @"photo.versionFileName"]
                                    versionName: [_attributes valueForKeyPath: @"photo.versionName"]];
 }
 

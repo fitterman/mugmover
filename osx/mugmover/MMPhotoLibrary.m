@@ -116,21 +116,21 @@ NSString *photosPath;
 
     The Master relative path is available from the imagePath column, e.g., '2012/03/20/20120320-075509/03485_s_9aefb8sby3508.jpg'
     The Version relative path must be constructed and as it is not apparent how the date part of the
-    filename comes into being, the safest approach is to find the Master and Version, pull the imagePath
+    file name comes into being, the safest approach is to find the Master and Version, pull the imagePath
     split it into parts at the "/", drop the last element, and take the uuid of the Version object
-    and the filename column as well.
+    and the fileName column as well.
 */
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid
 {
 
-    // This query gets the filename for the latest version of a single photo, based on the UUID
+    // This query gets the file name for the latest version of a single photo, based on the UUID
     // of the master image. By observation, all masters appear to have 2 versions, numbered 0 and 1,
     // so this could be reduced to merely looking for version 1 of the image, but it seems safer
     // to do it this way. NOTE: I have recently found two master with 3 versions, numbered 0, 1 and 2.
     NSArray *args = @[masterUuid];
     NSDictionary *result = nil;
 
-    FMResultSet *versionRecord = [_photosDatabase executeQuery: @ "SELECT v.fileName versionFilename, v.name versionName, v.uuid versionUuid, imagePath "
+    FMResultSet *versionRecord = [_photosDatabase executeQuery: @ "SELECT v.fileName versionFileName, v.name versionName, v.uuid versionUuid, imagePath "
                                                                   "FROM RKMaster m JOIN RKVersion v ON m.uuid = v.masterUuid "
                                                                   "INNER JOIN "
                                                                   "  (SELECT uuid, MAX(versionNumber) version FROM RKVersion x "
@@ -146,20 +146,20 @@ NSString *photosPath;
     }
 
     NSString *versionName = [versionRecord stringForColumn: @"versionName"];
-    NSString *versionFilename = [versionRecord stringForColumn: @"versionFilename"];
+    NSString *versionFileName = [versionRecord stringForColumn: @"versionFileName"];
     NSString *versionUuid = [versionRecord stringForColumn: @"versionUuid"];
     NSString *masterPath = [versionRecord stringForColumn: @"imagePath"];
     [versionRecord close];
 
     return [self versionExifFromMasterPath: masterPath
                                versionUuid: versionUuid
-                           versionFilename: versionFilename
+                           versionFileName: versionFileName
                                versionName: versionName];
 }
 
 - (NSString *) versionPathFromMasterPath: (NSString *) partialMasterPath
                              versionUuid: (NSString *) versionUuid
-                         versionFilename: (NSString *) versionFilename
+                         versionFileName: (NSString *) versionFileName
                              versionName: (NSString *) versionName
 {
  
@@ -175,7 +175,7 @@ NSString *photosPath;
     /*
         This is a thorny problem. There are a few possibilities to look for.
         The versionUuid is used as part of the path, in which case we
-        expect to find the versionName + ".jpg" as part of the filename.
+        expect to find the versionName + ".jpg" as part of the file name.
      */
     NSArray *masterPathPieces = [partialMasterPath componentsSeparatedByString: @"/"];
     if (masterPathPieces)
@@ -199,7 +199,7 @@ NSString *photosPath;
             }
             else
             {
-                // The alternative is to go one level higher and use the given filename
+                // The alternative is to go one level higher and use the given file name
                 // which seems unlikely for a tiff, but I can't force that case.
                 pathPieces = @[_libraryBasePath,
                                @"Previews",
@@ -207,7 +207,7 @@ NSString *photosPath;
                                [masterPathPieces objectAtIndex: 1],
                                [masterPathPieces objectAtIndex: 2],
                                [masterPathPieces objectAtIndex: 3],
-                               versionFilename];
+                               versionFileName];
                 versionPath = [pathPieces componentsJoinedByString: @"/"];
                 if ([[NSFileManager defaultManager] fileExistsAtPath:versionPath])
                 {
@@ -234,18 +234,18 @@ NSString *photosPath;
 {
     return [self versionExifFromMasterPath: masterPath
                                versionUuid: nil
-                           versionFilename: nil
+                           versionFileName: nil
                                versionName: nil];
 }
 
 - (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
                                         versionUuid: (NSString *) versionUuid
-                                    versionFilename: (NSString *) versionFilename
+                                    versionFileName: (NSString *) versionFileName
                                         versionName: (NSString *) versionName
 {
     NSString *versionPath = [self versionPathFromMasterPath: masterPath
                                                 versionUuid: versionUuid
-                                            versionFilename: versionFilename
+                                            versionFileName: versionFileName
                                                 versionName: versionName];
     if (versionPath)
     {

@@ -41,13 +41,13 @@
 
 - (NSMutableDictionary *) versionExifFromMasterPath: (NSString *) masterPath
                                         versionUuid: (NSString *) versionUuid
-                                    versionFilename: (NSString *) versionFilename
+                                    versionFileName: (NSString *) versionFileName
                                         versionName: (NSString *) versionName;
 
 
 - (NSString *) versionPathFromMasterPath: (NSString *) masterPath
                              versionUuid: (NSString *) versionUuid
-                         versionFilename: (NSString *) versionFilename
+                         versionFileName: (NSString *) versionFileName
                              versionName: (NSString *) versionName;
 
 @end

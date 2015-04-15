@@ -34,7 +34,7 @@
 @property (assign, readonly)    Float64                     masterWidth;
 @property (strong)              NSMutableArray *            oldNotesToDelete;
 @property (strong)              NSString *                  originalDate;
-@property (strong)              NSString *                  originalFilename;
+@property (strong)              NSString *                  originalFileName;
 @property (strong)              NSString *                  originalUrl;
 @property (assign, readonly)    Float64                     processedHeight;
 @property (assign, readonly)    Float64                     processedWidth;
