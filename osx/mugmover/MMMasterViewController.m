@@ -35,6 +35,7 @@
         _completedIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
         imageName = [[NSBundle mainBundle] pathForResource: @"Incomplete-128" ofType: @"png"];
         _incompleteIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
+        _transmitting = NO;
     }
     return self;
 }
@@ -102,6 +103,7 @@
         else if ([tableColumn.identifier isEqualToString: @"CheckboxColumn"])
         {
             [checkboxCellView.checkboxField setState:event.toBeProcessed];
+            [checkboxCellView.checkboxField setEnabled: !_transmitting];
         }
     }
     else if ((tableView == _photosTable) && _photos)
@@ -180,7 +182,8 @@
         [_eventsTable setDelegate:self];
 
         _transmitButton.enabled = NO;
-        _eventsTable.enabled = NO;
+        _transmitting = YES;
+        [_eventsTable reloadData];
         NSInteger row = 0;
         for (MMLibraryEvent *event in _libraryEvents)
         {
@@ -249,31 +252,15 @@
         }
         _photos = [MMPhoto getPhotosForEvent: _selectedEvent];
         [_photosTable reloadData];
-        _eventsTable.enabled = YES;
     }
 }
 
 - (void) uploadCompleted
 {
-    _eventsTable.enabled = YES;
+    _transmitting = NO;
+    [_eventsTable reloadData];
     _transmitButton.enabled = YES;
     _interruptButton.enabled = NO;
 }
 
-#pragma mark NSTableView delegate methods
-
-/** 
- * This delegate method is only registered to the _eventsTable, so we do not bother
- * checking which table is coming in.
- */
-- (void )tableView: (NSTableView *) eventsTable
-   willDisplayCell: (id) aCell
-    forTableColumn: (NSTableColumn *) aTableColumn
-               row: (NSInteger) rowIndex
-{
-    if(([[aTableColumn identifier] isEqualToString:@"checkboxes"]))
-    {
-        [aCell setEnabled: [eventsTable isEnabled]];
-    }
-}
 @end

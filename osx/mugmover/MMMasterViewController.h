@@ -30,6 +30,7 @@
 @property (strong)              MMLibraryEvent *        selectedEvent;
 @property (assign)              NSInteger               selectedRow;
 @property (strong)              MMSmugmug *             serviceApi;
+@property (assign)              BOOL                    transmitting;
 @property (strong)              NSOperationQueue *      uploadOperationQueue;
 
 - (void) uploadCompleted;
