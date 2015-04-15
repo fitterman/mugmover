@@ -19,12 +19,12 @@
 @property (strong, readonly)    NSMutableArray *            adjustmentsArray;
 @property (strong)              MMApiRequest *              apiRequest;
 @property (strong, readonly)    NSMutableDictionary *       attributes;
+@property (strong)              NSString *                  caption;
 @property (strong)              MMPoint *                   cropOrigin;
 @property (assign, readonly)    Float64                     croppedHeight;
 @property (assign, readonly)    Float64                     croppedWidth;
 @property (strong)              NSMutableDictionary *       exifDictionary;
 @property (strong)              NSMutableArray *            faceArray;
-@property (strong)              NSMutableDictionary *       flickrDictionary;
 @property (assign)              NSInteger                   index;
 @property (strong)              NSString *                  iPhotoOriginalImagePath;
 @property (strong)              NSString *                  keywordList;
@@ -77,6 +77,8 @@
 - (void) setByteLength: (long long) length;
 
 - (NSString *) title;
+
+- (NSString *) titleForUpload;
 
 - (NSString *) versionName;
 

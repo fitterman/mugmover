@@ -46,18 +46,21 @@ NSString *photosPath;
         _libraryBasePath = path;
         NSString *facesPath = [path stringByAppendingPathComponent: @"Database/apdb/Faces.db"];
         NSString *photosPath = [path stringByAppendingPathComponent: @"Database/apdb/Library.apdb"];
-        if ((!facesPath) || (!photosPath))
+        NSString *propertiesPath = [path stringByAppendingPathComponent: @"Database/apdb/Properties.apdb"];
+        if ((!facesPath) || (!photosPath) || (!propertiesPath))
         {
             return nil;
         }
 
         _facesDatabase = [FMDatabase databaseWithPath: facesPath];
         _photosDatabase = [FMDatabase databaseWithPath: photosPath];
+        _propertiesDatabase = [FMDatabase databaseWithPath: propertiesPath];
 
         DDLogInfo(@"Opening _photosPath=%@", photosPath);
-        if (self.facesDatabase && self.photosDatabase &&
-            [self.facesDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE] &&
-            [self.photosDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE])
+        if (_facesDatabase && _photosDatabase && _propertiesDatabase &&
+            [_facesDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE] &&
+            [_photosDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE] &&
+            [_propertiesDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE])
         {
             NSInteger versionMajor = [_photosDatabase
                                       intForQuery: @"SELECT propertyValue FROM RKAdminData "
@@ -93,6 +96,12 @@ NSString *photosPath;
             {
                 DDLogError(@"photosDatabase at %@ failed to open with error %d (%@).", photosPath,
                       _photosDatabase.lastErrorCode, _photosDatabase.lastErrorMessage);
+                [self close];
+            }
+            if (_propertiesDatabase)
+            {
+                DDLogError(@"propertiesDatabase at %@ failed to open with error %d (%@).", photosPath,
+                           _propertiesDatabase.lastErrorCode, _propertiesDatabase.lastErrorMessage);
                 [self close];
             }
             return nil;
@@ -250,16 +259,21 @@ NSString *photosPath;
     if (_facesDatabase)
     {
         [_facesDatabase close];
+        _facesDatabase = nil;
     }
     if (_photosDatabase)
     {
         [_photosDatabase close];
+        _photosDatabase = nil;
+    }
+    if (_propertiesDatabase)
+    {
+        [_propertiesDatabase close];
+        _propertiesDatabase = nil;
     }
     _databaseAppId = nil;
     _databaseUuid = nil;
     _databaseVersion = nil;
-    _facesDatabase = nil;
-    _photosDatabase = nil;
     _libraryBasePath = nil;
     CGContextRelease(_bitmapContext);
     CGColorSpaceRelease(_colorspace);

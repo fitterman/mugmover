@@ -71,6 +71,12 @@ extern const NSInteger MMDefaultRetries;
 
         for (MMPhoto *photo in photos)
         {
+            // Before processing the next photo, see if we've been asked to abort
+            if (self.isCancelled)
+            {
+                break;
+            }
+
             // The +mappingKeyPath+ points to the Smugmug photo ID associated with this photo the
             // last time it was uploaded (if ever). This information can be used to facilitate the
             // replacement of the image. For now, it's just a way to know not to repeat an upload.
@@ -103,41 +109,74 @@ extern const NSInteger MMDefaultRetries;
                 }
                 NSLog(@"response=%@", response);
             };
+            
             NSURLRequest *uploadRequest = [_service.smugmugOauth upload: photo.iPhotoOriginalImagePath
-                                                                albumId: newAlbumId
-                                                                  title: @"photo title"
-                                                                caption: @"photo caption"
-                                                                   tags: photo.keywordList];
+                                                                albumId: newAlbumId];
+            // 1. Upload to Smugmug
             status = [_service.smugmugOauth synchronousUrlRequest: uploadRequest
                                                 remainingAttempts: MMDefaultRetries
                                                 completionHandler: processSmugmugUpload];
             if (!status)
             {
                 DDLogError(@"Upload to Smugmug server failed for photo %@.", photo);
+                break;
             }
-            else
+
+            // 2. Upload the keywords, captions, titles, and rating
+            // We cannot rely on the header-method to upload these values. :(
+            
+            NSMutableDictionary *extras = [[NSMutableDictionary alloc] initWithCapacity: 10];
+            NSString *title = [photo titleForUpload];
+            if (title)
             {
-                status = [photo sendPhotoToMugmover];
+                [extras setObject: title forKey: @"Title"];
+            }
+            if (photo.keywordList)
+            {
+                NSArray *keywordArray = [photo.keywordList componentsSeparatedByString: @","];
+                [extras setObject: keywordArray forKey: @"KeywordArray"];
+            }
+            if (photo.caption)
+            {
+                [extras setObject: photo.caption forKey: @"Caption"];
+            }
+            if ([extras count] > 0)
+            {
+                NSString *apiRequest = [NSString stringWithFormat: @"image/%@", smugmugImageId];
+                NSURLRequest *patchRequest = [_service.smugmugOauth apiRequest: apiRequest
+                                                                    parameters: extras
+                                                                          verb: @"PATCH"];
+                status = [_service.smugmugOauth synchronousUrlRequest: patchRequest
+                                                   remainingAttempts: MMDefaultRetries
+                                                    completionHandler: ^(NSDictionary * json)
+                                                                        {
+                                                                            NSLog(@"completion: %@", json);
+                                                                        }];
                 if (!status)
                 {
-                    DDLogError(@"Upload to MM server failed for photo %@.", photo);
-                }
-                else
-                {
-                    if (smugmugImageId)
-                    {
-                        // We do it on each pass in case it bombs on a large collection of photos
-                        [albumState setValue: smugmugImageId forKey: mappingKeyPath];
-                        [defaults setObject: albumState forKey: albumKey];
-                        [defaults synchronize];
-                        completedTransfers++;
-                    }
+                    DDLogError(@"Setting additional parameters at Smugmug failed for photo %@.", photo);
+                    // TODO Kill the uploaded photo first
+                    break;
                 }
             }
-            uploadRequest = nil;
-            if (self.isCancelled)
+
+            // 3. Upload the data to Mugmover
+            status = [photo sendPhotoToMugmover];
+            if (!status)
             {
+                DDLogError(@"Upload to MM server failed for photo %@.", photo);
+                // TODO Kill the uploaded photo first
                 break;
+            }
+
+            // 4. Now we mark it as sent in our local store
+            if (smugmugImageId)
+            {
+                // We do it on each pass in case it bombs on a large collection of photos
+                [albumState setValue: smugmugImageId forKey: mappingKeyPath];
+                [defaults setObject: albumState forKey: albumKey];
+                [defaults synchronize];
+                completedTransfers++;
             }
         }
         if (completedTransfers == [photos count])

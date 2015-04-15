@@ -23,7 +23,6 @@
 #import "MMPhotolibrary.h"
 #import "MMPoint.h"
 #import "MMEnvironment.h"
-#import "MMDataUtility.h"
 #import "MMFileUtility.h"
 
 @import QuartzCore.CIFilter;
@@ -285,6 +284,26 @@ extern Float64 const MMDegreesPerRadian;
     return self;
 }
 
+- (NSString *) getCaption
+{
+    NSString *query = @"SELECT stringProperty AS caption "
+                        "FROM RKIptcProperty p JOIN RKUniqueString s ON p.stringId = s.modelId "
+                        "WHERE propertyKey = 'Caption/Abstract' "
+                        "    AND stringProperty IS NOT NULL "
+                        "    AND versionId = ? ";
+    NSNumber *modelId = [_attributes valueForKeyPath: @"photo.versionModelId"];
+    NSString *caption = [_library.propertiesDatabase stringForQuery: query, modelId];
+    if (caption)
+    {
+        NSString *trimmedCaption = [caption stringByTrimmingCharactersInSet: [NSCharacterSet whitespaceCharacterSet]];
+        if ([trimmedCaption length] != 0)
+        {
+            return trimmedCaption;
+        }
+    }
+    return nil;
+}
+
 - (BOOL) populateExifFromSourceFile
 {
     BOOL result = YES;
@@ -358,13 +377,20 @@ extern Float64 const MMDegreesPerRadian;
 {
     @autoreleasepool {
         [self populateExifFromSourceFile];
-        [self findRelevantAdjustments];
-        [self adjustForStraightenCropAndGetFaces];
+
+        _caption = [self getCaption];
+        if (_caption)
+        {
+            [_attributes setValue: _keywordList forKeyPath: @"photo.caption"];
+        }
         _keywordList = [self getKeywordList];
         if (_keywordList)
         {
             [_attributes setValue: _keywordList forKeyPath: @"photo.keywordList"];
         }
+
+        [self findRelevantAdjustments];
+        [self adjustForStraightenCropAndGetFaces];
         [self moveFacesRelativeToTopLeftOrigin];
         
         NSURL* fileUrl = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
@@ -534,6 +560,23 @@ extern Float64 const MMDegreesPerRadian;
         return keywords;
     }
     return nil;
+}
+
+/**
+ * This method determines the title associated with the uploaded picture. If the base part of the
+ * filename is the same as the "name" (title) field, then we upload no title. This allows the user
+ * to regulate it on the service, as most of them allow for display of the filename when no
+ * title is provided.
+ */
+- (NSString *) titleForUpload
+{
+    NSString *baseFilename = [[_attributes valueForKeyPath: @"photo.versionFilename"] stringByDeletingPathExtension];
+    NSString *versionName = [_attributes valueForKeyPath: @"photo.versionName"];
+    if ([baseFilename isEqualToString: versionName])
+    {
+        return nil;
+    }
+    return versionName;
 }
 
 - (NSMutableArray *) straighten: (Float64) straightenAngle
@@ -949,12 +992,11 @@ extern Float64 const MMDegreesPerRadian;
     _apiRequest = nil;
     [_attributes removeAllObjects];
     _attributes = nil;
+    _caption = nil;
     _cropOrigin = nil;
     [_exifDictionary removeAllObjects];
     _exifDictionary = nil;
     _faceArray = nil;
-    [_flickrDictionary removeAllObjects];
-    _flickrDictionary = nil;
     _iPhotoOriginalImagePath = nil;
     _keywordList = nil;
     _masterUuid = nil;
@@ -975,16 +1017,6 @@ extern Float64 const MMDegreesPerRadian;
 
 
 #pragma mark Attribute Accessors
-- (NSString *) title
-{
-    NSString *title = [self.flickrDictionary  objectForKey: @"title"];
-    if (![title length])
-    {
-        title = @"No title";
-    }
-    return title;
-}
-
 - (NSString *) fileName
 {
     return [_attributes valueForKeyPath: @"photo.fileName"];

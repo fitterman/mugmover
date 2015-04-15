@@ -18,6 +18,7 @@
 @property (strong, readonly)    NSString *          libraryBasePath;
 @property (strong, readonly)    FMDatabase *        facesDatabase;
 @property (strong, readonly)    FMDatabase *        photosDatabase;
+@property (strong, readonly)    FMDatabase *        propertiesDatabase;
 @property (strong)              NSDictionary *      sourceDictionary;
 @property (assign)              BOOL                verboseLogging;
 
