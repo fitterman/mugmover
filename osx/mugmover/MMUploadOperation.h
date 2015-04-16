@@ -18,11 +18,13 @@
 @property (weak, readonly)      MMLibraryEvent *            event;
 @property (assign)              NSInteger                   row;
 @property (weak, readonly)      MMSmugmug *                 service;
+@property (assign)              BOOL                        skipProcessedImages;
 @property (weak)                MMMasterViewController *    viewController;
 
 - (id) initWithEvent: (MMLibraryEvent *) event
                  row: (NSInteger) row
              service: (MMSmugmug *) service
+             options: (NSDictionary *) options
       viewController: (MMMasterViewController *) viewController;
 
 @end

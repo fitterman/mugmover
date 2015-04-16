@@ -18,6 +18,7 @@
 @property (weak)    IBOutlet    NSTableView *           eventsTable;
 @property (weak)    IBOutlet    NSButton *              interruptButton;
 @property (weak)    IBOutlet    NSTableView *           photosTable;
+@property (weak)    IBOutlet    NSButton *              skipProcessedImageCheckbox;
 @property (weak)    IBOutlet    NSButton *              transmitButton;
 @property (weak)    IBOutlet    NSButton *              uncheckAllButton;
 

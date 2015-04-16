@@ -11,6 +11,7 @@
                 <outlet property="eventsTable" destination="ae0-oz-hxA" id="EID-Ta-h9I"/>
                 <outlet property="interruptButton" destination="iVd-Tc-sNI" id="c5P-D3-1zf"/>
                 <outlet property="photosTable" destination="zrW-or-1OX" id="Z8W-4W-5lm"/>
+                <outlet property="skipProcessedImageCheckbox" destination="aSC-zP-aaj" id="WNB-QG-P3n"/>
                 <outlet property="transmitButton" destination="vj0-rp-sGR" id="PjQ-Pe-E5W"/>
                 <outlet property="uncheckAllButton" destination="7vQ-n0-c1D" id="RxE-qF-3O0"/>
                 <outlet property="view" destination="Hz6-mo-xeY" id="jmq-Pq-amT"/>
@@ -275,6 +276,14 @@
                         <action selector="uncheckAllButtonWasPressed:" target="-2" id="WmR-Jo-Wyr"/>
                     </connections>
                 </button>
+                <button identifier="skipProcessed" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aSC-zP-aaj">
+                    <rect key="frame" x="437" y="11" width="187" height="18"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="check" title="Skip Processed Images" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="rlQ-7H-and">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                </button>
             </subviews>
             <constraints>
                 <constraint firstItem="Tuw-5b-muO" firstAttribute="leading" secondItem="9Wh-uk-i0x" secondAttribute="trailing" constant="22" id="0Om-IH-o2k"/>
@@ -284,9 +293,11 @@
                 <constraint firstItem="9Wh-uk-i0x" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" constant="20" symbolic="YES" id="51R-OF-mLg"/>
                 <constraint firstItem="9Wh-uk-i0x" firstAttribute="top" secondItem="Tuw-5b-muO" secondAttribute="top" id="65c-Nl-fYz"/>
                 <constraint firstItem="7vQ-n0-c1D" firstAttribute="leading" secondItem="iek-VH-855" secondAttribute="trailing" constant="12" symbolic="YES" id="76z-zz-Pmv"/>
+                <constraint firstItem="aSC-zP-aaj" firstAttribute="leading" secondItem="Tuw-5b-muO" secondAttribute="leading" id="KdY-PW-8i1"/>
                 <constraint firstItem="iVd-Tc-sNI" firstAttribute="leading" secondItem="7vQ-n0-c1D" secondAttribute="trailing" constant="37" id="LXC-Q9-DNd"/>
                 <constraint firstItem="9Wh-uk-i0x" firstAttribute="leading" secondItem="iek-VH-855" secondAttribute="leading" id="Nt5-t8-PNW"/>
                 <constraint firstItem="iek-VH-855" firstAttribute="top" secondItem="9Wh-uk-i0x" secondAttribute="bottom" constant="6" id="OB1-Tt-e4P"/>
+                <constraint firstItem="aSC-zP-aaj" firstAttribute="centerY" secondItem="vj0-rp-sGR" secondAttribute="centerY" id="P5w-wP-Ao3"/>
                 <constraint firstItem="9Wh-uk-i0x" firstAttribute="top" secondItem="Hz6-mo-xeY" secondAttribute="top" constant="17" id="kXr-MO-sHO"/>
                 <constraint firstAttribute="trailing" secondItem="Tuw-5b-muO" secondAttribute="trailing" constant="20" symbolic="YES" id="lm4-G5-xf4"/>
                 <constraint firstItem="vj0-rp-sGR" firstAttribute="leading" secondItem="iVd-Tc-sNI" secondAttribute="trailing" constant="12" symbolic="YES" id="mXB-LS-vPp"/>

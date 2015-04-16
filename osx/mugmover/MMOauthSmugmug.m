@@ -59,10 +59,10 @@ extern NSInteger const MMDefaultRetries;
  */
 - (NSURLRequest *) upload: (NSString *) filePath
                   albumId: (NSString *) albumId
+           replacementFor: (NSString *) replacementFor
                     title: (NSString *) title
                   caption: (NSString *) caption
                  keywords: (NSString *) keywords
-
 {
     if (!filePath)
     {
@@ -118,6 +118,11 @@ extern NSInteger const MMDefaultRetries;
     [headerValues setObject: mimeType forKey: @"Content-Type"];
     [headerValues setObject: albumUri forKey: @"X-Smug-AlbumUri"];
     [headerValues setObject: [filePath lastPathComponent] forKey: @"X-Smug-FileName"];
+    if (replacementFor)
+    {
+        [headerValues setObject: [NSString stringWithFormat: @"/api/v2/image/%@", replacementFor]
+                         forKey: @"X-Smug-ImageUri"];
+    }
     if (caption && ([caption length] > 0))
     {
         [headerValues setObject: [MMDataUtility percentEncodeAlmostEverything: caption] forKey: @"X-Smug-Caption"];

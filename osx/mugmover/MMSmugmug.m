@@ -79,8 +79,7 @@ long                retryCount;
 
 - (void) configureOauthForLibrary: (MMPhotoLibrary *) library
 {
-    // WIPE THE DEFAULTS:
-    [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
+    // WIPE THE DEFAULTS: [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     _currentAccountHandle = [defaults stringForKey: handlePath];
     if (_currentAccountHandle)

@@ -13,6 +13,7 @@
 
 - (NSURLRequest *) upload: (NSString *) filePath
                   albumId: (NSString *) albumId
+           replacementFor: (NSString *) replacementFor
                     title: (NSString *) title
                   caption: (NSString *) caption
                  keywords: (NSString *) keywords;

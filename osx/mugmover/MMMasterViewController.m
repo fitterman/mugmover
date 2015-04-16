@@ -189,9 +189,11 @@
         {
             if (event.toBeProcessed)
             {
+                NSDictionary *options = @{@"skipProcessedImages": @(_skipProcessedImageCheckbox.state)};
                 MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
                                                                                           row: row
                                                                                       service: _serviceApi
+                                                                                      options: options
                                                                                viewController: self];
                 [_uploadOperationQueue addOperation: uploadOperation];
             }

@@ -23,12 +23,14 @@ extern const NSInteger MMDefaultRetries;
 - (id) initWithEvent: (MMLibraryEvent *) event
                  row: (NSInteger) row
              service: (MMSmugmug *) service
+             options: (NSDictionary *) options
       viewController: (MMMasterViewController *) viewController
 {
     self = [self init];
     if (self)
     {
         _event = event;
+        _skipProcessedImages = [[options valueForKeyPath: @"skipProcessedImages"] boolValue];
         _row = row;
         _service = service;
         _viewController = viewController;
@@ -82,11 +84,17 @@ extern const NSInteger MMDefaultRetries;
             // last time it was uploaded (if ever). This information can be used to facilitate the
             // replacement of the image. For now, it's just a way to know not to repeat an upload.
             NSString *mappingKeyPath = [NSString stringWithFormat: @"mapping.%@", photo.versionUuid];
-            if (mappingKeyPath && [albumState valueForKeyPath: mappingKeyPath])
+            NSString *replacementFor = nil;
+            if (mappingKeyPath)
             {
-                completedTransfers++;   // We consider it sent already so we can get the icons right
-                continue;               // And then we skip the processing
+                replacementFor = [albumState valueForKeyPath: mappingKeyPath];
+                if (replacementFor && _skipProcessedImages)
+                {
+                    completedTransfers++;   // We consider it sent already so we can get the icons right
+                    continue;               // And then we skip the processing
+                }
             }
+
             [photo processPhoto];
             [_event setActivePhoto: photo
                         withStatus: MMEventStatusActive];
@@ -126,9 +134,10 @@ extern const NSInteger MMDefaultRetries;
 
             NSURLRequest *uploadRequest = [_service.smugmugOauth upload: pathToFileToUpload
                                                                 albumId: newAlbumId
+                                                         replacementFor: replacementFor
                                                                   title: [photo titleForUpload]
                                                                 caption: photo.caption
-                                                               keywords: photo.keywordList ];
+                                                               keywords: photo.keywordList];
             // 1. Upload to Smugmug
             status = [_service.smugmugOauth synchronousUrlRequest: uploadRequest
                                                 remainingAttempts: MMDefaultRetries
