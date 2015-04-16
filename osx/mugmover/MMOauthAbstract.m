@@ -124,7 +124,7 @@ extern NSInteger const MMDefaultRetries;
     NSURLResponse *response;
     NSError *connectionError;
     NSInteger retries = remainingAttempts;
-    while (retries > 0)
+    while (retries-- > 0)
     {
         NSData *serverData = [NSURLConnection sendSynchronousRequest: request
                                                    returningResponse: &response

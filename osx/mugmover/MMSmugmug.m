@@ -192,7 +192,7 @@ long                retryCount;
     NSURLResponse *response;
     NSError *error;
     NSInteger retries = MMDefaultRetries;
-    while (retries > 0)
+    while (retries-- > 0)
     {
         NSData *serverData = [NSURLConnection sendSynchronousRequest: createAlbumRequest
                                                    returningResponse: &response
@@ -201,41 +201,37 @@ long                retryCount;
         if (error)
         {
             DDLogError(@"System error: %@", error);
-            retries--;
+            continue;
+        }
+        NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
+        NSInteger httpStatus = [httpResponse statusCode];
+        NSString *uri = nil;
+        if (httpStatus == 200)
+        {
+            uri = [parsedServerResponse valueForKeyPath: @"Response.Uri"];
+        }
+        else if (httpStatus == 409) // Conflict, it exists
+        {
+            // Cannot use valueForKeyPath because the handle might contain a period
+            NSArray *pieces = @[@"Conflicts",
+                                [parsedServerResponse valueForKeyPath: @"Response.Uri"],
+                                @"Album",
+                                @"Uri"];
+            NSObject *object = parsedServerResponse;
+            for (NSString *piece in pieces)
+            {
+                object = [(NSDictionary *)object objectForKey: piece];
+            }
+            uri = (NSString *)object;
         }
         else
         {
-            NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
-            NSInteger httpStatus = [httpResponse statusCode];
-            NSString *uri = nil;
-            if (httpStatus == 200)
-            {
-                uri = [parsedServerResponse valueForKeyPath: @"Response.Uri"];
-            }
-            else if (httpStatus == 409) // Conflict, it exists
-            {
-                // Cannot use valueForKeyPath because the handle might contain a period
-                NSArray *pieces = @[@"Conflicts",
-                                    [parsedServerResponse valueForKeyPath: @"Response.Uri"],
-                                    @"Album",
-                                    @"Uri"];
-                NSObject *object = parsedServerResponse;
-                for (NSString *piece in pieces)
-                {
-                    object = [(NSDictionary *)object objectForKey: piece];
-                }
-                uri = (NSString *)object;
-            }
-            else
-            {
-                DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-                retries--;
-                DDLogError(@"response=%@", parsedServerResponse);
-            }
-            if (uri)
-            {
-                return [[uri componentsSeparatedByString: @"/"] lastObject];
-            }
+            DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+            DDLogError(@"response=%@", parsedServerResponse);
+        }
+        if (uri)
+        {
+            return [[uri componentsSeparatedByString: @"/"] lastObject];
         }
     }
     return nil;
@@ -274,7 +270,7 @@ long                retryCount;
     NSURLResponse *response;
     NSError *error;
     NSInteger retries = MMDefaultRetries;
-    while (retries > 0)
+    while (retries-- > 0)
     {
         NSData *serverData = [NSURLConnection sendSynchronousRequest: createFolderRequest
                                                    returningResponse: &response
@@ -283,37 +279,29 @@ long                retryCount;
         if (error)
         {
             DDLogError(@"System error: %@", error);
-            retries--;
         }
-        else
+        NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
+        NSInteger httpStatus = [httpResponse statusCode];
+        if (httpStatus == 200)
         {
-            NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
-            NSInteger httpStatus = [httpResponse statusCode];
-            if (httpStatus == 200)
-            {
-                return [parsedServerResponse valueForKeyPath: @"Response.Folder.UrlName"];
-            }
-            else if (httpStatus == 409) // Conflict, it exists
-            {
-                // Cannot use valueFOrKeyPath because the handle might contain a period
-                NSArray *pieces = @[@"Conflicts",
-                                    [parsedServerResponse valueForKeyPath: @"Response.Uri"],
-                                    @"Folder",
-                                    @"UrlName"];
-                NSObject *object = parsedServerResponse;
-                for (NSString *piece in pieces)
-                {
-                    object = [(NSDictionary *)object objectForKey: piece];
-                }
-                return (NSString *)object;
-            }
-            else
-            {
-                DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-                retries--;
-                DDLogError(@"response=%@", parsedServerResponse);
-            }
+            return [parsedServerResponse valueForKeyPath: @"Response.Folder.UrlName"];
         }
+        if (httpStatus == 409) // Conflict, it exists
+        {
+            // Cannot use valueFOrKeyPath because the handle might contain a period
+            NSArray *pieces = @[@"Conflicts",
+                                [parsedServerResponse valueForKeyPath: @"Response.Uri"],
+                                @"Folder",
+                                @"UrlName"];
+            NSObject *object = parsedServerResponse;
+            for (NSString *piece in pieces)
+            {
+                object = [(NSDictionary *)object objectForKey: piece];
+            }
+            return (NSString *)object;
+        }
+        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+        DDLogError(@"response=%@", parsedServerResponse);
     }
     return nil;
 }
