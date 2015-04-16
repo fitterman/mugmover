@@ -6,14 +6,15 @@
 //  Copyright (c) 2015 Dicentra LLC. All rights reserved.
 //
 
-#import "MMUploadOperation.h"
-#import "MMPhoto.h"
-#import "MMPhotoLibrary.h"
+#import "MMFileUtility.h"
 #import "MMLibraryEvent.h"
 #import "MMMasterViewController.h"
-#import "MMSmugmug.h"
 #import "MMOauthAbstract.h"
 #import "MMOauthSmugmug.h"
+#import "MMPhoto.h"
+#import "MMPhotoLibrary.h"
+#import "MMSmugmug.h"
+#import "MMUploadOperation.h"
 
 extern const NSInteger MMDefaultRetries;
 
@@ -110,7 +111,20 @@ extern const NSInteger MMDefaultRetries;
                 NSLog(@"response=%@", response);
             };
             
-            NSURLRequest *uploadRequest = [_service.smugmugOauth upload: photo.iPhotoOriginalImagePath
+            NSString *pathToFileToUpload = photo.iPhotoOriginalImagePath;
+            BOOL tiff = [photo isTiff];
+            if (tiff)
+            {
+                NSString *jpegPath = [MMFileUtility temporaryJpegFromPath: photo.iPhotoOriginalImagePath];
+                if (!jpegPath)
+                {
+                    DDLogError(@"Failed to create JPEG to %@ (at %@)", photo, photo.iPhotoOriginalImagePath);
+                    break;
+                }
+                pathToFileToUpload = jpegPath;
+            }
+
+            NSURLRequest *uploadRequest = [_service.smugmugOauth upload: pathToFileToUpload
                                                                 albumId: newAlbumId
                                                                   title: [photo titleForUpload]
                                                                 caption: photo.caption
@@ -119,6 +133,12 @@ extern const NSInteger MMDefaultRetries;
             status = [_service.smugmugOauth synchronousUrlRequest: uploadRequest
                                                 remainingAttempts: MMDefaultRetries
                                                 completionHandler: processSmugmugUpload];
+            if (tiff)
+            {
+                // Delete the temp directory
+                [[NSFileManager defaultManager] removeItemAtPath: pathToFileToUpload
+                                                           error:nil];
+            }
             if (!status)
             {
                 DDLogError(@"Upload to Smugmug server failed for photo %@.", photo);

@@ -68,6 +68,8 @@
 
 - (NSString *) fullImagePath;
 
+- (BOOL) isTiff;
+
 - (NSString *) originalImagePath;
 
 - (void) processPhoto;

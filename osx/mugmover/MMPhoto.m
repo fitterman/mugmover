@@ -1015,6 +1015,15 @@ extern Float64 const MMDegreesPerRadian;
     return _processedWidth / _processedHeight;
 }
 
+/**
+ * Tells you if the object is a TIFF.
+ */
+- (BOOL) isTiff
+{
+    // NOTE: Within the range of values knownn to iPhoto, the subtype is unique: i.e., there are
+    //       no videos of subtype TIF.
+    return ([[_attributes valueForKeyPath: @"photo.subtype"] isEqualToString: @"TIFST"]);
+}
 
 #pragma mark Attribute Accessors
 - (NSString *) fileName

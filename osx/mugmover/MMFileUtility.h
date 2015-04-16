@@ -18,4 +18,8 @@
 
 + (NSString *) mimeTypeForFileAtPath: (NSString *) path;
 
++ (NSString *) pathToTemporaryDirectory;
+
++ (NSString *) temporaryJpegFromPath: (NSString *) imageFile;
+
 @end

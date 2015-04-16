@@ -117,6 +117,7 @@ extern NSInteger const MMDefaultRetries;
     [headerValues setObject: md5 forKey: @"Content-MD5"];
     [headerValues setObject: mimeType forKey: @"Content-Type"];
     [headerValues setObject: albumUri forKey: @"X-Smug-AlbumUri"];
+    [headerValues setObject: [filePath lastPathComponent] forKey: @"X-Smug-FileName"];
     if (caption && ([caption length] > 0))
     {
         [headerValues setObject: [MMDataUtility percentEncodeAlmostEverything: caption] forKey: @"X-Smug-Caption"];

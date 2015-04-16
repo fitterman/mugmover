@@ -157,4 +157,56 @@
     return s;
 }
 
+/**
+ * Returns the path to a newly-created JPEG file in a newly-created temporary directory.
+ * The caller is obliged to do any cleanup (of the file and directory).
+ * Returns nil in the event any step fails.
+ */
++ (NSString *) temporaryJpegFromPath: (NSString *) imageFile
+{
+    NSImage *sourceImage = [[NSImage alloc] initWithContentsOfFile: imageFile];
+    NSArray *representations = [sourceImage representations];
+    NSDictionary *imageProps = [NSDictionary dictionaryWithObject: @0.9
+                                                           forKey: NSImageCompressionFactor];
+    NSData *bitmapData = [NSBitmapImageRep representationOfImageRepsInArray: representations
+                                                                  usingType: NSJPEGFileType
+                                                                 properties: imageProps];
+    NSString *pathToTemporaryDirectory = [MMFileUtility pathToTemporaryDirectory];
+    if (pathToTemporaryDirectory)
+    {
+        NSString *filePart = [[[imageFile lastPathComponent]
+                                    stringByDeletingPathExtension]
+                                        stringByAppendingPathExtension: @"jpg"];
+        NSString *filePath = [pathToTemporaryDirectory stringByAppendingPathComponent: filePart];
+        [bitmapData writeToFile: filePath
+                     atomically: YES];
+        return filePath;
+    }
+    return nil;
+}
+
+/**
+ * Returns a path a temporary directory with a globally unique name
+ */
++ (NSString *) pathToTemporaryDirectory
+{
+    NSError *error;
+
+    NSString *uniqueIdentifier = [[NSProcessInfo processInfo] globallyUniqueString];
+    NSString *directoryPath = [NSTemporaryDirectory() stringByAppendingPathComponent:uniqueIdentifier];
+    NSURL *directoryUrl = [NSURL fileURLWithPath: directoryPath
+                                     isDirectory:YES];
+    [[NSFileManager defaultManager] createDirectoryAtURL: directoryUrl
+                             withIntermediateDirectories: YES
+                                              attributes: nil
+                                                   error: &error];
+    if (error)
+    {
+        DDLogError(@"Error creating temporary directory (%@): %@", directoryPath, error);
+        nil;
+    }
+    return directoryPath;
+}
+
+
 @end
