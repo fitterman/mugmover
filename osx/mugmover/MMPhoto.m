@@ -395,11 +395,9 @@ extern Float64 const MMDegreesPerRadian;
         
         NSURL* fileUrl = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
         _thumbnail = @""; // It cannot be null, so just in case this fails.
-        return;
         if (fileUrl)
         {
             CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileUrl];
-            
             _thumbnail = [self createPhotoThumbnail: image];
             [self fetchThumbnailsFromOriginal: image];
         }
@@ -914,7 +912,7 @@ extern Float64 const MMDegreesPerRadian;
                 for (MMFace *face in _faceArray)
                 {
                     NSDictionary *thumb = thumbnails[counter];
-                    face.thumbnail = @"[thumb valueForKey: @\"jpeg\"]";
+                    face.thumbnail =  [thumb valueForKey: @"jpeg"];
                     face.scaleFactor = [[thumb valueForKey: @"scale"] floatValue];
                     counter++;
                 }
@@ -995,7 +993,14 @@ extern Float64 const MMDegreesPerRadian;
     _cropOrigin = nil;
     [_exifDictionary removeAllObjects];
     _exifDictionary = nil;
-    _faceArray = nil;
+    if (_faceArray)
+    {
+        for (MMFace *face in _faceArray)
+        {
+            [face close];
+        }
+        _faceArray = nil;
+    }
     _iPhotoOriginalImagePath = nil;
     _keywordList = nil;
     _masterUuid = nil;
