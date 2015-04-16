@@ -53,4 +53,33 @@
     return nil;
 }
 
+/**
+ * Takes in a string and encodes several characters that would otherwise not be encoded.
+ * (Derived from http://stackoverflow.com/questions/8088473/url-encode-an-nsstring)
+ */
++ (NSString *) percentEncodeAlmostEverything:(NSString *)inString
+{
+    NSMutableString *output = [NSMutableString string];
+    const unsigned char *source = (const unsigned char *)[inString UTF8String];
+    NSInteger sourceLen = strlen((const char *)source);
+    for (int i = 0; i < sourceLen; ++i)
+    {
+        // While it is possible to expand the list of characters, it ends up being more
+        // run-time testing. Including some basic characters leaves it readable and keeps
+        // it getting too large.
+        const unsigned char thisChar = source[i];
+        if ((thisChar == ' ') ||
+            (thisChar >= 'a' && thisChar <= 'z') ||
+            (thisChar >= 'A' && thisChar <= 'Z') ||
+            (thisChar >= '0' && thisChar <= '9'))
+        {
+            [output appendFormat:@"%c", thisChar];
+        }
+        else
+        {
+            [output appendFormat:@"%%%02X", thisChar];
+        }
+    }
+    return output;
+}
 @end

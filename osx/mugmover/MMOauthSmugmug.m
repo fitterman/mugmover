@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 Dicentra LLC. All rights reserved.
 //
 
+#import "MMDataUtility.h"
 #import "MMFileUtility.h"
 #import "MMOauthAbstract.h"
 #import "MMOauthSmugmug.h"
@@ -54,9 +55,14 @@ extern NSInteger const MMDefaultRetries;
  This prepares a request to upload an image. The caller must then begin the transmission
  of the request to the server.
  +filePath+ should be a fully-qualified path to a local file.
+ +albumID+ is a string like "JX5d1" that is returned as the final element of the album URI
  */
 - (NSURLRequest *) upload: (NSString *) filePath
-                  albumId: (NSString *) albumId; // for example "jX5d1"
+                  albumId: (NSString *) albumId
+                    title: (NSString *) title
+                  caption: (NSString *) caption
+                 keywords: (NSString *) keywords
+
 {
     if (!filePath)
     {
@@ -111,6 +117,18 @@ extern NSInteger const MMDefaultRetries;
     [headerValues setObject: md5 forKey: @"Content-MD5"];
     [headerValues setObject: mimeType forKey: @"Content-Type"];
     [headerValues setObject: albumUri forKey: @"X-Smug-AlbumUri"];
+    if (caption && ([caption length] > 0))
+    {
+        [headerValues setObject: [MMDataUtility percentEncodeAlmostEverything: caption] forKey: @"X-Smug-Caption"];
+    }
+    if (title && ([title length] > 0))
+    {
+        [headerValues setObject: [MMDataUtility percentEncodeAlmostEverything: title] forKey: @"X-Smug-Title"];
+    }
+    if (keywords && ([keywords length] > 0))
+    {
+        [headerValues setObject: [MMDataUtility percentEncodeAlmostEverything: keywords] forKey: @"X-Smug-Keywords"];
+    }
     [headerValues setObject: @"JSON" forKey: @"X-Smug-ResponseType"];
     [headerValues setObject: @"v2" forKey: @"X-Smug-Version"];
 

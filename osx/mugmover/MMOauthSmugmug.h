@@ -12,6 +12,9 @@
 @interface MMOauthSmugmug : MMOauthAbstract
 
 - (NSURLRequest *) upload: (NSString *) filePath
-                  albumId: (NSString *) albumId; // a string like "jF8kf"
+                  albumId: (NSString *) albumId
+                    title: (NSString *) title
+                  caption: (NSString *) caption
+                 keywords: (NSString *) keywords;
 
 @end

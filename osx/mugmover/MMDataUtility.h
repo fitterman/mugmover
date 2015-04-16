@@ -12,4 +12,6 @@
 
 + (NSDictionary *) parseJsonData: (NSData *)data;
 
++ (NSString *) percentEncodeAlmostEverything: (NSString *) inString;
+
 @end

@@ -111,7 +111,10 @@ extern const NSInteger MMDefaultRetries;
             };
             
             NSURLRequest *uploadRequest = [_service.smugmugOauth upload: photo.iPhotoOriginalImagePath
-                                                                albumId: newAlbumId];
+                                                                albumId: newAlbumId
+                                                                  title: [photo titleForUpload]
+                                                                caption: photo.caption
+                                                               keywords: photo.keywordList ];
             // 1. Upload to Smugmug
             status = [_service.smugmugOauth synchronousUrlRequest: uploadRequest
                                                 remainingAttempts: MMDefaultRetries
@@ -122,45 +125,7 @@ extern const NSInteger MMDefaultRetries;
                 break;
             }
 
-            // 2. Upload the keywords, captions, titles, and rating
-            // We cannot rely on the header-method to upload these values. :(
-            
-            NSMutableDictionary *extras = [[NSMutableDictionary alloc] initWithCapacity: 10];
-            NSString *title = [photo titleForUpload];
-            if (title)
-            {
-                [extras setObject: title forKey: @"Title"];
-            }
-            if (photo.keywordList)
-            {
-                NSArray *keywordArray = [photo.keywordList componentsSeparatedByString: @","];
-                [extras setObject: keywordArray forKey: @"KeywordArray"];
-            }
-            if (photo.caption)
-            {
-                [extras setObject: photo.caption forKey: @"Caption"];
-            }
-            if ([extras count] > 0)
-            {
-                NSString *apiRequest = [NSString stringWithFormat: @"image/%@", smugmugImageId];
-                NSURLRequest *patchRequest = [_service.smugmugOauth apiRequest: apiRequest
-                                                                    parameters: extras
-                                                                          verb: @"PATCH"];
-                status = [_service.smugmugOauth synchronousUrlRequest: patchRequest
-                                                   remainingAttempts: MMDefaultRetries
-                                                    completionHandler: ^(NSDictionary * json)
-                                                                        {
-                                                                            NSLog(@"completion: %@", json);
-                                                                        }];
-                if (!status)
-                {
-                    DDLogError(@"Setting additional parameters at Smugmug failed for photo %@.", photo);
-                    // TODO Kill the uploaded photo first
-                    break;
-                }
-            }
-
-            // 3. Upload the data to Mugmover
+            // 2. Upload the data to Mugmover
             status = [photo sendPhotoToMugmover];
             if (!status)
             {
