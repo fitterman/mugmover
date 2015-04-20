@@ -19,7 +19,6 @@ typedef NS_ENUM(NSInteger, MMEventStatus) {
 
 @interface MMLibraryEvent : NSObject
 
-@property (weak, nonatomic)     MMPhoto *           activePhoto;
 @property (strong, readonly)    NSImage *           currentThumbnail;
 @property (strong, readonly)    NSDictionary *      dictionary;
 @property (strong, readonly)    NSImage *           eventThumbnail;
@@ -33,6 +32,8 @@ typedef NS_ENUM(NSInteger, MMEventStatus) {
                   library: (MMPhotoLibrary *) library;
 
 - (NSString *) dateRange;
+
+- (NSString *) featuredImageUuid;
 
 - (NSNumber *) filecount;
 

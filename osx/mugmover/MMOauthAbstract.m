@@ -157,7 +157,10 @@ extern NSInteger const MMDefaultRetries;
         NSDictionary *parsedJsonData = [MMDataUtility parseJsonData: serverData];
         if (parsedJsonData)
         {
-            serviceResponseHandler(parsedJsonData);
+            if (serviceResponseHandler) // It's now optional
+            {
+                serviceResponseHandler(parsedJsonData);
+            }
             return YES;
         }
     }

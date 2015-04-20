@@ -180,10 +180,36 @@ extern const NSInteger MMDefaultRetries;
             finalStatus = MMEventStatusCompleted;
         }
 
-        // And at the end we have to do it in case some change did not get stored
+        // And at the end we have to do it in case some change(s) did not get stored
         [defaults setObject: albumState forKey: albumKey];
         [defaults synchronize];
 
+        // Now we update the featured photo for the album
+        NSString *featuredPhotoUuid = [_event featuredImageUuid];
+        NSString *featuredPhotoMappingPath = [NSString stringWithFormat: @"mapping.%@", featuredPhotoUuid];
+        if (featuredPhotoUuid && featuredPhotoMappingPath)
+        {
+            NSString *featuredPhotoId = [albumState valueForKeyPath: featuredPhotoMappingPath];
+            if (featuredPhotoId)
+            {
+                NSString *featuredImageUri = [NSString stringWithFormat: @"/api/v2/album/%@/image/%@",
+                                                                         newAlbumId,
+                                                                         featuredPhotoId];
+                NSString *apiCall = [NSString stringWithFormat: @"album/%@", newAlbumId];
+                NSURLRequest *eventRequest = [_service.smugmugOauth apiRequest: apiCall
+                                                                    parameters: @{@"HighlightAlbumImageUri": featuredImageUri}
+                                                                          verb: @"PATCH"];
+                status = [_service.smugmugOauth synchronousUrlRequest: eventRequest
+                                                    remainingAttempts: MMDefaultRetries
+                                                    completionHandler: nil];
+                if (!status)
+                {
+                    DDLogWarn(@"Unable to set featured image for event album (%@).", _event.name);
+                }
+            }
+        }
+        
+        // Restore the dispaly to the default image for this album
         [_event setActivePhotoThumbnail: nil withStatus: finalStatus];
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
          {

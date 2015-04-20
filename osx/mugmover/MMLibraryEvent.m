@@ -37,7 +37,7 @@
 
 - (NSString *) iconImagePath
 {
-    NSString *versionUuid = [_dictionary objectForKey: @"posterVersionUuid"];
+    NSString *versionUuid = [self featuredImageUuid];
     if (versionUuid)
     {
         MMPhoto *photo = [MMPhoto getPhotoByVersionUuid: versionUuid
@@ -110,7 +110,10 @@
 }
 
 #pragma mark Attribute Accessors
-
+- (NSString *) featuredImageUuid
+{
+    return [_dictionary objectForKey: @"posterVersionUuid"];
+}
 - (NSNumber *) filecount
 {
     return [_dictionary objectForKey: @"filecount"];
