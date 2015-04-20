@@ -1,4 +1,4 @@
-    //
+//
 //  MMMasterViewController.m
 //  mugmover
 //
@@ -55,9 +55,9 @@
     MMCheckboxTableCellView *checkboxCellView = (MMCheckboxTableCellView *)baseCellView;
    
 
-    if ((tableView == _eventsTable) && _libraryEvents)
+    if ((tableView == _eventsTable) && _library.events)
     {
-        MMLibraryEvent *event = _libraryEvents[row];
+        MMLibraryEvent *event = _library.events[row];
         if ([tableColumn.identifier isEqualToString: @"DisplayColumn"])
         {
             cellView.firstTitleTextField.stringValue = [event name];
@@ -69,14 +69,7 @@
             cellView.secondTextField.stringValue = [NSString stringWithFormat: @"%@ (%@)",
                                                                 [event dateRange],
                                                                 [event filecount]];
-            if (event.activePhoto && event.activePhoto.iPhotoOriginalImagePath)
-            {
-                cellView.imageView.image = [[NSImage alloc] initByReferencingFile: event.activePhoto.iPhotoOriginalImagePath];
-            }
-            else
-            {
-                cellView.imageView.image = [[NSImage alloc] initByReferencingFile: [event iconImagePath]];
-            }
+            cellView.imageView.image = event.currentThumbnail;
             if (event.status == MMEventStatusCompleted)
             {
                 cellView.iconField.image = _completedIcon;
@@ -131,7 +124,7 @@
 {
     if (tableView == _eventsTable)
     {
-        return [_libraryEvents count];
+        return [_library.events count];
     }
     else if (tableView == _photosTable)
     {
@@ -155,7 +148,7 @@
 
 - (IBAction) checkAllButtonWasPressed: (id) sender
 {
-    for (MMLibraryEvent *event in _libraryEvents)
+    for (MMLibraryEvent *event in _library.events)
     {
         event.toBeProcessed = YES;
     }
@@ -165,7 +158,7 @@
 
 - (IBAction) uncheckAllButtonWasPressed: (id) sender
 {
-    for (MMLibraryEvent *event in _libraryEvents)
+    for (MMLibraryEvent *event in _library.events)
     {
         event.toBeProcessed = NO;
     }
@@ -185,10 +178,12 @@
         _transmitting = YES;
         [_eventsTable reloadData];
         NSInteger row = 0;
-        for (MMLibraryEvent *event in _libraryEvents)
+        _totalImagesToTransmit = 0;
+        for (MMLibraryEvent *event in _library.events)
         {
             if (event.toBeProcessed)
             {
+                _totalImagesToTransmit += [[event filecount] integerValue];
                 NSDictionary *options = @{@"skipProcessedImages": @(_skipProcessedImageCheckbox.state)};
                 MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
                                                                                           row: row
@@ -199,6 +194,8 @@
             }
             row++;
         }
+        _progressIndicator.maxValue = (Float64) _totalImagesToTransmit;
+        [_progressIndicator setDoubleValue: 0.0];
         _interruptButton.enabled = YES;
     }
 }
@@ -209,7 +206,7 @@
     NSInteger row = [_eventsTable rowForView: sender];
     if (row >= 0)
     {
-        MMLibraryEvent *event = _libraryEvents[row];
+        MMLibraryEvent *event = _library.events[row];
         event.toBeProcessed = ((NSButton *)sender).state;
         
         // If the one they just clicked is a YES, then enable the transmit button
@@ -219,7 +216,7 @@
             return;
         }
         // Otherwise we have to inspect all of them
-        for (MMLibraryEvent *event in _libraryEvents)
+        for (MMLibraryEvent *event in _library.events)
         {
             if (event.toBeProcessed)
             {
@@ -247,7 +244,7 @@
     if (tableView == _eventsTable)
     {
         _selectedRow = tableView.selectedRow;
-        _selectedEvent = _libraryEvents[_selectedRow];
+        _selectedEvent = _library.events[_selectedRow];
         for (MMPhoto *photo in _photos)
         {
             [photo close];

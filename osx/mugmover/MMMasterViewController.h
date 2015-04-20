@@ -18,19 +18,22 @@
 @property (weak)    IBOutlet    NSTableView *           eventsTable;
 @property (weak)    IBOutlet    NSButton *              interruptButton;
 @property (weak)    IBOutlet    NSTableView *           photosTable;
+@property (weak)    IBOutlet    NSProgressIndicator *   progressIndicator;
 @property (weak)    IBOutlet    NSButton *              skipProcessedImageCheckbox;
 @property (weak)    IBOutlet    NSButton *              transmitButton;
 @property (weak)    IBOutlet    NSButton *              uncheckAllButton;
 
+
 @property (strong)              NSImage *               activeIcon;
 @property (strong)              NSImage *               completedIcon;
 @property (strong)              NSImage *               incompleteIcon;
-@property (strong)              NSArray *               libraryEvents;
+@property (strong)              MMPhotoLibrary *        library;
 @property (assign)              NSInteger               outstandingRequests;
 @property (strong)              NSArray *               photos;
 @property (strong)              MMLibraryEvent *        selectedEvent;
 @property (assign)              NSInteger               selectedRow;
 @property (strong)              MMSmugmug *             serviceApi;
+@property (assign)              NSInteger               totalImagesToTransmit;
 @property (assign)              BOOL                    transmitting;
 @property (strong)              NSOperationQueue *      uploadOperationQueue;
 

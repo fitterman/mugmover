@@ -14,6 +14,17 @@
 #import "FMDB/FMDB.h"
 #import "FMDB/FMResultSet.h"
 
+#define BASE_QUERY  "SELECT minImageDate, minImageTimeZoneName, " \
+                    "    maxImageDate, maxImageTimeZoneName, f.name, f.uuid, " \
+                    "    posterVersionUuid, versionCount, " \
+                    "    count(*) filecount " \
+                    "FROM RKFolder f " \
+                    "JOIN RKMaster m ON m.projectUuid = f.uuid "  \
+                    "WHERE parentFolderUuid = 'AllProjectsItem' AND " \
+                    "    isMagic != 1 AND isHidden != 1 AND f.isInTrash != 1 " \
+                    "GROUP BY f.uuid " \
+                    "ORDER BY minImageDate, maxImageDate, f.uuid "
+
 @import QuartzCore.CIFilter;
 @import QuartzCore.CoreImage.CIContext;
 @import QuartzCore.CoreImage.CIFilter;
@@ -52,6 +63,15 @@ NSString *photosPath;
             return nil;
         }
 
+        // Based on  https://github.com/ccgus/fmdb/issues/39
+        // and http://stackoverflow.com/questions/3144700/exc-bad-access-when-using-sqlite-fmdb-and-threads-on-ios-4-0
+        // it is wise to set the mode.
+        sqlite3_shutdown();
+        if (sqlite3_config(SQLITE_CONFIG_SERIALIZED) == SQLITE_ERROR) {
+            DDLogWarn(@"WARNING: Unable to set serialized mode.");
+        }
+        sqlite3_initialize();
+        
         _facesDatabase = [FMDatabase databaseWithPath: facesPath];
         _photosDatabase = [FMDatabase databaseWithPath: photosPath];
         _propertiesDatabase = [FMDatabase databaseWithPath: propertiesPath];
@@ -62,6 +82,10 @@ NSString *photosPath;
             [_photosDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE] &&
             [_propertiesDatabase openWithFlags: SQLITE_OPEN_READONLY | SQLITE_OPEN_EXCLUSIVE])
         {
+            _facesDatabase.shouldCacheStatements = YES;
+            _photosDatabase.shouldCacheStatements = YES;
+            _propertiesDatabase.shouldCacheStatements = YES;
+            
             NSInteger versionMajor = [_photosDatabase
                                       intForQuery: @"SELECT propertyValue FROM RKAdminData "
                                                     "WHERE propertyArea = 'database' AND propertyName = 'versionMajor'"];
@@ -82,6 +106,7 @@ NSString *photosPath;
                                   @"databaseVersion":  _databaseVersion,
                                   @"databaseAppId":    _databaseAppId,
                                   };
+            [self open]; // populates the events
             return self;
         }
         else
@@ -108,6 +133,34 @@ NSString *photosPath;
         }
     }
     return self;
+}
+
+- (BOOL) open
+{
+    NSInteger upperRecordCount  = [_photosDatabase
+                                   intForQuery: @"SELECT count(*) FROM RKFolder "
+                                   "WHERE parentFolderUuid = 'AllProjectsItem' AND "
+                                   "    isMagic != 1 AND isHidden != 1 AND isInTrash != 1 "];
+    _events = [[NSMutableArray alloc] initWithCapacity: upperRecordCount];
+    
+    NSString *query =  @BASE_QUERY;
+    
+    // NOTE: It has been observed that in some cases, the minImageDate or maxImageDate
+    //       might be a NULL value if the database didn't update that yet.
+    
+    FMResultSet *resultSet = [_photosDatabase executeQuery: query withArgumentsInArray: @[]];
+    while (resultSet && [resultSet next])
+    {
+        MMLibraryEvent *event = [[MMLibraryEvent alloc] initFromDictionary: [resultSet resultDictionary]
+                                                                       row: [_events count] + 1
+                                                                   library: self];
+        [_events addObject: event];
+    }
+    if (resultSet)
+    {
+        [resultSet close];
+    }
+    return YES;
 }
 
 /*

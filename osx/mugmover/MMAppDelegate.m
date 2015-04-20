@@ -31,6 +31,7 @@ BOOL const MMdebugLevel;
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
 
     [_window setDelegate: self];
+    [_window setMinSize: NSMakeSize(700.0, 300.0)];
 
     // 1. Create the master View Controller
     self.masterViewController = [[MMMasterViewController alloc] initWithNibName:@"MMMasterViewController" bundle:nil];
@@ -39,7 +40,7 @@ BOOL const MMdebugLevel;
     _library = [[MMPhotoLibrary alloc] initWithPath: (NSString *) @"/Users/Bob/Pictures/Jay Phillips"];
     if (_library)
     {
-        self.masterViewController.libraryEvents = [MMLibraryEvent getEventsFromLibrary: _library];
+        self.masterViewController.library = _library;
 
         // 3. Add the view controller to the Window's content view
         [_window.contentView addSubview:_masterViewController.view];

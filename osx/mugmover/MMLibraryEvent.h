@@ -20,13 +20,13 @@ typedef NS_ENUM(NSInteger, MMEventStatus) {
 @interface MMLibraryEvent : NSObject
 
 @property (weak, nonatomic)     MMPhoto *           activePhoto;
+@property (strong, readonly)    NSImage *           currentThumbnail;
 @property (strong, readonly)    NSDictionary *      dictionary;
+@property (strong, readonly)    NSImage *           eventThumbnail;
 @property (weak)                MMPhotoLibrary *    library;
 @property (assign)              NSInteger           row; // An index into the array of events
 @property (assign)              MMEventStatus       status;
 @property (assign)              BOOL                toBeProcessed;
-
-+ (NSArray *) getEventsFromLibrary: (MMPhotoLibrary *) library;
 
 - (id) initFromDictionary: (NSDictionary *) inDictionary
                       row: (NSInteger) row
@@ -40,8 +40,8 @@ typedef NS_ENUM(NSInteger, MMEventStatus) {
 
 - (NSString *) name;
 
-- (void) setActivePhoto: (MMPhoto *) photo
-             withStatus: (MMEventStatus) status;
+- (void) setActivePhotoThumbnail: (NSString *) photoThumbnailPath
+                      withStatus: (MMEventStatus) status;
 
 - (NSString *) uuid;
 

@@ -91,13 +91,14 @@ extern const NSInteger MMDefaultRetries;
                 if (replacementFor && _skipProcessedImages)
                 {
                     completedTransfers++;   // We consider it sent already so we can get the icons right
+                    [_viewController.progressIndicator incrementBy: 1.0];
                     continue;               // And then we skip the processing
                 }
             }
 
             [photo processPhoto];
-            [_event setActivePhoto: photo
-                        withStatus: MMEventStatusActive];
+            [_event setActivePhotoThumbnail: photo.iPhotoOriginalImagePath
+                                 withStatus: MMEventStatusActive];
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
                {
                    [_viewController.eventsTable reloadData]; // TODO Optimize to single cell
@@ -171,6 +172,7 @@ extern const NSInteger MMDefaultRetries;
                 [defaults setObject: albumState forKey: albumKey];
                 [defaults synchronize];
                 completedTransfers++;
+                [_viewController.progressIndicator incrementBy: 1.0];
             }
         }
         if (completedTransfers == [photos count])
@@ -182,7 +184,7 @@ extern const NSInteger MMDefaultRetries;
         [defaults setObject: albumState forKey: albumKey];
         [defaults synchronize];
 
-        [_event setActivePhoto: nil withStatus: finalStatus];
+        [_event setActivePhotoThumbnail: nil withStatus: finalStatus];
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
          {
              [_viewController.eventsTable reloadData]; // TODO Optimize to single cell

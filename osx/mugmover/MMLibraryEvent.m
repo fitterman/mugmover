@@ -13,47 +13,7 @@
 #import <FMDatabase.h>
 #import <FMDB/FMDatabaseAdditions.h>
 
-#define BASE_QUERY  "SELECT minImageDate, minImageTimeZoneName, " \
-                    "    maxImageDate, maxImageTimeZoneName, f.name, f.uuid, " \
-                    "    posterVersionUuid, versionCount, " \
-                    "    count(*) filecount " \
-                    "FROM RKFolder f " \
-                    "JOIN RKMaster m ON m.projectUuid = f.uuid "  \
-                    "WHERE parentFolderUuid = 'AllProjectsItem' AND " \
-                    "    isMagic != 1 AND isHidden != 1 AND f.isInTrash != 1 " \
-                    "GROUP BY f.uuid " \
-                    "ORDER BY minImageDate, maxImageDate, f.uuid "
-
-
 @implementation MMLibraryEvent
-
-/**
- Returns an array of MMLibraryEvents
- */
-+ (NSArray *) getEventsFromLibrary: (MMPhotoLibrary *) library
-{
-    NSInteger upperRecordCount  = [library.photosDatabase
-                                   intForQuery: @"SELECT count(*) FROM RKFolder "
-                                   "WHERE parentFolderUuid = 'AllProjectsItem' AND "
-                                   "    isMagic != 1 AND isHidden != 1 AND isInTrash != 1 "];
-    
-    NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: upperRecordCount];
-    
-    NSString *query =  @BASE_QUERY;
-
-    // NOTE: It has been observed that in some cases, the minImageDate or maxImageDate
-    //       might be a NULL value if the database didn't update that yet.
-    
-    FMResultSet *resultSet = [library.photosDatabase executeQuery: query withArgumentsInArray: @[]];
-    while (resultSet && [resultSet next])
-    {
-        [result addObject: [[MMLibraryEvent alloc] initFromDictionary: [resultSet resultDictionary]
-                                                                  row: [result count] + 1
-                                                              library: library]];
-    }
-    [resultSet close];
-    return (NSArray *)result;
-}
 
 - (id) initFromDictionary: (NSDictionary *) inDictionary
                       row: (NSInteger) row
@@ -63,12 +23,16 @@
     _library = library;
     _row = row;
     _status = MMEventStatusNone;
+    _eventThumbnail = [[NSImage alloc] initByReferencingFile: [self iconImagePath]];
+    _currentThumbnail = _eventThumbnail;
     return self;
 }
 
 - (void) close
 {
+    _currentThumbnail = nil;
     _dictionary = nil;
+    _eventThumbnail = nil;
 }
 
 - (NSString *) iconImagePath
@@ -90,10 +54,17 @@
     return [[NSBundle mainBundle] pathForResource: @"Photograph-128" ofType: @"png"];
 }
 
-- (void) setActivePhoto: (MMPhoto *) photo
-             withStatus: (MMEventStatus) status
+- (void) setActivePhotoThumbnail: (NSString *) photoThumbnailPath
+                      withStatus: (MMEventStatus) status
 {
-    _activePhoto = photo;
+    if (photoThumbnailPath)
+    {
+        _currentThumbnail = [[NSImage alloc] initByReferencingFile: photoThumbnailPath];
+    }
+    else
+    {
+        _currentThumbnail = _eventThumbnail;
+    }
     _status = status;
 }
 
@@ -154,5 +125,4 @@
 {
     return [_dictionary objectForKey: @"uuid"];
 }
-
 @end

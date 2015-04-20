@@ -95,6 +95,7 @@ extern Float64 const MMDegreesPerRadian;
     if (resultSet && [resultSet next])
     {
         NSDictionary *resultDictionary = [resultSet resultDictionary];
+        [resultSet close];
         return [[MMPhoto alloc] initFromDictionary: resultDictionary
                                            library: library];
     }

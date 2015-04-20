@@ -15,8 +15,9 @@
 @property (strong, readonly)    NSString *          databaseAppId;
 @property (strong, readonly)    NSString *          databaseUuid;
 @property (strong, readonly)    NSString *          databaseVersion;
-@property (strong, readonly)    NSString *          libraryBasePath;
+@property (strong, readonly)    NSMutableArray *    events;
 @property (strong, readonly)    FMDatabase *        facesDatabase;
+@property (strong, readonly)    NSString *          libraryBasePath;
 @property (strong, readonly)    FMDatabase *        photosDatabase;
 @property (strong, readonly)    FMDatabase *        propertiesDatabase;
 @property (strong)              NSDictionary *      sourceDictionary;
