@@ -66,7 +66,7 @@ extern NSInteger const MMDefaultRetries;
         }
         
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        if ([httpResponse statusCode] != 200)
+        if ([httpResponse statusCode] >= 400) // These are errors (300 is handled automatically)
         {
             DDLogError(@"ERROR      httpError=%ld", (long)[httpResponse statusCode]);
             if ([serverData length] > 0)
@@ -74,7 +74,14 @@ extern NSInteger const MMDefaultRetries;
                 NSString *s = [[NSString alloc] initWithData: serverData encoding: NSUTF8StringEncoding];
                 DDLogError(@"response=%@", s);
             }
-            continue;
+            if ([httpResponse statusCode] >= 500)
+            {
+                continue;   // Worthy of a retry
+            }
+            else
+            {
+                return NO; // No sense in retrying this as it will not change
+            }
         }
         NSDictionary *parsedJsonData = [MMDataUtility parseJsonData: serverData];
         if (parsedJsonData)

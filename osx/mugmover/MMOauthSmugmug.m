@@ -237,7 +237,7 @@ extern NSInteger const MMDefaultRetries;
              else
              {
                  NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-                 if ([httpResponse statusCode] != 200)
+                 if ([httpResponse statusCode] >= 400) // These are errors (300 is handled automatically)
                  {
                      [self updateState: -1.0 asText: [NSString stringWithFormat: @"Network error httpStatusCode=%ld", (long)[httpResponse statusCode]]];
                  }
