@@ -37,7 +37,7 @@
         _completedIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
         imageName = [[NSBundle mainBundle] pathForResource: @"Incomplete-128" ofType: @"png"];
         _incompleteIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
-        imageName = [[NSBundle mainBundle] pathForResource: @"Incomplete-128" ofType: @"png"];
+        imageName = [[NSBundle mainBundle] pathForResource: @"Library-128" ofType: @"png"];
         _libraryIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
         _transmitting = NO;
 
@@ -257,11 +257,10 @@
                 {
                     NSLog(@"library=%@", libraryUrl.path);
                     [library close]; // We just need to test that it can be init'd, but we dont' do a full open.
-                    if (![_libraryManager insertLibraryPath: libraryUrl.path])
+                    NSError *error;
+                    if (![_libraryManager insertLibraryPath: libraryUrl.path error: &error])
                     {
-                        [MMUiUtility alertWithText: @"The library could not be added to the list."
-                                      withQuestion: nil
-                                             style: NSWarningAlertStyle];
+                        [MMUiUtility alertWithError: error style: NSWarningAlertStyle];
                     }
                     else
                     {

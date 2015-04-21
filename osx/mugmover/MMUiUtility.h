@@ -10,6 +10,9 @@
 
 @interface MMUiUtility : NSObject
 
++ (void) alertWithError: (NSError *) error
+                  style: (NSAlertStyle) warningOrErrorStyle;
+
 + (BOOL) alertWithText: (NSString *) text
           withQuestion: (NSString *) question
                  style: (NSAlertStyle) warningOrErrorStyle;

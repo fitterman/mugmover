@@ -41,6 +41,7 @@
 		C4968CE11A15101500F34E46 /* mugmoverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CE01A15101500F34E46 /* mugmoverTests.m */; };
 		C4A687A71ACC7682007CDC6D /* MMFileUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A61ACC7682007CDC6D /* MMFileUtility.m */; };
 		C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A91ACC773E007CDC6D /* MMDataUtility.m */; };
+		C4D3A4161AE690D0005E72B6 /* Library-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4D3A4151AE690D0005E72B6 /* Library-128.png */; };
 		C4E3D94A1ADC64AF00D82337 /* Incomplete-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4E3D9491ADC64AF00D82337 /* Incomplete-128.png */; };
 		C4E3D94E1ADC678900D82337 /* Photograph-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4E3D94D1ADC678900D82337 /* Photograph-128.png */; };
 		C4F3F1811A26E90900C2BE00 /* MMPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = C4F3F1801A26E90900C2BE00 /* MMPhoto.m */; };
@@ -136,6 +137,7 @@
 		C4A687A61ACC7682007CDC6D /* MMFileUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFileUtility.m; sourceTree = "<group>"; };
 		C4A687A81ACC773E007CDC6D /* MMDataUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMDataUtility.h; sourceTree = "<group>"; };
 		C4A687A91ACC773E007CDC6D /* MMDataUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMDataUtility.m; sourceTree = "<group>"; };
+		C4D3A4151AE690D0005E72B6 /* Library-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Library-128.png"; sourceTree = "<group>"; };
 		C4E3D9491ADC64AF00D82337 /* Incomplete-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Incomplete-128.png"; sourceTree = "<group>"; };
 		C4E3D94D1ADC678900D82337 /* Photograph-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Photograph-128.png"; sourceTree = "<group>"; };
 		C4F3F17F1A26E90900C2BE00 /* MMPhoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMPhoto.h; sourceTree = "<group>"; };
@@ -176,6 +178,7 @@
 				C4F935031AD884C200AB465B /* Active-128.gif */,
 				C404A9CC1AD6C90400E197F1 /* Completed-128.png */,
 				C4E3D9491ADC64AF00D82337 /* Incomplete-128.png */,
+				C4D3A4151AE690D0005E72B6 /* Library-128.png */,
 				C4E3D94D1ADC678900D82337 /* Photograph-128.png */,
 			);
 			name = Assets;
@@ -445,6 +448,7 @@
 				C4968CCF1A15101500F34E46 /* Images.xcassets in Resources */,
 				C4E3D94A1ADC64AF00D82337 /* Incomplete-128.png in Resources */,
 				C4FF95B41A589D7100472CAF /* mugmover.xcconfig in Resources */,
+				C4D3A4161AE690D0005E72B6 /* Library-128.png in Resources */,
 				C4968CC71A15101500F34E46 /* Credits.rtf in Resources */,
 				C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */,
 				C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */,

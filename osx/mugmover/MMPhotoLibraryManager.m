@@ -9,7 +9,7 @@
 #import "MMPhotoLibrary.h"
 #import "MMPhotoLibraryManager.h"
 
-NSInteger const maxSupportedLibraries = 3;
+NSInteger const maxSupportedLibraries = 50;
 
 @implementation MMPhotoLibraryManager
 
@@ -28,16 +28,33 @@ NSInteger const maxSupportedLibraries = 3;
     return [_libraries count] >= maxSupportedLibraries;
 }
 
-- (BOOL) insertLibraryPath: newLibraryPath
+- (BOOL) insertLibraryPath: (NSString *) newLibraryPath
+                     error: (NSError **) error;
 {
     if ([self isAtCapacity])
     {
+        NSDictionary *userInfo = @{
+                                   NSLocalizedDescriptionKey: NSLocalizedString(@"Unable to add more libraries.", nil),
+                                   NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"The capacity has been exceeded.", nil),
+                                   NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Consider removing one library and then adding this one.", nil)
+                                   };
+        *error = [NSError errorWithDomain: [[NSBundle mainBundle] bundleIdentifier]
+                                     code: -57
+                                 userInfo: userInfo];
         return NO; // No more room
     }
     for (NSString *libraryPath in _libraries)
     {
         if ([libraryPath isEqualTo: newLibraryPath])
         {
+            NSDictionary *userInfo = @{
+                                       NSLocalizedDescriptionKey: NSLocalizedString(@"The library is already in the list.", nil),
+                                       NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"The library is already in the list.", nil),
+                                       NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Check that you selected the correct library.", nil)
+                                       };
+            *error = [NSError errorWithDomain: [[NSBundle mainBundle] bundleIdentifier]
+                                         code: -58
+                                     userInfo: userInfo];
             return NO;
         }
     }
