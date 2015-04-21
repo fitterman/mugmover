@@ -236,53 +236,40 @@ NSString *photosPath;
         The versionUuid is used as part of the path, in which case we
         expect to find the versionName + ".jpg" as part of the file name.
      */
-    NSArray *masterPathPieces = [partialMasterPath componentsSeparatedByString: @"/"];
-    if (masterPathPieces)
+    NSString *versionNamePlusJpg = [NSString stringWithFormat: @"%@.jpg", versionName];
+    NSArray *pathPieces = @[_libraryBasePath,
+                            @"Previews",
+                            [partialMasterPath stringByDeletingLastPathComponent],
+                            versionUuid,
+                            versionNamePlusJpg];
+    if (pathPieces)
     {
-        NSString *versionNamePlusJpg = [NSString stringWithFormat: @"%@.jpg", versionName];
-        NSArray *pathPieces = @[_libraryBasePath,
-                                @"Previews",
-                                [masterPathPieces objectAtIndex: 0],
-                                [masterPathPieces objectAtIndex: 1],
-                                [masterPathPieces objectAtIndex: 2],
-                                [masterPathPieces objectAtIndex: 3],
-                                versionUuid,
-                                versionNamePlusJpg];
-        if (pathPieces)
+        NSString *versionPath = [pathPieces componentsJoinedByString: @"/"];
+        // If that file exists, return the path
+        if ([[NSFileManager defaultManager] fileExistsAtPath:versionPath])
         {
-            NSString *versionPath = [pathPieces componentsJoinedByString: @"/"];
-            // If that file exists, return the path
+            return versionPath;
+        }
+        else
+        {
+            // The alternative is to go one level higher and use the given file name
+            // which seems unlikely for a tiff, but I can't force that case.
+            pathPieces = @[_libraryBasePath,
+                           @"Previews",
+                           [partialMasterPath stringByDeletingLastPathComponent],
+                           versionFileName];
+            versionPath = [pathPieces componentsJoinedByString: @"/"];
             if ([[NSFileManager defaultManager] fileExistsAtPath:versionPath])
             {
                 return versionPath;
             }
             else
             {
-                // The alternative is to go one level higher and use the given file name
-                // which seems unlikely for a tiff, but I can't force that case.
-                pathPieces = @[_libraryBasePath,
-                               @"Previews",
-                               [masterPathPieces objectAtIndex: 0],
-                               [masterPathPieces objectAtIndex: 1],
-                               [masterPathPieces objectAtIndex: 2],
-                               [masterPathPieces objectAtIndex: 3],
-                               versionFileName];
-                versionPath = [pathPieces componentsJoinedByString: @"/"];
-                if ([[NSFileManager defaultManager] fileExistsAtPath:versionPath])
-                {
-                    return versionPath;
-                }
-                else
-                {
-                    // Yet another case, apparently...
-                    return [@[_libraryBasePath,
-                              @"Masters",
-                              partialMasterPath] componentsJoinedByString: @"/"];
-
-                }
-
+                // Yet another case, apparently...
+                return [@[_libraryBasePath,
+                          @"Masters",
+                          partialMasterPath] componentsJoinedByString: @"/"];
             }
-            
         }
     }
     return NULL;
