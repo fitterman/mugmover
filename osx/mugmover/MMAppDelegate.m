@@ -36,28 +36,22 @@ BOOL const MMdebugLevel;
     // 1. Create the master View Controller
     _masterViewController = [[MMMasterViewController alloc] initWithNibName:@"MMMasterViewController" bundle:nil];
 
-    // 2. Populate the library and libraryEvents
-    _library = [[MMPhotoLibrary alloc] initWithPath: (NSString *) @"/Users/Bob/Pictures/Jay Phillips"];
-    if (_library && [_library open])
-    {
-        self.masterViewController.library = _library;
+    // 2. Add the view controller to the Window's content view
+    [_window.contentView addSubview:_masterViewController.view];
+    _masterViewController.view.frame = ((NSView*)_window.contentView).bounds;
+    [_window.contentView setAutoresizesSubviews:YES];
 
-        // 3. Add the view controller to the Window's content view
-        [_window.contentView addSubview:_masterViewController.view];
-        _masterViewController.view.frame = ((NSView*)_window.contentView).bounds;
-        [_window.contentView setAutoresizesSubviews:YES];
-        
-        _serviceApi = [[MMSmugmug alloc] initWithHandle: @"jayphillips"];
-        
-        if (_serviceApi)
-        {
-            // Register for KVO on some network-associated values
-            [_serviceApi addObserver: self
-                          forKeyPath: @"initializationProgress"
-                             options: (NSKeyValueObservingOptionNew)
-                             context: (__bridge void *)(self)];
-            [_serviceApi configureOauthForLibrary: _library];
-        }
+    // 3. Establish the service API
+    _serviceApi = [[MMSmugmug alloc] initWithHandle: @"jayphillips"];
+
+    if (_serviceApi)
+    {
+        // Register for KVO on some network-associated values
+        [_serviceApi addObserver: self
+                      forKeyPath: @"initializationProgress"
+                         options: (NSKeyValueObservingOptionNew)
+                         context: (__bridge void *)(self)];
+        [_serviceApi configureOauthForLibrary: _library];
     }
 }
 

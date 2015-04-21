@@ -42,20 +42,24 @@
     return self;
 }
 
-- (void)viewWillLoad {
+- (void)viewWillLoad
+{
     if([NSViewController instancesRespondToSelector:@selector(viewWillLoad)]) {
         // [super viewWillLoad];
     }
 }
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     if([NSViewController instancesRespondToSelector:@selector(viewWillLoad)]) {
         // [super viewDidLoad];
     }
     _libraryManager = [[MMPhotoLibraryManager alloc] init];
+    [_librariesTable reloadData];
 }
 
-- (void)loadView {
+- (void)loadView
+{
     BOOL ownImp = ![NSViewController instancesRespondToSelector:@selector(viewWillLoad)];
     
     if(ownImp) {
