@@ -28,6 +28,8 @@
 @property (strong)              CIContext *         ciContext;
 @property (strong)              NSArray *           exifDateFormatters;
 
++ (NSString *) nameFromPath: (NSString *) path;
+
 - (id) initWithPath: (NSString *) path;
 
 - (void) close;
@@ -35,6 +37,8 @@
 - (NSString *) description;
 
 - (NSString *) displayName;
+
+- (BOOL) open;
 
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 

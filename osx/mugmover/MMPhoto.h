@@ -66,11 +66,13 @@
 
 - (NSNumber *) fileSize;
 
+- (NSImage *) getThumbnailImage;
+
 - (NSString *) fullImagePath;
 
 - (BOOL) isTiff;
 
-- (NSString *) originalImagePath;
+- (BOOL) isVideo;
 
 - (void) processPhoto;
 

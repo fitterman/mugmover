@@ -97,7 +97,7 @@ extern const NSInteger MMDefaultRetries;
             }
 
             [photo processPhoto];
-            [_event setActivePhotoThumbnail: photo.iPhotoOriginalImagePath
+            [_event setActivePhotoThumbnail: [photo getThumbnailImage]
                                  withStatus: MMEventStatusActive];
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
                {

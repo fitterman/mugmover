@@ -37,11 +37,11 @@ typedef NS_ENUM(NSInteger, MMEventStatus) {
 
 - (NSNumber *) filecount;
 
-- (NSString *) iconImagePath;
+- (NSImage *) iconImage;
 
 - (NSString *) name;
 
-- (void) setActivePhotoThumbnail: (NSString *) photoThumbnailPath
+- (void) setActivePhotoThumbnail: (NSImage *) photoThumbnailImage
                       withStatus: (MMEventStatus) status;
 
 - (NSString *) uuid;

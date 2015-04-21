@@ -25,9 +25,12 @@
 #import "MMEnvironment.h"
 #import "MMFileUtility.h"
 
+@import AVFoundation;
+
 @import QuartzCore.CIFilter;
 @import QuartzCore.CoreImage.CIContext;
 @import QuartzCore.CoreImage.CIFilter;
+
 
 #define PAGESIZE (50)
 #define MAX_THUMB_DIM (100)
@@ -305,6 +308,35 @@ extern Float64 const MMDegreesPerRadian;
     return nil;
 }
 
+- (NSImage *) getThumbnailImage
+{
+    // We might have to invoke the exifLoader to get the path populated...
+    if (!_exifDictionary)
+    {
+        [self populateExifFromSourceFile];
+    }
+
+    // Photos are the easy case... just get an NSImage using the ORIGINAL (big) image. Works fine.
+    if (![self isVideo])
+    {
+        return [[NSImage alloc] initByReferencingFile: _iPhotoOriginalImagePath];
+    }
+
+    // Video requires a bit more work
+    NSURL *url = [NSURL fileURLWithPath: _iPhotoOriginalImagePath];
+
+    AVAsset *asset = [AVAsset assetWithURL: url];
+    AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc]initWithAsset:asset];
+    CMTime time = [asset duration];
+    time.value = 0;
+    CGImageRef imageRef = [imageGenerator copyCGImageAtTime:time actualTime:NULL error:NULL];
+    NSImage *thumbnail = [[NSImage alloc] initWithCGImage: imageRef
+                                                     size: NSMakeSize(_processedWidth, _processedHeight)];
+    CGImageRelease(imageRef);  // CGImageRef won't be released by ARC
+    return thumbnail;
+}
+
+
 - (BOOL) populateExifFromSourceFile
 {
     BOOL result = YES;
@@ -324,6 +356,10 @@ extern Float64 const MMDegreesPerRadian;
                                                        versionUuid: versionUuid
                                                    versionFileName: versionFileName
                                                        versionName: versionName];
+    if ([self isVideo])
+    {
+        return YES; // Sort of yes, sort of no.
+    }
     if (_iPhotoOriginalImagePath)
     {
         exifProperties = [MMFileUtility exifForFileAtPath: _iPhotoOriginalImagePath];
@@ -1030,6 +1066,14 @@ extern Float64 const MMDegreesPerRadian;
     return ([[_attributes valueForKeyPath: @"photo.subtype"] isEqualToString: @"TIFST"]);
 }
 
+/**
+ * Tells you if the object is a video.
+ */
+- (BOOL) isVideo
+{
+    return ([[_attributes valueForKeyPath: @"photo.type"] isEqualToString: @"VIDT"]);
+}
+
 #pragma mark Attribute Accessors
 - (NSString *) fileName
 {
@@ -1047,15 +1091,6 @@ extern Float64 const MMDegreesPerRadian;
                                    versionUuid: [_attributes valueForKeyPath: @"photo.versionUuid"]
                                versionFileName: [_attributes valueForKeyPath: @"photo.versionFileName"]
                                    versionName: [_attributes valueForKeyPath: @"photo.versionName"]];
-}
-
-- (NSString *) originalImagePath
-{
-    if (!_exifDictionary)
-    {
-        [self populateExifFromSourceFile];
-    }
-    return self.iPhotoOriginalImagePath;
 }
 
 - (NSString *) versionName

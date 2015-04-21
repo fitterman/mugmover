@@ -145,7 +145,7 @@
             if ([tableColumn.identifier isEqualToString: @"NameColumn"])
             {
                 cellView.firstTitleTextField.stringValue = [photo versionName];
-                cellView.imageView.image = [[NSImage alloc] initByReferencingFile: [photo fullImagePath]];
+                cellView.imageView.image = [photo getThumbnailImage];
                 NSString *byteSize = [NSByteCountFormatter stringFromByteCount: [[photo fileSize] longLongValue]
                                                                     countStyle: NSByteCountFormatterCountStyleFile];
                 cellView.secondTextField.stringValue = [NSString stringWithFormat: @"%@ (%@)",

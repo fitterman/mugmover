@@ -23,7 +23,7 @@
     _library = library;
     _row = row;
     _status = MMEventStatusNone;
-    _eventThumbnail = [[NSImage alloc] initByReferencingFile: [self iconImagePath]];
+    _eventThumbnail = [self iconImage];
     _currentThumbnail = _eventThumbnail;
     return self;
 }
@@ -35,7 +35,7 @@
     _eventThumbnail = nil;
 }
 
-- (NSString *) iconImagePath
+- (NSImage *) iconImage
 {
     NSString *versionUuid = [self featuredImageUuid];
     if (versionUuid)
@@ -44,22 +44,19 @@
                                             fromLibrary: _library];
         if (photo)
         {
-            NSString *path = [photo originalImagePath];
-            if (path)
-            {
-                return path;
-            }
+            return [photo getThumbnailImage];
         }
     }
-    return [[NSBundle mainBundle] pathForResource: @"Photograph-128" ofType: @"png"];
+    NSString *pathToIcon = [[NSBundle mainBundle] pathForResource: @"Photograph-128" ofType: @"png"];
+    return [[NSImage alloc] initByReferencingFile: pathToIcon];
 }
 
-- (void) setActivePhotoThumbnail: (NSString *) photoThumbnailPath
+- (void) setActivePhotoThumbnail: (NSImage *) photoThumbnailImage
                       withStatus: (MMEventStatus) status
 {
-    if (photoThumbnailPath)
+    if (photoThumbnailImage)
     {
-        _currentThumbnail = [[NSImage alloc] initByReferencingFile: photoThumbnailPath];
+        _currentThumbnail = photoThumbnailImage;
     }
     else
     {
