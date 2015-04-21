@@ -31,14 +31,10 @@
         
         _outstandingRequests = 0;
         
-        NSString* imageName = [[NSBundle mainBundle] pathForResource: @"Active-128" ofType: @"gif"];
-        _activeIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
-        imageName = [[NSBundle mainBundle] pathForResource: @"Completed-128" ofType: @"png"];
-        _completedIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
-        imageName = [[NSBundle mainBundle] pathForResource: @"Incomplete-128" ofType: @"png"];
-        _incompleteIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
-        imageName = [[NSBundle mainBundle] pathForResource: @"Library-128" ofType: @"png"];
-        _libraryIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
+        _activeIcon = [MMUiUtility iconImage: @"Active-128" ofType: @"gif"];
+        _completedIcon = [MMUiUtility iconImage: @"Completed-128" ofType: @"png"];
+        _incompleteIcon = [MMUiUtility iconImage: @"Incomplete-128" ofType: @"png"];
+        _libraryIcon = [MMUiUtility iconImage: @"Library-128" ofType: @"png"];
         _transmitting = NO;
 
         

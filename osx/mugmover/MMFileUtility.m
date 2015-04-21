@@ -96,7 +96,7 @@
     {
         return nil;
     }
-    return [dict objectForKey:NSFileSize];
+    return [dict objectForKey: NSFileSize];
 }
 
 /**

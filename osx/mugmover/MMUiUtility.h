@@ -16,4 +16,8 @@
 + (BOOL) alertWithText: (NSString *) text
           withQuestion: (NSString *) question
                  style: (NSAlertStyle) warningOrErrorStyle;
+
++ (NSImage *) iconImage: (NSString *) name
+                 ofType: (NSString *) ofType;
+
 @end

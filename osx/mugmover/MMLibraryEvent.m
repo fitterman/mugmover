@@ -10,6 +10,7 @@
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
 #import "MMMasterViewController.h"
+#import "MMUiUtility.h"
 #import <FMDatabase.h>
 #import <FMDB/FMDatabaseAdditions.h>
 
@@ -24,6 +25,10 @@
     _row = row;
     _status = MMEventStatusNone;
     _eventThumbnail = [self iconImage];
+    if (!_eventThumbnail)
+    {
+        _eventThumbnail = [MMUiUtility iconImage: @"Photograph-128" ofType: @"png"];
+    }
     _currentThumbnail = _eventThumbnail;
     return self;
 }
@@ -47,8 +52,7 @@
             return [photo getThumbnailImage];
         }
     }
-    NSString *pathToIcon = [[NSBundle mainBundle] pathForResource: @"Photograph-128" ofType: @"png"];
-    return [[NSImage alloc] initByReferencingFile: pathToIcon];
+    return [MMUiUtility iconImage: @"Photograph-128" ofType: @"png"];
 }
 
 - (void) setActivePhotoThumbnail: (NSImage *) photoThumbnailImage

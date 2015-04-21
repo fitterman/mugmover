@@ -316,6 +316,10 @@ extern Float64 const MMDegreesPerRadian;
         [self populateExifFromSourceFile];
     }
 
+    if (![MMFileUtility lengthForFileAtPath: _iPhotoOriginalImagePath])
+    {
+        return nil;
+    }
     // Photos are the easy case... just get an NSImage using the ORIGINAL (big) image. Works fine.
     if (![self isVideo])
     {
@@ -329,7 +333,9 @@ extern Float64 const MMDegreesPerRadian;
     AVAssetImageGenerator *imageGenerator = [[AVAssetImageGenerator alloc]initWithAsset:asset];
     CMTime time = [asset duration];
     time.value = 0;
-    CGImageRef imageRef = [imageGenerator copyCGImageAtTime:time actualTime:NULL error:NULL];
+    CGImageRef imageRef = [imageGenerator copyCGImageAtTime: time
+                                                 actualTime: NULL
+                                                      error: NULL];
     NSImage *thumbnail = [[NSImage alloc] initWithCGImage: imageRef
                                                      size: NSMakeSize(_processedWidth, _processedHeight)];
     CGImageRelease(imageRef);  // CGImageRef won't be released by ARC

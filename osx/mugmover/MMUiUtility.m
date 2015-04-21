@@ -38,4 +38,12 @@
     [alert setAlertStyle: warningOrErrorStyle];
     [alert runModal];
 }
+
++ (NSImage *) iconImage: (NSString *) name
+                 ofType: (NSString *) ofType
+{
+    NSString *imageName = [[NSBundle mainBundle] pathForResource: name ofType: ofType];
+    return [[NSImage alloc] initWithContentsOfFile: imageName];
+}
+
 @end
