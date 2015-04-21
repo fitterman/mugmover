@@ -669,11 +669,11 @@
         </menu>
         <window title="mugmover" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-            <rect key="contentRect" x="335" y="390" width="354" height="393"/>
+            <rect key="contentRect" x="335" y="390" width="649" height="393"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
             <value key="minSize" type="size" width="354" height="393"/>
             <view key="contentView" id="EiT-Mj-1SZ">
-                <rect key="frame" x="0.0" y="0.0" width="354" height="393"/>
+                <rect key="frame" x="0.0" y="0.0" width="649" height="393"/>
                 <autoresizingMask key="autoresizingMask"/>
             </view>
             <toolbar key="toolbar" implicitIdentifier="8FAEF474-00A8-45A6-8E73-47E5A2CDFA0C" autosavesConfiguration="NO" displayMode="iconAndLabel" sizeMode="regular" id="MzU-62-t1I">
