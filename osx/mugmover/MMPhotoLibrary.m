@@ -35,6 +35,13 @@
 
 NSString *photosPath;
 
++ (NSString *) nameFromPath: (NSString *) path
+{
+    NSString *name = [path lastPathComponent];
+    name = [name stringByDeletingPathExtension];
+    return name;
+}
+
 - (id) initWithPath: (NSString *) path
 {
     self = [self init];
@@ -106,7 +113,6 @@ NSString *photosPath;
                                   @"databaseVersion":  _databaseVersion,
                                   @"databaseAppId":    _databaseAppId,
                                   };
-            [self open]; // populates the events
             return self;
         }
         else

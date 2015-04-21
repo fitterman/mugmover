@@ -10,12 +10,15 @@
 @class MMPhoto;
 @class MMPhotoLibrary;
 @class MMLibraryEvent;
+@class MMPhotoLibraryManager;
 @class MMSmugmug;
 
 @interface MMMasterViewController : NSViewController <NSTableViewDelegate>
 
+@property (weak)    IBOutlet    NSButton *              addLibraryButton;
 @property (weak)    IBOutlet    NSButton *              checkAllButton;
 @property (weak)    IBOutlet    NSTableView *           eventsTable;
+@property (weak)    IBOutlet    NSTableView *           librariesTable;
 @property (weak)    IBOutlet    NSButton *              interruptButton;
 @property (weak)    IBOutlet    NSTableView *           photosTable;
 @property (weak)    IBOutlet    NSProgressIndicator *   progressIndicator;
@@ -28,10 +31,11 @@
 @property (strong)              NSImage *               completedIcon;
 @property (strong)              NSImage *               incompleteIcon;
 @property (strong)              MMPhotoLibrary *        library;
+@property (strong)              NSImage *               libraryIcon;
+@property (strong)              MMPhotoLibraryManager * libraryManager;
 @property (assign)              NSInteger               outstandingRequests;
 @property (strong)              NSArray *               photos;
 @property (strong)              MMLibraryEvent *        selectedEvent;
-@property (assign)              NSInteger               selectedRow;
 @property (strong)              MMSmugmug *             serviceApi;
 @property (assign)              NSInteger               totalImagesToTransmit;
 @property (assign)              BOOL                    transmitting;

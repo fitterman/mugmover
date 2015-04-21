@@ -31,14 +31,14 @@ BOOL const MMdebugLevel;
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
 
     [_window setDelegate: self];
-    [_window setMinSize: NSMakeSize(700.0, 300.0)];
+    [_window setMinSize: NSMakeSize(800.0, 300.0)];
 
     // 1. Create the master View Controller
-    self.masterViewController = [[MMMasterViewController alloc] initWithNibName:@"MMMasterViewController" bundle:nil];
-    
+    _masterViewController = [[MMMasterViewController alloc] initWithNibName:@"MMMasterViewController" bundle:nil];
+
     // 2. Populate the library and libraryEvents
     _library = [[MMPhotoLibrary alloc] initWithPath: (NSString *) @"/Users/Bob/Pictures/Jay Phillips"];
-    if (_library)
+    if (_library && [_library open])
     {
         self.masterViewController.library = _library;
 

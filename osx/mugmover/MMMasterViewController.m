@@ -11,6 +11,8 @@
 #import "MMComplexTableCellView.h"
 #import "MMLibraryEvent.h"
 #import "MMPhoto.h"
+#import "MMPhotoLibrary.h"
+#import "MMPhotoLibraryManager.h"
 #import "MMUiUtility.h"
 #import "MMSmugmug.h"
 #import "MMUploadOperation.h"
@@ -35,10 +37,42 @@
         _completedIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
         imageName = [[NSBundle mainBundle] pathForResource: @"Incomplete-128" ofType: @"png"];
         _incompleteIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
+        imageName = [[NSBundle mainBundle] pathForResource: @"Incomplete-128" ofType: @"png"];
+        _libraryIcon = [[NSImage alloc] initWithContentsOfFile:imageName];
         _transmitting = NO;
+
+        
     }
     return self;
 }
+
+- (void)viewWillLoad {
+    if([NSViewController instancesRespondToSelector:@selector(viewWillLoad)]) {
+        // [super viewWillLoad];
+    }
+}
+
+- (void)viewDidLoad {
+    if([NSViewController instancesRespondToSelector:@selector(viewWillLoad)]) {
+        // [super viewDidLoad];
+    }
+    _libraryManager = [[MMPhotoLibraryManager alloc] init];
+}
+
+- (void)loadView {
+    BOOL ownImp = ![NSViewController instancesRespondToSelector:@selector(viewWillLoad)];
+    
+    if(ownImp) {
+        [self viewWillLoad];
+    }
+    
+    [super loadView];
+    
+    if(ownImp) {
+        [self viewDidLoad];
+    }
+}
+
 
 - (void) dealloc
 {
@@ -54,7 +88,11 @@
     MMComplexTableCellView *cellView = (MMComplexTableCellView *)baseCellView;
     MMCheckboxTableCellView *checkboxCellView = (MMCheckboxTableCellView *)baseCellView;
    
-
+    if (tableView == _librariesTable)
+    {
+        baseCellView.textField.stringValue = [_libraryManager libraryNameForIndex: row];
+        baseCellView.imageView.image = _libraryIcon;
+    }
     if ((tableView == _eventsTable) && _library.events)
     {
         MMLibraryEvent *event = _library.events[row];
@@ -122,7 +160,11 @@
 
 - (NSInteger) numberOfRowsInTableView: (NSTableView *) tableView
 {
-    if (tableView == _eventsTable)
+    if (tableView == _librariesTable)
+    {
+        return [_libraryManager totalLibraries];
+    }
+    else if (tableView == _eventsTable)
     {
         return [_library.events count];
     }
@@ -134,16 +176,6 @@
         }
     }
     return 0;
-}
-
-- (BOOL) selectionShouldChangeInTableView: (NSTableView * ) tableView
-{
-    if (tableView == _photosTable)
-    {
-        return NO;
-    }
-    return YES;
-    
 }
 
 - (IBAction) checkAllButtonWasPressed: (id) sender
@@ -200,6 +232,75 @@
     }
 }
 
+- (IBAction) addButtonWasPressed:(id) sender
+{
+    NSOpenPanel* dialog = [NSOpenPanel openPanel];
+
+    // Accept file entries ending in .photolibrary or of type "package"
+    [dialog setAllowedFileTypes: @[@"photolibrary", @"com.apple.package"]];
+    
+    // Point to the ~/Pictures (or its equivalent in some other language)
+    NSArray * directories = NSSearchPathForDirectoriesInDomains(NSPicturesDirectory, NSUserDomainMask, YES);
+    NSURL *url = [NSURL fileURLWithPath: [directories firstObject]];
+    [dialog setDirectoryURL: url];
+    
+    // Show it as a window-modal
+    [dialog beginSheetModalForWindow:[[self view] window] completionHandler:^(NSInteger result)
+        {
+            if (result == NSFileHandlingPanelOKButton)
+            {
+                // And if the user selected a file, try to open it
+                NSURL *libraryUrl = [[dialog URLs] firstObject];
+                MMPhotoLibrary *library = [[MMPhotoLibrary alloc] initWithPath: libraryUrl.path];
+                
+                if (library)
+                {
+                    NSLog(@"library=%@", libraryUrl.path);
+                    [library close]; // We just need to test that it can be init'd, but we dont' do a full open.
+                    if (![_libraryManager insertLibraryPath: libraryUrl.path])
+                    {
+                        [MMUiUtility alertWithText: @"The library could not be added to the list."
+                                      withQuestion: nil
+                                             style: NSWarningAlertStyle];
+                    }
+                    else
+                    {
+                        [_librariesTable reloadData];
+                    };
+                }
+                else
+                {
+                    [MMUiUtility alertWithText: @"The library could not be opened."
+                                  withQuestion: nil
+                                         style: NSWarningAlertStyle];
+                }
+            }
+        }
+     ];
+
+    /*
+//
+//    NSArray* fileTypes = [[NSArray alloc] initWithObjects:@"pdf", @"PDF", nil];
+    panel = [NSOpenPanel openPanel];
+    
+    // This method displays the panel and returns immediately.
+    // The completion handler is called when the user selects an
+    // item or cancels the panel.
+    
+    int i = [panel runModal];
+    if(i == NSOKButton){
+        NSLog(@"urls=%@",[panel URLs]);
+    }*/
+/*    [panel beginWithCompletionHandler:^(NSInteger result){
+        if (result == NSFileHandlingPanelOKButton) {
+            NSURL*  theDoc = [[panel URLs] objectAtIndex:0];
+            NSLog(@"theDoc=%@", theDoc);
+            // Open  the document.
+        }
+ 
+    }];*/
+}
+
 
 - (IBAction) checkBoxWasChecked: (id)sender
 {
@@ -241,10 +342,34 @@
 - (void) tableViewSelectionDidChange: (NSNotification *) notification
 {
     NSTableView *tableView = notification.object;
-    if (tableView == _eventsTable)
+    NSInteger selectedRow = tableView.selectedRow;
+
+    if (tableView == _librariesTable)
     {
-        _selectedRow = tableView.selectedRow;
-        _selectedEvent = _library.events[_selectedRow];
+        // First clean up
+        for (MMPhoto *photo in _photos)
+        {
+            [photo close];
+        }
+        [_library close];
+
+        // Now open the library
+        NSString *libraryPath = [_libraryManager libraryPathForIndex: selectedRow];
+        _library = [[MMPhotoLibrary alloc] initWithPath: libraryPath];
+        if (_library && [_library open])
+        {
+            [_eventsTable reloadData];
+        }
+        else
+        {
+            [MMUiUtility alertWithText: @"The library could not be opened."
+                          withQuestion: nil
+                                 style: NSWarningAlertStyle];
+        }
+    }
+    else if (tableView == _eventsTable)
+    {
+        _selectedEvent = _library.events[selectedRow];
         for (MMPhoto *photo in _photos)
         {
             [photo close];
