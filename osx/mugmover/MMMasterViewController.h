@@ -14,22 +14,23 @@
 @class MMSmugmug;
 
 @interface MMMasterViewController : NSViewController <NSTableViewDelegate, NSSplitViewDelegate>
-@property (weak) IBOutlet NSScrollView *librariesScrollView;
-@property (weak) IBOutlet NSScrollView *servicesScrollView;
+
 
 @property (weak)    IBOutlet    NSSegmentedCell *       addLibraryButton;
 @property (weak)    IBOutlet    NSButton *              checkAllButton;
 @property (weak)    IBOutlet    NSTableView *           eventsTable;
+@property (weak)    IBOutlet    NSScrollView *          librariesScrollView;
 @property (weak)    IBOutlet    NSSegmentedControl *    librariesSegmentedControl;
 @property (weak)    IBOutlet    NSTableView *           librariesTable;
 @property (weak)    IBOutlet    NSButton *              interruptButton;
 @property (weak)    IBOutlet    NSTableView *           photosTable;
 @property (weak)    IBOutlet    NSProgressIndicator *   progressIndicator;
+@property (weak)    IBOutlet    NSScrollView *          servicesScrollView;
 @property (weak)    IBOutlet    NSSegmentedControl *    servicesSegmentedControl;
 @property (weak)    IBOutlet    NSButton *              skipProcessedImageCheckbox;
+@property (weak)    IBOutlet    NSSplitView *           splitView;
 @property (weak)    IBOutlet    NSButton *              transmitButton;
 @property (weak)    IBOutlet    NSButton *              uncheckAllButton;
-@property (weak)    IBOutlet    NSSplitView *           splitView;
 
 
 @property (strong)              NSImage *               activeIcon;

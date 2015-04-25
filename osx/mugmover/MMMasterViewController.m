@@ -288,28 +288,6 @@
             }
         }
      ];
-
-    /*
-//
-//    NSArray* fileTypes = [[NSArray alloc] initWithObjects:@"pdf", @"PDF", nil];
-    panel = [NSOpenPanel openPanel];
-    
-    // This method displays the panel and returns immediately.
-    // The completion handler is called when the user selects an
-    // item or cancels the panel.
-    
-    int i = [panel runModal];
-    if(i == NSOKButton){
-        NSLog(@"urls=%@",[panel URLs]);
-    }*/
-/*    [panel beginWithCompletionHandler:^(NSInteger result){
-        if (result == NSFileHandlingPanelOKButton) {
-            NSURL*  theDoc = [[panel URLs] objectAtIndex:0];
-            NSLog(@"theDoc=%@", theDoc);
-            // Open  the document.
-        }
- 
-    }];*/
 }
 
 

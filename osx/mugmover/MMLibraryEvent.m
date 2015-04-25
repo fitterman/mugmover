@@ -81,7 +81,7 @@
     NSMutableArray *results = [[NSMutableArray alloc] initWithCapacity: 2];
     for (NSNumber *date in dates)
     {
-        if (!date)
+        if ((!date) || [date isEqual:[NSNull null]]) // In some weird cases, this can happen!
         {
             return @"(unknown dates)";
         }
