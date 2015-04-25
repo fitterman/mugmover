@@ -103,8 +103,8 @@ BOOL const MMdebugLevel;
 
 - (void) windowDidResize: (NSNotification *) notification
 {
-    _masterViewController.view.frame = ((NSView*)_window.contentView).bounds;
-    NSLog(@"%@", notification);
+    [_masterViewController.view setFrame:((NSView*)_window.contentView).bounds];
+    [_masterViewController forceRedrawingOfControlsAutolayoutDoesNotRedrawAfterWindowResize];
 }
 
 @end

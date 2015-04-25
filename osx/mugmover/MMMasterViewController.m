@@ -73,7 +73,6 @@
     }
 }
 
-
 - (void) dealloc
 {
     _uploadOperationQueue = nil;
@@ -178,6 +177,19 @@
     return 0;
 }
 
+/**
+ * This is a major kludge. Without it, when the window is made smaller, several controls
+ * do not redraw automatically, and thus can wind up outside of the window's viewable area.
+ */
+- (void) forceRedrawingOfControlsAutolayoutDoesNotRedrawAfterWindowResize
+{
+    [_checkAllButton setNeedsDisplay: YES];
+    [_uncheckAllButton setNeedsDisplay: YES];
+    [_transmitButton setNeedsDisplay: YES];
+    [_librariesSegmentedControl setNeedsDisplay: YES];
+    [_servicesSegmentedControl setNeedsDisplay: YES];
+}
+
 - (IBAction) checkAllButtonWasPressed: (id) sender
 {
     for (MMLibraryEvent *event in _library.events)
@@ -232,8 +244,8 @@
     }
 }
 
-- (IBAction) addButtonWasPressed:(id) sender
-{
+- (IBAction)addLibraryButtonWasPressed:(id)sender {
+
     NSOpenPanel* dialog = [NSOpenPanel openPanel];
 
     // Accept file entries ending in .photolibrary or of type "package"
@@ -336,6 +348,21 @@
     {
         [_uploadOperationQueue cancelAllOperations];
     }
+}
+
+
+- (CGFloat)     splitView: (NSSplitView *) splitView
+   constrainMinCoordinate:(CGFloat) proposedMin
+              ofSubviewAt:(NSInteger) dividerIndex
+{
+    return 70.0;
+}
+
+- (CGFloat)     splitView: (NSSplitView *) splitView
+   constrainMaxCoordinate: (CGFloat) proposedMin
+              ofSubviewAt: (NSInteger) dividerIndex
+{
+    return splitView.frame.size.height - 70.0;
 }
 
 - (void) tableViewSelectionDidChange: (NSNotification *) notification

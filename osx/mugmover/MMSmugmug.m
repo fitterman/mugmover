@@ -35,6 +35,7 @@ long                retryCount;
  */
 + (NSString *) sanitizeUuid: (NSString *) inUrl
 {
+    NSLog(@"ERROR in sanitizeUuid");
   return [@"MM" stringByAppendingString: [[inUrl stringByReplacingOccurrencesOfString:@"+" withString:@"-"]
           stringByReplacingOccurrencesOfString:@"%" withString:@"--"]];
 }
