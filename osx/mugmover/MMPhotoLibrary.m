@@ -33,7 +33,7 @@
 @implementation MMPhotoLibrary
 
 #define MAX_THUMB_DIM (100)
-NSInteger const chunkSize = 10;
+NSInteger const chunkSize = 40;
 
 NSString *photosPath;
 

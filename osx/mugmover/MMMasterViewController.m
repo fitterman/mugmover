@@ -62,13 +62,15 @@
 {
     BOOL ownImp = ![NSViewController instancesRespondToSelector:@selector(viewWillLoad)];
     
-    if(ownImp) {
+    if (ownImp)
+    {
         [self viewWillLoad];
     }
     
     [super loadView];
     
-    if(ownImp) {
+    if(ownImp)
+    {
         [self viewDidLoad];
     }
 }
@@ -76,105 +78,6 @@
 - (void) dealloc
 {
     _uploadOperationQueue = nil;
-}
-
-- (NSView *) tableView: (NSTableView *) tableView
-    viewForTableColumn: (NSTableColumn *) tableColumn
-                   row: (NSInteger) row
-{
-    NSTableCellView *baseCellView = [tableView makeViewWithIdentifier: tableColumn.identifier
-                                                                owner: self];
-    MMComplexTableCellView *cellView = (MMComplexTableCellView *)baseCellView;
-    MMCheckboxTableCellView *checkboxCellView = (MMCheckboxTableCellView *)baseCellView;
-   
-    if (tableView == _librariesTable)
-    {
-        baseCellView.textField.stringValue = [_libraryManager libraryNameForIndex: row];
-        baseCellView.imageView.image = _libraryIcon;
-    }
-    if ((tableView == _eventsTable) && _library.events)
-    {
-        MMLibraryEvent *event = _library.events[row];
-        if ([tableColumn.identifier isEqualToString: @"DisplayColumn"])
-        {
-            cellView.firstTitleTextField.stringValue = [event name];
-            if ((!cellView.firstTitleTextField.stringValue) ||
-                ([cellView.firstTitleTextField.stringValue length] == 0))
-            {
-                cellView.firstTitleTextField.stringValue = @"(none)";
-            }
-            cellView.secondTextField.stringValue = [NSString stringWithFormat: @"%@ (%@)",
-                                                                [event dateRange],
-                                                                [event filecount]];
-            cellView.imageView.image = event.currentThumbnail;
-            if (event.status == MMEventStatusCompleted)
-            {
-                cellView.iconField.image = _completedIcon;
-            }
-            else if (event.status == MMEventStatusActive)
-            {
-                // We "optimize" this update primarily so the animation doesn't start over each
-                // time a photo is sent. This can cause the animation to only show the first frame or
-                // two when photos are being transmitted quickly.
-                if (cellView.iconField.image != _activeIcon)
-                {
-                    cellView.iconField.image = _activeIcon;
-                }
-            }
-            else if (event.status == MMEventStatusIncomplete)
-            {
-                cellView.iconField.image = _incompleteIcon;
-            }
-            else
-            {
-                cellView.iconField.image = nil;
-            }
-        }
-        else if ([tableColumn.identifier isEqualToString: @"CheckboxColumn"])
-        {
-            [checkboxCellView.checkboxField setState:event.toBeProcessed];
-            [checkboxCellView.checkboxField setEnabled: !_transmitting];
-        }
-    }
-    else if ((tableView == _photosTable) && _photos)
-    {
-        MMPhoto *photo = _photos[row];
-        if (photo)
-        {
-            if ([tableColumn.identifier isEqualToString: @"NameColumn"])
-            {
-                cellView.firstTitleTextField.stringValue = [photo versionName];
-                cellView.imageView.image = [photo getThumbnailImage];
-                NSString *byteSize = [NSByteCountFormatter stringFromByteCount: [[photo fileSize] longLongValue]
-                                                                    countStyle: NSByteCountFormatterCountStyleFile];
-                cellView.secondTextField.stringValue = [NSString stringWithFormat: @"%@ (%@)",
-                                                                    [photo fileName],
-                                                                    byteSize];
-            }
-        }
-    }
-    return cellView;
-}
-
-
-- (NSInteger) numberOfRowsInTableView: (NSTableView *) tableView
-{
-    if (tableView == _librariesTable)
-    {
-        return [_libraryManager totalLibraries];
-    }
-    else if (tableView == _eventsTable)
-    {
-        return [_library.events count];
-    }
-    else if (tableView == _photosTable)
-    {
-        if (_photos)
-        {
-            return [_photos count];
-        }
-    }
-    return 0;
 }
 
 /**
@@ -189,6 +92,16 @@
     [_librariesSegmentedControl setNeedsDisplay: YES];
     [_servicesSegmentedControl setNeedsDisplay: YES];
 }
+
+- (void) uploadCompleted
+{
+    _transmitting = NO;
+    [_eventsTable reloadData];
+    _transmitButton.enabled = YES;
+    _interruptButton.enabled = NO;
+}
+
+#pragma mark Action methods
 
 - (IBAction) checkAllButtonWasPressed: (id) sender
 {
@@ -328,6 +241,106 @@
     }
 }
 
+#pragma mark Delegate protocol methods
+- (NSView *) tableView: (NSTableView *) tableView
+    viewForTableColumn: (NSTableColumn *) tableColumn
+                   row: (NSInteger) row
+{
+    NSTableCellView *baseCellView = [tableView makeViewWithIdentifier: tableColumn.identifier
+                                                                owner: self];
+    MMComplexTableCellView *cellView = (MMComplexTableCellView *)baseCellView;
+    MMCheckboxTableCellView *checkboxCellView = (MMCheckboxTableCellView *)baseCellView;
+
+    if (tableView == _librariesTable)
+    {
+        baseCellView.textField.stringValue = [_libraryManager libraryNameForIndex: row];
+        baseCellView.imageView.image = _libraryIcon;
+    }
+    if ((tableView == _eventsTable) && _library.events)
+    {
+        MMLibraryEvent *event = _library.events[row];
+        if ([tableColumn.identifier isEqualToString: @"DisplayColumn"])
+        {
+            cellView.firstTitleTextField.stringValue = [event name];
+            if ((!cellView.firstTitleTextField.stringValue) ||
+                ([cellView.firstTitleTextField.stringValue length] == 0))
+            {
+                cellView.firstTitleTextField.stringValue = @"(none)";
+            }
+            cellView.secondTextField.stringValue = [NSString stringWithFormat: @"%@ (%@)",
+                                                    [event dateRange],
+                                                    [event filecount]];
+            cellView.imageView.image = event.currentThumbnail;
+            if (event.status == MMEventStatusCompleted)
+            {
+                cellView.iconField.image = _completedIcon;
+            }
+            else if (event.status == MMEventStatusActive)
+            {
+                // We "optimize" this update primarily so the animation doesn't start over each
+                // time a photo is sent. This can cause the animation to only show the first frame or
+                // two when photos are being transmitted quickly.
+                if (cellView.iconField.image != _activeIcon)
+                {
+                    cellView.iconField.image = _activeIcon;
+                }
+            }
+            else if (event.status == MMEventStatusIncomplete)
+            {
+                cellView.iconField.image = _incompleteIcon;
+            }
+            else
+            {
+                cellView.iconField.image = nil;
+            }
+        }
+        else if ([tableColumn.identifier isEqualToString: @"CheckboxColumn"])
+        {
+            [checkboxCellView.checkboxField setState:event.toBeProcessed];
+            [checkboxCellView.checkboxField setEnabled: !_transmitting];
+        }
+    }
+    else if ((tableView == _photosTable) && _photos)
+    {
+        MMPhoto *photo = _photos[row];
+        if (photo)
+        {
+            if ([tableColumn.identifier isEqualToString: @"NameColumn"])
+            {
+                cellView.firstTitleTextField.stringValue = [photo versionName];
+                cellView.imageView.image = [photo getThumbnailImage];
+                NSString *byteSize = [NSByteCountFormatter stringFromByteCount: [[photo fileSize] longLongValue]
+                                                                    countStyle: NSByteCountFormatterCountStyleFile];
+                cellView.secondTextField.stringValue = [NSString stringWithFormat: @"%@ (%@)",
+                                                        [photo fileName],
+                                                        byteSize];
+            }
+        }
+    }
+    return cellView;
+}
+
+
+- (NSInteger) numberOfRowsInTableView: (NSTableView *) tableView
+{
+    if (tableView == _librariesTable)
+    {
+        return [_libraryManager totalLibraries];
+    }
+    else if (tableView == _eventsTable)
+    {
+        return [_library.events count];
+    }
+    else if (tableView == _photosTable)
+    {
+        if (_photos)
+        {
+            return [_photos count];
+        }
+    }
+    return 0;
+}
+
 
 - (CGFloat)     splitView: (NSSplitView *) splitView
    constrainMinCoordinate:(CGFloat) proposedMin
@@ -367,7 +380,6 @@
             NSBlockOperation *fillInEvents = [NSBlockOperation blockOperationWithBlock:^{
                 while ([_library getSomeEvents])
                 {
-                    NSLog(@"################ here is something for jt");
                     [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void){
                         [_eventsTable reloadData];
                     }];
@@ -392,14 +404,6 @@
         _photos = [MMPhoto getPhotosForEvent: _selectedEvent];
         [_photosTable reloadData];
     }
-}
-
-- (void) uploadCompleted
-{
-    _transmitting = NO;
-    [_eventsTable reloadData];
-    _transmitButton.enabled = YES;
-    _interruptButton.enabled = NO;
 }
 
 @end

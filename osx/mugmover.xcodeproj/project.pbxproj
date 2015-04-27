@@ -41,6 +41,7 @@
 		C4968CE11A15101500F34E46 /* mugmoverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CE01A15101500F34E46 /* mugmoverTests.m */; };
 		C4A687A71ACC7682007CDC6D /* MMFileUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A61ACC7682007CDC6D /* MMFileUtility.m */; };
 		C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A91ACC773E007CDC6D /* MMDataUtility.m */; };
+		C4A702131AEDD738002A7E01 /* MMOptionsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4A702121AEDD738002A7E01 /* MMOptionsView.xib */; };
 		C4D3A4161AE690D0005E72B6 /* Library-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4D3A4151AE690D0005E72B6 /* Library-128.png */; };
 		C4E3D94A1ADC64AF00D82337 /* Incomplete-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4E3D9491ADC64AF00D82337 /* Incomplete-128.png */; };
 		C4E3D94E1ADC678900D82337 /* Photograph-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4E3D94D1ADC678900D82337 /* Photograph-128.png */; };
@@ -137,6 +138,7 @@
 		C4A687A61ACC7682007CDC6D /* MMFileUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFileUtility.m; sourceTree = "<group>"; };
 		C4A687A81ACC773E007CDC6D /* MMDataUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMDataUtility.h; sourceTree = "<group>"; };
 		C4A687A91ACC773E007CDC6D /* MMDataUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMDataUtility.m; sourceTree = "<group>"; };
+		C4A702121AEDD738002A7E01 /* MMOptionsView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMOptionsView.xib; sourceTree = "<group>"; };
 		C4D3A4151AE690D0005E72B6 /* Library-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Library-128.png"; sourceTree = "<group>"; };
 		C4E3D9491ADC64AF00D82337 /* Incomplete-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Incomplete-128.png"; sourceTree = "<group>"; };
 		C4E3D94D1ADC678900D82337 /* Photograph-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Photograph-128.png"; sourceTree = "<group>"; };
@@ -206,6 +208,7 @@
 				C49376E31ACEF1C9006DB77D /* MMMasterViewController.xib */,
 				C49377121AD05D4E006DB77D /* MMComplexTableCellView.h */,
 				C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */,
+				C4A702121AEDD738002A7E01 /* MMOptionsView.xib */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -456,6 +459,7 @@
 				C4F935041AD884C200AB465B /* Active-128.gif in Resources */,
 				C49376E51ACEF1C9006DB77D /* MMMasterViewController.xib in Resources */,
 				C4E3D94E1ADC678900D82337 /* Photograph-128.png in Resources */,
+				C4A702131AEDD738002A7E01 /* MMOptionsView.xib in Resources */,
 				C404A9CE1AD6C90400E197F1 /* Completed-128.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
