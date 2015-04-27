@@ -28,8 +28,13 @@ NSInteger const maxSupportedLibraries = 50;
     return [_libraries count] >= maxSupportedLibraries;
 }
 
-- (BOOL) insertLibraryPath: (NSString *) newLibraryPath
-                     error: (NSError **) error;
+/**
+ * Attempts to add a new library path to the array. Sets the +error+ parameter if
+ * an error occurs. Returns -1 if an error occurs, otherwise returns the index of the
+ * newly-added value in the sorted array.
+ */
+- (NSInteger) insertLibraryPath: (NSString *) newLibraryPath
+                          error: (NSError **) error;
 {
     if ([self isAtCapacity])
     {
@@ -41,7 +46,7 @@ NSInteger const maxSupportedLibraries = 50;
         *error = [NSError errorWithDomain: [[NSBundle mainBundle] bundleIdentifier]
                                      code: -57
                                  userInfo: userInfo];
-        return NO; // No more room
+        return -1; // No more room
     }
     for (NSString *libraryPath in _libraries)
     {
@@ -55,7 +60,7 @@ NSInteger const maxSupportedLibraries = 50;
             *error = [NSError errorWithDomain: [[NSBundle mainBundle] bundleIdentifier]
                                          code: -58
                                      userInfo: userInfo];
-            return NO;
+            return -1;
         }
     }
     [_libraries addObject: newLibraryPath];
@@ -65,7 +70,7 @@ NSInteger const maxSupportedLibraries = 50;
                                             NSString *name2 = [MMPhotoLibrary nameFromPath: libPath2];
                                             return  [name1 localizedCompare: name2];
                                         }];
-    return YES;
+    return [_libraries indexOfObject: newLibraryPath];
 }
 
 /**

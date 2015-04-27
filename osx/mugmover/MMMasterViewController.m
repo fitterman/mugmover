@@ -199,13 +199,17 @@
                     {
                         [library close]; // We just need to test that it can be init'd, but we dont' do a full open.
                         NSError *error;
-                        if (![_libraryManager insertLibraryPath: libraryUrl.path error: &error])
+                        NSInteger row = [_libraryManager insertLibraryPath: libraryUrl.path error: &error];
+                        if (error)
                         {
                             [MMUiUtility alertWithError: error style: NSWarningAlertStyle];
                         }
                         else
                         {
                             [_librariesTable reloadData];
+                            NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: row];
+                            [_librariesTable selectRowIndexes: indexSet
+                                         byExtendingSelection: NO];
                         };
                     }
                     else
@@ -220,11 +224,22 @@
     }
     else if (segmentedControl.selectedSegment == 1)
     {
-        if (_librariesTable.selectedRow > -1)
+        NSInteger oldSelectedRow = _librariesTable.selectedRow;
+        if (oldSelectedRow > -1)
         {
             [_libraryManager removeLibraryAtIndex: _librariesTable.selectedRow];
             [self closeTheOpenLibrary];
             [_librariesTable reloadData];
+            if (oldSelectedRow >= [_libraryManager totalLibraries])
+            {
+                oldSelectedRow = [_libraryManager totalLibraries] - 1;
+            }
+            if (oldSelectedRow >= 0)
+            {
+                NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: oldSelectedRow];
+                [_librariesTable selectRowIndexes: indexSet
+                             byExtendingSelection: NO];
+            }
         }
     }
 }
