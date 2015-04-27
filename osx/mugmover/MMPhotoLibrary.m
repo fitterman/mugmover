@@ -23,8 +23,7 @@
                     "WHERE parentFolderUuid = 'AllProjectsItem' AND " \
                     "    isMagic != 1 AND isHidden != 1 AND f.isInTrash != 1 " \
                     "GROUP BY f.uuid " \
-                    "ORDER BY minImageDate, maxImageDate, f.uuid " \
-                    "LIMIT ? OFFSET ? "
+                    "ORDER BY minImageDate, maxImageDate, f.uuid "
 
 @import QuartzCore.CIFilter;
 @import QuartzCore.CoreImage.CIContext;
@@ -33,7 +32,6 @@
 @implementation MMPhotoLibrary
 
 #define MAX_THUMB_DIM (100)
-NSInteger const chunkSize = 40;
 
 NSString *photosPath;
 
@@ -52,7 +50,7 @@ NSString *photosPath;
         _colorspace = CGColorSpaceCreateDeviceRGB();
         _bitmapContext = CGBitmapContextCreate(NULL, MAX_THUMB_DIM, MAX_THUMB_DIM, 8, 0, _colorspace, (CGBitmapInfo)kCGImageAlphaNoneSkipLast);
         _ciContext = [CIContext contextWithCGContext: _bitmapContext options: @{}];
-    
+
         NSDateFormatter *exifDateFormat1 = [[NSDateFormatter alloc] init];
         [exifDateFormat1 setDateFormat: @"yyyy:MM:dd HH:mm:ss"];
         exifDateFormat1.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
@@ -80,7 +78,7 @@ NSString *photosPath;
             DDLogWarn(@"WARNING: Unable to set serialized mode.");
         }
         sqlite3_initialize();
-        
+
         _facesDatabase = [FMDatabase databaseWithPath: facesPath];
         _photosDatabase = [FMDatabase databaseWithPath: photosPath];
         _propertiesDatabase = [FMDatabase databaseWithPath: propertiesPath];
@@ -94,20 +92,20 @@ NSString *photosPath;
             _facesDatabase.shouldCacheStatements = YES;
             _photosDatabase.shouldCacheStatements = YES;
             _propertiesDatabase.shouldCacheStatements = YES;
-            
+           
             NSInteger versionMajor = [_photosDatabase
                                       intForQuery: @"SELECT propertyValue FROM RKAdminData "
-                                                    "WHERE propertyArea = 'database' AND propertyName = 'versionMajor'"];
+                                      "WHERE propertyArea = 'database' AND propertyName = 'versionMajor'"];
             NSInteger versionMinor = [_photosDatabase
                                       intForQuery: @"SELECT propertyValue FROM RKAdminData "
-                                                    "WHERE propertyArea = 'database' AND propertyName = 'versionMinor'"];
+                                      "WHERE propertyArea = 'database' AND propertyName = 'versionMinor'"];
             _databaseVersion = [NSString stringWithFormat: @"%ld.%ld", versionMajor, versionMinor];
             _databaseUuid = [_photosDatabase
                              stringForQuery: @"SELECT propertyValue FROM RKAdminData "
-                                              "WHERE propertyArea = 'database' AND propertyName = 'databaseUuid'"];
+                             "WHERE propertyArea = 'database' AND propertyName = 'databaseUuid'"];
             _databaseAppId = [_photosDatabase
                               stringForQuery: @"SELECT propertyValue FROM RKAdminData "
-                                               "WHERE propertyArea = 'database' AND propertyName = 'applicationIdentifier'"];
+                              "WHERE propertyArea = 'database' AND propertyName = 'applicationIdentifier'"];
             _sourceDictionary = @{
                                   @"app":             @"mugmover",
                                   @"appVersion":      (NSString *) [[NSBundle mainBundle] objectForInfoDictionaryKey: @"CFBundleShortVersionString"],
@@ -145,26 +143,12 @@ NSString *photosPath;
 
 - (BOOL) open
 {
-    NSInteger upperRecordCount  = [_photosDatabase
-                                   intForQuery: @"SELECT count(*) FROM RKFolder "
-                                   "WHERE parentFolderUuid = 'AllProjectsItem' AND "
-                                   "    isMagic != 1 AND isHidden != 1 AND isInTrash != 1 "];
-    _events = [[NSMutableArray alloc] initWithCapacity: upperRecordCount];
-    BOOL result = [self getSomeEvents];
-    return result;
-}
+    NSInteger recordCount  = [_photosDatabase intForQuery: @"SELECT count(*) FROM RKFolder "
+                              "WHERE parentFolderUuid = 'AllProjectsItem' AND "
+                              "    isMagic != 1 AND isHidden != 1 AND isInTrash != 1 "];
+    _events = [[NSMutableArray alloc] initWithCapacity: recordCount];
 
-- (BOOL) getSomeEvents
-{
-    NSString *query =  @BASE_QUERY;
-    
-    // NOTE: It has been observed that in some cases, the minImageDate or maxImageDate
-    //       might be a NULL value if the database didn't update that yet.
-    
-    BOOL gotMoreRecords = NO;
-    NSNumber *n = [NSNumber numberWithInt: chunkSize];
-    FMResultSet *resultSet = [_photosDatabase executeQuery: query
-                                      withArgumentsInArray: @[n, _queryOffset]];
+    FMResultSet *resultSet = [_photosDatabase executeQuery: @BASE_QUERY withArgumentsInArray: nil];
     if (resultSet)
     {
         while ([resultSet next])
@@ -173,12 +157,11 @@ NSString *photosPath;
                                                                            row: [_events count] + 1
                                                                        library: self];
             [_events addObject: event];
-            gotMoreRecords = YES;
         }
-        _queryOffset = [NSNumber numberWithInteger:([_queryOffset integerValue] + chunkSize)];
+        return YES;
         [resultSet close];
     }
-    return gotMoreRecords;
+    return NO;
 }
 
 /*

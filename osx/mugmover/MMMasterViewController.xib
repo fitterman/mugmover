@@ -7,7 +7,6 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="MMMasterViewController">
             <connections>
-                <outlet property="addLibraryButton" destination="yFV-hD-A6F" id="afk-7j-UdP"/>
                 <outlet property="checkAllButton" destination="iek-VH-855" id="ZFy-WK-j11"/>
                 <outlet property="eventsTable" destination="ae0-oz-hxA" id="EID-Ta-h9I"/>
                 <outlet property="interruptButton" destination="iVd-Tc-sNI" id="c5P-D3-1zf"/>
@@ -55,7 +54,7 @@
                                         </segments>
                                     </segmentedCell>
                                     <connections>
-                                        <action selector="addLibraryButtonWasPressed:" target="-2" id="a3R-A3-lbz"/>
+                                        <action selector="librarySegmentedControlWasPressed:" target="-2" id="bJ5-af-pTY"/>
                                     </connections>
                                 </segmentedControl>
                                 <scrollView autohidesScrollers="YES" horizontalLineScroll="54" horizontalPageScroll="10" verticalLineScroll="54" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HXX-JU-4bX">

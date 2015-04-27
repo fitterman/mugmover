@@ -22,6 +22,8 @@
 
 - (NSString *) libraryPathForIndex: (NSInteger) index;
 
+- (void) removeLibraryAtIndex: (NSUInteger) index;
+
 - (NSInteger) totalLibraries;
 
 

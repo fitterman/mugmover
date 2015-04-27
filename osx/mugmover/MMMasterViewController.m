@@ -101,6 +101,20 @@
     _interruptButton.enabled = NO;
 }
 
+- (void) closeTheOpenLibrary
+{
+    // First clean up
+    for (MMPhoto *photo in _photos)
+    {
+        [photo close];
+    }
+    _photos = nil;
+    [_library close];
+    _library = nil;
+    [_eventsTable reloadData];
+    [_photosTable reloadData];
+}
+
 #pragma mark Action methods
 
 - (IBAction) checkAllButtonWasPressed: (id) sender
@@ -157,52 +171,63 @@
     }
 }
 
-- (IBAction)addLibraryButtonWasPressed:(id)sender {
+- (IBAction)librarySegmentedControlWasPressed: (NSSegmentedControl *) segmentedControl
+{
+    // 0 is add
+    if (segmentedControl.selectedSegment == 0)
+    {
+        NSOpenPanel* dialog = [NSOpenPanel openPanel];
 
-    NSOpenPanel* dialog = [NSOpenPanel openPanel];
-
-    // Accept file entries ending in .photolibrary or of type "package"
-    [dialog setAllowedFileTypes: @[@"photolibrary", @"com.apple.package"]];
-    
-    // Point to the ~/Pictures (or its equivalent in some other language)
-    NSArray * directories = NSSearchPathForDirectoriesInDomains(NSPicturesDirectory, NSUserDomainMask, YES);
-    NSURL *url = [NSURL fileURLWithPath: [directories firstObject]];
-    [dialog setDirectoryURL: url];
-    
-    // Show it as a window-modal
-    [dialog beginSheetModalForWindow:[[self view] window] completionHandler:^(NSInteger result)
-        {
-            if (result == NSFileHandlingPanelOKButton)
+        // Accept file entries ending in .photolibrary or of type "package"
+        [dialog setAllowedFileTypes: @[@"photolibrary", @"com.apple.package"]];
+        
+        // Point to the ~/Pictures (or its equivalent in some other language)
+        NSArray * directories = NSSearchPathForDirectoriesInDomains(NSPicturesDirectory, NSUserDomainMask, YES);
+        NSURL *url = [NSURL fileURLWithPath: [directories firstObject]];
+        [dialog setDirectoryURL: url];
+        
+        // Show it as a window-modal
+        [dialog beginSheetModalForWindow:[[self view] window] completionHandler:^(NSInteger result)
             {
-                // And if the user selected a file, try to open it
-                NSURL *libraryUrl = [[dialog URLs] firstObject];
-                MMPhotoLibrary *library = [[MMPhotoLibrary alloc] initWithPath: libraryUrl.path];
-                
-                if (library)
+                if (result == NSFileHandlingPanelOKButton)
                 {
-                    NSLog(@"library=%@", libraryUrl.path);
-                    [library close]; // We just need to test that it can be init'd, but we dont' do a full open.
-                    NSError *error;
-                    if (![_libraryManager insertLibraryPath: libraryUrl.path error: &error])
+                    // And if the user selected a file, try to open it
+                    NSURL *libraryUrl = [[dialog URLs] firstObject];
+                    MMPhotoLibrary *library = [[MMPhotoLibrary alloc] initWithPath: libraryUrl.path];
+                    
+                    if (library)
                     {
-                        [MMUiUtility alertWithError: error style: NSWarningAlertStyle];
+                        [library close]; // We just need to test that it can be init'd, but we dont' do a full open.
+                        NSError *error;
+                        if (![_libraryManager insertLibraryPath: libraryUrl.path error: &error])
+                        {
+                            [MMUiUtility alertWithError: error style: NSWarningAlertStyle];
+                        }
+                        else
+                        {
+                            [_librariesTable reloadData];
+                        };
                     }
                     else
                     {
-                        [_librariesTable reloadData];
-                    };
-                }
-                else
-                {
-                    [MMUiUtility alertWithText: @"The library could not be opened."
-                                  withQuestion: nil
-                                         style: NSWarningAlertStyle];
+                        [MMUiUtility alertWithText: @"The library could not be opened."
+                                      withQuestion: nil
+                                             style: NSWarningAlertStyle];
+                    }
                 }
             }
+         ];
+    }
+    else if (segmentedControl.selectedSegment == 1)
+    {
+        if (_librariesTable.selectedRow > -1)
+        {
+            [_libraryManager removeLibraryAtIndex: _librariesTable.selectedRow];
+            [self closeTheOpenLibrary];
+            [_librariesTable reloadData];
         }
-     ];
+    }
 }
-
 
 - (IBAction) checkBoxWasChecked: (id)sender
 {
@@ -261,7 +286,12 @@
         MMLibraryEvent *event = _library.events[row];
         if ([tableColumn.identifier isEqualToString: @"DisplayColumn"])
         {
-            cellView.firstTitleTextField.stringValue = [event name];
+            NSString *eventName = [event name];
+            if (!eventName)
+            {
+                eventName = @"(none)";
+            }
+            cellView.firstTitleTextField.stringValue = eventName;
             if ((!cellView.firstTitleTextField.stringValue) ||
                 ([cellView.firstTitleTextField.stringValue length] == 0))
             {
@@ -307,7 +337,12 @@
         {
             if ([tableColumn.identifier isEqualToString: @"NameColumn"])
             {
-                cellView.firstTitleTextField.stringValue = [photo versionName];
+                NSString *name = [photo versionName];
+                if (!name)
+                {
+                    name = @"(none)";
+                }
+                cellView.firstTitleTextField.stringValue = name;
                 cellView.imageView.image = [photo getThumbnailImage];
                 NSString *byteSize = [NSByteCountFormatter stringFromByteCount: [[photo fileSize] longLongValue]
                                                                     countStyle: NSByteCountFormatterCountStyleFile];
@@ -363,29 +398,13 @@
 
     if (tableView == _librariesTable)
     {
-        // First clean up
-        for (MMPhoto *photo in _photos)
-        {
-            [photo close];
-        }
-        [_library close];
-
+        [self closeTheOpenLibrary];
         // Now open the library
         NSString *libraryPath = [_libraryManager libraryPathForIndex: selectedRow];
         _library = [[MMPhotoLibrary alloc] initWithPath: libraryPath];
         if (_library && [_library open])
         {
             [_eventsTable reloadData];
-            NSOperationQueue *tempQueue = [[NSOperationQueue alloc] init];
-            NSBlockOperation *fillInEvents = [NSBlockOperation blockOperationWithBlock:^{
-                while ([_library getSomeEvents])
-                {
-                    [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void){
-                        [_eventsTable reloadData];
-                    }];
-                }
-            }];
-            [tempQueue addOperation: fillInEvents];
         }
         else
         {

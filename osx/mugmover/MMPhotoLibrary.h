@@ -39,8 +39,6 @@
 
 - (NSString *) displayName;
 
-- (BOOL) getSomeEvents;
-
 - (BOOL) open;
 
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;

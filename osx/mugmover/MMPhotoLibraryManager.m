@@ -68,6 +68,14 @@ NSInteger const maxSupportedLibraries = 50;
     return YES;
 }
 
+/**
+ * Removes the library entry at a particular index
+ */
+- (void) removeLibraryAtIndex: (NSUInteger) index
+{
+    [_libraries removeObjectAtIndex: index];
+}
+
 - (NSString *) libraryNameForIndex: (NSInteger) index
 {
     return [MMPhotoLibrary nameFromPath: [self libraryPathForIndex: index]];

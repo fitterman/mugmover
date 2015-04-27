@@ -101,7 +101,7 @@ extern const NSInteger MMDefaultRetries;
                                  withStatus: MMEventStatusActive];
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
                {
-                   [_viewController.eventsTable reloadData]; // TODO Optimize to single cell
+                   [_viewController.eventsTable reloadData];
                }
              ];
 
@@ -209,11 +209,11 @@ extern const NSInteger MMDefaultRetries;
             }
         }
         
-        // Restore the dispaly to the default image for this album
+        // Restore the display to the default image for this album
         [_event setActivePhotoThumbnail: nil withStatus: finalStatus];
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
          {
-             [_viewController.eventsTable reloadData]; // TODO Optimize to single cell
+             [_viewController.eventsTable reloadData];
          }
          ];
     }
