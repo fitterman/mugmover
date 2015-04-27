@@ -363,6 +363,17 @@
         if (_library && [_library open])
         {
             [_eventsTable reloadData];
+            NSOperationQueue *tempQueue = [[NSOperationQueue alloc] init];
+            NSBlockOperation *fillInEvents = [NSBlockOperation blockOperationWithBlock:^{
+                while ([_library getSomeEvents])
+                {
+                    NSLog(@"################ here is something for jt");
+                    [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void){
+                        [_eventsTable reloadData];
+                    }];
+                }
+            }];
+            [tempQueue addOperation: fillInEvents];
         }
         else
         {

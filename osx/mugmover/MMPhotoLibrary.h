@@ -20,6 +20,7 @@
 @property (strong, readonly)    NSString *          libraryBasePath;
 @property (strong, readonly)    FMDatabase *        photosDatabase;
 @property (strong, readonly)    FMDatabase *        propertiesDatabase;
+@property (strong)              NSNumber *          queryOffset;
 @property (strong)              NSDictionary *      sourceDictionary;
 @property (assign)              BOOL                verboseLogging;
 
@@ -37,6 +38,8 @@
 - (NSString *) description;
 
 - (NSString *) displayName;
+
+- (BOOL) getSomeEvents;
 
 - (BOOL) open;
 

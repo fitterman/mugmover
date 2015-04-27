@@ -23,7 +23,8 @@
                     "WHERE parentFolderUuid = 'AllProjectsItem' AND " \
                     "    isMagic != 1 AND isHidden != 1 AND f.isInTrash != 1 " \
                     "GROUP BY f.uuid " \
-                    "ORDER BY minImageDate, maxImageDate, f.uuid "
+                    "ORDER BY minImageDate, maxImageDate, f.uuid " \
+                    "LIMIT ? OFFSET ? "
 
 @import QuartzCore.CIFilter;
 @import QuartzCore.CoreImage.CIContext;
@@ -32,6 +33,7 @@
 @implementation MMPhotoLibrary
 
 #define MAX_THUMB_DIM (100)
+NSInteger const chunkSize = 10;
 
 NSString *photosPath;
 
@@ -60,7 +62,7 @@ NSString *photosPath;
         exifDateFormat2.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
         
         _exifDateFormatters = @[exifDateFormat1, exifDateFormat2];
-
+        _queryOffset = @0;
         _libraryBasePath = path;
         NSString *facesPath = [path stringByAppendingPathComponent: @"Database/apdb/Faces.db"];
         NSString *photosPath = [path stringByAppendingPathComponent: @"Database/apdb/Library.apdb"];
@@ -148,25 +150,35 @@ NSString *photosPath;
                                    "WHERE parentFolderUuid = 'AllProjectsItem' AND "
                                    "    isMagic != 1 AND isHidden != 1 AND isInTrash != 1 "];
     _events = [[NSMutableArray alloc] initWithCapacity: upperRecordCount];
-    
+    BOOL result = [self getSomeEvents];
+    return result;
+}
+
+- (BOOL) getSomeEvents
+{
     NSString *query =  @BASE_QUERY;
     
     // NOTE: It has been observed that in some cases, the minImageDate or maxImageDate
     //       might be a NULL value if the database didn't update that yet.
     
-    FMResultSet *resultSet = [_photosDatabase executeQuery: query withArgumentsInArray: @[]];
-    while (resultSet && [resultSet next])
-    {
-        MMLibraryEvent *event = [[MMLibraryEvent alloc] initFromDictionary: [resultSet resultDictionary]
-                                                                       row: [_events count] + 1
-                                                                   library: self];
-        [_events addObject: event];
-    }
+    BOOL gotMoreRecords = NO;
+    NSNumber *n = [NSNumber numberWithInt: chunkSize];
+    FMResultSet *resultSet = [_photosDatabase executeQuery: query
+                                      withArgumentsInArray: @[n, _queryOffset]];
     if (resultSet)
     {
+        while ([resultSet next])
+        {
+            MMLibraryEvent *event = [[MMLibraryEvent alloc] initFromDictionary: [resultSet resultDictionary]
+                                                                           row: [_events count] + 1
+                                                                       library: self];
+            [_events addObject: event];
+            gotMoreRecords = YES;
+        }
+        _queryOffset = [NSNumber numberWithInteger:([_queryOffset integerValue] + chunkSize)];
         [resultSet close];
     }
-    return YES;
+    return gotMoreRecords;
 }
 
 /*
@@ -302,11 +314,16 @@ NSString *photosPath;
 
 - (void) close
 {
+    _databaseAppId = nil;
+    _databaseUuid = nil;
+    _databaseVersion = nil;
+    _events = nil;
     if (_facesDatabase)
     {
         [_facesDatabase close];
         _facesDatabase = nil;
     }
+    _libraryBasePath = nil;
     if (_photosDatabase)
     {
         [_photosDatabase close];
@@ -317,12 +334,11 @@ NSString *photosPath;
         [_propertiesDatabase close];
         _propertiesDatabase = nil;
     }
-    _databaseAppId = nil;
-    _databaseUuid = nil;
-    _databaseVersion = nil;
-    _libraryBasePath = nil;
-    CGContextRelease(_bitmapContext);
+    _queryOffset = nil;
+    _sourceDictionary = nil;
+
     CGColorSpaceRelease(_colorspace);
+    CGContextRelease(_bitmapContext);
     _ciContext = nil;
     _exifDateFormatters = nil;
 }
