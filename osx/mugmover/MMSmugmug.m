@@ -40,27 +40,6 @@ long                retryCount;
           stringByReplacingOccurrencesOfString:@"%" withString:@"--"]];
 }
 
-- (id) initWithHandle: (NSString *) handle
-{
-    self = [self init];
-    if (self)
-    {
-        if (!handle)
-        {
-            return nil;
-        }
-        _photoDictionary = [[NSMutableDictionary alloc] init];
-        if (!_photoDictionary)
-        {
-            [self close];
-            return nil;
-        }
-        _handle = handle;
-        _currentPhotoIndex = (_page - 1) * PHOTOS_PER_REQUEST;
-    }
-    return self;
-}
-
 /**
  * To use this, just create an instance of this class and invoke this method with a block
  * that expects a BOOL. The BOOL is indicative of the outcome with YES meaning the authentication
@@ -75,13 +54,18 @@ long                retryCount;
                          self.initializationProgress = progress;
                          if (progress == 1.0)
                          {
-                             completionHandler(YES);
+                             completionHandler([self getMyUserInfo]);
                          }
                          else if (progress == -1.0)
                          {
                              completionHandler(NO);
                          }
                      }];
+}
+
+- (NSString *) name
+{
+    return [NSString stringWithFormat: @"%@ (Smugmug)\n%@", _handle, _uniqueId];
 }
 
 - (void) close
@@ -92,7 +76,7 @@ long                retryCount;
     _currentAccountHandle = nil;
     _defaultFolder = nil;
     _handle = nil;
-    _photoDictionary = nil;
+    _uniqueId = nil;
 }
 
 #pragma mark "Public methods"
@@ -182,6 +166,44 @@ long                retryCount;
 
 
 #pragma mark "Private methods"
+/**
+ * Returns a BOOL indicating whether it was able to obtain user information via the API.
+ */
+- (BOOL) getMyUserInfo
+{
+    NSURLRequest *userInfoRequest = [_smugmugOauth apiRequest: @"!authuser"
+                                                   parameters: nil
+                                                        verb: @"GET"];
+    NSURLResponse *response;
+    NSError *error;
+    NSInteger retries = MMDefaultRetries;
+    while (retries-- > 0)
+    {
+        NSData *serverData = [NSURLConnection sendSynchronousRequest: userInfoRequest
+                                                   returningResponse: &response
+                                                               error: &error];
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        if (error)
+        {
+            DDLogError(@"System error: %@", error);
+            continue;
+        }
+        NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
+        NSInteger httpStatus = [httpResponse statusCode];
+        if (httpStatus == 200)
+        {
+            _uniqueId = [parsedServerResponse valueForKeyPath: @"Response.User.RefTag"];
+            _handle = [parsedServerResponse valueForKeyPath: @"Response.User.NickName"];
+            return YES;
+        }
+        else
+        {
+            DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+            DDLogError(@"response=%@", parsedServerResponse);
+        }
+    }
+    return NO;
+}
 
 /**
  * Returns the albumId of an album. The identity of the album is determined by the folder path

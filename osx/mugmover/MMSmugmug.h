@@ -19,15 +19,13 @@
 @property (strong)              NSString *              accessToken;
 @property (strong, readonly)    NSString *              currentAccountHandle;
 @property (strong)              MMPhoto *               currentPhoto;
-@property (assign)              NSInteger               currentPhotoIndex;
 @property (strong, readonly)    NSString *              defaultFolder;
 @property (strong)              NSString *              handle;
 @property (assign)              Float32                 initializationProgress;
 @property (assign, readonly)    NSInteger               page;
-@property (strong)              NSMutableDictionary *   photoDictionary;
-@property (assign)              NSInteger               photosInStream;
 @property (strong, readonly)    MMOauthSmugmug *        smugmugOauth;
 @property (strong, readonly)    NSString *              tokenSecret;
+@property (strong, readonly)    NSString *              uniqueId;
 
 
 + (NSString *) sanitizeUuid: (NSString *) inUrl;
@@ -46,9 +44,12 @@
                       displayName: (NSString *) displayName
                       description: (NSString *) description;
 
-- (id) initWithHandle: (NSString *) handle;
+- (NSString *) name;
 
 - (void) authenticate: (void (^) (BOOL)) completionHandler;
+
+- (BOOL) getMyUserInfo;
+
 
 @end
 

@@ -8,11 +8,12 @@
 
 
 #import "MMAppDelegate.h"
-#import "MMSmugmug.h"
+#import "MMFace.h"
 #import "MMLibraryEvent.h"
 #import "MMPhotoLibrary.h"
 #import "MMPhoto.h"
-#import "MMFace.h"
+#import "MMServiceManager.h"
+#import "MMSmugmug.h"
 
 #import "MMMasterViewController.h"
 @interface MMAppDelegate()
@@ -42,7 +43,7 @@ BOOL const MMdebugLevel;
     [_window.contentView setAutoresizesSubviews:YES];
 
     // 3. Establish the service API
-    _serviceApi = [[MMSmugmug alloc] initWithHandle: @"jayphillips"];
+    _serviceApi = [[MMSmugmug alloc] init];
 
     if (_serviceApi)
     {
@@ -75,6 +76,20 @@ BOOL const MMdebugLevel;
             if ([newValue floatValue] == 1.0)
             {
                 self.masterViewController.serviceApi = _serviceApi;
+                NSOperationQueue *tempQueue = [[NSOperationQueue alloc] init];
+                [tempQueue addOperationWithBlock: ^(void) {
+                    if ([_serviceApi getMyUserInfo])
+                    {
+                        [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
+                             {
+                                 NSError *error;
+                                 [_masterViewController.serviceManager insertService: _serviceApi
+                                                                               error: &error];
+                                 [_masterViewController.servicesTable reloadData];
+                             }
+                        ];
+                    }
+                }];
                 //[MMPhoto getPhotosFromLibrary: _library];    /* This kicks off the whole process from the database without a service */
                 //[stream getPhotos]; /* This kicks off the whole process with flickr */
             }

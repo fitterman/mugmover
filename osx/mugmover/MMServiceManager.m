@@ -84,7 +84,15 @@ NSInteger const maxSupportedServices = 50;
 
 - (NSString *) serviceNameForIndex: (NSInteger) index
 {
-    return @"[MMPhotoLibrary nameFromPath: [self libraryPathForIndex: index]];";
+    MMSmugmug *service = [_services objectAtIndex: index];
+    if (service)
+    {
+        return [service name];
+    }
+    else
+    {
+        return @"(none)";
+    }
 }
 
 - (NSInteger) totalServices

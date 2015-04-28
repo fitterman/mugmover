@@ -234,12 +234,12 @@
 				C44583211AE58ED700566731 /* MMPhotoLibraryManager.m */,
 				C42F7AD91A1533AB006E38DD /* MMPoint.h */,
 				C42F7ADA1A1533AB006E38DD /* MMPoint.m */,
+				C493FBA61AEFA386009492BD /* MMServiceManager.h */,
+				C493FBA71AEFA386009492BD /* MMServiceManager.m */,
 				C404A9C01AD44BFA00E197F1 /* MMSmugmugFolder.h */,
 				C404A9C11AD44BFA00E197F1 /* MMSmugmugFolder.m */,
 				C404A9C31AD5B7DB00E197F1 /* MMUploadOperation.h */,
 				C404A9C41AD5B7DB00E197F1 /* MMUploadOperation.m */,
-				C493FBA61AEFA386009492BD /* MMServiceManager.h */,
-				C493FBA71AEFA386009492BD /* MMServiceManager.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";

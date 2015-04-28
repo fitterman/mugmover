@@ -167,7 +167,6 @@
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="52" viewBased="YES" id="bem-rf-SMQ">
-                                                <rect key="frame" x="0.0" y="0.0" width="218" height="19"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <size key="intercellSpacing" width="3" height="2"/>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -473,9 +472,6 @@
                         <action selector="checkAllButtonWasPressed:" target="-2" id="pDe-Mo-hac"/>
                     </connections>
                 </button>
-                <progressIndicator fixedFrame="YES" maxValue="100" style="bar" translatesAutoresizingMaskIntoConstraints="NO" id="rHG-uS-1tu">
-                    <rect key="frame" x="234" y="201" width="397" height="20"/>
-                </progressIndicator>
                 <button identifier="skipProcessed" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aSC-zP-aaj">
                     <rect key="frame" x="689" y="153" width="179" height="18"/>
                     <buttonCell key="cell" type="check" title="Skip Processed Images" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="rlQ-7H-and">
@@ -500,6 +496,7 @@
                 <constraint firstItem="7vQ-n0-c1D" firstAttribute="centerY" secondItem="vj0-rp-sGR" secondAttribute="centerY" id="BBV-BW-VHH"/>
                 <constraint firstItem="Tuw-5b-muO" firstAttribute="top" secondItem="Hz6-mo-xeY" secondAttribute="top" constant="20" id="BsT-Zp-VK6"/>
                 <constraint firstItem="ybA-6q-r5c" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" constant="20" id="C49-lm-3SJ"/>
+                <constraint firstItem="7vQ-n0-c1D" firstAttribute="top" secondItem="9Wh-uk-i0x" secondAttribute="bottom" constant="20" id="IsC-l9-6z6"/>
                 <constraint firstItem="7vQ-n0-c1D" firstAttribute="leading" secondItem="iek-VH-855" secondAttribute="trailing" constant="12" symbolic="YES" id="Isf-5g-fud"/>
                 <constraint firstItem="7vQ-n0-c1D" firstAttribute="baseline" secondItem="vj0-rp-sGR" secondAttribute="baseline" id="JjG-zv-wAy"/>
                 <constraint firstItem="9Wh-uk-i0x" firstAttribute="leading" secondItem="HXX-JU-4bX" secondAttribute="trailing" constant="12" id="KLg-7N-xGJ"/>
@@ -584,6 +581,11 @@
                 <font key="font" metaFont="system"/>
             </buttonCell>
         </button>
+        <progressIndicator maxValue="100" style="bar" id="rHG-uS-1tu">
+            <rect key="frame" x="0.0" y="0.0" width="397" height="20"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <point key="canvasLocation" x="204.5" y="-152"/>
+        </progressIndicator>
     </objects>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>

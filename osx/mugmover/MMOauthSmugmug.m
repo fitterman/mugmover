@@ -37,7 +37,19 @@ extern NSInteger const MMDefaultRetries;
 {
     NSMutableDictionary *revisedParameters = [parameters mutableCopy];
     [revisedParameters setObject: @"true" forKey: @"_filteruri"];
-    return [TDOAuth URLRequestForPath: [NSString stringWithFormat: @"/api/v2/%@", api]
+
+    // There's a special case in the API call for !authuser (and perhaps others). No slash
+    // is needed as (apparently) the ! acts as a delimiter.
+    NSString *apiCall;
+    if ([api hasPrefix: @"!"])
+    {
+        apiCall = [NSString stringWithFormat: @"/api/v2%@", api];
+    }
+    else
+    {
+        apiCall = [NSString stringWithFormat: @"/api/v2/%@", api];
+    }
+    return [TDOAuth URLRequestForPath: apiCall
                            parameters: revisedParameters
                                  host: SERVICE_ENDPOINT
                           consumerKey: MUGMOVER_SMUGMUG_API_KEY_MACRO
