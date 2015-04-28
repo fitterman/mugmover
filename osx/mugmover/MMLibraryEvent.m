@@ -20,10 +20,14 @@
                       row: (NSInteger) row
                   library: (MMPhotoLibrary *) library
 {
-    _dictionary = inDictionary;
-    _library = library;
-    _row = row;
-    _status = MMEventStatusNone;
+    self = [self init];
+    if (self)
+    {
+        _dictionary = inDictionary;
+        _library = library;
+        _row = row;
+        _status = MMEventStatusNone;
+    }
     return self;
 }
 

@@ -18,8 +18,6 @@
 @interface MMAppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate>
 
 @property (weak)                IBOutlet    NSWindow *window;
-@property (strong)                          MMPhotoLibrary *        library;
-@property (strong)                          MMSmugmug *             serviceApi;
 
 - (void) close;
 

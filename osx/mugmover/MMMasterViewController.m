@@ -58,7 +58,7 @@
     }
     _libraryManager = [[MMPhotoLibraryManager alloc] init];
     [_librariesTable reloadData];
-    _serviceManager = [[MMServiceManager alloc] init];
+    _serviceManager = [[MMServiceManager alloc] initForViewController: self];
     [_servicesTable reloadData];
 
 }

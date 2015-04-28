@@ -295,6 +295,12 @@ NSString *photosPath;
     return nil;
 }
 
+- (NSDictionary *) serialize
+{
+    return @{@"type":  @"iphoto",
+             @"path":  _libraryBasePath};
+}
+
 - (void) close
 {
     _databaseAppId = nil;

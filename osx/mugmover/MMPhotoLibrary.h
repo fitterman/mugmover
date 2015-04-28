@@ -41,6 +41,8 @@
 
 - (BOOL) open;
 
+- (NSDictionary *) serialize;
+
 - (NSDictionary *) versionExifFromMasterUuid: (NSString *) masterUuid;
 
 - (NSMutableDictionary *) versionExifFromMasterPath: masterPath;

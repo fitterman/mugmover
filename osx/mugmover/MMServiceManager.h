@@ -8,10 +8,16 @@
 
 #import <Foundation/Foundation.h>
 
-@interface MMServiceManager : NSObject
-@property (strong)          NSMutableArray *            services;
+@class MMMasterViewController;
+@class MMSmugmug;
 
-- (id) init;
+@interface MMServiceManager : NSObject
+
+@property (strong)          NSMutableArray *            services;
+@property (strong)          MMSmugmug *                 serviceApi;
+@property (weak)            MMMasterViewController *    viewController;
+
+- (id) initForViewController: (id) viewController;
 
 - (NSInteger) insertService: newService
                       error: (NSError **) error;

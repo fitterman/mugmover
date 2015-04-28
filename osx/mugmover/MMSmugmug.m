@@ -6,18 +6,12 @@
 //  Copyright (c) 2015 Dicentra LLC. All rights reserved.
 //
 
-#import "MMPhoto.h"
-#import "MMLibraryEvent.h"
-#import "MMPhoto.h"
-#import "MMPhotoLibrary.h"
 #import "MMSmugmug.h"
 #import "MMOauthSmugmug.h"
 #import "MMDataUtility.h"
 #import "MMMasterViewController.h"
 
 @implementation MMSmugmug
-
-NSString * const handlePath = @"smugmug.currentAccountHandle";
 
 
 #define PHOTOS_PER_REQUEST (10)
@@ -40,6 +34,23 @@ long                retryCount;
           stringByReplacingOccurrencesOfString:@"%" withString:@"--"]];
 }
 
++ (MMSmugmug *) fromDictionary: (NSDictionary *) dictionary
+{
+    
+    if (dictionary && [[dictionary valueForKey: @"type"] isEqualToString: @"smugmug"])
+    {
+        MMSmugmug *service = [[MMSmugmug alloc] init];
+        service.uniqueId = [dictionary valueForKey: @"id"];
+        service.handle = [dictionary valueForKey: @"name"];
+        [service configureOauthRetryOnFailure: NO];
+        if (service.smugmugOauth)
+        {
+            return service;
+        }
+    }
+    return nil;
+}
+
 /**
  * To use this, just create an instance of this class and invoke this method with a block
  * that expects a BOOL. The BOOL is indicative of the outcome with YES meaning the authentication
@@ -54,7 +65,7 @@ long                retryCount;
                          self.initializationProgress = progress;
                          if (progress == 1.0)
                          {
-                             completionHandler([self getMyUserInfo]);
+                             completionHandler([self getUserInfo]);
                          }
                          else if (progress == -1.0)
                          {
@@ -68,12 +79,18 @@ long                retryCount;
     return [NSString stringWithFormat: @"%@ (Smugmug)\n%@", _handle, _uniqueId];
 }
 
+- (NSDictionary *) serialize
+{
+    return @{@"type":   @"smugmug",
+             @"id":     _uniqueId,
+             @"name":   (!_handle ? @"(none)" : _handle)};
+}
+
 - (void) close
 {
     _accessSecret = nil;
     _accessToken = nil;
     _currentPhoto = nil;
-    _currentAccountHandle = nil;
     _defaultFolder = nil;
     _handle = nil;
     _uniqueId = nil;
@@ -81,51 +98,32 @@ long                retryCount;
 
 #pragma mark "Public methods"
 /**
- This either reconsitutes an Oauth token from the stored preferences (NSDefault) or
+ This either reconsitutes an Oauth token from the stored preferences (NSUserDefaults) or
  triggers a new Oauth dance. You know the outcome by observing "initializationProgress".
  */
 
-- (void) configureOauthForLibrary: (MMPhotoLibrary *) library
+- (void) configureOauthRetryOnFailure: (BOOL) attemptRetry
 {
     // WIPE THE DEFAULTS: [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    _currentAccountHandle = [defaults stringForKey: handlePath];
-    if (_currentAccountHandle)
+    if (_uniqueId)
     {
-        NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _currentAccountHandle];
-        NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", _currentAccountHandle];
+        NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _uniqueId];
+        NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", _uniqueId];
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: [defaults objectForKey: atKey]
                                                              secret: [defaults objectForKey: tsKey]];
         if (_smugmugOauth)
         {
             self.initializationProgress = 1.0; // Mark it as completed
-            // Now try to find the default folder. If that fails, force a whole login process again,
-            // because either the token has been revoked or the permissions were reduced manually by
-            // the user.
-            
-            _defaultFolder = [self findOrCreateFolder: [MMSmugmug sanitizeUuid: library.databaseUuid]
-                                              beneath: nil
-                                          displayName: [library displayName]
-                                          description: [library description]];
-            if (!_defaultFolder) // Still not set? Reset the authorization
-            {
-                _smugmugOauth = nil;
-            }
-            else
-            {
-                NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _currentAccountHandle];
-                [defaults setObject: _defaultFolder forKey: dfKey];
-            }
         }
         else
         {
             [defaults removeObjectForKey: atKey];
             [defaults removeObjectForKey: tsKey];
-            [defaults removeObjectForKey: handlePath];
+            [defaults synchronize];
         }
-        [defaults synchronize];
     }
-    if (_smugmugOauth)
+    if (_smugmugOauth || !attemptRetry)
     {
         return; // after synchronize
     }
@@ -134,42 +132,14 @@ long                retryCount;
     _smugmugOauth = [[MMOauthSmugmug alloc] initAndStartAuthorization: ^(Float32 progress, NSString *text)
                      {
                          self.initializationProgress = progress;
-                         if (progress == 1.0)
-                         {
-                             _currentAccountHandle = [defaults stringForKey: handlePath];
-                             if (!_currentAccountHandle)
-                             {
-                                 _currentAccountHandle = _handle;
-                                 [defaults setObject: _currentAccountHandle forKey: handlePath];
-                             }
-                             NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _currentAccountHandle];
-                             NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", _currentAccountHandle];
-                             [defaults setObject: _smugmugOauth.accessToken forKey: atKey];
-                             [defaults setObject: _smugmugOauth.tokenSecret forKey: tsKey];
-                             _defaultFolder = [self findOrCreateFolder: [MMSmugmug sanitizeUuid: library.databaseUuid]
-                                                               beneath: nil
-                                                           displayName: [library displayName]
-                                                           description: [library description]];
-                             if (!_defaultFolder) // Still not set? report error
-                             {
-                                 DDLogError(@"unable to create default folder");
-                             }
-                             else
-                             {
-                                 NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _currentAccountHandle];
-                                 [defaults setObject: _defaultFolder forKey: dfKey];
-                             }
-                             [defaults synchronize];
-                         }
                      }];
 }
 
 
-#pragma mark "Private methods"
 /**
  * Returns a BOOL indicating whether it was able to obtain user information via the API.
  */
-- (BOOL) getMyUserInfo
+- (BOOL) getUserInfo
 {
     NSURLRequest *userInfoRequest = [_smugmugOauth apiRequest: @"!authuser"
                                                    parameters: nil
@@ -204,6 +174,8 @@ long                retryCount;
     }
     return NO;
 }
+
+#pragma mark "Private methods"
 
 /**
  * Returns the albumId of an album. The identity of the album is determined by the folder path
@@ -285,9 +257,9 @@ long                retryCount;
 }
  
 /**
- * Returns the "urlName" value (one piece of the path) for a folder. If the +levelOneFolder+ is nil
- * the result will be a top-level folder creation. If the +partialPath+ is present, then it will
- * be inserted as part of the path. When used, "+partialPath+ should only contain embedded slashes,
+ * Returns the "urlName" value (one piece of the path) for a folder. If the +beneath+ parameter is nil
+ * the result will be a top-level folder creation. If the +beneath+ value is present, then it will
+ * be inserted as part of the path. When used, "+beneath+ should only contain embedded slashes,
  * no initial or terminal ones, for example: "abc/def".
  * If something really goes wrong, nil is returned.
  */
@@ -329,9 +301,11 @@ long                retryCount;
         }
         NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
         NSInteger httpStatus = [httpResponse statusCode];
+
+        NSString *defaultFolderName = nil;
         if (httpStatus == 200)
         {
-            return [parsedServerResponse valueForKeyPath: @"Response.Folder.UrlName"];
+            defaultFolderName = [parsedServerResponse valueForKeyPath: @"Response.Folder.UrlName"];
         }
         if (httpStatus == 409) // Conflict, it exists
         {
@@ -346,6 +320,16 @@ long                retryCount;
                 object = [(NSDictionary *)object objectForKey: piece];
             }
             return (NSString *)object;
+        }
+        if (defaultFolderName)
+        {
+            // If it was found or created, save it (and return it).
+            _defaultFolder = defaultFolderName;
+            NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _uniqueId];
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            [defaults setObject: _defaultFolder forKey: dfKey];
+            [defaults synchronize];
+            return defaultFolderName;
         }
         DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
         DDLogError(@"response=%@", parsedServerResponse);

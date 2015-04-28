@@ -49,6 +49,23 @@ extern const NSInteger MMDefaultRetries;
         {
             name = [_event dateRange];
         }
+        
+        // Now try to find or create the default folder. If that fails, we need to abandon this effort.
+         
+        if (!_service.defaultFolder)
+        {
+            MMPhotoLibrary *library = _event.library;
+            NSString *defaultFolder = [_service findOrCreateFolder: [MMSmugmug sanitizeUuid: library.databaseUuid]
+                                                           beneath: nil
+                                                       displayName: [library displayName]
+                                                       description: [library description]];
+        }
+        else
+        {
+            DDLogError(@"Failed to create the default folder for this library");
+            // TODO Flag the error!
+        }
+        
         NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via Mugmover", name];
         NSString *newAlbumId = [_service findOrCreateAlbum: [MMSmugmug sanitizeUuid: [_event uuid]]
                                                    beneath: _service.defaultFolder
@@ -56,7 +73,7 @@ extern const NSInteger MMDefaultRetries;
                                                description: description];
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSString *albumKey = [NSString stringWithFormat: @"smugmug.%@.albums.%@",
-                                                          _service.currentAccountHandle,
+                                                          _service.uniqueId,
                                                           [_event uuid]];
         NSArray *photos = [MMPhoto getPhotosForEvent: _event];
         NSMutableDictionary *albumState = [[defaults objectForKey: albumKey] mutableCopy];

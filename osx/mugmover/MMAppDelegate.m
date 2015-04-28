@@ -41,79 +41,11 @@ BOOL const MMdebugLevel;
     [_window.contentView addSubview:_masterViewController.view];
     _masterViewController.view.frame = ((NSView*)_window.contentView).bounds;
     [_window.contentView setAutoresizesSubviews:YES];
-
-    // 3. Establish the service API
-    _serviceApi = [[MMSmugmug alloc] init];
-
-    if (_serviceApi)
-    {
-        // Register for KVO on some network-associated values
-        [_serviceApi addObserver: self
-                      forKeyPath: @"initializationProgress"
-                         options: (NSKeyValueObservingOptionNew)
-                         context: (__bridge void *)(self)];
-        [_serviceApi configureOauthForLibrary: _library];
-    }
-}
-
-/* TODO
-
- From http://stackoverflow.com/questions/25833322/why-does-this-kvo-code-crash-100-of-the-time
- call  -removeObserver:forKeyPath:context:  when the time comes
-*/
-
-- (void) observeValueForKeyPath: (NSString *) keyPath
-                       ofObject: (id) object
-                         change: (NSDictionary *) change
-                        context: (void *) context
-{
-    if (context == (__bridge void *) self) // Make sure it's your context that is observing
-    {
-        if ([keyPath isEqual: @"initializationProgress"])
-        {
-            NSNumber *newValue = (NSNumber *)[change objectForKey: NSKeyValueChangeNewKey];
-            DDLogInfo(@"       initializationProgress=%@", newValue);
-            if ([newValue floatValue] == 1.0)
-            {
-                self.masterViewController.serviceApi = _serviceApi;
-                NSOperationQueue *tempQueue = [[NSOperationQueue alloc] init];
-                [tempQueue addOperationWithBlock: ^(void) {
-                    if ([_serviceApi getMyUserInfo])
-                    {
-                        [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
-                             {
-                                 NSError *error;
-                                 [_masterViewController.serviceManager insertService: _serviceApi
-                                                                               error: &error];
-                                 [_masterViewController.servicesTable reloadData];
-                             }
-                        ];
-                    }
-                }];
-                //[MMPhoto getPhotosFromLibrary: _library];    /* This kicks off the whole process from the database without a service */
-                //[stream getPhotos]; /* This kicks off the whole process with flickr */
-            }
-        }
-    }
-    else
-    {
-      // if possible, you'd call
-      //  [super observeValueForKeyPath: keyPath ofObject: object change: change context: context];
-    }
 }
 
 - (void) close
 {
-    if (_library)
-    {
-        [_library close];
-        _library = nil;
-    }
-    if (_serviceApi)
-    {
-        [_serviceApi close];
-        _serviceApi = nil;
-    }
+    NSLog(@"Can I free the window?");
 }
 
 - (void) windowDidResize: (NSNotification *) notification
