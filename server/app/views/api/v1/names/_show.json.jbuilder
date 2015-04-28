@@ -1,4 +1,4 @@
-json.set! name.id do 
+# json.set! name.id do 
   json.extract! name, :id
   json.publicName name.public_name
   json.privateName name.private_name
@@ -9,4 +9,4 @@ json.set! name.id do
     json.thumbnail 'https://upload.wikimedia.org/wikipedia/en/6/6f/Smiley_Face.png'
   end
   json.updatedAt name.updated_at.to_formatted_s(:db)
-end
+# end

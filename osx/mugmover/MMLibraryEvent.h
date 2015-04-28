@@ -35,6 +35,8 @@ typedef NS_ENUM(NSInteger, MMEventStatus) {
 
 - (NSString *) featuredImageUuid;
 
+- (NSImage *) getCurrentThumbnail;
+
 - (NSNumber *) filecount;
 
 - (NSImage *) iconImage;

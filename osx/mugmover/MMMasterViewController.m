@@ -354,7 +354,7 @@
             cellView.secondTextField.stringValue = [NSString stringWithFormat: @"%@ (%@)",
                                                     [event dateRange],
                                                     [event filecount]];
-            cellView.imageView.image = event.currentThumbnail;
+            cellView.imageView.image = [event getCurrentThumbnail];
             if (event.status == MMEventStatusCompleted)
             {
                 cellView.iconField.image = _completedIcon;
@@ -449,8 +449,8 @@
     return splitView.frame.size.height - 70.0;
 }
 
-- (NSIndexSet *)tableView:(NSTableView *)tableView
-selectionIndexesForProposedSelection:(NSIndexSet *)proposedSelectionIndexes
+- (NSIndexSet *)            tableView: (NSTableView *) tableView
+ selectionIndexesForProposedSelection: (NSIndexSet *) proposedSelectionIndexes
 {
     if (proposedSelectionIndexes.count == 0)
     {

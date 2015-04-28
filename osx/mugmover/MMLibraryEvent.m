@@ -24,12 +24,6 @@
     _library = library;
     _row = row;
     _status = MMEventStatusNone;
-    _eventThumbnail = [self iconImage];
-    if (!_eventThumbnail)
-    {
-        _eventThumbnail = [MMUiUtility iconImage: @"Photograph-128" ofType: @"png"];
-    }
-    _currentThumbnail = _eventThumbnail;
     return self;
 }
 
@@ -55,6 +49,30 @@
     return [MMUiUtility iconImage: @"Photograph-128" ofType: @"png"];
 }
 
+/**
+ * Coordinates with +getEventThumbnail+.
+ */
+- (NSImage *) getCurrentThumbnail
+{
+    return _currentThumbnail ? _currentThumbnail : [self getEventThumbnail];
+}
+
+/**
+ * This handles lazy-loading of the thumbnails
+ */
+- (NSImage *) getEventThumbnail
+{
+    if (!_eventThumbnail)
+    {
+        _eventThumbnail = [self iconImage];
+        if (!_eventThumbnail)
+        {
+            _eventThumbnail = [MMUiUtility iconImage: @"Photograph-128" ofType: @"png"];
+        }
+    }
+    return _eventThumbnail;
+}
+
 - (void) setActivePhotoThumbnail: (NSImage *) photoThumbnailImage
                       withStatus: (MMEventStatus) status
 {
@@ -64,7 +82,7 @@
     }
     else
     {
-        _currentThumbnail = _eventThumbnail;
+        _currentThumbnail = [self getEventThumbnail];
     }
     _status = status;
 }
