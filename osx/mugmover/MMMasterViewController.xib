@@ -17,6 +17,7 @@
                 <outlet property="progressIndicator" destination="rHG-uS-1tu" id="7ul-vo-w1W"/>
                 <outlet property="servicesScrollView" destination="OkL-UV-8gr" id="MOB-0b-70B"/>
                 <outlet property="servicesSegmentedControl" destination="e8e-op-4g9" id="nHv-Wd-k8s"/>
+                <outlet property="servicesTable" destination="bem-rf-SMQ" id="poH-nP-FhK"/>
                 <outlet property="skipProcessedImageCheckbox" destination="aSC-zP-aaj" id="WNB-QG-P3n"/>
                 <outlet property="splitView" destination="ybA-6q-r5c" id="0Ru-M2-guR"/>
                 <outlet property="transmitButton" destination="vj0-rp-sGR" id="PjQ-Pe-E5W"/>
@@ -91,7 +92,7 @@
                                                                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSActionTemplate" id="Fxp-bX-2n4"/>
                                                                     </imageView>
                                                                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KMv-x3-lyX">
-                                                                        <rect key="frame" x="56" y="-4" width="154" height="48"/>
+                                                                        <rect key="frame" x="56" y="0.0" width="154" height="42"/>
                                                                         <textFieldCell key="cell" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" alignment="left" title="Table View Cell" id="RSG-L6-YdK">
                                                                             <font key="font" metaFont="system"/>
                                                                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -155,15 +156,18 @@
                                             </segment>
                                         </segments>
                                     </segmentedCell>
+                                    <connections>
+                                        <action selector="serviceSegmentedControlWasPressed:" target="-2" id="1gw-Rj-Tdb"/>
+                                    </connections>
                                 </segmentedControl>
-                                <scrollView toolTip="Photo Hosting Services" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OkL-UV-8gr">
+                                <scrollView toolTip="Photo Hosting Services" autohidesScrollers="YES" horizontalLineScroll="54" horizontalPageScroll="10" verticalLineScroll="54" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OkL-UV-8gr">
                                     <rect key="frame" x="0.0" y="20" width="220" height="160"/>
                                     <clipView key="contentView" id="iGq-60-V53">
                                         <rect key="frame" x="1" y="17" width="214" height="117"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
-                                            <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" id="bem-rf-SMQ">
-                                                <rect key="frame" x="0.0" y="0.0" width="215" height="19"/>
+                                            <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnReordering="NO" columnSelection="YES" columnResizing="NO" multipleSelection="NO" autosaveColumns="NO" rowHeight="52" viewBased="YES" id="bem-rf-SMQ">
+                                                <rect key="frame" x="0.0" y="0.0" width="218" height="19"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <size key="intercellSpacing" width="3" height="2"/>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -181,8 +185,36 @@
                                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                         </textFieldCell>
                                                         <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                                        <prototypeCellViews>
+                                                            <tableCellView id="vj2-O2-wuV">
+                                                                <rect key="frame" x="1" y="1" width="215" height="52"/>
+                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                <subviews>
+                                                                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="itD-Cu-2gB">
+                                                                        <rect key="frame" x="9" y="8" width="36" height="36"/>
+                                                                        <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSActionTemplate" id="X5j-np-kFk"/>
+                                                                    </imageView>
+                                                                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsExpansionToolTips="YES" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PYF-Ta-ht5">
+                                                                        <rect key="frame" x="56" y="0.0" width="154" height="42"/>
+                                                                        <textFieldCell key="cell" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" title="Table View Cell" id="86U-8O-1Q4">
+                                                                            <font key="font" metaFont="system"/>
+                                                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                            <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                        </textFieldCell>
+                                                                    </textField>
+                                                                </subviews>
+                                                                <connections>
+                                                                    <outlet property="imageView" destination="itD-Cu-2gB" id="seH-4M-JgG"/>
+                                                                    <outlet property="textField" destination="PYF-Ta-ht5" id="Njs-Eq-Hkz"/>
+                                                                </connections>
+                                                            </tableCellView>
+                                                        </prototypeCellViews>
                                                     </tableColumn>
                                                 </tableColumns>
+                                                <connections>
+                                                    <outlet property="dataSource" destination="-2" id="pHx-fP-bsC"/>
+                                                    <outlet property="delegate" destination="-2" id="KGG-PF-l4T"/>
+                                                </connections>
                                             </tableView>
                                         </subviews>
                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>

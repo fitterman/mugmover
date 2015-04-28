@@ -61,6 +61,29 @@ long                retryCount;
     return self;
 }
 
+/**
+ * To use this, just create an instance of this class and invoke this method with a block
+ * that expects a BOOL. The BOOL is indicative of the outcome with YES meaning the authentication
+ * completed. NO would indicate it failed.
+ *
+ * Save away the state and reconstitute it with a call to configureOauthWithLibrary:.
+ */
+- (void) authenticate: (void (^) (BOOL)) completionHandler
+{
+    _smugmugOauth = [[MMOauthSmugmug alloc] initAndStartAuthorization: ^(Float32 progress, NSString *text)
+                     {
+                         self.initializationProgress = progress;
+                         if (progress == 1.0)
+                         {
+                             completionHandler(YES);
+                         }
+                         else if (progress == -1.0)
+                         {
+                             completionHandler(NO);
+                         }
+                     }];
+}
+
 - (void) close
 {
     _accessSecret = nil;
@@ -156,6 +179,7 @@ long                retryCount;
                          }
                      }];
 }
+
 
 #pragma mark "Private methods"
 

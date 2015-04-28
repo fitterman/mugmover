@@ -28,6 +28,8 @@
 		C49376E51ACEF1C9006DB77D /* MMMasterViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C49376E31ACEF1C9006DB77D /* MMMasterViewController.xib */; };
 		C49377111AD04C8F006DB77D /* MMLibraryEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = C49377101AD04C8F006DB77D /* MMLibraryEvent.m */; };
 		C49377141AD05D4E006DB77D /* MMComplexTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */; };
+		C493FBA81AEFA386009492BD /* MMServiceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C493FBA71AEFA386009492BD /* MMServiceManager.m */; };
+		C493FBAA1AEFB220009492BD /* Service-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C493FBA91AEFB220009492BD /* Service-128.png */; };
 		C4968CB71A15101500F34E46 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4968CB61A15101500F34E46 /* Cocoa.framework */; };
 		C4968CC11A15101500F34E46 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C4968CBF1A15101500F34E46 /* InfoPlist.strings */; };
 		C4968CC31A15101500F34E46 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CC21A15101500F34E46 /* main.m */; };
@@ -115,6 +117,9 @@
 		C49377101AD04C8F006DB77D /* MMLibraryEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMLibraryEvent.m; sourceTree = "<group>"; };
 		C49377121AD05D4E006DB77D /* MMComplexTableCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMComplexTableCellView.h; sourceTree = "<group>"; };
 		C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMComplexTableCellView.m; sourceTree = "<group>"; };
+		C493FBA61AEFA386009492BD /* MMServiceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMServiceManager.h; sourceTree = "<group>"; };
+		C493FBA71AEFA386009492BD /* MMServiceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMServiceManager.m; sourceTree = "<group>"; };
+		C493FBA91AEFB220009492BD /* Service-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Service-128.png"; sourceTree = "<group>"; };
 		C4968CB31A15101500F34E46 /* mugmover.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mugmover.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4968CB61A15101500F34E46 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		C4968CB91A15101500F34E46 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -182,6 +187,7 @@
 				C4E3D9491ADC64AF00D82337 /* Incomplete-128.png */,
 				C4D3A4151AE690D0005E72B6 /* Library-128.png */,
 				C4E3D94D1ADC678900D82337 /* Photograph-128.png */,
+				C493FBA91AEFB220009492BD /* Service-128.png */,
 			);
 			name = Assets;
 			sourceTree = "<group>";
@@ -232,6 +238,8 @@
 				C404A9C11AD44BFA00E197F1 /* MMSmugmugFolder.m */,
 				C404A9C31AD5B7DB00E197F1 /* MMUploadOperation.h */,
 				C404A9C41AD5B7DB00E197F1 /* MMUploadOperation.m */,
+				C493FBA61AEFA386009492BD /* MMServiceManager.h */,
+				C493FBA71AEFA386009492BD /* MMServiceManager.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -457,6 +465,7 @@
 				C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */,
 				C4968CCD1A15101500F34E46 /* MainMenu.xib in Resources */,
 				C4F935041AD884C200AB465B /* Active-128.gif in Resources */,
+				C493FBAA1AEFB220009492BD /* Service-128.png in Resources */,
 				C49376E51ACEF1C9006DB77D /* MMMasterViewController.xib in Resources */,
 				C4E3D94E1ADC678900D82337 /* Photograph-128.png in Resources */,
 				C4A702131AEDD738002A7E01 /* MMOptionsView.xib in Resources */,
@@ -530,6 +539,7 @@
 				C4A687A71ACC7682007CDC6D /* MMFileUtility.m in Sources */,
 				C42F7AD51A1532FC006E38DD /* MMFace.m in Sources */,
 				C411AA761AC197A30087D1FA /* MMOauthSmugmug.m in Sources */,
+				C493FBA81AEFA386009492BD /* MMServiceManager.m in Sources */,
 				C4F3F1811A26E90900C2BE00 /* MMPhoto.m in Sources */,
 				C48C5DD51AB89AAB007C10B0 /* MMSmugmug.m in Sources */,
 				C42F7ADB1A1533AB006E38DD /* MMPoint.m in Sources */,

@@ -48,5 +48,7 @@
 
 - (id) initWithHandle: (NSString *) handle;
 
+- (void) authenticate: (void (^) (BOOL)) completionHandler;
+
 @end
 

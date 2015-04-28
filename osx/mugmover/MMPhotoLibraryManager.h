@@ -13,8 +13,8 @@
 
 - (id) init;
 
-- (BOOL) insertLibraryPath: newLibraryPath
-                     error: (NSError **) error;
+- (NSInteger) insertLibraryPath: newLibraryPath
+                          error: (NSError **) error;
 
 - (BOOL) isAtCapacity;
 

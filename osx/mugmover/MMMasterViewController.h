@@ -11,6 +11,7 @@
 @class MMPhotoLibrary;
 @class MMLibraryEvent;
 @class MMPhotoLibraryManager;
+@class MMServiceManager;
 @class MMSmugmug;
 
 @interface MMMasterViewController : NSViewController <NSTableViewDelegate, NSSplitViewDelegate>
@@ -27,6 +28,7 @@
 @property (weak)    IBOutlet    NSProgressIndicator *   progressIndicator;
 @property (weak)    IBOutlet    NSScrollView *          servicesScrollView;
 @property (weak)    IBOutlet    NSSegmentedControl *    servicesSegmentedControl;
+@property (weak)    IBOutlet    NSTableView *           servicesTable;
 @property (weak)    IBOutlet    NSButton *              skipProcessedImageCheckbox;
 @property (weak)    IBOutlet    NSSplitView *           splitView;
 @property (weak)    IBOutlet    NSButton *              transmitButton;
@@ -43,6 +45,8 @@
 @property (strong)              NSArray *               photos;
 @property (strong)              MMLibraryEvent *        selectedEvent;
 @property (strong)              MMSmugmug *             serviceApi;
+@property (strong)              NSImage *               serviceIcon;
+@property (strong)              MMServiceManager *      serviceManager;
 @property (assign)              NSInteger               totalImagesToTransmit;
 @property (assign)              BOOL                    transmitting;
 @property (strong)              NSOperationQueue *      uploadOperationQueue;

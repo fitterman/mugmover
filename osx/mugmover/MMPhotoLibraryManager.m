@@ -25,7 +25,7 @@ NSInteger const maxSupportedLibraries = 50;
 
 - (BOOL) isAtCapacity
 {
-    return [_libraries count] >= maxSupportedLibraries;
+    return [self totalLibraries] >= maxSupportedLibraries;
 }
 
 /**

@@ -14,6 +14,7 @@
 #import "MMPhotoLibrary.h"
 #import "MMPhotoLibraryManager.h"
 #import "MMUiUtility.h"
+#import "MMServiceManager.h"
 #import "MMSmugmug.h"
 #import "MMUploadOperation.h"
 
@@ -35,6 +36,7 @@
         _completedIcon = [MMUiUtility iconImage: @"Completed-128" ofType: @"png"];
         _incompleteIcon = [MMUiUtility iconImage: @"Incomplete-128" ofType: @"png"];
         _libraryIcon = [MMUiUtility iconImage: @"Library-128" ofType: @"png"];
+        _serviceIcon = [MMUiUtility iconImage: @"Service-128" ofType: @"png"];
         _transmitting = NO;
 
         
@@ -56,6 +58,9 @@
     }
     _libraryManager = [[MMPhotoLibraryManager alloc] init];
     [_librariesTable reloadData];
+    _serviceManager = [[MMServiceManager alloc] init];
+    [_servicesTable reloadData];
+
 }
 
 - (void)loadView
@@ -197,7 +202,7 @@
                     
                     if (library)
                     {
-                        [library close]; // We just need to test that it can be init'd, but we dont' do a full open.
+                        [library close]; // We just need to test that it can be init'd, but we don't do a full open.
                         NSError *error;
                         NSInteger row = [_libraryManager insertLibraryPath: libraryUrl.path error: &error];
                         if (error)
@@ -241,6 +246,35 @@
                              byExtendingSelection: NO];
             }
         }
+    }
+}
+
+- (IBAction)serviceSegmentedControlWasPressed: (NSSegmentedControl *) segmentedControl
+{
+    NSLog(@"button %lu", segmentedControl.selectedSegment);
+
+    // 0 is add
+    if (segmentedControl.selectedSegment == 0)
+    {
+        MMSmugmug *newService = [[MMSmugmug alloc] init];
+        [newService authenticate: ^(BOOL success)
+            {
+                if (success)
+                {
+                    NSError *error;
+                    [_serviceManager insertService: newService error: &error];
+                    [_servicesTable reloadData];
+                }
+                else
+                {
+                    [MMUiUtility alertWithText: @"Unable to add service."
+                                  withQuestion: nil
+                                         style: NSWarningAlertStyle];
+                }
+         }];
+    }
+    else if (segmentedControl.selectedSegment == 1)
+    {
     }
 }
 
@@ -296,7 +330,12 @@
         baseCellView.textField.stringValue = [_libraryManager libraryNameForIndex: row];
         baseCellView.imageView.image = _libraryIcon;
     }
-    if ((tableView == _eventsTable) && _library.events)
+    else if (tableView == _servicesTable)
+    {
+        baseCellView.textField.stringValue = [_serviceManager serviceNameForIndex: row];
+        baseCellView.imageView.image = _serviceIcon;
+    }
+    else if ((tableView == _eventsTable) && _library.events)
     {
         MMLibraryEvent *event = _library.events[row];
         if ([tableColumn.identifier isEqualToString: @"DisplayColumn"])
@@ -377,6 +416,10 @@
     {
         return [_libraryManager totalLibraries];
     }
+    else if (tableView == _servicesTable)
+    {
+        return [_serviceManager totalServices];
+    }
     else if (tableView == _eventsTable)
     {
         return [_library.events count];
@@ -406,6 +449,15 @@
     return splitView.frame.size.height - 70.0;
 }
 
+- (NSIndexSet *)tableView:(NSTableView *)tableView
+selectionIndexesForProposedSelection:(NSIndexSet *)proposedSelectionIndexes
+{
+    if (proposedSelectionIndexes.count == 0)
+    {
+        return [tableView selectedRowIndexes];
+    }
+    return proposedSelectionIndexes;
+}
 - (void) tableViewSelectionDidChange: (NSNotification *) notification
 {
     NSTableView *tableView = notification.object;
