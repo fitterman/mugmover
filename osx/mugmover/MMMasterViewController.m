@@ -56,11 +56,15 @@
     if([NSViewController instancesRespondToSelector:@selector(viewWillLoad)]) {
         // [super viewDidLoad];
     }
-    _libraryManager = [[MMPhotoLibraryManager alloc] init];
+    _libraryManager = [[MMPhotoLibraryManager alloc] initForViewController: self];
+    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: 0];
     [_librariesTable reloadData];
+    [_librariesTable selectRowIndexes: indexSet
+                 byExtendingSelection: NO];
     _serviceManager = [[MMServiceManager alloc] initForViewController: self];
     [_servicesTable reloadData];
-
+    [_servicesTable selectRowIndexes: indexSet
+                byExtendingSelection: NO];
 }
 
 - (void)loadView
@@ -98,6 +102,37 @@
     [_servicesSegmentedControl setNeedsDisplay: YES];
 }
 
+/**
+ * If +hint+ is set to YES, then we know for certain something is marked for tranmission, so 
+ * we can skip searching the events.
+ */
+- (void) setTransmitButtonStateWithHint: (BOOL) hint
+{
+    BOOL canTransmit = (_librariesTable.selectedRow != -1) && (_servicesTable.selectedRow != -1);
+    if (!canTransmit)
+    {
+        _transmitButton.enabled = NO;
+    }
+    else if (hint)
+    {
+        _transmitButton.enabled = canTransmit;
+    }
+    else
+    {
+        // Otherwise we have to inspect all of them
+        for (MMLibraryEvent *event in _library.events)
+        {
+            if (event.toBeProcessed)
+            {
+                // and if one is marked for processing, enable the transmit button
+                _transmitButton.enabled = YES;
+                return;
+            }
+        }
+        _transmitButton.enabled = NO;
+    }
+}
+
 - (void) uploadCompleted
 {
     _transmitting = NO;
@@ -129,7 +164,7 @@
         event.toBeProcessed = YES;
     }
     [_eventsTable reloadData];
-    _transmitButton.enabled = YES;
+    [self setTransmitButtonStateWithHint: YES];
 }
 
 - (IBAction) uncheckAllButtonWasPressed: (id) sender
@@ -139,7 +174,7 @@
         event.toBeProcessed = NO;
     }
     [_eventsTable reloadData];
-    _transmitButton.enabled = NO;
+    _transmitButton.enabled = NO; // Flat-out, there is no point in looking
 }
 
 - (IBAction) transmitButtonWasPressed: (id) sender
@@ -231,20 +266,26 @@
         NSInteger oldSelectedRow = _librariesTable.selectedRow;
         if (oldSelectedRow > -1)
         {
-            [_libraryManager removeLibraryAtIndex: oldSelectedRow];
-            [self closeTheOpenLibrary];
-            [_librariesTable reloadData];
-            if (oldSelectedRow >= [_libraryManager totalLibraries])
+            if ([MMUiUtility alertWithText: @"Stop using this library"
+                              withQuestion: @"Do you want to stop using the selected library?\nYou can add it back at a later time."
+                                     style: NSInformationalAlertStyle])
             {
-                oldSelectedRow = [_libraryManager totalLibraries] - 1;
-            }
-            if (oldSelectedRow >= 0)
-            {
-                NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: oldSelectedRow];
-                [_librariesTable selectRowIndexes: indexSet
-                             byExtendingSelection: NO];
+                [_libraryManager removeLibraryAtIndex: oldSelectedRow];
+                [self closeTheOpenLibrary];
+                [_librariesTable reloadData];
+                if (oldSelectedRow >= [_libraryManager totalLibraries])
+                {
+                    oldSelectedRow = [_libraryManager totalLibraries] - 1;
+                }
+                if (oldSelectedRow >= 0)
+                {
+                    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: oldSelectedRow];
+                    [_librariesTable selectRowIndexes: indexSet
+                                 byExtendingSelection: NO];
+                }
             }
         }
+        [self setTransmitButtonStateWithHint: NO];
     }
 }
 
@@ -258,8 +299,11 @@
                 if (success)
                 {
                     NSError *error;
-                    [_serviceManager insertService: newService error: &error];
+                    NSInteger row = [_serviceManager insertService: newService error: &error];
                     [_servicesTable reloadData];
+                    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: row];
+                    [_servicesTable selectRowIndexes: indexSet
+                                 byExtendingSelection: NO];
                 }
                 else
                 {
@@ -274,19 +318,25 @@
         NSInteger oldSelectedRow = _servicesTable.selectedRow;
         if (oldSelectedRow > -1)
         {
-            [_serviceManager removeServiceAtIndex: oldSelectedRow];
-            [_servicesTable reloadData];
-            if (oldSelectedRow >= [_serviceManager totalServices])
+            if ([MMUiUtility alertWithText: @"Stop using this service"
+                              withQuestion: @"Do you want to stop using the selected selected?\nYou can add it back at a later time."
+                                     style: NSInformationalAlertStyle])
             {
-                oldSelectedRow = [_serviceManager totalServices] - 1;
-            }
-            if (oldSelectedRow >= 0)
-            {
-                NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: oldSelectedRow];
-                [_servicesTable selectRowIndexes: indexSet
-                            byExtendingSelection: NO];
+                [_serviceManager removeServiceAtIndex: oldSelectedRow];
+                [_servicesTable reloadData];
+                if (oldSelectedRow >= [_serviceManager totalServices])
+                {
+                    oldSelectedRow = [_serviceManager totalServices] - 1;
+                }
+                if (oldSelectedRow >= 0)
+                {
+                    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: oldSelectedRow];
+                    [_servicesTable selectRowIndexes: indexSet
+                                byExtendingSelection: NO];
+                }
             }
         }
+        [self setTransmitButtonStateWithHint: NO];
     }
 }
 
@@ -297,24 +347,7 @@
     {
         MMLibraryEvent *event = _library.events[row];
         event.toBeProcessed = ((NSButton *)sender).state;
-        
-        // If the one they just clicked is a YES, then enable the transmit button
-        if (event.toBeProcessed)
-        {
-            _transmitButton.enabled = YES;
-            return;
-        }
-        // Otherwise we have to inspect all of them
-        for (MMLibraryEvent *event in _library.events)
-        {
-            if (event.toBeProcessed)
-            {
-                // and if one is marked for processing, enable the transmit button
-                _transmitButton.enabled = YES;
-                return;
-            }
-        }
-        _transmitButton.enabled = NO;
+        [self setTransmitButtonStateWithHint: event.toBeProcessed];
     }
     
 }
@@ -470,6 +503,7 @@
     }
     return proposedSelectionIndexes;
 }
+
 - (void) tableViewSelectionDidChange: (NSNotification *) notification
 {
     NSTableView *tableView = notification.object;
@@ -502,6 +536,7 @@
         _photos = [MMPhoto getPhotosForEvent: _selectedEvent];
         [_photosTable reloadData];
     }
+    [self setTransmitButtonStateWithHint: NO];
 }
 
 @end

@@ -21,9 +21,9 @@
     if (question)
     {
         [alert addButtonWithTitle: NSLocalizedString(@"Cancel", nil)];
-        [alert setMessageText: question];
+        [alert setInformativeText: question];
     }
-    [alert setInformativeText: text];
+    [alert setMessageText: text];
     [alert setAlertStyle: warningOrErrorStyle];
     return ([alert runModal] == NSAlertFirstButtonReturn);
 }

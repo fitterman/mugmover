@@ -16,7 +16,7 @@ NSInteger const maxSupportedServices = 50;
 
 @implementation MMServiceManager
 
-- (id) initForViewController: (id) viewController;
+- (id) initForViewController: (id) viewController
 {
     self = [super init];
     if (self)
@@ -95,12 +95,15 @@ NSInteger const maxSupportedServices = 50;
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSArray *array = [defaults objectForKey: @"services"];
-    for (NSDictionary *dictionary in array)
+    if (array)
     {
-        MMSmugmug *service = [MMSmugmug fromDictionary: dictionary];
-        if (service)
+        for (NSDictionary *dictionary in array)
         {
-            [_services addObject: service];
+            MMSmugmug *service = [MMSmugmug fromDictionary: dictionary];
+            if (service)
+            {
+                [_services addObject: service];
+            }
         }
     }
 }

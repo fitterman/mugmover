@@ -8,10 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
+@class MMMasterViewController;
+
 @interface MMPhotoLibraryManager : NSObject
 @property (strong)          NSMutableArray *            libraries;
+@property (weak)            MMMasterViewController *    viewController;
 
-- (id) init;
+- (id) initForViewController: (id) viewController;
 
 - (NSInteger) insertLibraryPath: newLibraryPath
                           error: (NSError **) error;

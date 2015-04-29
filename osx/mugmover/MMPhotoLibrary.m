@@ -42,6 +42,15 @@ NSString *photosPath;
     return name;
 }
 
++ (MMPhotoLibrary *) fromDictionary: (NSDictionary *) dictionary
+{
+    if (dictionary && [[dictionary valueForKey: @"type"] isEqualToString: @"iphoto"])
+    {
+        return [[MMPhotoLibrary alloc] initWithPath: [dictionary valueForKey: @"path"]];
+    }
+    return nil;
+}
+
 - (id) initWithPath: (NSString *) path
 {
     self = [self init];
@@ -293,12 +302,6 @@ NSString *photosPath;
         return [MMFileUtility exifForFileAtPath: versionPath];
     }
     return nil;
-}
-
-- (NSDictionary *) serialize
-{
-    return @{@"type":  @"iphoto",
-             @"path":  _libraryBasePath};
 }
 
 - (void) close

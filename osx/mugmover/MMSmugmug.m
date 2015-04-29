@@ -104,7 +104,7 @@ long                retryCount;
 
 - (void) configureOauthRetryOnFailure: (BOOL) attemptRetry
 {
-    // WIPE THE DEFAULTS: [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
+    // WIPE THE DEFAULTS:[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
     if (_uniqueId)
     {
         NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _uniqueId];

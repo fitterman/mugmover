@@ -13,12 +13,14 @@ NSInteger const maxSupportedLibraries = 50;
 
 @implementation MMPhotoLibraryManager
 
-- (id) init
+- (id) initForViewController: (id) viewController
 {
     self = [super init];
     if (self)
     {
+        _viewController = viewController;
         _libraries = [[NSMutableArray alloc] initWithCapacity: maxSupportedLibraries];
+        [self deserializeFromDefaults];
     }
     return self;
 }
@@ -70,6 +72,7 @@ NSInteger const maxSupportedLibraries = 50;
                                             NSString *name2 = [MMPhotoLibrary nameFromPath: libPath2];
                                             return  [name1 localizedCompare: name2];
                                         }];
+    [self serializeToDefaults];
     return [_libraries indexOfObject: newLibraryPath];
 }
 
@@ -79,6 +82,24 @@ NSInteger const maxSupportedLibraries = 50;
 - (void) removeLibraryAtIndex: (NSUInteger) index
 {
     [_libraries removeObjectAtIndex: index];
+    [self serializeToDefaults];
+}
+
+- (void) serializeToDefaults
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject: _libraries forKey: @"libraries"];
+    [defaults synchronize];
+}
+
+- (void) deserializeFromDefaults
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSArray *array = [defaults objectForKey: @"libraries"];
+    if (array)
+    {
+        [_libraries addObjectsFromArray: array];
+    }
 }
 
 - (NSString *) libraryNameForIndex: (NSInteger) index

@@ -38,7 +38,7 @@
                             <rect key="frame" x="0.0" y="0.0" width="220" height="172"/>
                             <autoresizingMask key="autoresizingMask"/>
                             <subviews>
-                                <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="572-r1-s9d">
+                                <segmentedControl toolTip="Click + to add a library. Click - to stop using the selected library." verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="572-r1-s9d">
                                     <rect key="frame" x="0.0" y="-1" width="220" height="23"/>
                                     <segmentedCell key="cell" borderStyle="border" alignment="left" style="smallSquare" trackingMode="momentary" id="yFV-hD-A6F">
                                         <font key="font" metaFont="system"/>
@@ -58,7 +58,7 @@
                                         <action selector="librarySegmentedControlWasPressed:" target="-2" id="bJ5-af-pTY"/>
                                     </connections>
                                 </segmentedControl>
-                                <scrollView autohidesScrollers="YES" horizontalLineScroll="54" horizontalPageScroll="10" verticalLineScroll="54" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HXX-JU-4bX">
+                                <scrollView toolTip="iPhoto® libraries" autohidesScrollers="YES" horizontalLineScroll="54" horizontalPageScroll="10" verticalLineScroll="54" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HXX-JU-4bX">
                                     <rect key="frame" x="0.0" y="20" width="220" height="152"/>
                                     <clipView key="contentView" id="EtB-Si-IyB">
                                         <rect key="frame" x="1" y="1" width="218" height="150"/>
@@ -141,7 +141,7 @@
                             <rect key="frame" x="0.0" y="182" width="220" height="180"/>
                             <autoresizingMask key="autoresizingMask"/>
                             <subviews>
-                                <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="e8e-op-4g9">
+                                <segmentedControl toolTip="Click + to add a photo hosting service. Click - to stop using the selected service." verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="e8e-op-4g9">
                                     <rect key="frame" x="0.0" y="-1" width="220" height="23"/>
                                     <segmentedCell key="cell" borderStyle="border" alignment="left" style="smallSquare" trackingMode="momentary" id="RfB-HZ-86N">
                                         <font key="font" metaFont="system"/>
@@ -161,7 +161,7 @@
                                         <action selector="serviceSegmentedControlWasPressed:" target="-2" id="1gw-Rj-Tdb"/>
                                     </connections>
                                 </segmentedControl>
-                                <scrollView toolTip="Photo Hosting Services" autohidesScrollers="YES" horizontalLineScroll="54" horizontalPageScroll="10" verticalLineScroll="54" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OkL-UV-8gr">
+                                <scrollView toolTip="Photo hosting services" autohidesScrollers="YES" horizontalLineScroll="54" horizontalPageScroll="10" verticalLineScroll="54" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OkL-UV-8gr">
                                     <rect key="frame" x="0.0" y="20" width="220" height="160"/>
                                     <clipView key="contentView" id="iGq-60-V53">
                                         <rect key="frame" x="1" y="1" width="218" height="158"/>
@@ -251,7 +251,7 @@
                         <outlet property="delegate" destination="-2" id="wOB-mO-mYn"/>
                     </connections>
                 </splitView>
-                <scrollView ambiguous="YES" misplaced="YES" autohidesScrollers="YES" horizontalLineScroll="50" horizontalPageScroll="10" verticalLineScroll="50" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Wh-uk-i0x">
+                <scrollView toolTip="Events in the selected library" ambiguous="YES" misplaced="YES" autohidesScrollers="YES" horizontalLineScroll="50" horizontalPageScroll="10" verticalLineScroll="50" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Wh-uk-i0x">
                     <rect key="frame" x="248" y="61" width="300" height="320"/>
                     <clipView key="contentView" ambiguous="YES" misplaced="YES" id="dZy-F3-QBB">
                         <rect key="frame" x="1" y="1" width="298" height="318"/>
@@ -368,7 +368,7 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
                 </scrollView>
-                <scrollView ambiguous="YES" misplaced="YES" autohidesScrollers="YES" horizontalLineScroll="52" horizontalPageScroll="10" verticalLineScroll="52" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tuw-5b-muO">
+                <scrollView toolTip="Photos in the selected event" ambiguous="YES" misplaced="YES" autohidesScrollers="YES" horizontalLineScroll="52" horizontalPageScroll="10" verticalLineScroll="52" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tuw-5b-muO">
                     <rect key="frame" x="556" y="61" width="226" height="321"/>
                     <clipView key="contentView" ambiguous="YES" misplaced="YES" id="qS2-IS-xJ3">
                         <rect key="frame" x="1" y="1" width="224" height="319"/>
@@ -443,7 +443,7 @@
                         <autoresizingMask key="autoresizingMask"/>
                     </scroller>
                 </scrollView>
-                <button verticalHuggingPriority="750" horizontalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="vj0-rp-sGR">
+                <button toolTip="Click to begin transfer of checked events to selected service" verticalHuggingPriority="750" horizontalCompressionResistancePriority="749" translatesAutoresizingMaskIntoConstraints="NO" id="vj0-rp-sGR">
                     <rect key="frame" x="693" y="13" width="95" height="32"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="21" id="u0x-NM-r0Z"/>
@@ -466,7 +466,7 @@
                         </connections>
                     </buttonCell>
                 </button>
-                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iek-VH-855">
+                <button toolTip="Click to check all events" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iek-VH-855">
                     <rect key="frame" x="246" y="13" width="100" height="32"/>
                     <buttonCell key="cell" type="push" title="Check All" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="sKM-5r-XmH">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -483,7 +483,7 @@
                         <font key="font" metaFont="system"/>
                     </buttonCell>
                 </button>
-                <button horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="7vQ-n0-c1D">
+                <button toolTip="Click to uncheck all events" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="7vQ-n0-c1D">
                     <rect key="frame" x="346" y="13" width="114" height="32"/>
                     <buttonCell key="cell" type="push" title="Uncheck All" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="89H-8W-mi3">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
