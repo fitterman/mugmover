@@ -44,7 +44,6 @@
 @property (assign)              NSInteger               outstandingRequests;
 @property (strong)              NSArray *               photos;
 @property (strong)              MMLibraryEvent *        selectedEvent;
-@property (strong)              MMSmugmug *             serviceApi;
 @property (strong)              NSImage *               serviceIcon;
 @property (strong)              MMServiceManager *      serviceManager;
 @property (assign)              NSInteger               totalImagesToTransmit;

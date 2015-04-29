@@ -20,7 +20,6 @@
 @property (strong)              MMPhoto *               currentPhoto;
 @property (strong, readonly)    NSString *              defaultFolder;
 @property (strong)              NSString *              handle;
-@property (assign)              Float32                 initializationProgress;
 @property (assign, readonly)    NSInteger               page;
 @property (strong, readonly)    MMOauthSmugmug *        smugmugOauth;
 @property (strong, readonly)    NSString *              tokenSecret;

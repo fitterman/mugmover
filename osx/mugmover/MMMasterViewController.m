@@ -190,6 +190,7 @@
         [_eventsTable reloadData];
         NSInteger row = 0;
         _totalImagesToTransmit = 0;
+        MMSmugmug *serviceApi = [_serviceManager serviceForIndex: _servicesTable.selectedRow];
         for (MMLibraryEvent *event in _library.events)
         {
             if (event.toBeProcessed)
@@ -198,7 +199,7 @@
                 NSDictionary *options = @{@"skipProcessedImages": @(_skipProcessedImageCheckbox.state)};
                 MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
                                                                                           row: row
-                                                                                      service: _serviceApi
+                                                                                      service: serviceApi
                                                                                       options: options
                                                                                viewController: self];
                 [_uploadOperationQueue addOperation: uploadOperation];

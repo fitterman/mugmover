@@ -120,9 +120,21 @@ NSInteger const maxSupportedServices = 50;
     [defaults synchronize];
 }
 
+- (MMSmugmug *) serviceForIndex: (NSInteger) index
+{
+    if ((0 <= index) && (index < _services.count))
+    {
+        return [_services objectAtIndex: index];
+    }
+    else
+    {
+        return nil;
+    }
+}
+
 - (NSString *) serviceNameForIndex: (NSInteger) index
 {
-    MMSmugmug *service = [_services objectAtIndex: index];
+    MMSmugmug *service = [self serviceForIndex: index];
     if (service)
     {
         return [service name];
@@ -136,62 +148,6 @@ NSInteger const maxSupportedServices = 50;
 - (NSInteger) totalServices
 {
     return [_services count];
-}
-
-- (BOOL) getServiceApiForLibrary: (MMPhotoLibrary *) library
-{
-    _serviceApi = [[MMSmugmug alloc] init];
-    
-    if (_serviceApi)
-    {
-        // Register for KVO on some network-associated values
-        [_serviceApi addObserver: self
-                      forKeyPath: @"initializationProgress"
-                         options: (NSKeyValueObservingOptionNew)
-                         context: (__bridge void *)(self)];
-        [_serviceApi configureOauthRetryOnFailure: YES];
-        return YES;
-    }
-    return NO;
-}
-
-/* TODO
- 
- From http://stackoverflow.com/questions/25833322/why-does-this-kvo-code-crash-100-of-the-time
- call  -removeObserver:forKeyPath:context:  when the time comes
- */
-
-- (void) observeValueForKeyPath: (NSString *) keyPath
-                       ofObject: (id) object
-                         change: (NSDictionary *) change
-                        context: (void *) context
-{
-    if (context == (__bridge void *) self) // Make sure it's your context that is observing
-    {
-        if ([keyPath isEqual: @"initializationProgress"])
-        {
-            NSNumber *newValue = (NSNumber *)[change objectForKey: NSKeyValueChangeNewKey];
-            DDLogInfo(@"       initializationProgress=%@", newValue);
-            if ([newValue floatValue] == 1.0)
-            {
-                _viewController.serviceApi = _serviceApi;
-                NSOperationQueue *tempQueue = [[NSOperationQueue alloc] init];
-                [tempQueue addOperationWithBlock: ^(void) {
-                    if ([_serviceApi getUserInfo])
-                    {
-                        [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
-                         {
-                             NSError *error;
-                             [self insertService: _serviceApi
-                                           error: &error];
-                             [_viewController.servicesTable reloadData];
-                         }
-                         ];
-                    }
-                }];
-            }
-        }
-    }
 }
 
 @end

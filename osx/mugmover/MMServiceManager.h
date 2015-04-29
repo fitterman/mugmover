@@ -14,7 +14,6 @@
 @interface MMServiceManager : NSObject
 
 @property (strong)          NSMutableArray *            services;
-@property (strong)          MMSmugmug *                 serviceApi;
 @property (weak)            MMMasterViewController *    viewController;
 
 - (id) initForViewController: (id) viewController;
@@ -24,9 +23,11 @@
 
 - (BOOL) isAtCapacity;
 
-- (NSString *) serviceNameForIndex: (NSInteger) index;
-
 - (void) removeServiceAtIndex: (NSUInteger) index;
+
+- (MMSmugmug *) serviceForIndex: (NSInteger) index;
+
+- (NSString *) serviceNameForIndex: (NSInteger) index;
 
 - (NSInteger) totalServices;
 

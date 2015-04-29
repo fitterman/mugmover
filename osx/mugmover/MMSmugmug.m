@@ -29,9 +29,8 @@ long                retryCount;
  */
 + (NSString *) sanitizeUuid: (NSString *) inUrl
 {
-    NSLog(@"ERROR in sanitizeUuid");
-  return [@"MM" stringByAppendingString: [[inUrl stringByReplacingOccurrencesOfString:@"+" withString:@"-"]
-          stringByReplacingOccurrencesOfString:@"%" withString:@"--"]];
+    return [@"MM" stringByAppendingString: [[inUrl stringByReplacingOccurrencesOfString:@"+" withString:@"-"]
+                                            stringByReplacingOccurrencesOfString:@"%" withString:@"--"]];
 }
 
 + (MMSmugmug *) fromDictionary: (NSDictionary *) dictionary
@@ -62,7 +61,6 @@ long                retryCount;
 {
     _smugmugOauth = [[MMOauthSmugmug alloc] initAndStartAuthorization: ^(Float32 progress, NSString *text)
                      {
-                         self.initializationProgress = progress;
                          if (progress == 1.0)
                          {
                              completionHandler([self getUserInfo]);
@@ -112,11 +110,7 @@ long                retryCount;
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: [defaults objectForKey: atKey]
                                                              secret: [defaults objectForKey: tsKey]];
-        if (_smugmugOauth)
-        {
-            self.initializationProgress = 1.0; // Mark it as completed
-        }
-        else
+        if (!_smugmugOauth)
         {
             [defaults removeObjectForKey: atKey];
             [defaults removeObjectForKey: tsKey];
@@ -131,7 +125,15 @@ long                retryCount;
     // Otherwise we start the whole process over again...
     _smugmugOauth = [[MMOauthSmugmug alloc] initAndStartAuthorization: ^(Float32 progress, NSString *text)
                      {
-                         self.initializationProgress = progress;
+                         NSLog(@"progress=%f", progress);
+                         if (progress == 1.0)
+                         {
+                             NSLog(@"progress=1.0");
+                         }
+                         else
+                         {
+                             NSLog(@"progress!=1.0");
+                         }
                      }];
 }
 
