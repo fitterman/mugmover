@@ -178,8 +178,7 @@
 
 - (IBAction)librarySegmentedControlWasPressed: (NSSegmentedControl *) segmentedControl
 {
-    // 0 is add
-    if (segmentedControl.selectedSegment == 0)
+    if (segmentedControl.selectedSegment == 0) // 0 is add
     {
         NSOpenPanel* dialog = [NSOpenPanel openPanel];
 
@@ -227,12 +226,12 @@
             }
          ];
     }
-    else if (segmentedControl.selectedSegment == 1)
+    else if (segmentedControl.selectedSegment == 1) // 1 is forget/delete
     {
         NSInteger oldSelectedRow = _librariesTable.selectedRow;
         if (oldSelectedRow > -1)
         {
-            [_libraryManager removeLibraryAtIndex: _librariesTable.selectedRow];
+            [_libraryManager removeLibraryAtIndex: oldSelectedRow];
             [self closeTheOpenLibrary];
             [_librariesTable reloadData];
             if (oldSelectedRow >= [_libraryManager totalLibraries])
@@ -251,10 +250,7 @@
 
 - (IBAction)serviceSegmentedControlWasPressed: (NSSegmentedControl *) segmentedControl
 {
-    NSLog(@"button %lu", segmentedControl.selectedSegment);
-
-    // 0 is add
-    if (segmentedControl.selectedSegment == 0)
+    if (segmentedControl.selectedSegment == 0) // 0 is add
     {
         MMSmugmug *newService = [[MMSmugmug alloc] init];
         [newService authenticate: ^(BOOL success)
@@ -273,8 +269,24 @@
                 }
          }];
     }
-    else if (segmentedControl.selectedSegment == 1)
+    else if (segmentedControl.selectedSegment == 1) // 1 is forget/delete
     {
+        NSInteger oldSelectedRow = _servicesTable.selectedRow;
+        if (oldSelectedRow > -1)
+        {
+            [_serviceManager removeServiceAtIndex: oldSelectedRow];
+            [_servicesTable reloadData];
+            if (oldSelectedRow >= [_serviceManager totalServices])
+            {
+                oldSelectedRow = [_serviceManager totalServices] - 1;
+            }
+            if (oldSelectedRow >= 0)
+            {
+                NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: oldSelectedRow];
+                [_servicesTable selectRowIndexes: indexSet
+                            byExtendingSelection: NO];
+            }
+        }
     }
 }
 

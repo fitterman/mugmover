@@ -48,10 +48,10 @@ BOOL const MMdebugLevel;
     NSLog(@"Can I free the window?");
 }
 
-- (void) windowDidResize: (NSNotification *) notification
+/*- (void) windowDidResize: (NSNotification *) notification
 {
     [_masterViewController.view setFrame:((NSView*)_window.contentView).bounds];
     [_masterViewController forceRedrawingOfControlsAutolayoutDoesNotRedrawAfterWindowResize];
-}
+}*/
 
 @end
