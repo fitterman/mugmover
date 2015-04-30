@@ -178,7 +178,7 @@
 - (NSMutableDictionary *) extractQueryParams: (NSString *) urlAsString
 {
     NSArray *pieces = [urlAsString componentsSeparatedByString:@"?"];
-    
+
     if ([pieces count] != 2)
     {
         return nil; // signals a problem
@@ -192,7 +192,7 @@
 - (void) handleIncomingURL: (NSAppleEventDescriptor *) event
             withReplyEvent: (NSAppleEventDescriptor *) replyEvent
 {
-    
+
     NSString *callbackUrlString = [[event paramDescriptorForKeyword: keyDirectObject] stringValue];
     NSDictionary *params = [self extractQueryParams: callbackUrlString];
     if (!params)

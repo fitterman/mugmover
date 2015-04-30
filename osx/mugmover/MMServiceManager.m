@@ -77,7 +77,7 @@ NSInteger const maxSupportedServices = 50;
     [defaults setObject: oa.accessToken forKey: atKey];
     [defaults setObject: oa.tokenSecret forKey: tsKey];
     [defaults synchronize];
-    
+
     [self serializeToDefaults];
     return [self totalServices] - 1;
 }

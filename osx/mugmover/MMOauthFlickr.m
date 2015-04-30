@@ -61,7 +61,7 @@
             _interimTokenSecret = [[self splitQueryParams:responseString] objectForKey: @"oauth_token_secret"];
 
 
-            
+
             NSString *authUrlString = [NSString stringWithFormat: @"%@://%@/services/oauth/authorize?%@",
                                        SERVICE_SCHEME, SERVICE_ENDPOINT, responseString];
             NSURL *authUrl = [NSURL URLWithString: authUrlString];

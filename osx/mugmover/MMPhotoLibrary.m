@@ -63,11 +63,11 @@ NSString *photosPath;
         NSDateFormatter *exifDateFormat1 = [[NSDateFormatter alloc] init];
         [exifDateFormat1 setDateFormat: @"yyyy:MM:dd HH:mm:ss"];
         exifDateFormat1.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
-        
+
         NSDateFormatter *exifDateFormat2 = [[NSDateFormatter alloc] init];
         [exifDateFormat2 setDateFormat: @"MMM d, yyyy, hh:mm:ss a"];
         exifDateFormat2.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
-        
+
         _exifDateFormatters = @[exifDateFormat1, exifDateFormat2];
         _queryOffset = @0;
         _libraryBasePath = path;
@@ -101,7 +101,7 @@ NSString *photosPath;
             _facesDatabase.shouldCacheStatements = YES;
             _photosDatabase.shouldCacheStatements = YES;
             _propertiesDatabase.shouldCacheStatements = YES;
-           
+
             NSInteger versionMajor = [_photosDatabase
                                       intForQuery: @"SELECT propertyValue FROM RKAdminData "
                                       "WHERE propertyArea = 'database' AND propertyName = 'versionMajor'"];
@@ -225,10 +225,10 @@ NSString *photosPath;
                          versionFileName: (NSString *) versionFileName
                              versionName: (NSString *) versionName
 {
- 
+
     // If there's no uuid, then just return the master path. It should never
     // happen, but life doesn't work that way.
-    
+
     if (!versionUuid)
     {
         return [@[_libraryBasePath,

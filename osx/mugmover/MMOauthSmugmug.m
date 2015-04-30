@@ -188,7 +188,7 @@
             NSString *responseString = [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding];
             // Conveniently, the unparsed response in this case is ready to be used, as it's like
             // oauth_token=foo&oauth_token_secret=bar
-            
+
             NSString *authUrlString = [NSString stringWithFormat: @"%@://%@/services/oauth/1.0a/authorize?Permissions=Modify&Access=Full&%@",
                                        SERVICE_SCHEME, SERVICE_ENDPOINT, responseString];
             NSURL *authUrl = [NSURL URLWithString: authUrlString];

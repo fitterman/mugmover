@@ -49,7 +49,7 @@ extern NSInteger const MMDefaultRetries;
                                              length: strlen([postData UTF8String])]];
     }
 
-    
+
     NSURLResponse *response;
     NSError *connectionError;
     NSInteger retries = MMDefaultRetries;
@@ -64,7 +64,7 @@ extern NSInteger const MMDefaultRetries;
             // TODO BE SURE YOU CHECK FOR AN AUTH ERROR AND DO NO RETRY ON AN AUTH ERROR
             continue;
         }
-        
+
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         if ([httpResponse statusCode] >= 400) // These are errors (300 is handled automatically)
         {

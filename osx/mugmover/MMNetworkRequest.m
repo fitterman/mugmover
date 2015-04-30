@@ -56,7 +56,7 @@ extern NSInteger const MMDefaultRetries;
             long long filesize = [response expectedContentLength];
             [photo setByteLength: filesize];
         }
-        
+
     };
     [NSURLConnection sendAsynchronousRequest: request
                                        queue: tempQueue

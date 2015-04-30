@@ -19,26 +19,26 @@
 {
     NSMutableDictionary* exifDictionary = nil;
     NSURL* fileUrl = [NSURL fileURLWithPath : filePath];
-    
+
     if (fileUrl)
     {
-        
+
         // load the bit image from the file url
         CGImageSourceRef source = CGImageSourceCreateWithURL ( (__bridge CFURLRef) fileUrl, NULL);
-        
+
         if (source)
         {
-            
+
             // get image properties into a dictionary
             CFDictionaryRef metadataRef = CGImageSourceCopyPropertiesAtIndex(source, 0, NULL);
-            
+
             if (metadataRef)
             {
-                
+
                 // cast CFDictonaryRef to NSDictionary
                 exifDictionary = [NSMutableDictionary dictionaryWithDictionary : (__bridge NSDictionary *) metadataRef];
                 CFRelease(metadataRef);
-                
+
                 if (exifDictionary)
                 {
                     NSError *error = NULL;
@@ -72,7 +72,7 @@
                     }
                 }
             }
-            
+
             CFRelease(source);
             source = nil;
         }
@@ -81,7 +81,7 @@
     {
         DDLogError(@"Error in reading local image file %@", filePath);
     }
-    
+
     return exifDictionary;
 }
 
@@ -125,11 +125,11 @@
     {
         return nil;
     }
-    
+
     CC_MD5_CTX md5;
     CC_MD5_Init(&md5);
     CC_LONG const chunkSize = 32000;
-    
+
     while (YES)
     {
         @autoreleasepool
@@ -144,7 +144,7 @@
     }
     unsigned char digest[CC_MD5_DIGEST_LENGTH];
     CC_MD5_Final(digest, &md5);
-    
+
     NSString* s = [NSString stringWithFormat: @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
                    digest[0], digest[1],
                    digest[2], digest[3],

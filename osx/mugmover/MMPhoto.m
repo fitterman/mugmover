@@ -109,17 +109,17 @@ extern Float64 const MMDegreesPerRadian;
     NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
     [dateFormat setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
     dateFormat.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
-    
+
     NSInteger recordCount  = [event.library.photosDatabase intForQuery: @"SELECT count(*) FROM RKMaster "
                                                                          "WHERE isInTrash != 1"];
-    
+
     NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: recordCount];
 
     NSInteger counter = 0;
     NSInteger exifDiscrepancyCounter = 0;
     NSInteger exifPositiveCounter = 0;
     NSInteger exifNegativeCounter = 0;
-    
+
     NSString *eventUuid = [event uuid];
 
     NSString *sortOrder =  [event.library.photosDatabase
@@ -161,13 +161,13 @@ extern Float64 const MMDegreesPerRadian;
     NSString *query = [@QUERY_BY_EVENT_UUID stringByAppendingString: orderClause];
     FMResultSet *resultSet = [event.library.photosDatabase executeQuery: query
                                                    withArgumentsInArray: @[eventUuid]];
-    
+
     while (resultSet && [resultSet next])
     {
         counter++;
         Float64 createDate = [resultSet doubleForColumn: @"createDate"];
         NSDate *createDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) createDate];
-        
+
         long long int fileCreationDate = [resultSet longLongIntForColumn: @"fileCreationDate"];
         NSDate *fileCreationDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) fileCreationDate];
         long long int fileModificationDate = [resultSet longLongIntForColumn: @"fileModificationDate"];
@@ -175,13 +175,13 @@ extern Float64 const MMDegreesPerRadian;
         long long int imageDate = [resultSet longLongIntForColumn: @"imageDate"];
         NSDate *imageDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) imageDate];
 
-        
+
         NSDictionary *resultDictionary = [resultSet resultDictionary];
         MMPhoto *photo = [[MMPhoto alloc] initFromDictionary: resultDictionary
                                                      library: event.library];
  /* ################################################################################################
   * TODO Restore this functionality
-  
+
         NSDictionary *photoProperties =  @{
                                            // From the master
                                            @"createDateTimestamp": [dateFormat stringFromDate: createDateTimestamp],
@@ -195,10 +195,10 @@ extern Float64 const MMDegreesPerRadian;
         DDLogInfo(@"      imageDateTimestamp        %@", [dateFormat stringFromDate: imageDateTimestamp]);
 
     // After, compare photo.originalDate against imateDateTimestamp
-  
+
         DDLogInfo(@"      Exif/DateTimeOriginal     %@", [dateFormat stringFromDate: exifDateTimestamp]);
         NSTimeInterval deltaTime = [exifDateTimestamp timeIntervalSinceDate: imageDateTimestamp];
-  
+
         if (deltaTime != 0.0)
         {
             exifDiscrepancyCounter++;
@@ -220,7 +220,7 @@ extern Float64 const MMDegreesPerRadian;
         {
             [result addObject: photo];
         }
-        
+
     }
     // DDLogInfo(@"MASTER     DONE");
     // DDLogInfo(@"  Date/time mismatches detected=%ld (postive=%ld, negative=%ld)",
@@ -273,7 +273,7 @@ extern Float64 const MMDegreesPerRadian;
     }
     _library = library;
     _verboseLogging = _library.verboseLogging;
-    
+
     _masterUuid = [inDictionary valueForKey: @"masterUuid"];
     _masterHeight = [[inDictionary valueForKey: @"masterHeight"] doubleValue];
     _masterWidth = [[inDictionary valueForKey: @"masterWidth"] doubleValue];
@@ -394,7 +394,7 @@ extern Float64 const MMDegreesPerRadian;
             break;
         }
     }
-    
+
     NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
     [dateFormat setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
     // TODO Use the same logic here as in the MMLibraryEvent for determining zone.
@@ -435,7 +435,7 @@ extern Float64 const MMDegreesPerRadian;
         [self findRelevantAdjustments];
         [self adjustForStraightenCropAndGetFaces];
         [self moveFacesRelativeToTopLeftOrigin];
-        
+
         NSURL* fileUrl = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
         _thumbnail = @""; // It cannot be null, so just in case this fails.
         if (fileUrl)
@@ -854,7 +854,7 @@ extern Float64 const MMDegreesPerRadian;
                              thumbSize: (NSInteger) thumbSize
 {
     NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: [rectArray count]];
-    
+
     if ((result) && (image))
     {
         for (NSArray *rect in rectArray)
@@ -863,19 +863,19 @@ extern Float64 const MMDegreesPerRadian;
                                          [[rect objectAtIndex: 1] doubleValue],
                                          [[rect objectAtIndex: 2] doubleValue],
                                          [[rect objectAtIndex: 3] doubleValue]);
-            
+
             CIImage *croppedImage = [image imageByCroppingToRect: cropRect];
-            
+
             Float64 scaleFactor = thumbSize / [[rect objectAtIndex: 2] doubleValue];
             CGAffineTransform  scalingTransform = CGAffineTransformMakeScale(scaleFactor, scaleFactor);
             CIImage *scaledAndCroppedImage = [croppedImage imageByApplyingTransform: scalingTransform];
-            
+
             NSMutableData* thumbJpegData = [[NSMutableData alloc] init];
             CGImageDestinationRef dest = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)thumbJpegData,
                                                                           (__bridge CFStringRef)@"public.jpeg",
                                                                           1,
                                                                           NULL);
-            
+
             if (dest)
             {
                 // Force the crop to be perfectly square. Due to rounding it's actually 101x102 or 101x101
@@ -885,7 +885,7 @@ extern Float64 const MMDegreesPerRadian;
                 extent.size.height = thumbSize;
                 CGImageRef img = [_library.ciContext createCGImage: scaledAndCroppedImage
                                                           fromRect: extent];
-                
+
                 CGImageDestinationAddImage(dest, img, nil);
                 if (CGImageDestinationFinalize(dest))
                 {
@@ -905,7 +905,7 @@ extern Float64 const MMDegreesPerRadian;
             {
                 DDLogError(@"Failed to finalize thumbnail image");
                 [result addObject: @{}];
-                
+
             }
         }
     }

@@ -306,7 +306,7 @@ long                retryCount;
         }
         NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
         NSInteger httpStatus = [httpResponse statusCode];
-        
+
         NSString *defaultFolderName = nil;
         if (httpStatus == 200)
         {

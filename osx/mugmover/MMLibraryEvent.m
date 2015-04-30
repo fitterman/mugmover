@@ -99,7 +99,7 @@
     NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
     dateFormat.timeStyle = NSDateFormatterNoStyle;
     dateFormat.dateStyle = NSDateFormatterMediumStyle;
-    
+
     NSMutableArray *results = [[NSMutableArray alloc] initWithCapacity: 2];
     for (NSNumber *date in dates)
     {
@@ -109,7 +109,7 @@
         }
 
         NSDate *dateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) [date doubleValue]];
-        
+
         NSString *zone = [_dictionary objectForKey: @"minImageTimeZoneName"];
 
         if ((!zone) || ((NSNull *)zone == [NSNull null]) || ([zone length] == 0))
@@ -122,7 +122,7 @@
         }
 
         zone = [_dictionary objectForKey: @"maxImageTimeZoneName"];
-        
+
         [results addObject: [dateFormat stringFromDate: dateTimestamp]];
     }
     if ([[results objectAtIndex: 0] isEqualToString: [results objectAtIndex: 1]])

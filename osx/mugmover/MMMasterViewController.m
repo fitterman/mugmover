@@ -29,9 +29,9 @@
         _uploadOperationQueue = [[NSOperationQueue alloc] init];
         _uploadOperationQueue.name = @"Upload Queue";
         _uploadOperationQueue.MaxConcurrentOperationCount = 1;
-        
+
         _outstandingRequests = 0;
-        
+
         _activeIcon = [MMUiUtility iconImage: @"Active-128" ofType: @"gif"];
         _completedIcon = [MMUiUtility iconImage: @"Completed-128" ofType: @"png"];
         _incompleteIcon = [MMUiUtility iconImage: @"Incomplete-128" ofType: @"png"];
@@ -39,7 +39,7 @@
         _serviceIcon = [MMUiUtility iconImage: @"Service-128" ofType: @"png"];
         _transmitting = NO;
 
-        
+
     }
     return self;
 }
@@ -70,14 +70,14 @@
 - (void)loadView
 {
     BOOL ownImp = ![NSViewController instancesRespondToSelector:@selector(viewWillLoad)];
-    
+
     if (ownImp)
     {
         [self viewWillLoad];
     }
-    
+
     [super loadView];
-    
+
     if(ownImp)
     {
         [self viewDidLoad];
@@ -180,7 +180,7 @@
         MMSmugmug *serviceApi = [_serviceManager serviceForIndex: _servicesTable.selectedRow];
 
         // Here we create/find the target folder for the uploads.
-        
+
         [serviceApi findOrCreateFolder: [MMSmugmug sanitizeUuid: _library.databaseUuid]
                                beneath: nil
                            displayName: [_library displayName]
@@ -229,12 +229,12 @@
 
         // Accept file entries ending in .photolibrary or of type "package"
         [dialog setAllowedFileTypes: @[@"photolibrary", @"com.apple.package"]];
-        
+
         // Point to the ~/Pictures (or its equivalent in some other language)
         NSArray * directories = NSSearchPathForDirectoriesInDomains(NSPicturesDirectory, NSUserDomainMask, YES);
         NSURL *url = [NSURL fileURLWithPath: [directories firstObject]];
         [dialog setDirectoryURL: url];
-        
+
         // Show it as a window-modal
         [dialog beginSheetModalForWindow:[[self view] window] completionHandler:^(NSInteger result)
             {
@@ -243,7 +243,7 @@
                     // And if the user selected a file, try to open it
                     NSURL *libraryUrl = [[dialog URLs] firstObject];
                     MMPhotoLibrary *library = [[MMPhotoLibrary alloc] initWithPath: libraryUrl.path];
-                    
+
                     if (library)
                     {
                         [library close]; // We just need to test that it can be init'd, but we don't do a full open.
@@ -359,7 +359,7 @@
         event.toBeProcessed = ((NSButton *)sender).state;
         [self setTransmitButtonStateWithHint: event.toBeProcessed];
     }
-    
+
 }
 
 - (IBAction) interruptButtonWasPressed: (id) sender
