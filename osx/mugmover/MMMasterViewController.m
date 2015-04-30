@@ -90,19 +90,6 @@
 }
 
 /**
- * This is a major kludge. Without it, when the window is made smaller, several controls
- * do not redraw automatically, and thus can wind up outside of the window's viewable area.
- */
-- (void) forceRedrawingOfControlsAutolayoutDoesNotRedrawAfterWindowResize
-{
-    [_checkAllButton setNeedsDisplay: YES];
-    [_uncheckAllButton setNeedsDisplay: YES];
-    [_transmitButton setNeedsDisplay: YES];
-    [_librariesSegmentedControl setNeedsDisplay: YES];
-    [_servicesSegmentedControl setNeedsDisplay: YES];
-}
-
-/**
  * If +hint+ is set to YES, then we know for certain something is marked for tranmission, so 
  * we can skip searching the events.
  */

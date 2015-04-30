@@ -12,7 +12,6 @@
 @class MMLibraryEvent;
 @class MMPhotoLibraryManager;
 @class MMServiceManager;
-@class MMSmugmug;
 
 @interface MMMasterViewController : NSViewController <NSTableViewDelegate, NSSplitViewDelegate>
 
@@ -51,7 +50,5 @@
 @property (strong)              NSOperationQueue *      uploadOperationQueue;
 
 - (void) uploadCompleted;
-
-- (void) forceRedrawingOfControlsAutolayoutDoesNotRedrawAfterWindowResize;
 
 @end

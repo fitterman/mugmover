@@ -8,14 +8,8 @@
 
 
 #import "MMAppDelegate.h"
-#import "MMFace.h"
-#import "MMLibraryEvent.h"
-#import "MMPhotoLibrary.h"
-#import "MMPhoto.h"
-#import "MMServiceManager.h"
-#import "MMSmugmug.h"
-
 #import "MMMasterViewController.h"
+
 @interface MMAppDelegate()
 @property (nonatomic, strong) IBOutlet MMMasterViewController *masterViewController;
 @end
@@ -34,24 +28,29 @@ BOOL const MMdebugLevel;
     [_window setDelegate: self];
     [_window setMinSize: NSMakeSize(800.0, 300.0)];
 
-    // 1. Create the master View Controller
+    /* 1. Create the master View Controller */
     _masterViewController = [[MMMasterViewController alloc] initWithNibName:@"MMMasterViewController" bundle:nil];
 
-    // 2. Add the view controller to the Window's content view
+    /* 2. Add the view controller to the Window's content view */
     [_window.contentView addSubview:_masterViewController.view];
-    _masterViewController.view.frame = ((NSView*)_window.contentView).bounds;
-    [_window.contentView setAutoresizesSubviews:YES];
+
+    /* 3. Make sure the autolayout stuff is set up properly */
+    _masterViewController.view.translatesAutoresizingMaskIntoConstraints = NO;     NSDictionary* views = @{ @"view": _masterViewController.view };
+    NSArray* constraints = [NSLayoutConstraint constraintsWithVisualFormat: @"H:|[view]|"
+                                                                   options: 0
+                                                                   metrics: nil
+                                                                     views: views];
+    [_window.contentView addConstraints:constraints];
+    constraints = [NSLayoutConstraint constraintsWithVisualFormat: @"V:|[view]|"
+                                                          options: 0
+                                                          metrics: nil
+                                                            views: views];
+    [_window.contentView addConstraints:constraints];
 }
 
 - (void) close
 {
     NSLog(@"Can I free the window?");
 }
-
-/*- (void) windowDidResize: (NSNotification *) notification
-{
-    [_masterViewController.view setFrame:((NSView*)_window.contentView).bounds];
-    [_masterViewController forceRedrawingOfControlsAutolayoutDoesNotRedrawAfterWindowResize];
-}*/
 
 @end

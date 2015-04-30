@@ -12,9 +12,6 @@
 #import "DDTTYLogger.h"
 #import "DDFileLogger.h"
 
-@class MMPhotoLibrary;
-@class MMSmugmug;
-
 @interface MMAppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate>
 
 @property (weak)                IBOutlet    NSWindow *window;
