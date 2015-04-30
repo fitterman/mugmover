@@ -337,12 +337,12 @@ NSString *photosPath;
 
 - (NSString *) baseName
 {
-    return [[NSURL fileURLWithPath: _libraryBasePath] lastPathComponent];
+    return [[[NSURL fileURLWithPath: _libraryBasePath] lastPathComponent] stringByDeletingPathExtension];
 }
 
 - (NSString *) description
 {
-    return [NSString stringWithFormat: @"Photos via Mugmover from %@", [self baseName]];
+    return [NSString stringWithFormat: @"Photos transferred by Mugmover from %@", [self baseName]];
 }
 
 - (NSString *) displayName

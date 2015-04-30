@@ -461,7 +461,7 @@ extern Float64 const MMDegreesPerRadian;
     }
     else
     {
-        DDLogError(@"Failed to create center point(s) for crop or rotation");
+        DDLogError(@"Error initializing center point");
     }
 }
 - (NSArray *) findRelevantAdjustments
@@ -593,7 +593,8 @@ extern Float64 const MMDegreesPerRadian;
 
 - (NSString *) getKeywordList
 {
-    if ([[_attributes valueForKeyPath: @"photo.hasKeywords"] isEqualToNumber: @1])
+    NSNumber *hasKw = [_attributes valueForKeyPath: @"photo.hasKeywords"];
+    if (hasKw && [hasKw isEqualToNumber: @1])
     {
         NSNumber *modelId = [_attributes valueForKeyPath: @"photo.versionModelId"];
         NSString *keywords = [_library.photosDatabase stringForQuery: @KEYWORD_QUERY, modelId];

@@ -99,7 +99,7 @@ NSInteger const maxSupportedServices = 50;
     {
         for (NSDictionary *dictionary in array)
         {
-            MMSmugmug *service = [MMSmugmug fromDictionary: dictionary];
+            MMSmugmug *service = [[MMSmugmug alloc] initFromDictionary: dictionary];
             if (service)
             {
                 [_services addObject: service];

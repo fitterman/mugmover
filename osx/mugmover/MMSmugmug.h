@@ -18,15 +18,13 @@
 @property (strong)              NSString *              accessSecret;
 @property (strong)              NSString *              accessToken;
 @property (strong)              MMPhoto *               currentPhoto;
-@property (strong, readonly)    NSString *              defaultFolder;
-@property (strong)              NSString *              handle;
+@property (strong, readonly)    NSString *              handle;
 @property (assign, readonly)    NSInteger               page;
 @property (strong, readonly)    MMOauthSmugmug *        smugmugOauth;
 @property (strong, readonly)    NSString *              tokenSecret;
 @property (strong)              NSString *              uniqueId;
 
 
-+ (MMSmugmug *) fromDictionary: (NSDictionary *) dictionary;
 
 + (NSString *) sanitizeUuid: (NSString *) inUrl;
 
@@ -44,9 +42,12 @@
 - (NSString *) findOrCreateFolder: (NSString *) urlName
                           beneath: (NSString *) partialPath
                       displayName: (NSString *) displayName
-                      description: (NSString *) description;
+                      description: (NSString *) description
+               completionCallback: (void (^) (NSString *)) completionCallback;
 
 - (BOOL) getUserInfo;
+
+- (id) initFromDictionary: (NSDictionary *) dictionary;
 
 - (NSString *) name;
 

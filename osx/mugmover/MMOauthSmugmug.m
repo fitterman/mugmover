@@ -18,8 +18,6 @@
 
 @implementation MMOauthSmugmug
 
-extern NSInteger const MMDefaultRetries;
-
 #pragma mark Public Methods
 
 /**
@@ -268,4 +266,39 @@ extern NSInteger const MMDefaultRetries;
          }];
     }
 }
+
+- (NSString *) extractErrorResponseData: (NSData *) data
+{
+    NSMutableArray *errors = [[NSMutableArray alloc] initWithCapacity: 100];
+    NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: data];
+    NSDictionary *options = [parsedServerResponse objectForKey: @"Options"];
+    NSDictionary *parameters = [options objectForKey: @"Parameters"];
+    NSArray *fields = [parameters objectForKey: @"PATCH"];
+    if (!fields)
+    {
+        fields = [parameters objectForKey: @"POST"];
+    }
+    if (!fields)
+    {
+        fields = [parameters objectForKey: @"GET"];
+    }
+    for (NSDictionary *field in fields)
+    {
+        NSArray *problems = [field objectForKey: @"Problems"];
+        if (problems)
+        {
+            for (NSString *problem in problems)
+            {
+                NSString *oneError = [NSString stringWithFormat: @"Error \"%@\" on field %@ (value=%@)",
+                                                                   problem,
+                                                                   [field objectForKey: @"Name"],
+                                                                   [field objectForKey: @"Value"]];
+                [errors addObject: oneError];
+            }
+        }
+    }
+    return [errors componentsJoinedByString: @"; %"];
+}
+
+
 @end

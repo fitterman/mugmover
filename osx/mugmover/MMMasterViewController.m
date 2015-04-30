@@ -175,27 +175,49 @@
         _transmitButton.enabled = NO;
         _transmitting = YES;
         [_eventsTable reloadData];
-        NSInteger row = 0;
+        __block NSInteger row = 0;
         _totalImagesToTransmit = 0;
         MMSmugmug *serviceApi = [_serviceManager serviceForIndex: _servicesTable.selectedRow];
-        for (MMLibraryEvent *event in _library.events)
-        {
-            if (event.toBeProcessed)
+
+        // Here we create/find the target folder for the uploads.
+        
+        [serviceApi findOrCreateFolder: [MMSmugmug sanitizeUuid: _library.databaseUuid]
+                               beneath: nil
+                           displayName: [_library displayName]
+                           description: [_library description]
+                    completionCallback: ^void (NSString *folderPath)
             {
-                _totalImagesToTransmit += [[event filecount] integerValue];
-                NSDictionary *options = @{@"skipProcessedImages": @(_skipProcessedImageCheckbox.state)};
-                MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
-                                                                                          row: row
-                                                                                      service: serviceApi
-                                                                                      options: options
-                                                                               viewController: self];
-                [_uploadOperationQueue addOperation: uploadOperation];
-            }
-            row++;
-        }
-        _progressIndicator.maxValue = (Float64) _totalImagesToTransmit;
-        [_progressIndicator setDoubleValue: 0.0];
-        _interruptButton.enabled = YES;
+                if (!folderPath)
+                {
+                    _transmitButton.enabled = YES;
+                    _transmitting = NO;
+                    [MMUiUtility alertWithText: @"Error creating folder on service"
+                                  withQuestion: nil
+                                         style: NSWarningAlertStyle];
+                }
+                else
+                {
+                    for (MMLibraryEvent *event in _library.events)
+                    {
+                        if (event.toBeProcessed)
+                        {
+                            _totalImagesToTransmit += [[event filecount] integerValue];
+                            NSDictionary *options = @{@"skipProcessedImages": @(_skipProcessedImageCheckbox.state)};
+                            MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
+                                                                                                      row: row
+                                                                                                  service: serviceApi
+                                                                                                   folder: folderPath
+                                                                                                  options: options
+                                                                                           viewController: self];
+                            [_uploadOperationQueue addOperation: uploadOperation];
+                        }
+                        row++;
+                    }
+                    _progressIndicator.maxValue = (Float64) _totalImagesToTransmit;
+                    [_progressIndicator setDoubleValue: 0.0];
+                    _interruptButton.enabled = YES;
+                }
+            }];
     }
 }
 

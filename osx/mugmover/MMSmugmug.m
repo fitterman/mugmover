@@ -33,21 +33,22 @@ long                retryCount;
                                             stringByReplacingOccurrencesOfString:@"%" withString:@"--"]];
 }
 
-+ (MMSmugmug *) fromDictionary: (NSDictionary *) dictionary
+- (id) initFromDictionary: (NSDictionary *) dictionary
 {
-    
+    self = [super init];
+    if (self)
     if (dictionary && [[dictionary valueForKey: @"type"] isEqualToString: @"smugmug"])
     {
-        MMSmugmug *service = [[MMSmugmug alloc] init];
-        service.uniqueId = [dictionary valueForKey: @"id"];
-        service.handle = [dictionary valueForKey: @"name"];
-        [service configureOauthRetryOnFailure: NO];
-        if (service.smugmugOauth)
+        _uniqueId = [dictionary valueForKey: @"id"];
+        _handle = [dictionary valueForKey: @"name"];
+        [self configureOauthRetryOnFailure: NO];
+        if (!_smugmugOauth)
         {
-            return service;
+            [self close];
+            self = nil;
         }
     }
-    return nil;
+    return self;
 }
 
 /**
@@ -80,7 +81,7 @@ long                retryCount;
 - (NSDictionary *) serialize
 {
     return @{@"type":   @"smugmug",
-             @"id":     _uniqueId,
+              @"id":     _uniqueId,
              @"name":   (!_handle ? @"(none)" : _handle)};
 }
 
@@ -89,7 +90,6 @@ long                retryCount;
     _accessSecret = nil;
     _accessToken = nil;
     _currentPhoto = nil;
-    _defaultFolder = nil;
     _handle = nil;
     _uniqueId = nil;
 }
@@ -171,7 +171,8 @@ long                retryCount;
         else
         {
             DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-            DDLogError(@"response=%@", parsedServerResponse);
+            DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: serverData]);
+            break; // You cannot retry the call
         }
     }
     return NO;
@@ -202,7 +203,6 @@ long                retryCount;
     [apiRequest appendString: @"!albums"];
     NSURLRequest *createAlbumRequest = [_smugmugOauth apiRequest: apiRequest
                                                        parameters: @{@"Description":        description,
-                                                                     @"UrlName":            urlName,
                                                                      @"UrlName":            urlName,
                                                                      @"Name":               displayName,
                                                                      @"Privacy":            @"Private",
@@ -248,7 +248,8 @@ long                retryCount;
         else
         {
             DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-            DDLogError(@"response=%@", parsedServerResponse);
+            DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: serverData]);
+            break; // You cannot retry the call
         }
         if (uri)
         {
@@ -257,7 +258,7 @@ long                retryCount;
     }
     return nil;
 }
- 
+
 /**
  * Returns the "urlName" value (one piece of the path) for a folder. If the +beneath+ parameter is nil
  * the result will be a top-level folder creation. If the +beneath+ value is present, then it will
@@ -265,10 +266,11 @@ long                retryCount;
  * no initial or terminal ones, for example: "abc/def".
  * If something really goes wrong, nil is returned.
  */
-- (NSString *) findOrCreateFolder: (NSString *) urlName
-                          beneath: (NSString *) partialPath
-                      displayName: (NSString *) displayName
-                      description: (NSString *) description
+- (void) findOrCreateFolder: (NSString *) urlName
+                    beneath: (NSString *) partialPath
+                displayName: (NSString *) displayName
+                description: (NSString *) description
+         completionCallback: (void (^) (NSString *)) completionCallback
 {
     NSMutableString *apiRequest = [[NSMutableString alloc] initWithString: @"folder/user/"];
     [apiRequest appendString: _handle];
@@ -276,7 +278,7 @@ long                retryCount;
     {
         [apiRequest appendString: @"/"];
         [apiRequest appendString: partialPath];
-    }
+        }
     [apiRequest appendString: @"!folders"];
     NSURLRequest *createFolderRequest = [_smugmugOauth apiRequest: apiRequest
                                                        parameters: @{@"Description":        description,
@@ -300,10 +302,11 @@ long                retryCount;
         if (error)
         {
             DDLogError(@"System error: %@", error);
+            continue; // You can retry, unlikey to succeed
         }
         NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
         NSInteger httpStatus = [httpResponse statusCode];
-
+        
         NSString *defaultFolderName = nil;
         if (httpStatus == 200)
         {
@@ -321,21 +324,19 @@ long                retryCount;
             {
                 object = [(NSDictionary *)object objectForKey: piece];
             }
-            return (NSString *)object;
+            defaultFolderName = (NSString *)object;
         }
         if (defaultFolderName)
         {
-            // If it was found or created, save it (and return it).
-            _defaultFolder = defaultFolderName;
-            NSString *dfKey = [NSString stringWithFormat: @"smugmug.%@.defaultFolder", _uniqueId];
-            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-            [defaults setObject: _defaultFolder forKey: dfKey];
-            [defaults synchronize];
-            return defaultFolderName;
+            // If it was found or created call the callback with it
+            completionCallback(defaultFolderName);
+            return;
         }
         DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-        DDLogError(@"response=%@", parsedServerResponse);
+        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: serverData]);
+        break; // You cannot retry the call
     }
-    return nil;
+    completionCallback(nil); // Signals you completed and failed.
 }
+
 @end

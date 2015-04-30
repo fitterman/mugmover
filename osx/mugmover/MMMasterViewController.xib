@@ -252,7 +252,7 @@
                     </connections>
                 </splitView>
                 <scrollView toolTip="Events in the selected library" ambiguous="YES" misplaced="YES" autohidesScrollers="YES" horizontalLineScroll="50" horizontalPageScroll="10" verticalLineScroll="50" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9Wh-uk-i0x">
-                    <rect key="frame" x="248" y="61" width="300" height="320"/>
+                    <rect key="frame" x="252" y="61" width="300" height="320"/>
                     <clipView key="contentView" ambiguous="YES" misplaced="YES" id="dZy-F3-QBB">
                         <rect key="frame" x="1" y="1" width="298" height="318"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -506,7 +506,7 @@
                 <constraint firstItem="7vQ-n0-c1D" firstAttribute="leading" secondItem="iek-VH-855" secondAttribute="trailing" constant="12" symbolic="YES" id="Isf-5g-fud"/>
                 <constraint firstItem="7vQ-n0-c1D" firstAttribute="baseline" secondItem="vj0-rp-sGR" secondAttribute="baseline" id="JjG-zv-wAy"/>
                 <constraint firstItem="9Wh-uk-i0x" firstAttribute="leading" secondItem="HXX-JU-4bX" secondAttribute="trailing" constant="12" id="KLg-7N-xGJ"/>
-                <constraint firstItem="Tuw-5b-muO" firstAttribute="leading" secondItem="9Wh-uk-i0x" secondAttribute="trailing" constant="8" id="ShR-Lq-iEv"/>
+                <constraint firstItem="Tuw-5b-muO" firstAttribute="leading" secondItem="9Wh-uk-i0x" secondAttribute="trailing" constant="4" id="ShR-Lq-iEv"/>
                 <constraint firstAttribute="bottom" secondItem="Tuw-5b-muO" secondAttribute="bottom" constant="61" id="UiZ-la-6t1"/>
                 <constraint firstAttribute="trailing" secondItem="vj0-rp-sGR" secondAttribute="trailing" constant="20" id="X1D-fZ-wcc"/>
                 <constraint firstItem="7vQ-n0-c1D" firstAttribute="baseline" secondItem="iek-VH-855" secondAttribute="baseline" id="aKZ-Td-AUE"/>

@@ -23,12 +23,14 @@ extern const NSInteger MMDefaultRetries;
 - (id) initWithEvent: (MMLibraryEvent *) event
                  row: (NSInteger) row
              service: (MMSmugmug *) service
+              folder: (NSString *) destinationFolderPath
              options: (NSDictionary *) options
       viewController: (MMMasterViewController *) viewController
 {
     self = [self init];
     if (self)
     {
+        _destinationFolderPath = destinationFolderPath;
         _event = event;
         _skipProcessedImages = [[options valueForKeyPath: @"skipProcessedImages"] boolValue];
         _row = row;
@@ -40,42 +42,54 @@ extern const NSInteger MMDefaultRetries;
 
 - (void) main
 {
-    BOOL status = NO;
+    // Do the transfer
+    [self transferPhotosForEvent: _event
+                       toService: _service
+                          folder: _destinationFolderPath
+             skipProcessedImages: _skipProcessedImages];
+    [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
+     {
+         [_viewController.eventsTable reloadData];
+         _destinationFolderPath = nil;
+     }
+    ];
 
+    // Check if the return from the above was interrupted. If so, clean up.
+    NSOperationQueue *queue = [NSOperationQueue currentQueue];
+    if ((queue.operationCount == 1) ||  // The end was reached
+        [self isCancelled])             // The user clicked "interrupt" button
+    {
+        [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
+         {
+             [_viewController uploadCompleted];
+         }
+         ];
+    }
+}
+
+- (void) transferPhotosForEvent: (MMLibraryEvent *) event
+                      toService: (MMSmugmug *) service
+                         folder: (NSString *) folderUrlChunk
+            skipProcessedImages: (BOOL) skipProcessedImages
+{
     @autoreleasepool
     {
-        NSString *name = [_event name];
+        NSString *name = [event name];
         if ((!name) || ([name length] == 0))
         {
-            name = [_event dateRange];
+            name = [event dateRange];
         }
-        
-        // Now try to find or create the default folder. If that fails, we need to abandon this effort.
-         
-        if (!_service.defaultFolder)
-        {
-            MMPhotoLibrary *library = _event.library;
-            NSString *defaultFolder = [_service findOrCreateFolder: [MMSmugmug sanitizeUuid: library.databaseUuid]
-                                                           beneath: nil
-                                                       displayName: [library displayName]
-                                                       description: [library description]];
-        }
-        else
-        {
-            DDLogError(@"Failed to create the default folder for this library");
-            // TODO Flag the error!
-        }
-        
+
         NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via Mugmover", name];
-        NSString *newAlbumId = [_service findOrCreateAlbum: [MMSmugmug sanitizeUuid: [_event uuid]]
-                                                   beneath: _service.defaultFolder
-                                               displayName: name
-                                               description: description];
+        NSString *newAlbumId = [service findOrCreateAlbum: [MMSmugmug sanitizeUuid: [event uuid]]
+                                                  beneath: folderUrlChunk
+                                              displayName: name
+                                              description: description];
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSString *albumKey = [NSString stringWithFormat: @"smugmug.%@.albums.%@",
-                                                          _service.uniqueId,
-                                                          [_event uuid]];
-        NSArray *photos = [MMPhoto getPhotosForEvent: _event];
+                              service.uniqueId,
+                              [event uuid]];
+        NSArray *photos = [MMPhoto getPhotosForEvent: event];
         NSMutableDictionary *albumState = [[defaults objectForKey: albumKey] mutableCopy];
         if (!albumState)
         {
@@ -105,7 +119,7 @@ extern const NSInteger MMDefaultRetries;
             if (mappingKeyPath)
             {
                 replacementFor = [albumState valueForKeyPath: mappingKeyPath];
-                if (replacementFor && _skipProcessedImages)
+                if (replacementFor && skipProcessedImages)
                 {
                     completedTransfers++;   // We consider it sent already so we can get the icons right
                     [_viewController.progressIndicator incrementBy: 1.0];
@@ -114,12 +128,12 @@ extern const NSInteger MMDefaultRetries;
             }
 
             [photo processPhoto];
-            [_event setActivePhotoThumbnail: [photo getThumbnailImage]
+            [event setActivePhotoThumbnail: [photo getThumbnailImage]
                                  withStatus: MMEventStatusActive];
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
-               {
-                   [_viewController.eventsTable reloadData];
-               }
+             {
+                 [_viewController.eventsTable reloadData];
+             }
              ];
 
             __block NSString *smugmugImageId = nil;
@@ -136,7 +150,7 @@ extern const NSInteger MMDefaultRetries;
                 }
                 NSLog(@"response=%@", response);
             };
-            
+
             NSString *pathToFileToUpload = photo.iPhotoOriginalImagePath;
             BOOL tiff = [photo isTiff];
             if (tiff)
@@ -150,16 +164,16 @@ extern const NSInteger MMDefaultRetries;
                 pathToFileToUpload = jpegPath;
             }
 
-            NSURLRequest *uploadRequest = [_service.smugmugOauth upload: pathToFileToUpload
-                                                                albumId: newAlbumId
-                                                         replacementFor: replacementFor
-                                                                  title: [photo titleForUpload]
-                                                                caption: photo.caption
-                                                               keywords: photo.keywordList];
+            NSURLRequest *uploadRequest = [service.smugmugOauth upload: pathToFileToUpload
+                                                               albumId: newAlbumId
+                                                        replacementFor: replacementFor
+                                                                 title: [photo titleForUpload]
+                                                               caption: photo.caption
+                                                              keywords: photo.keywordList];
             // 1. Upload to Smugmug
-            status = [_service.smugmugOauth synchronousUrlRequest: uploadRequest
-                                                remainingAttempts: MMDefaultRetries
-                                                completionHandler: processSmugmugUpload];
+            BOOL status = [service.smugmugOauth synchronousUrlRequest: uploadRequest
+                                                    remainingAttempts: MMDefaultRetries
+                                                    completionHandler: processSmugmugUpload];
             if (tiff)
             {
                 // Delete the temp directory
@@ -202,7 +216,7 @@ extern const NSInteger MMDefaultRetries;
         [defaults synchronize];
 
         // Now we update the featured photo for the album
-        NSString *featuredPhotoUuid = [_event featuredImageUuid];
+        NSString *featuredPhotoUuid = [event featuredImageUuid];
         NSString *featuredPhotoMappingPath = [NSString stringWithFormat: @"mapping.%@", featuredPhotoUuid];
         if (featuredPhotoUuid && featuredPhotoMappingPath)
         {
@@ -210,39 +224,25 @@ extern const NSInteger MMDefaultRetries;
             if (featuredPhotoId)
             {
                 NSString *featuredImageUri = [NSString stringWithFormat: @"/api/v2/album/%@/image/%@",
-                                                                         newAlbumId,
-                                                                         featuredPhotoId];
+                                              newAlbumId,
+                                              featuredPhotoId];
                 NSString *apiCall = [NSString stringWithFormat: @"album/%@", newAlbumId];
-                NSURLRequest *eventRequest = [_service.smugmugOauth apiRequest: apiCall
-                                                                    parameters: @{@"HighlightAlbumImageUri": featuredImageUri}
+                NSURLRequest *eventRequest = [service.smugmugOauth apiRequest: apiCall
+                                                                   parameters: @{@"HighlightAlbumImageUri": featuredImageUri}
                                                                           verb: @"PATCH"];
-                status = [_service.smugmugOauth synchronousUrlRequest: eventRequest
-                                                    remainingAttempts: MMDefaultRetries
-                                                    completionHandler: nil];
+                BOOL status = [service.smugmugOauth synchronousUrlRequest: eventRequest
+                                                        remainingAttempts: MMDefaultRetries
+                                                        completionHandler: nil];
                 if (!status)
                 {
-                    DDLogWarn(@"Unable to set featured image for event album (%@).", _event.name);
+                    DDLogWarn(@"Unable to set featured image for event album (%@).", event.name);
                 }
             }
         }
-        
+
         // Restore the display to the default image for this album
-        [_event setActivePhotoThumbnail: nil withStatus: finalStatus];
-        [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
-         {
-             [_viewController.eventsTable reloadData];
-         }
-         ];
-    }
-    NSOperationQueue *queue = [NSOperationQueue currentQueue];
-    if ((queue.operationCount == 1) ||  // The end was reached
-        [self isCancelled])             // The user clicked "interrupt" button
-    {
-        [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
-         {
-             [_viewController uploadCompleted];
-         }
-         ];
+        [event setActivePhotoThumbnail: nil withStatus: finalStatus];
+
     }
 }
 @end

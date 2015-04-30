@@ -12,9 +12,6 @@
 @implementation MMOauthAbstract
 @synthesize accessToken = _accessToken;
 
-extern NSInteger const MMDefaultRetries;
-
-
 #pragma mark Public Methods
 
 - (id) initAndStartAuthorization: (ProgressBlockType) progressBlock
@@ -42,13 +39,18 @@ extern NSInteger const MMDefaultRetries;
     return nil;
 }
 
-- (NSURLRequest *)apiRequest: (NSString *)api
-                  parameters: (NSDictionary *)parameters
-                        verb: (NSString *)verb
+- (NSURLRequest *) apiRequest: (NSString *)api
+                   parameters: (NSDictionary *)parameters
+                         verb: (NSString *)verb
 {
     @throw [NSException exceptionWithName:NSInternalInconsistencyException
                                    reason:[NSString stringWithFormat:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)]
                                  userInfo:nil];
+}
+
+- (NSString *) extractErrorResponseData: (NSData *) data
+{
+    return [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
 }
 
 - (void) close
@@ -101,8 +103,7 @@ extern NSInteger const MMDefaultRetries;
                  DDLogError(@"ERROR      httpError=%ld", (long)[httpResponse statusCode]);
                  if ([serverData length] > 0)
                  {
-                     NSString *s = [[NSString alloc] initWithData: serverData encoding: NSUTF8StringEncoding];
-                     DDLogError(@"response=%@", s);
+                     DDLogError(@"response=%@", [self extractErrorResponseData: serverData]);
                  }
              }
              else
@@ -139,20 +140,12 @@ extern NSInteger const MMDefaultRetries;
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         if ([httpResponse statusCode] >= 400) // These are errors (300 is handled automatically)
         {
-             DDLogError(@"ERROR      httpError=%ld", (long)[httpResponse statusCode]);
-             if ([serverData length] > 0)
-             {
-                 NSString *s = [[NSString alloc] initWithData: serverData encoding: NSUTF8StringEncoding];
-                 DDLogError(@"response=%@", s);
-             }
-            if ([httpResponse statusCode] >= 500)
+            DDLogError(@"ERROR      httpError=%ld", (long)[httpResponse statusCode]);
+            if ([serverData length] > 0)
             {
-                continue;   // Worthy of a retry
+                DDLogError(@"response=%@", [self extractErrorResponseData: serverData]);
             }
-            else
-            {
-                return NO; // No sense in retrying this as it will not change
-            }
+            return NO; // It is not possible to retry because because the nonce will be "already used"
         }
         NSDictionary *parsedJsonData = [MMDataUtility parseJsonData: serverData];
         if (parsedJsonData)
