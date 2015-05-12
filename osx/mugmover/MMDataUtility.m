@@ -10,6 +10,8 @@
 
 @implementation MMDataUtility
 
+extern NSInteger const MMDefaultRetries;
+
 /**
  This method ingests an NSData object that is expected to contain UTF-8 JSON-encoded Object.
  If it is successful, it returns the parsed data, which should always be an NSDictionary.
@@ -82,4 +84,55 @@
     }
     return output;
 }
+
+/**
+ *
+ * Makes a synchronous API call, with retries. If the call returns any HTTP status, it
+ * will not be retried, because API calls use OAuth. OAuth calls will fail if retried
+ * unless a new request is created, because the nonce will be detected by the server
+ * as reused. The HTTP status will be returned and the +parsedData+ parameter will be
+ * updated to point to a the returned JSON object. If the retries fail, the method
+ * will return a value of zero. If the data cannot be parsed, the HTTP status wil be
+ * valid, however the parsedData value will be set to nil. This can also happen if the
+ * call (by design) does not return any data. Some servers may return no data if an
+ * error status is being returned.
+ *
+ * Both arguments must be present, as the parsedServerData is a pointer to an
+ * +(NSDictionary *)+ so it can be returned.
+ 
+ */
+
++ (NSInteger) makeSyncJsonRequestWithRetries: (NSURLRequest *) request
+                                  parsedData: (NSDictionary **) parsedServerData
+{
+    if ((!request) || (!parsedServerData))
+    {
+        return -1;
+    }
+    NSURLResponse *response;
+    NSError *error;
+    NSInteger retries = MMDefaultRetries;
+    while (retries-- > 0)
+    {
+        NSData *serverData = [NSURLConnection sendSynchronousRequest: request
+                                                   returningResponse: &response
+                                                               error: &error];
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        if (error)
+        {
+            DDLogError(@"System error: %@", error);
+            continue; // You can retry, unlikely to succeed
+        }
+        else
+        {
+            NSDictionary *newParsedData = [MMDataUtility parseJsonData: serverData];
+            *parsedServerData = newParsedData;
+            NSInteger httpStatus = [httpResponse statusCode];
+            return httpStatus;
+        }
+    }
+    parsedServerData = nil;
+    return 0;
+}
+
 @end

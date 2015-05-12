@@ -10,6 +10,9 @@
 
 @interface MMDataUtility : NSObject
 
++ (NSInteger) makeSyncJsonRequestWithRetries: (NSURLRequest *) request
+                                  parsedData: (NSDictionary **) parsedServerData;
+
 + (NSDictionary *) parseJsonData: (NSData *)data;
 
 + (NSString *) percentEncodeAlmostEverything: (NSString *) inString;
