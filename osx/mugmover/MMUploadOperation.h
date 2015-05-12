@@ -15,7 +15,7 @@
 
 @interface MMUploadOperation : NSOperation
 
-@property (strong, readonly)    NSString *                  destinationFolderPath;
+@property (strong, readonly)    NSString *                  folderId;
 @property (weak, readonly)      MMLibraryEvent *            event;
 @property (assign)              NSInteger                   row;
 @property (weak, readonly)      MMSmugmug *                 service;
@@ -25,7 +25,7 @@
 - (id) initWithEvent: (MMLibraryEvent *) event
                  row: (NSInteger) row
              service: (MMSmugmug *) service
-              folder: (NSString *) destinationFolderPath
+            folderId: (NSString *) folderId
              options: (NSDictionary *) options
       viewController: (MMMasterViewController *) viewController;
 

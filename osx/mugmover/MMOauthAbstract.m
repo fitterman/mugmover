@@ -48,9 +48,9 @@
                                  userInfo:nil];
 }
 
-- (NSString *) extractErrorResponseData: (NSData *) data
+- (NSString *) extractErrorResponseData: (NSDictionary *) parsedServerResponse
 {
-    return [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
+    return [NSString stringWithFormat: @"%@", parsedServerResponse];
 }
 
 - (void) close
@@ -103,7 +103,9 @@
                  DDLogError(@"ERROR      httpError=%ld", (long)[httpResponse statusCode]);
                  if ([serverData length] > 0)
                  {
-                     DDLogError(@"response=%@", [self extractErrorResponseData: serverData]);
+                     NSString *serverString = [[NSString alloc] initWithData: serverData
+                                                                    encoding:NSUTF8StringEncoding];
+                     DDLogError(@"response=%@", [self extractErrorResponseData: @{@"response": serverString}]);
                  }
              }
              else
@@ -138,16 +140,16 @@
         }
 
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        NSDictionary *parsedJsonData = [MMDataUtility parseJsonData: serverData];
         if ([httpResponse statusCode] >= 400) // These are errors (300 is handled automatically)
         {
             DDLogError(@"ERROR      httpError=%ld", (long)[httpResponse statusCode]);
             if ([serverData length] > 0)
             {
-                DDLogError(@"response=%@", [self extractErrorResponseData: serverData]);
+                DDLogError(@"response=%@", [self extractErrorResponseData: parsedJsonData]);
             }
             return NO; // It is not possible to retry because because the nonce will be "already used"
         }
-        NSDictionary *parsedJsonData = [MMDataUtility parseJsonData: serverData];
         if (parsedJsonData)
         {
             if (serviceResponseHandler) // It's now optional

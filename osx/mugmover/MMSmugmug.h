@@ -35,15 +35,11 @@
 - (void) configureOauthRetryOnFailure: (BOOL) attemptRetry;
 
 - (NSString *) findOrCreateAlbum: (NSString *) urlName
-                         beneath: (NSString *) partialPath
+                        inFolder: (NSString *) folderId
                      displayName: (NSString *) displayName
                      description: (NSString *) description;
 
-- (NSString *) findOrCreateFolder: (NSString *) urlName
-                          beneath: (NSString *) partialPath
-                      displayName: (NSString *) displayName
-                      description: (NSString *) description
-               completionCallback: (void (^) (NSString *)) completionCallback;
+- (NSString *) findOrCreateFolderForLibrary: library;
 
 - (BOOL) getUserInfo;
 

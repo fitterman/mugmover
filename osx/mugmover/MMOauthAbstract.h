@@ -36,7 +36,7 @@ typedef void (^ServiceResponseHandler)(NSDictionary *serviceResponseDictionary);
 
 - (void) close;
 
-- (NSString *) extractErrorResponseData: (NSData *) data;
+- (NSString *) extractErrorResponseData: (NSDictionary *) parsedServerResponse;
 
 - (BOOL) synchronousUrlRequest: (NSURLRequest *) request
              remainingAttempts: (NSInteger) remainingAttempts

@@ -179,45 +179,43 @@
         _totalImagesToTransmit = 0;
         MMSmugmug *serviceApi = [_serviceManager serviceForIndex: _servicesTable.selectedRow];
 
-        // Here we create/find the target folder for the uploads.
-
-        [serviceApi findOrCreateFolder: [MMSmugmug sanitizeUuid: _library.databaseUuid]
-                               beneath: nil
-                           displayName: [_library displayName]
-                           description: [_library description]
-                    completionCallback: ^void (NSString *folderPath)
+        // For every combination of service and library, we maintain a destination folder.
+        // Every library event will be delivered as an album within that folder. The folder itself
+        // is created the first time we go through here, assigning it a name and URL fragment.
+        // We preserve the nodeId, allowing the customer to rename the folder and change its URL
+        // at will.
+        
+        NSString *folderId = [serviceApi findOrCreateFolderForLibrary: _library];
+        if (!folderId)
+        {
+            _transmitButton.enabled = YES;
+            _transmitting = NO;
+            [MMUiUtility alertWithText: @"Error creating folder on service"
+                          withQuestion: nil
+                                 style: NSWarningAlertStyle];
+        }
+        else
+        {
+            for (MMLibraryEvent *event in _library.events)
             {
-                if (!folderPath)
+                if (event.toBeProcessed)
                 {
-                    _transmitButton.enabled = YES;
-                    _transmitting = NO;
-                    [MMUiUtility alertWithText: @"Error creating folder on service"
-                                  withQuestion: nil
-                                         style: NSWarningAlertStyle];
+                    _totalImagesToTransmit += [[event filecount] integerValue];
+                    NSDictionary *options = @{@"skipProcessedImages": @(_skipProcessedImageCheckbox.state)};
+                    MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
+                                                                                              row: row
+                                                                                          service: serviceApi
+                                                                                         folderId: folderId
+                                                                                          options: options
+                                                                                   viewController: self];
+                    [_uploadOperationQueue addOperation: uploadOperation];
                 }
-                else
-                {
-                    for (MMLibraryEvent *event in _library.events)
-                    {
-                        if (event.toBeProcessed)
-                        {
-                            _totalImagesToTransmit += [[event filecount] integerValue];
-                            NSDictionary *options = @{@"skipProcessedImages": @(_skipProcessedImageCheckbox.state)};
-                            MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
-                                                                                                      row: row
-                                                                                                  service: serviceApi
-                                                                                                   folder: folderPath
-                                                                                                  options: options
-                                                                                           viewController: self];
-                            [_uploadOperationQueue addOperation: uploadOperation];
-                        }
-                        row++;
-                    }
-                    _progressIndicator.maxValue = (Float64) _totalImagesToTransmit;
-                    [_progressIndicator setDoubleValue: 0.0];
-                    _interruptButton.enabled = YES;
-                }
-            }];
+                row++;
+            }
+            _progressIndicator.maxValue = (Float64) _totalImagesToTransmit;
+            [_progressIndicator setDoubleValue: 0.0];
+            _interruptButton.enabled = YES;
+        }
     }
 }
 

@@ -267,10 +267,13 @@
     }
 }
 
-- (NSString *) extractErrorResponseData: (NSData *) data
+- (NSString *) extractErrorResponseData: (NSDictionary *) parsedServerResponse
 {
     NSMutableArray *errors = [[NSMutableArray alloc] initWithCapacity: 100];
-    NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: data];
+    if (!parsedServerResponse)
+    {
+        return @"no error details received";
+    }
     NSDictionary *options = [parsedServerResponse objectForKey: @"Options"];
     NSDictionary *parameters = [options objectForKey: @"Parameters"];
     NSArray *fields = [parameters objectForKey: @"PATCH"];
@@ -297,7 +300,14 @@
             }
         }
     }
-    return [errors componentsJoinedByString: @"; %"];
+    if ([errors count] == 0)
+    {
+        return [super extractErrorResponseData: parsedServerResponse];
+    }
+    else
+    {
+        return [errors componentsJoinedByString: @"; %"];
+    }
 }
 
 

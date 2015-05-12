@@ -7,6 +7,7 @@
 //
 
 #import "MMSmugmug.h"
+#import "MMPhotoLibrary.h"
 #import "MMOauthSmugmug.h"
 #import "MMDataUtility.h"
 #import "MMMasterViewController.h"
@@ -143,200 +144,196 @@ long                retryCount;
  */
 - (BOOL) getUserInfo
 {
+    NSDictionary *parsedServerResponse;
     NSURLRequest *userInfoRequest = [_smugmugOauth apiRequest: @"!authuser"
                                                    parameters: nil
                                                         verb: @"GET"];
-    NSURLResponse *response;
-    NSError *error;
-    NSInteger retries = MMDefaultRetries;
-    while (retries-- > 0)
+    NSInteger httpStatus =  [MMDataUtility makeSyncJsonRequestWithRetries: userInfoRequest
+                                                               parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
     {
-        NSData *serverData = [NSURLConnection sendSynchronousRequest: userInfoRequest
-                                                   returningResponse: &response
-                                                               error: &error];
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        if (error)
-        {
-            DDLogError(@"System error: %@", error);
-            continue;
-        }
-        NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
-        NSInteger httpStatus = [httpResponse statusCode];
-        if (httpStatus == 200)
-        {
-            _uniqueId = [parsedServerResponse valueForKeyPath: @"Response.User.RefTag"];
-            _handle = [parsedServerResponse valueForKeyPath: @"Response.User.NickName"];
-            return YES;
-        }
-        else
-        {
-            DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-            DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: serverData]);
-            break; // You cannot retry the call
-        }
+        _uniqueId = [parsedServerResponse valueForKeyPath: @"Response.User.RefTag"];
+        _handle = [parsedServerResponse valueForKeyPath: @"Response.User.NickName"];
+        return YES;
     }
-    return NO;
+    else
+    {
+        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+        return NO;
+    }
 }
 
 #pragma mark "Private methods"
 
 /**
- * Returns the albumId of an album. The identity of the album is determined by the folder path
- * into which it is to be place. The arguments are
- *   +urlName+, which is part of the URL and is constrained by the related rules
- *   +partialPath+ which is the path portion beneath the username, for example "default/foo"
- *                 If +partialPath+ is nil, the album will be created at the top level.
+ * Returns the albumId of an album. The identity of the album is determined by the node
+ * into which it is to be placed. The arguments are
+ *   +urlName+, which is part of the URL and is constrained by the rules imposed by Smugmug.
+ *          The uniqueness of the urlName is required, and we impose this by using uuid from
+ *          the corresponding event.
+ *   +folderId+ which an ID of a Smugmug node.
  *   +displayName+ which the displayed title for the album
  */
 - (NSString *) findOrCreateAlbum: (NSString *) urlName
-                         beneath: (NSString *) partialPath
+                        inFolder: (NSString *) folderId
                      displayName: (NSString *) displayName
                      description: (NSString *) description
 {
-    NSMutableString *apiRequest = [[NSMutableString alloc] initWithString: @"folder/user/"];
-    [apiRequest appendString: _handle];
-    if (partialPath)
+    // We have to do this in 2 steps: get the folder, then get the album info
+    // because the folder/id API method doesn't support the !albums request.
+    NSDictionary *parsedServerResponse;
+
+    NSString *apiRequest = [NSString stringWithFormat: @"folder/id/%@", folderId];
+    NSURLRequest *getFolderRequest = [_smugmugOauth apiRequest: apiRequest
+                                                    parameters: @{}
+                                                          verb: @"GET"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getFolderRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus != 200)
     {
-        [apiRequest appendString: @"/"];
-        [apiRequest appendString: partialPath];
+        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+        return nil;
     }
-    [apiRequest appendString: @"!albums"];
+        
+    NSString *uri = nil;
+    
+    // Our API does not work with full paths, so... we have to strip off the "/api/v2/" part
+    NSString *fullPath = [parsedServerResponse  valueForKeyPath: @"Response.Folder.Uri"];
+    fullPath = [fullPath substringFromIndex:[@"/api/v2/" length]];
+    apiRequest = [NSString stringWithFormat: @"%@!albums", fullPath];
     NSURLRequest *createAlbumRequest = [_smugmugOauth apiRequest: apiRequest
-                                                       parameters: @{@"Description":        description,
-                                                                     @"UrlName":            urlName,
-                                                                     @"Name":               displayName,
-                                                                     @"Privacy":            @"Private",
-                                                                     @"SmugSearchable":     @"No",
-                                                                     @"WorldSearchable":    @"No",
-                                                                     }
-                                                             verb: @"POST"];
-    NSURLResponse *response;
-    NSError *error;
-    NSInteger retries = MMDefaultRetries;
-    while (retries-- > 0)
+                                                      parameters: @{@"Description":        description,
+                                                                    @"UrlName":            urlName,
+                                                                    @"Name":               displayName,
+                                                                    @"Privacy":            @"Private",
+                                                                    @"SmugSearchable":     @"No",
+                                                                    @"WorldSearchable":    @"No",
+                                                                  }
+                                                            verb: @"POST"];
+    httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: createAlbumRequest
+                                                    parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
     {
-        NSData *serverData = [NSURLConnection sendSynchronousRequest: createAlbumRequest
-                                                   returningResponse: &response
-                                                               error: &error];
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        if (error)
-        {
-            DDLogError(@"System error: %@", error);
-            continue;
-        }
-        NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
-        NSInteger httpStatus = [httpResponse statusCode];
-        NSString *uri = nil;
-        if (httpStatus == 200)
-        {
-            uri = [parsedServerResponse valueForKeyPath: @"Response.Uri"];
-        }
-        else if (httpStatus == 409) // Conflict, it exists
-        {
-            // Cannot use valueForKeyPath because the handle might contain a period
-            NSArray *pieces = @[@"Conflicts",
-                                [parsedServerResponse valueForKeyPath: @"Response.Uri"],
-                                @"Album",
-                                @"Uri"];
-            NSObject *object = parsedServerResponse;
-            for (NSString *piece in pieces)
-            {
-                object = [(NSDictionary *)object objectForKey: piece];
-            }
-            uri = (NSString *)object;
-        }
-        else
-        {
-            DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-            DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: serverData]);
-            break; // You cannot retry the call
-        }
-        if (uri)
-        {
-            return [[uri componentsSeparatedByString: @"/"] lastObject];
-        }
+        uri = [parsedServerResponse valueForKeyPath: @"Response.Uri"];
     }
+    else if (httpStatus == 409) // Conflict, it exists
+    {
+        // Cannot use valueForKeyPath because the handle might contain a period
+        NSArray *pieces = @[@"Conflicts",
+                            [parsedServerResponse valueForKeyPath: @"Response.Uri"],
+                            @"Album",
+                            @"Uri"];
+        NSObject *object = parsedServerResponse;
+        for (NSString *piece in pieces)
+        {
+            object = [(NSDictionary *)object objectForKey: piece];
+        }
+        uri = (NSString *)object;
+    }
+    
+    if (uri)
+    {
+        // It's actually an API URL: just get the albumId
+        return [uri lastPathComponent];
+    }
+
+    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
     return nil;
 }
 
 /**
- * Returns the "urlName" value (one piece of the path) for a folder. If the +beneath+ parameter is nil
- * the result will be a top-level folder creation. If the +beneath+ value is present, then it will
- * be inserted as part of the path. When used, "+beneath+ should only contain embedded slashes,
- * no initial or terminal ones, for example: "abc/def".
- * If something really goes wrong, nil is returned.
+ * This method returns the Folder ID of the preferred folder under which all the uploaded
+ * albums will be created.
+ * 1. This queries the defaults (preferences) to see if a folder ID has been stored.
+ * 2. If the folder has been stored, an attempt will be made to access the folder. If it works,
+ *    the callback is invoked with the folder ID. The call returns.
+ * 3. If the folder can't be accessed or a folder ID hasn't been stored, a new folder is created.
+ *    Its ID is stored as a default (preference) for future access by this method.
+ * If anything goes seriously wrong, before the completionCallback can be invoked, an NSError object
+ * is returned.
  */
-- (void) findOrCreateFolder: (NSString *) urlName
-                    beneath: (NSString *) partialPath
-                displayName: (NSString *) displayName
-                description: (NSString *) description
-         completionCallback: (void (^) (NSString *)) completionCallback
+- (NSString *) findOrCreateFolderForLibrary: (MMPhotoLibrary *) library
 {
-    NSMutableString *apiRequest = [[NSMutableString alloc] initWithString: @"folder/user/"];
-    [apiRequest appendString: _handle];
-    if (partialPath)
+  
+    // 1. Find the preferences. See what it holds
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString *folderKey = [NSString stringWithFormat: @"smugmug.%@.folder.%@",
+                           _uniqueId,
+                          [library databaseUuid]];
+    NSString *folderId = [defaults objectForKey: folderKey];
+    NSString *apiRequest = nil;
+    NSDictionary *parsedServerResponse;
+    if (folderId)
     {
-        [apiRequest appendString: @"/"];
-        [apiRequest appendString: partialPath];
+        // 2. Try to get the folder just to see it's still present.
+        apiRequest = [NSString stringWithFormat: @"folder/id/%@", folderId];
+        NSURLRequest *getFolderAlbumsRequest = [_smugmugOauth apiRequest: apiRequest
+                                                              parameters: @{}
+                                                                    verb: @"GET"];
+        NSInteger status = [MMDataUtility makeSyncJsonRequestWithRetries: getFolderAlbumsRequest
+                                                              parsedData: &parsedServerResponse];
+        if (status == 200)
+        {
+            return folderId;
         }
-    [apiRequest appendString: @"!folders"];
+        DDLogError(@"Error status=%ld", (long)status);
+        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    }
+
+    // 3. Create a new folder, use it.
+    apiRequest = [NSString stringWithFormat: @"folder/user/%@!folders", _handle];
     NSURLRequest *createFolderRequest = [_smugmugOauth apiRequest: apiRequest
-                                                       parameters: @{@"Description":        description,
-                                                                     @"Name":               displayName,
+                                                       parameters: @{@"Description":        [library description],
+                                                                     @"Name":               [library displayName],
                                                                      @"Privacy":            @"Private",
                                                                      @"SmugSearchable":     @"No",
                                                                      @"SortIndex":          @"SortIndex",
-                                                                     @"UrlName":            urlName,
+                                                                     @"UrlName":            [MMSmugmug sanitizeUuid: [library databaseUuid]],
                                                                      @"WorldSearchable":    @"No",
                                                                      }
                                                              verb: @"POST"];
-    NSURLResponse *response;
-    NSError *error;
-    NSInteger retries = MMDefaultRetries;
-    while (retries-- > 0)
+    NSInteger httpStatus =  [MMDataUtility makeSyncJsonRequestWithRetries: createFolderRequest
+                                                               parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
     {
-        NSData *serverData = [NSURLConnection sendSynchronousRequest: createFolderRequest
-                                                   returningResponse: &response
-                                                               error: &error];
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        if (error)
-        {
-            DDLogError(@"System error: %@", error);
-            continue; // You can retry, unlikey to succeed
-        }
-        NSDictionary *parsedServerResponse = [MMDataUtility parseJsonData: serverData];
-        NSInteger httpStatus = [httpResponse statusCode];
-
-        NSString *defaultFolderName = nil;
-        if (httpStatus == 200)
-        {
-            defaultFolderName = [parsedServerResponse valueForKeyPath: @"Response.Folder.UrlName"];
-        }
-        if (httpStatus == 409) // Conflict, it exists
-        {
-            // Cannot use valueFOrKeyPath because the handle might contain a period
-            NSArray *pieces = @[@"Conflicts",
-                                [parsedServerResponse valueForKeyPath: @"Response.Uri"],
-                                @"Folder",
-                                @"UrlName"];
-            NSObject *object = parsedServerResponse;
-            for (NSString *piece in pieces)
-            {
-                object = [(NSDictionary *)object objectForKey: piece];
-            }
-            defaultFolderName = (NSString *)object;
-        }
-        if (defaultFolderName)
-        {
-            // If it was found or created call the callback with it
-            completionCallback(defaultFolderName);
-            return;
-        }
-        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: serverData]);
-        break; // You cannot retry the call
+        folderId = [parsedServerResponse valueForKeyPath: @"Response.Folder.Uris.Node.Uri"];
     }
-    completionCallback(nil); // Signals you completed and failed.
+    if (httpStatus == 409) // Conflict, it exists
+    {
+        // Cannot use [NSDictionary -valueFOrKeyPath:] because the handle might contain a period
+        NSArray *pieces = @[@"Conflicts",
+                            [parsedServerResponse valueForKeyPath: @"Response.Uri"],
+                            @"Folder",
+                            @"Uris",
+                            @"Node",
+                            @"Uri"];
+        NSObject *object = parsedServerResponse;
+        for (NSString *piece in pieces)
+        {
+            object = [(NSDictionary *)object objectForKey: piece];
+        }
+        folderId = (NSString *)object;
+    }
+    if (folderId)
+    {
+        // It's actually an API URL: just get the nodeId
+        folderId = [folderId lastPathComponent];
+        
+        // Store it in the defaults
+        [defaults setObject: folderId forKey: folderKey];
+        [defaults synchronize];
+        
+        // If it was found or created: send it back
+        return folderId;
+    }
+    
+    // Otherwise things went badly...
+    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    return nil; // Signals you completed and failed.
 }
 
 @end

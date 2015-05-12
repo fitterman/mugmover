@@ -23,14 +23,14 @@ extern const NSInteger MMDefaultRetries;
 - (id) initWithEvent: (MMLibraryEvent *) event
                  row: (NSInteger) row
              service: (MMSmugmug *) service
-              folder: (NSString *) destinationFolderPath
+            folderId: (NSString *) folderId
              options: (NSDictionary *) options
       viewController: (MMMasterViewController *) viewController
 {
     self = [self init];
     if (self)
     {
-        _destinationFolderPath = destinationFolderPath;
+        _folderId = folderId;
         _event = event;
         _skipProcessedImages = [[options valueForKeyPath: @"skipProcessedImages"] boolValue];
         _row = row;
@@ -45,12 +45,12 @@ extern const NSInteger MMDefaultRetries;
     // Do the transfer
     [self transferPhotosForEvent: _event
                        toService: _service
-                          folder: _destinationFolderPath
+                        folderId: _folderId
              skipProcessedImages: _skipProcessedImages];
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
      {
          [_viewController.eventsTable reloadData];
-         _destinationFolderPath = nil;
+         _folderId = nil;
      }
     ];
 
@@ -69,7 +69,7 @@ extern const NSInteger MMDefaultRetries;
 
 - (void) transferPhotosForEvent: (MMLibraryEvent *) event
                       toService: (MMSmugmug *) service
-                         folder: (NSString *) folderUrlChunk
+                       folderId: (NSString *) folderId
             skipProcessedImages: (BOOL) skipProcessedImages
 {
     @autoreleasepool
@@ -82,7 +82,7 @@ extern const NSInteger MMDefaultRetries;
 
         NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via Mugmover", name];
         NSString *newAlbumId = [service findOrCreateAlbum: [MMSmugmug sanitizeUuid: [event uuid]]
-                                                  beneath: folderUrlChunk
+                                                 inFolder: folderId
                                               displayName: name
                                               description: description];
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
