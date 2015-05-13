@@ -39,6 +39,7 @@
 - (IBAction) stopButtonWasPressed:(id)sender {
     if (_queue)
     {
+        [_statusMessage setStringValue: @"Stopping transfer..."];
         [_queue cancelAllOperations];
     }
 }

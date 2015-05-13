@@ -379,6 +379,18 @@
 }
 
 /**
+ * Show the active photo's thumbnail in the progress sheet.
+ */
+- (void) setActivePhotoThumbnail: (NSImage *) photoThumbnailImage
+{
+    if (_progressWindowController.currentThumbnail)
+    {
+        _progressWindowController.currentThumbnail.image = photoThumbnailImage;
+    }
+    
+}
+
+/**
  * The view controller holds the panel object. This sets the progress bar position.
  */
 - (void) setCurrentProgressValue: (Float64) value

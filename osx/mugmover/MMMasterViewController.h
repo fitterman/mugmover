@@ -50,6 +50,8 @@
 
 - (void) incrementProgressBy: (Float64) increment;
 
+- (void) setActivePhotoThumbnail: (NSImage *) photoThumbnailImage;
+
 - (void) uploadCompleted;
 
 @end

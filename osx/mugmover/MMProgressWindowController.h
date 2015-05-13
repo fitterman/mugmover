@@ -13,6 +13,8 @@
 @property (weak)    IBOutlet    NSProgressIndicator *   progressIndicator;
 @property (strong)              NSOperationQueue *      queue; // Processing transfers
 @property (weak)    IBOutlet    NSButton *              stopButton;
+@property (weak)    IBOutlet    NSImageView *           currentThumbnail;
+@property (weak)    IBOutlet    NSTextField *           statusMessage;
 
 - (void) dismiss;
 

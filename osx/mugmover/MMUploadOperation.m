@@ -128,8 +128,10 @@ extern const NSInteger MMDefaultRetries;
             }
 
             [photo processPhoto];
-            [event setActivePhotoThumbnail: [photo getThumbnailImage]
+            NSImage *currentPhotoThumbnail = [photo getThumbnailImage];
+            [event setActivePhotoThumbnail: currentPhotoThumbnail
                                  withStatus: MMEventStatusActive];
+            [_viewController setActivePhotoThumbnail: currentPhotoThumbnail];
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
              {
                  [_viewController.eventsTable reloadData];
