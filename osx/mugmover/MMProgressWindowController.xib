@@ -28,19 +28,7 @@
                 <subviews>
                     <imageView autoresizesSubviews="NO" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="BzT-X4-LiV">
                         <rect key="frame" x="20" y="61" width="360" height="268"/>
-                        <animations>
-                            <caTransition key="subviews">
-                                <mutableData key="keyedArchiveRepresentation">
-YnBsaXN0MDDUAQIDBAUGJSZYJHZlcnNpb25YJG9iamVjdHNZJGFyY2hpdmVyVCR0b3ASAAGGoKkHCBES
-ExkLGiBVJG51bGzUCQoLDA0ODxBWJGNsYXNzXXN0YXJ0UHJvZ3Jlc3NUdHlwZV8QEl9fQ0FDb2RpbmdD
-b250ZW50c4AIgAKAA4AEIj8AAAFUZmFkZdIUCRUYWk5TLm9iamVjdHOiFheABYAGgAddc3RhcnRQcm9n
-cmVzc9IbHB0eWiRjbGFzc25hbWVYJGNsYXNzZXNXTlNBcnJheaIdH1hOU09iamVjdNIbHCEiXENBVHJh
-bnNpdGlvbqMjJB9cQ0FUcmFuc2l0aW9uW0NBQW5pbWF0aW9uXxAPTlNLZXllZEFyY2hpdmVy0ScoVHJv
-b3SAAQAIABEAGgAjAC0AMgA3AEEARwBQAFcAZQBqAH8AgQCDAIUAhwCMAJEAlgChAKQApgCoAKoAuAC9
-AMgA0QDZANwA5QDqAPcA+wEIARQBJgEpAS4AAAAAAAACAQAAAAAAAAApAAAAAAAAAAAAAAAAAAABMA
-</mutableData>
-                            </caTransition>
-                        </animations>
+                        <animations/>
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" identifier="currentPhotoThumbnail" imageScaling="proportionallyUpOrDown" id="xeE-KZ-DJ0"/>
                     </imageView>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="2Yw-af-AUm">
