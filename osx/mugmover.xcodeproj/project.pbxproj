@@ -51,6 +51,8 @@
 		C4F934FE1AD728E500AB465B /* MMCheckboxTableCellView.h in Sources */ = {isa = PBXBuildFile; fileRef = C4F934FD1AD728E500AB465B /* MMCheckboxTableCellView.h */; };
 		C4F935001AD7290600AB465B /* MMCheckboxTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */; };
 		C4F935041AD884C200AB465B /* Active-128.gif in Resources */ = {isa = PBXBuildFile; fileRef = C4F935031AD884C200AB465B /* Active-128.gif */; };
+		C4FF55411B02B09D0059AE68 /* MMProgressWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = C4FF553F1B02B09D0059AE68 /* MMProgressWindowController.m */; };
+		C4FF55421B02B09D0059AE68 /* MMProgressWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4FF55401B02B09D0059AE68 /* MMProgressWindowController.xib */; };
 		C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B01A589D7100472CAF /* Debug.xcconfig */; };
 		C4FF95B41A589D7100472CAF /* mugmover.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B11A589D7100472CAF /* mugmover.xcconfig */; };
 		C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B21A589D7100472CAF /* Release.xcconfig */; };
@@ -152,6 +154,9 @@
 		C4F934FD1AD728E500AB465B /* MMCheckboxTableCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMCheckboxTableCellView.h; sourceTree = "<group>"; };
 		C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMCheckboxTableCellView.m; sourceTree = "<group>"; };
 		C4F935031AD884C200AB465B /* Active-128.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "Active-128.gif"; sourceTree = "<group>"; };
+		C4FF553E1B02B09D0059AE68 /* MMProgressWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMProgressWindowController.h; sourceTree = "<group>"; };
+		C4FF553F1B02B09D0059AE68 /* MMProgressWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMProgressWindowController.m; sourceTree = "<group>"; };
+		C4FF55401B02B09D0059AE68 /* MMProgressWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMProgressWindowController.xib; sourceTree = "<group>"; };
 		C4FF95B01A589D7100472CAF /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		C4FF95B11A589D7100472CAF /* mugmover.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = mugmover.xcconfig; sourceTree = "<group>"; };
 		C4FF95B21A589D7100472CAF /* Release.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
@@ -209,11 +214,14 @@
 				C4968CCB1A15101500F34E46 /* MainMenu.xib */,
 				C4F934FD1AD728E500AB465B /* MMCheckboxTableCellView.h */,
 				C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */,
+				C49377121AD05D4E006DB77D /* MMComplexTableCellView.h */,
+				C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */,
 				C49376E11ACEF1C9006DB77D /* MMMasterViewController.h */,
 				C49376E21ACEF1C9006DB77D /* MMMasterViewController.m */,
 				C49376E31ACEF1C9006DB77D /* MMMasterViewController.xib */,
-				C49377121AD05D4E006DB77D /* MMComplexTableCellView.h */,
-				C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */,
+				C4FF553E1B02B09D0059AE68 /* MMProgressWindowController.h */,
+				C4FF553F1B02B09D0059AE68 /* MMProgressWindowController.m */,
+				C4FF55401B02B09D0059AE68 /* MMProgressWindowController.xib */,
 				C4A702121AEDD738002A7E01 /* MMOptionsView.xib */,
 			);
 			name = UI;
@@ -463,6 +471,7 @@
 				C4968CC71A15101500F34E46 /* Credits.rtf in Resources */,
 				C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */,
 				C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */,
+				C4FF55421B02B09D0059AE68 /* MMProgressWindowController.xib in Resources */,
 				C4968CCD1A15101500F34E46 /* MainMenu.xib in Resources */,
 				C4F935041AD884C200AB465B /* Active-128.gif in Resources */,
 				C493FBAA1AEFB220009492BD /* Service-128.png in Resources */,
@@ -545,6 +554,7 @@
 				C42F7ADB1A1533AB006E38DD /* MMPoint.m in Sources */,
 				C4836F991A6080DB006EB567 /* MMNetworkRequest.m in Sources */,
 				C44583221AE58ED700566731 /* MMPhotoLibraryManager.m in Sources */,
+				C4FF55411B02B09D0059AE68 /* MMProgressWindowController.m in Sources */,
 				C49377111AD04C8F006DB77D /* MMLibraryEvent.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

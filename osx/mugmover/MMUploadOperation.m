@@ -57,7 +57,7 @@ extern const NSInteger MMDefaultRetries;
     // Check if the return from the above was interrupted. If so, clean up.
     NSOperationQueue *queue = [NSOperationQueue currentQueue];
     if ((queue.operationCount == 1) ||  // The end was reached
-        [self isCancelled])             // The user clicked "interrupt" button
+        [self isCancelled])             // The user clicked "stop" button
     {
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
          {
@@ -122,7 +122,7 @@ extern const NSInteger MMDefaultRetries;
                 if (replacementFor && skipProcessedImages)
                 {
                     completedTransfers++;   // We consider it sent already so we can get the icons right
-                    [_viewController.progressIndicator incrementBy: 1.0];
+                    [_viewController incrementProgressBy: 1.0];
                     continue;               // And then we skip the processing
                 }
             }
@@ -203,7 +203,7 @@ extern const NSInteger MMDefaultRetries;
                 [defaults setObject: albumState forKey: albumKey];
                 [defaults synchronize];
                 completedTransfers++;
-                [_viewController.progressIndicator incrementBy: 1.0];
+                [_viewController incrementProgressBy: 1.0];
             }
         }
         if (completedTransfers == [photos count])

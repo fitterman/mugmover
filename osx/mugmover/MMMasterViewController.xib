@@ -9,12 +9,10 @@
             <connections>
                 <outlet property="checkAllButton" destination="iek-VH-855" id="ZFy-WK-j11"/>
                 <outlet property="eventsTable" destination="ae0-oz-hxA" id="EID-Ta-h9I"/>
-                <outlet property="interruptButton" destination="iVd-Tc-sNI" id="c5P-D3-1zf"/>
                 <outlet property="librariesScrollView" destination="HXX-JU-4bX" id="1Rm-Hc-unR"/>
                 <outlet property="librariesSegmentedControl" destination="572-r1-s9d" id="vYK-1Z-Sdy"/>
                 <outlet property="librariesTable" destination="lWn-R8-MHm" id="4h8-JA-1kd"/>
                 <outlet property="photosTable" destination="zrW-or-1OX" id="Z8W-4W-5lm"/>
-                <outlet property="progressIndicator" destination="rHG-uS-1tu" id="7ul-vo-w1W"/>
                 <outlet property="servicesScrollView" destination="OkL-UV-8gr" id="MOB-0b-70B"/>
                 <outlet property="servicesSegmentedControl" destination="e8e-op-4g9" id="nHv-Wd-k8s"/>
                 <outlet property="servicesTable" destination="bem-rf-SMQ" id="poH-nP-FhK"/>
@@ -29,7 +27,6 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customView translatesAutoresizingMaskIntoConstraints="NO" id="Hz6-mo-xeY">
             <rect key="frame" x="0.0" y="0.0" width="802" height="402"/>
-            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <splitView dividerStyle="paneSplitter" translatesAutoresizingMaskIntoConstraints="NO" id="ybA-6q-r5c">
                     <rect key="frame" x="20" y="20" width="220" height="362"/>
@@ -456,16 +453,6 @@
                         <action selector="transmitButtonWasPressed:" target="-2" id="oOO-v0-mVb"/>
                     </connections>
                 </button>
-                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iVd-Tc-sNI">
-                    <rect key="frame" x="712" y="213" width="96" height="32"/>
-                    <buttonCell key="cell" type="push" title="Interrupt" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ENU-DI-9Ag">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                        <connections>
-                            <action selector="interruptButtonWasPressed:" target="-2" id="q1w-XG-Xxr"/>
-                        </connections>
-                    </buttonCell>
-                </button>
                 <button toolTip="Click to check all events" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iek-VH-855">
                     <rect key="frame" x="246" y="13" width="100" height="32"/>
                     <buttonCell key="cell" type="push" title="Check All" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="sKM-5r-XmH">
@@ -476,13 +463,6 @@
                         <action selector="checkAllButtonWasPressed:" target="-2" id="pDe-Mo-hac"/>
                     </connections>
                 </button>
-                <button identifier="skipProcessed" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aSC-zP-aaj">
-                    <rect key="frame" x="689" y="153" width="179" height="18"/>
-                    <buttonCell key="cell" type="check" title="Skip Processed Images" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="rlQ-7H-and">
-                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
-                        <font key="font" metaFont="system"/>
-                    </buttonCell>
-                </button>
                 <button toolTip="Click to uncheck all events" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="7vQ-n0-c1D">
                     <rect key="frame" x="346" y="13" width="114" height="32"/>
                     <buttonCell key="cell" type="push" title="Uncheck All" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="89H-8W-mi3">
@@ -492,6 +472,13 @@
                     <connections>
                         <action selector="uncheckAllButtonWasPressed:" target="-2" id="WmR-Jo-Wyr"/>
                     </connections>
+                </button>
+                <button identifier="skipProcessed" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="aSC-zP-aaj">
+                    <rect key="frame" x="540" y="37" width="179" height="18"/>
+                    <buttonCell key="cell" type="check" title="Skip Processed Images" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="rlQ-7H-and">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
                 </button>
             </subviews>
             <constraints>
@@ -588,10 +575,14 @@
                 <font key="font" metaFont="system"/>
             </buttonCell>
         </button>
-        <progressIndicator maxValue="100" style="bar" id="rHG-uS-1tu">
-            <rect key="frame" x="0.0" y="0.0" width="397" height="20"/>
+        <button verticalHuggingPriority="750" id="btA-hi-wv3">
+            <rect key="frame" x="0.0" y="0.0" width="82" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-        </progressIndicator>
+            <buttonCell key="cell" type="push" title="Button" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="PfH-ns-GCO">
+                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                <font key="font" metaFont="system"/>
+            </buttonCell>
+        </button>
     </objects>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>

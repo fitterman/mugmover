@@ -13,6 +13,7 @@
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
 #import "MMPhotoLibraryManager.h"
+#import "MMProgressWindowController.h"
 #import "MMUiUtility.h"
 #import "MMServiceManager.h"
 #import "MMSmugmug.h"
@@ -38,8 +39,6 @@
         _libraryIcon = [MMUiUtility iconImage: @"Library-128" ofType: @"png"];
         _serviceIcon = [MMUiUtility iconImage: @"Service-128" ofType: @"png"];
         _transmitting = NO;
-
-
     }
     return self;
 }
@@ -90,7 +89,7 @@
 }
 
 /**
- * If +hint+ is set to YES, then we know for certain something is marked for tranmission, so 
+ * If +hint+ is set to YES, then we know for certain something is marked for tranmission, so
  * we can skip searching the events.
  */
 - (void) setTransmitButtonStateWithHint: (BOOL) hint
@@ -125,7 +124,7 @@
     _transmitting = NO;
     [_eventsTable reloadData];
     _transmitButton.enabled = YES;
-    _interruptButton.enabled = NO;
+    [_progressWindowController dismiss];
 }
 
 - (void) closeTheOpenLibrary
@@ -168,6 +167,14 @@
 {
     if (sender == _transmitButton)
     {
+        // we keep a reference, so the WC doesn't deallocate
+        _progressWindowController = [MMProgressWindowController new];
+        _progressWindowController.queue = _uploadOperationQueue;
+        [[[self view] window] beginSheet:[_progressWindowController window]
+                       completionHandler: ^(NSModalResponse returnCode) {
+            _progressWindowController = nil;
+        }];
+
         // In theory, we should do this somewhere else, but in fact, it doesn't matter whether we
         // set the delegate until the button finally gets pressed.
         [_eventsTable setDelegate:self];
@@ -212,9 +219,8 @@
                 }
                 row++;
             }
-            _progressIndicator.maxValue = (Float64) _totalImagesToTransmit;
-            [_progressIndicator setDoubleValue: 0.0];
-            _interruptButton.enabled = YES;
+            [self setCurrentProgressValue: 0.0];
+            [self setMaxProgressValue: (Float64) _totalImagesToTransmit];
         }
     }
 }
@@ -360,11 +366,37 @@
 
 }
 
-- (IBAction) interruptButtonWasPressed: (id) sender
+#pragma mark Proxy methods for the progress panel
+/**
+ * The view controller holds the panel object. This advances the progress bar.
+ */
+- (void) incrementProgressBy: (Float64) increment
 {
-    if (sender == _interruptButton)
+    if (_progressWindowController.progressIndicator)
     {
-        [_uploadOperationQueue cancelAllOperations];
+        [_progressWindowController.progressIndicator incrementBy: increment];
+    }
+}
+
+/**
+ * The view controller holds the panel object. This sets the progress bar position.
+ */
+- (void) setCurrentProgressValue: (Float64) value
+{
+    if (_progressWindowController.progressIndicator)
+    {
+        [_progressWindowController.progressIndicator setDoubleValue: value];
+    }
+}
+
+/**
+ * The view controller holds the panel object. This sets the progress bar position.
+ */
+- (void) setMaxProgressValue: (Float64) value
+{
+    if (_progressWindowController.progressIndicator)
+    {
+        [_progressWindowController.progressIndicator setMaxValue: value];
     }
 }
 
