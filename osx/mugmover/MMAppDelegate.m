@@ -8,11 +8,7 @@
 
 
 #import "MMAppDelegate.h"
-#import "MMMasterViewController.h"
-
-@interface MMAppDelegate()
-@property (nonatomic, strong) IBOutlet MMMasterViewController *masterViewController;
-@end
+#import "MMWindowController.h"
 
 @implementation MMAppDelegate
 
@@ -20,37 +16,32 @@ NSDictionary *flickrPhotoPointer;
 
 BOOL const MMdebugLevel;
 
+- (IBAction)addLibrary:(id)sender {
+    [_windowController addLibraryDialog];
+}
+- (IBAction)removeLibrary:(id)sender {
+    [_windowController removeLibraryDialog];
+}
+- (IBAction)addSmugmugAccount:(id)sender {
+    [_windowController addSmugmugService];
+}
+- (IBAction)removeAccount:(id)sender {
+    [_windowController removeServiceDialog];
+}
+
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
+{
+    return YES;
+}
+
 - (void) applicationDidFinishLaunching: (NSNotification *) aNotification
 {
     [DDLog addLogger:[DDASLLogger sharedInstance]];
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
 
-    [_window setDelegate: self];
-    [_window setMinSize: NSMakeSize(800.0, 300.0)];
-
-    /* 1. Create the master View Controller */
-    _masterViewController = [[MMMasterViewController alloc] initWithNibName:@"MMMasterViewController" bundle:nil];
-
-    /* 2. Add the view controller to the Window's content view */
-    [_window.contentView addSubview:_masterViewController.view];
-
-    /* 3. Make sure the autolayout stuff is set up properly */
-    _masterViewController.view.translatesAutoresizingMaskIntoConstraints = NO;     NSDictionary* views = @{ @"view": _masterViewController.view };
-    NSArray* constraints = [NSLayoutConstraint constraintsWithVisualFormat: @"H:|[view]|"
-                                                                   options: 0
-                                                                   metrics: nil
-                                                                     views: views];
-    [_window.contentView addConstraints:constraints];
-    constraints = [NSLayoutConstraint constraintsWithVisualFormat: @"V:|[view]|"
-                                                          options: 0
-                                                          metrics: nil
-                                                            views: views];
-    [_window.contentView addConstraints:constraints];
-}
-
-- (void) close
-{
-    NSLog(@"Can I free the window?");
+    [_window close]; // We don't use the system-provided window
+    _windowController = [[MMWindowController alloc] initWithWindowNibName:@"MMWindowController"];
+    [_windowController showWindow:nil];
 }
 
 @end

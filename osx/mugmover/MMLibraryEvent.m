@@ -9,7 +9,6 @@
 #import "MMLibraryEvent.h"
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
-#import "MMMasterViewController.h"
 #import "MMUiUtility.h"
 #import <FMDatabase.h>
 #import <FMDB/FMDatabaseAdditions.h>

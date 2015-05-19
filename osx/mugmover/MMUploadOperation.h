@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 @class MMLibraryEvent;
-@class MMMasterViewController;
+@class MMWindowController;
 @class MMPhotoLibrary;
 @class MMSmugmug;
 
@@ -20,13 +20,13 @@
 @property (assign)              NSInteger                   row;
 @property (weak, readonly)      MMSmugmug *                 service;
 @property (assign)              BOOL                        skipProcessedImages;
-@property (weak)                MMMasterViewController *    viewController;
+@property (weak)                MMWindowController *        windowController;
 
 - (id) initWithEvent: (MMLibraryEvent *) event
                  row: (NSInteger) row
              service: (MMSmugmug *) service
             folderId: (NSString *) folderId
              options: (NSDictionary *) options
-      viewController: (MMMasterViewController *) viewController;
+    windowController: (MMWindowController *) windowController;
 
 @end

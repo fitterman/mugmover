@@ -11,11 +11,13 @@
 #import "DDASLLogger.h"
 #import "DDTTYLogger.h"
 #import "DDFileLogger.h"
+@class MMWindowController;
 
 @interface MMAppDelegate : NSObject <NSApplicationDelegate, NSWindowDelegate>
 
-@property (weak)                IBOutlet    NSWindow *window;
-
+@property (weak)    IBOutlet    NSWindow *                  window;
+@property (weak)    IBOutlet    NSMenuItem *                toggleFullScreen;
+@property (strong)              MMWindowController *        windowController;
 - (void) close;
 
 @end

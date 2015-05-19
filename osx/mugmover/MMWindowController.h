@@ -1,30 +1,27 @@
 //
-//  MMMasterViewController.h
-//  mugmover
+//  MMWindowController.h
+//  
 //
-//  Created by Bob Fitterman on 4/3/15.
-//  Copyright (c) 2015 Dicentra LLC. All rights reserved.
+//  Created by Bob Fitterman on 5/18/15.
+//
 //
 
 #import <Cocoa/Cocoa.h>
-@class MMPhoto;
-@class MMPhotoLibrary;
 @class MMLibraryEvent;
+@class MMPhotoLibrary;
 @class MMPhotoLibraryManager;
 @class MMProgressWindowController;
 @class MMServiceManager;
 
-@interface MMMasterViewController : NSViewController <NSTableViewDelegate, NSSplitViewDelegate>
+@interface MMWindowController : NSWindowController <NSWindowDelegate, NSTableViewDelegate, NSSplitViewDelegate>
 
+@property (weak)    IBOutlet    NSView *                windowView;
 
-@property (weak)    IBOutlet    NSSegmentedCell *       addLibraryButton;
 @property (weak)    IBOutlet    NSButton *              checkAllButton;
 @property (weak)    IBOutlet    NSTableView *           eventsTable;
-@property (weak)    IBOutlet    NSScrollView *          librariesScrollView;
 @property (weak)    IBOutlet    NSSegmentedControl *    librariesSegmentedControl;
 @property (weak)    IBOutlet    NSTableView *           librariesTable;
 @property (weak)    IBOutlet    NSTableView *           photosTable;
-@property (weak)    IBOutlet    NSScrollView *          servicesScrollView;
 @property (weak)    IBOutlet    NSSegmentedControl *    servicesSegmentedControl;
 @property (weak)    IBOutlet    NSTableView *           servicesTable;
 @property (weak)    IBOutlet    NSButton *              skipProcessedImageCheckbox;
@@ -48,7 +45,15 @@
 @property (assign)              BOOL                            transmitting;
 @property (strong)              NSOperationQueue *              uploadOperationQueue;
 
+- (void) addLibraryDialog;
+
+- (void) addSmugmugService;
+
 - (void) incrementProgressBy: (Float64) increment;
+
+- (void) removeLibraryDialog;
+
+- (void) removeServiceDialog;
 
 - (void) setActivePhotoThumbnail: (NSImage *) photoThumbnailImage;
 

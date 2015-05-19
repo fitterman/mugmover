@@ -8,7 +8,6 @@
 
 #import "MMPhotoLibrary.h"
 #import "MMServiceManager.h"
-#import "MMMasterViewController.h"
 #import "MMSmugmug.h"
 #import "MMOauthAbstract.h"
 
@@ -16,12 +15,12 @@ NSInteger const maxSupportedServices = 50;
 
 @implementation MMServiceManager
 
-- (id) initForViewController: (id) viewController
+- (id) initForWindowController: (id) windowController
 {
     self = [super init];
     if (self)
     {
-        _viewController = viewController;
+        _windowController = windowController;
         _services = [[NSMutableArray alloc] initWithCapacity: maxSupportedServices];
         [self deserializeFromDefaults];
     }

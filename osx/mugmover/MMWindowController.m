@@ -1,12 +1,12 @@
 //
-//  MMMasterViewController.m
-//  mugmover
+//  MMWindowController.m
+//  
 //
-//  Created by Bob Fitterman on 4/3/15.
-//  Copyright (c) 2015 Dicentra LLC. All rights reserved.
+//  Created by Bob Fitterman on 5/18/15.
+//
 //
 
-#import "MMMasterViewController.h"
+#import "MMWindowController.h"
 #import "MMCheckboxTableCellView.h"
 #import "MMComplexTableCellView.h"
 #import "MMLibraryEvent.h"
@@ -19,72 +19,40 @@
 #import "MMSmugmug.h"
 #import "MMUploadOperation.h"
 
-@implementation MMMasterViewController
 
-- (id) initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self)
-    {
-        // TODO How to release this before Yosemite as there is no viewWillDisappear
-        _uploadOperationQueue = [[NSOperationQueue alloc] init];
-        _uploadOperationQueue.name = @"Upload Queue";
-        _uploadOperationQueue.MaxConcurrentOperationCount = 1;
+@implementation MMWindowController
 
-        _outstandingRequests = 0;
+- (void)windowDidLoad {
+    [super windowDidLoad];
+    // These things should go in the initalizer, perhaps
+    _uploadOperationQueue = [[NSOperationQueue alloc] init];
+    _uploadOperationQueue.name = @"Upload Queue";
+    _uploadOperationQueue.MaxConcurrentOperationCount = 1;
 
-        _activeIcon = [MMUiUtility iconImage: @"Active-128" ofType: @"gif"];
-        _completedIcon = [MMUiUtility iconImage: @"Completed-128" ofType: @"png"];
-        _incompleteIcon = [MMUiUtility iconImage: @"Incomplete-128" ofType: @"png"];
-        _libraryIcon = [MMUiUtility iconImage: @"Library-128" ofType: @"png"];
-        _serviceIcon = [MMUiUtility iconImage: @"Service-128" ofType: @"png"];
-        _transmitting = NO;
-    }
-    return self;
-}
+    _outstandingRequests = 0;
 
-- (void)viewWillLoad
-{
-    if([NSViewController instancesRespondToSelector:@selector(viewWillLoad)]) {
-        // [super viewWillLoad];
-    }
-}
+    _activeIcon = [MMUiUtility iconImage: @"Active-128" ofType: @"gif"];
+    _completedIcon = [MMUiUtility iconImage: @"Completed-128" ofType: @"png"];
+    _incompleteIcon = [MMUiUtility iconImage: @"Incomplete-128" ofType: @"png"];
+    _libraryIcon = [MMUiUtility iconImage: @"Library-128" ofType: @"png"];
+    _serviceIcon = [MMUiUtility iconImage: @"Service-128" ofType: @"png"];
+    _transmitting = NO;
 
-- (void)viewDidLoad
-{
-    if([NSViewController instancesRespondToSelector:@selector(viewWillLoad)]) {
-        // [super viewDidLoad];
-    }
-    _libraryManager = [[MMPhotoLibraryManager alloc] initForViewController: self];
+    _libraryManager = [[MMPhotoLibraryManager alloc] initForWindowController: self];
     NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: 0];
     [_librariesTable reloadData];
     [_librariesTable selectRowIndexes: indexSet
                  byExtendingSelection: NO];
-    _serviceManager = [[MMServiceManager alloc] initForViewController: self];
+    _serviceManager = [[MMServiceManager alloc] initForWindowController: self];
     [_servicesTable reloadData];
     [_servicesTable selectRowIndexes: indexSet
                 byExtendingSelection: NO];
 }
 
-- (void)loadView
+
+- (void) windowWillClose: (NSNotification *) notification
 {
-    BOOL ownImp = ![NSViewController instancesRespondToSelector:@selector(viewWillLoad)];
-
-    if (ownImp)
-    {
-        [self viewWillLoad];
-    }
-
-    [super loadView];
-
-    if(ownImp)
-    {
-        [self viewDidLoad];
-    }
-}
-
-- (void) dealloc
-{
+    NSLog(@"Confirm it's the right window: %@", notification);
     _uploadOperationQueue = nil;
 }
 
@@ -170,14 +138,14 @@
         // we keep a reference, so the WC doesn't deallocate
         _progressWindowController = [MMProgressWindowController new];
         _progressWindowController.queue = _uploadOperationQueue;
-        [[[self view] window] beginSheet:[_progressWindowController window]
-                       completionHandler: ^(NSModalResponse returnCode) {
-            _progressWindowController = nil;
-        }];
+        [self.window beginSheet:[_progressWindowController window]
+              completionHandler: ^(NSModalResponse returnCode) {
+                                       _progressWindowController = nil;
+                                   }];
 
         // In theory, we should do this somewhere else, but in fact, it doesn't matter whether we
         // set the delegate until the button finally gets pressed.
-        [_eventsTable setDelegate:self];
+        [_eventsTable setDelegate: self];
 
         _transmitButton.enabled = NO;
         _transmitting = YES;
@@ -191,7 +159,7 @@
         // is created the first time we go through here, assigning it a name and URL fragment.
         // We preserve the nodeId, allowing the customer to rename the folder and change its URL
         // at will.
-        
+
         NSString *folderId = [serviceApi findOrCreateFolderForLibrary: _library];
         if (!folderId)
         {
@@ -214,7 +182,7 @@
                                                                                           service: serviceApi
                                                                                          folderId: folderId
                                                                                           options: options
-                                                                                   viewController: self];
+                                                                                 windowController: self];
                     [_uploadOperationQueue addOperation: uploadOperation];
                 }
                 row++;
@@ -229,77 +197,11 @@
 {
     if (segmentedControl.selectedSegment == 0) // 0 is add
     {
-        NSOpenPanel* dialog = [NSOpenPanel openPanel];
-
-        // Accept file entries ending in .photolibrary or of type "package"
-        [dialog setAllowedFileTypes: @[@"photolibrary", @"com.apple.package"]];
-
-        // Point to the ~/Pictures (or its equivalent in some other language)
-        NSArray * directories = NSSearchPathForDirectoriesInDomains(NSPicturesDirectory, NSUserDomainMask, YES);
-        NSURL *url = [NSURL fileURLWithPath: [directories firstObject]];
-        [dialog setDirectoryURL: url];
-
-        // Show it as a window-modal
-        [dialog beginSheetModalForWindow:[[self view] window] completionHandler:^(NSInteger result)
-            {
-                if (result == NSFileHandlingPanelOKButton)
-                {
-                    // And if the user selected a file, try to open it
-                    NSURL *libraryUrl = [[dialog URLs] firstObject];
-                    MMPhotoLibrary *library = [[MMPhotoLibrary alloc] initWithPath: libraryUrl.path];
-
-                    if (library)
-                    {
-                        [library close]; // We just need to test that it can be init'd, but we don't do a full open.
-                        NSError *error;
-                        NSInteger row = [_libraryManager insertLibraryPath: libraryUrl.path error: &error];
-                        if (error)
-                        {
-                            [MMUiUtility alertWithError: error style: NSWarningAlertStyle];
-                        }
-                        else
-                        {
-                            [_librariesTable reloadData];
-                            NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: row];
-                            [_librariesTable selectRowIndexes: indexSet
-                                         byExtendingSelection: NO];
-                        };
-                    }
-                    else
-                    {
-                        [MMUiUtility alertWithText: @"The library could not be opened."
-                                      withQuestion: nil
-                                             style: NSWarningAlertStyle];
-                    }
-                }
-            }
-         ];
+        [self addLibraryDialog];
     }
     else if (segmentedControl.selectedSegment == 1) // 1 is forget/delete
     {
-        NSInteger oldSelectedRow = _librariesTable.selectedRow;
-        if (oldSelectedRow > -1)
-        {
-            if ([MMUiUtility alertWithText: @"Stop using this library"
-                              withQuestion: @"Do you want to stop using the selected library?\nYou can add it back at a later time."
-                                     style: NSInformationalAlertStyle])
-            {
-                [_libraryManager removeLibraryAtIndex: oldSelectedRow];
-                [self closeTheOpenLibrary];
-                [_librariesTable reloadData];
-                if (oldSelectedRow >= [_libraryManager totalLibraries])
-                {
-                    oldSelectedRow = [_libraryManager totalLibraries] - 1;
-                }
-                if (oldSelectedRow >= 0)
-                {
-                    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: oldSelectedRow];
-                    [_librariesTable selectRowIndexes: indexSet
-                                 byExtendingSelection: NO];
-                }
-            }
-        }
-        [self setTransmitButtonStateWithHint: NO];
+        [self removeLibraryDialog];
     }
 }
 
@@ -307,50 +209,11 @@
 {
     if (segmentedControl.selectedSegment == 0) // 0 is add
     {
-        MMSmugmug *newService = [[MMSmugmug alloc] init];
-        [newService authenticate: ^(BOOL success)
-            {
-                if (success)
-                {
-                    NSError *error;
-                    NSInteger row = [_serviceManager insertService: newService error: &error];
-                    [_servicesTable reloadData];
-                    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: row];
-                    [_servicesTable selectRowIndexes: indexSet
-                                 byExtendingSelection: NO];
-                }
-                else
-                {
-                    [MMUiUtility alertWithText: @"Unable to add service."
-                                  withQuestion: nil
-                                         style: NSWarningAlertStyle];
-                }
-         }];
+        [self addSmugmugService];
     }
     else if (segmentedControl.selectedSegment == 1) // 1 is forget/delete
     {
-        NSInteger oldSelectedRow = _servicesTable.selectedRow;
-        if (oldSelectedRow > -1)
-        {
-            if ([MMUiUtility alertWithText: @"Stop using this service"
-                              withQuestion: @"Do you want to stop using the selected selected?\nYou can add it back at a later time."
-                                     style: NSInformationalAlertStyle])
-            {
-                [_serviceManager removeServiceAtIndex: oldSelectedRow];
-                [_servicesTable reloadData];
-                if (oldSelectedRow >= [_serviceManager totalServices])
-                {
-                    oldSelectedRow = [_serviceManager totalServices] - 1;
-                }
-                if (oldSelectedRow >= 0)
-                {
-                    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: oldSelectedRow];
-                    [_servicesTable selectRowIndexes: indexSet
-                                byExtendingSelection: NO];
-                }
-            }
-        }
-        [self setTransmitButtonStateWithHint: NO];
+        [self removeServiceDialog];
     }
 }
 
@@ -363,7 +226,133 @@
         event.toBeProcessed = ((NSButton *)sender).state;
         [self setTransmitButtonStateWithHint: event.toBeProcessed];
     }
+}
 
+# pragma mark Actions shared between controls and menus
+- (void) addLibraryDialog
+{
+    NSOpenPanel* dialog = [NSOpenPanel openPanel];
+
+    // Accept file entries ending in .photolibrary or of type "package"
+    [dialog setAllowedFileTypes: @[@"photolibrary", @"com.apple.package"]];
+    
+    // Point to the ~/Pictures (or its equivalent in some other language)
+    NSArray * directories = NSSearchPathForDirectoriesInDomains(NSPicturesDirectory, NSUserDomainMask, YES);
+    NSURL *url = [NSURL fileURLWithPath: [directories firstObject]];
+    [dialog setDirectoryURL: url];
+
+    // Show it as a window-modal
+    [dialog beginSheetModalForWindow:self.window
+                   completionHandler:^(NSInteger result)
+     {
+         if (result == NSFileHandlingPanelOKButton)
+         {
+             // And if the user selected a file, try to open it
+             NSURL *libraryUrl = [[dialog URLs] firstObject];
+             MMPhotoLibrary *library = [[MMPhotoLibrary alloc] initWithPath: libraryUrl.path];
+
+             if (library)
+             {
+                 [library close]; // We just need to test that it can be init'd, but we don't do a full open.
+                 NSError *error;
+                 NSInteger row = [_libraryManager insertLibraryPath: libraryUrl.path error: &error];
+                 if (error)
+                 {
+                     [MMUiUtility alertWithError: error style: NSWarningAlertStyle];
+                 }
+                 else
+                 {
+                     [_librariesTable reloadData];
+                     NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: row];
+                     [_librariesTable selectRowIndexes: indexSet
+                                  byExtendingSelection: NO];
+                 };
+             }
+             else
+             {
+                 [MMUiUtility alertWithText: @"The library could not be opened."
+                               withQuestion: nil
+                                      style: NSWarningAlertStyle];
+             }
+         }
+     }
+     ];
+}
+
+- (void) addSmugmugService
+{
+    MMSmugmug *newService = [[MMSmugmug alloc] init];
+    [newService authenticate: ^(BOOL success)
+     {
+         if (success)
+         {
+             NSError *error;
+             NSInteger row = [_serviceManager insertService: newService error: &error];
+             [_servicesTable reloadData];
+             NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: row];
+             [_servicesTable selectRowIndexes: indexSet
+                         byExtendingSelection: NO];
+         }
+         else
+         {
+             [MMUiUtility alertWithText: @"Unable to add service."
+                           withQuestion: nil
+                                  style: NSWarningAlertStyle];
+         }
+     }];
+}
+
+- (void) removeLibraryDialog
+{
+    NSInteger oldSelectedRow = _librariesTable.selectedRow;
+    if (oldSelectedRow > -1)
+    {
+        if ([MMUiUtility alertWithText: @"Stop using this library"
+                          withQuestion: @"Do you want to stop using the selected library?\nYou can add it back at a later time."
+                                 style: NSInformationalAlertStyle])
+        {
+            [_libraryManager removeLibraryAtIndex: oldSelectedRow];
+            [self closeTheOpenLibrary];
+            [_librariesTable reloadData];
+            if (oldSelectedRow >= [_libraryManager totalLibraries])
+            {
+                oldSelectedRow = [_libraryManager totalLibraries] - 1;
+            }
+            if (oldSelectedRow >= 0)
+            {
+                NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: oldSelectedRow];
+                [_librariesTable selectRowIndexes: indexSet
+                             byExtendingSelection: NO];
+            }
+        }
+    }
+    [self setTransmitButtonStateWithHint: NO];
+}
+
+- (void) removeServiceDialog
+{
+    NSInteger oldSelectedRow = _servicesTable.selectedRow;
+    if (oldSelectedRow > -1)
+    {
+        if ([MMUiUtility alertWithText: @"Stop using this service"
+                          withQuestion: @"Do you want to stop using the selected selected?\nYou can add it back at a later time."
+                                 style: NSInformationalAlertStyle])
+        {
+            [_serviceManager removeServiceAtIndex: oldSelectedRow];
+            [_servicesTable reloadData];
+            if (oldSelectedRow >= [_serviceManager totalServices])
+            {
+                oldSelectedRow = [_serviceManager totalServices] - 1;
+            }
+            if (oldSelectedRow >= 0)
+            {
+                NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: oldSelectedRow];
+                [_servicesTable selectRowIndexes: indexSet
+                            byExtendingSelection: NO];
+            }
+        }
+    }
+    [self setTransmitButtonStateWithHint: NO];
 }
 
 #pragma mark Proxy methods for the progress panel
@@ -387,7 +376,6 @@
     {
         _progressWindowController.currentThumbnail.image = photoThumbnailImage;
     }
-    
 }
 
 /**
@@ -536,14 +524,14 @@
    constrainMinCoordinate:(CGFloat) proposedMin
               ofSubviewAt:(NSInteger) dividerIndex
 {
-    return 70.0;
+    return 90.0;
 }
 
 - (CGFloat)     splitView: (NSSplitView *) splitView
    constrainMaxCoordinate: (CGFloat) proposedMin
               ofSubviewAt: (NSInteger) dividerIndex
 {
-    return splitView.frame.size.height - 70.0;
+    return splitView.frame.size.height - 100.0;
 }
 
 - (NSIndexSet *)            tableView: (NSTableView *) tableView
@@ -590,5 +578,4 @@
     }
     [self setTransmitButtonStateWithHint: NO];
 }
-
 @end

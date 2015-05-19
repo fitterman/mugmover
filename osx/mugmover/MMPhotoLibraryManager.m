@@ -13,12 +13,12 @@ NSInteger const maxSupportedLibraries = 50;
 
 @implementation MMPhotoLibraryManager
 
-- (id) initForViewController: (id) viewController
+- (id) initForWindowController: (id) windowController
 {
     self = [super init];
     if (self)
     {
-        _viewController = viewController;
+        _windowController = windowController;
         _libraries = [[NSMutableArray alloc] initWithCapacity: maxSupportedLibraries];
         [self deserializeFromDefaults];
     }

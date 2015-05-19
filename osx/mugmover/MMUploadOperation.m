@@ -8,7 +8,7 @@
 
 #import "MMFileUtility.h"
 #import "MMLibraryEvent.h"
-#import "MMMasterViewController.h"
+#import "MMWindowController.h"
 #import "MMOauthAbstract.h"
 #import "MMOauthSmugmug.h"
 #import "MMPhoto.h"
@@ -25,7 +25,7 @@ extern const NSInteger MMDefaultRetries;
              service: (MMSmugmug *) service
             folderId: (NSString *) folderId
              options: (NSDictionary *) options
-      viewController: (MMMasterViewController *) viewController
+    windowController: (MMWindowController *) windowController
 {
     self = [self init];
     if (self)
@@ -35,7 +35,7 @@ extern const NSInteger MMDefaultRetries;
         _skipProcessedImages = [[options valueForKeyPath: @"skipProcessedImages"] boolValue];
         _row = row;
         _service = service;
-        _viewController = viewController;
+        _windowController = windowController;
     }
     return self;
 }    
@@ -49,7 +49,7 @@ extern const NSInteger MMDefaultRetries;
              skipProcessedImages: _skipProcessedImages];
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
      {
-         [_viewController.eventsTable reloadData];
+         [_windowController.eventsTable reloadData];
          _folderId = nil;
      }
     ];
@@ -61,7 +61,7 @@ extern const NSInteger MMDefaultRetries;
     {
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
          {
-             [_viewController uploadCompleted];
+             [_windowController uploadCompleted];
          }
          ];
     }
@@ -122,7 +122,7 @@ extern const NSInteger MMDefaultRetries;
                 if (replacementFor && skipProcessedImages)
                 {
                     completedTransfers++;   // We consider it sent already so we can get the icons right
-                    [_viewController incrementProgressBy: 1.0];
+                    [_windowController incrementProgressBy: 1.0];
                     continue;               // And then we skip the processing
                 }
             }
@@ -131,10 +131,10 @@ extern const NSInteger MMDefaultRetries;
             NSImage *currentPhotoThumbnail = [photo getThumbnailImage];
             [event setActivePhotoThumbnail: currentPhotoThumbnail
                                  withStatus: MMEventStatusActive];
-            [_viewController setActivePhotoThumbnail: currentPhotoThumbnail];
+            [_windowController setActivePhotoThumbnail: currentPhotoThumbnail];
             [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
              {
-                 [_viewController.eventsTable reloadData];
+                 [_windowController.eventsTable reloadData];
              }
              ];
 
@@ -205,7 +205,7 @@ extern const NSInteger MMDefaultRetries;
                 [defaults setObject: albumState forKey: albumKey];
                 [defaults synchronize];
                 completedTransfers++;
-                [_viewController incrementProgressBy: 1.0];
+                [_windowController incrementProgressBy: 1.0];
             }
         }
         if (completedTransfers == [photos count])

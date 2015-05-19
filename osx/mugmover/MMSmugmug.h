@@ -10,7 +10,6 @@
 #import "MMFace.h"
 @class MMOauthSmugmug;
 @class MMLibraryEvent;
-@class MMMasterViewController;
 @class MMPhotoLibrary;
 
 @interface MMSmugmug : NSObject

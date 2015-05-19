@@ -8,15 +8,15 @@
 
 #import <Foundation/Foundation.h>
 
-@class MMMasterViewController;
+@class MMWindowController;
 @class MMSmugmug;
 
 @interface MMServiceManager : NSObject
 
 @property (strong)          NSMutableArray *            services;
-@property (weak)            MMMasterViewController *    viewController;
+@property (weak)            MMWindowController *    windowController;
 
-- (id) initForViewController: (id) viewController;
+- (id) initForWindowController: (id) windowController;
 
 - (NSInteger) insertService: newService
                       error: (NSError **) error;

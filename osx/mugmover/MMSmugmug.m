@@ -10,7 +10,6 @@
 #import "MMPhotoLibrary.h"
 #import "MMOauthSmugmug.h"
 #import "MMDataUtility.h"
-#import "MMMasterViewController.h"
 
 @implementation MMSmugmug
 

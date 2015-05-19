@@ -24,8 +24,6 @@
 		C4836F991A6080DB006EB567 /* MMNetworkRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C4836F981A6080DB006EB567 /* MMNetworkRequest.m */; };
 		C48C5DD51AB89AAB007C10B0 /* MMSmugmug.m in Sources */ = {isa = PBXBuildFile; fileRef = C48C5DD41AB89AAB007C10B0 /* MMSmugmug.m */; };
 		C48C5DD91AB89AD4007C10B0 /* MMSmugmug.h in Resources */ = {isa = PBXBuildFile; fileRef = C48C5DD81AB89AD4007C10B0 /* MMSmugmug.h */; };
-		C49376E41ACEF1C9006DB77D /* MMMasterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C49376E21ACEF1C9006DB77D /* MMMasterViewController.m */; };
-		C49376E51ACEF1C9006DB77D /* MMMasterViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C49376E31ACEF1C9006DB77D /* MMMasterViewController.xib */; };
 		C49377111AD04C8F006DB77D /* MMLibraryEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = C49377101AD04C8F006DB77D /* MMLibraryEvent.m */; };
 		C49377141AD05D4E006DB77D /* MMComplexTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */; };
 		C493FBA81AEFA386009492BD /* MMServiceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C493FBA71AEFA386009492BD /* MMServiceManager.m */; };
@@ -43,7 +41,9 @@
 		C4968CE11A15101500F34E46 /* mugmoverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CE01A15101500F34E46 /* mugmoverTests.m */; };
 		C4A687A71ACC7682007CDC6D /* MMFileUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A61ACC7682007CDC6D /* MMFileUtility.m */; };
 		C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A91ACC773E007CDC6D /* MMDataUtility.m */; };
-		C4A702131AEDD738002A7E01 /* MMOptionsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4A702121AEDD738002A7E01 /* MMOptionsView.xib */; };
+		C4ACCCBA1B0A700C00BED7FF /* MMWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = C4ACCCB81B0A700C00BED7FF /* MMWindowController.m */; };
+		C4ACCCBB1B0A700C00BED7FF /* MMWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4ACCCB91B0A700C00BED7FF /* MMWindowController.xib */; };
+		C4C4F0E71B06967600A0C09D /* MMPrefsWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4C4F0E61B06967600A0C09D /* MMPrefsWindowController.xib */; };
 		C4D3A4161AE690D0005E72B6 /* Library-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4D3A4151AE690D0005E72B6 /* Library-128.png */; };
 		C4E3D94A1ADC64AF00D82337 /* Incomplete-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4E3D9491ADC64AF00D82337 /* Incomplete-128.png */; };
 		C4E3D94E1ADC678900D82337 /* Photograph-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4E3D94D1ADC678900D82337 /* Photograph-128.png */; };
@@ -112,9 +112,6 @@
 		C4836F981A6080DB006EB567 /* MMNetworkRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMNetworkRequest.m; sourceTree = "<group>"; };
 		C48C5DD41AB89AAB007C10B0 /* MMSmugmug.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMSmugmug.m; sourceTree = "<group>"; };
 		C48C5DD81AB89AD4007C10B0 /* MMSmugmug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMSmugmug.h; sourceTree = "<group>"; };
-		C49376E11ACEF1C9006DB77D /* MMMasterViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMMasterViewController.h; sourceTree = "<group>"; };
-		C49376E21ACEF1C9006DB77D /* MMMasterViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMMasterViewController.m; sourceTree = "<group>"; };
-		C49376E31ACEF1C9006DB77D /* MMMasterViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMMasterViewController.xib; sourceTree = "<group>"; };
 		C493770F1AD04C8F006DB77D /* MMLibraryEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMLibraryEvent.h; sourceTree = "<group>"; };
 		C49377101AD04C8F006DB77D /* MMLibraryEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMLibraryEvent.m; sourceTree = "<group>"; };
 		C49377121AD05D4E006DB77D /* MMComplexTableCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMComplexTableCellView.h; sourceTree = "<group>"; };
@@ -145,7 +142,10 @@
 		C4A687A61ACC7682007CDC6D /* MMFileUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFileUtility.m; sourceTree = "<group>"; };
 		C4A687A81ACC773E007CDC6D /* MMDataUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMDataUtility.h; sourceTree = "<group>"; };
 		C4A687A91ACC773E007CDC6D /* MMDataUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMDataUtility.m; sourceTree = "<group>"; };
-		C4A702121AEDD738002A7E01 /* MMOptionsView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMOptionsView.xib; sourceTree = "<group>"; };
+		C4ACCCB71B0A700C00BED7FF /* MMWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMWindowController.h; sourceTree = "<group>"; };
+		C4ACCCB81B0A700C00BED7FF /* MMWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMWindowController.m; sourceTree = "<group>"; };
+		C4ACCCB91B0A700C00BED7FF /* MMWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMWindowController.xib; sourceTree = "<group>"; };
+		C4C4F0E61B06967600A0C09D /* MMPrefsWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMPrefsWindowController.xib; sourceTree = "<group>"; };
 		C4D3A4151AE690D0005E72B6 /* Library-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Library-128.png"; sourceTree = "<group>"; };
 		C4E3D9491ADC64AF00D82337 /* Incomplete-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Incomplete-128.png"; sourceTree = "<group>"; };
 		C4E3D94D1ADC678900D82337 /* Photograph-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Photograph-128.png"; sourceTree = "<group>"; };
@@ -211,18 +211,18 @@
 			children = (
 				C4968CC81A15101500F34E46 /* MMAppDelegate.h */,
 				C4968CC91A15101500F34E46 /* MMAppDelegate.m */,
+				C4ACCCB71B0A700C00BED7FF /* MMWindowController.h */,
+				C4ACCCB81B0A700C00BED7FF /* MMWindowController.m */,
+				C4ACCCB91B0A700C00BED7FF /* MMWindowController.xib */,
 				C4968CCB1A15101500F34E46 /* MainMenu.xib */,
 				C4F934FD1AD728E500AB465B /* MMCheckboxTableCellView.h */,
 				C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */,
 				C49377121AD05D4E006DB77D /* MMComplexTableCellView.h */,
 				C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */,
-				C49376E11ACEF1C9006DB77D /* MMMasterViewController.h */,
-				C49376E21ACEF1C9006DB77D /* MMMasterViewController.m */,
-				C49376E31ACEF1C9006DB77D /* MMMasterViewController.xib */,
 				C4FF553E1B02B09D0059AE68 /* MMProgressWindowController.h */,
 				C4FF553F1B02B09D0059AE68 /* MMProgressWindowController.m */,
 				C4FF55401B02B09D0059AE68 /* MMProgressWindowController.xib */,
-				C4A702121AEDD738002A7E01 /* MMOptionsView.xib */,
+				C4C4F0E61B06967600A0C09D /* MMPrefsWindowController.xib */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -470,14 +470,14 @@
 				C4D3A4161AE690D0005E72B6 /* Library-128.png in Resources */,
 				C4968CC71A15101500F34E46 /* Credits.rtf in Resources */,
 				C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */,
+				C4C4F0E71B06967600A0C09D /* MMPrefsWindowController.xib in Resources */,
+				C4ACCCBB1B0A700C00BED7FF /* MMWindowController.xib in Resources */,
 				C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */,
 				C4FF55421B02B09D0059AE68 /* MMProgressWindowController.xib in Resources */,
 				C4968CCD1A15101500F34E46 /* MainMenu.xib in Resources */,
 				C4F935041AD884C200AB465B /* Active-128.gif in Resources */,
 				C493FBAA1AEFB220009492BD /* Service-128.png in Resources */,
-				C49376E51ACEF1C9006DB77D /* MMMasterViewController.xib in Resources */,
 				C4E3D94E1ADC678900D82337 /* Photograph-128.png in Resources */,
-				C4A702131AEDD738002A7E01 /* MMOptionsView.xib in Resources */,
 				C404A9CE1AD6C90400E197F1 /* Completed-128.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -536,10 +536,10 @@
 				C4968CCA1A15101500F34E46 /* MMAppDelegate.m in Sources */,
 				C4F934FE1AD728E500AB465B /* MMCheckboxTableCellView.h in Sources */,
 				C49377141AD05D4E006DB77D /* MMComplexTableCellView.m in Sources */,
-				C49376E41ACEF1C9006DB77D /* MMMasterViewController.m in Sources */,
 				C4F935001AD7290600AB465B /* MMCheckboxTableCellView.m in Sources */,
 				C4968CC31A15101500F34E46 /* main.m in Sources */,
 				C47304211AC317320008E53E /* MMOauthAbstract.m in Sources */,
+				C4ACCCBA1B0A700C00BED7FF /* MMWindowController.m in Sources */,
 				C47304241AC455600008E53E /* MMOauthFlickr.m in Sources */,
 				C4836F951A5F230E006EB567 /* NSString+Encode.m in Sources */,
 				C4836F921A5F14F5006EB567 /* MMApiRequest.m in Sources */,
