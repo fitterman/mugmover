@@ -8,7 +8,7 @@
 
 #import "MMPhotoLibrary.h"
 #import "MMPhotoLibraryManager.h"
-#import "MMPrefsWindowController.h"
+#import "MMPrefsManager.h"
 
 NSInteger const maxSupportedLibraries = 50;
 
@@ -21,7 +21,7 @@ NSInteger const maxSupportedLibraries = 50;
     {
         _windowController = windowController;
         _libraries = [[NSMutableArray alloc] initWithCapacity: maxSupportedLibraries];
-        [MMPrefsWindowController deserializeLibrariesFromDefaultsMergingIntoMutableArray: _libraries];
+        [MMPrefsManager deserializeLibrariesFromDefaultsMergingIntoMutableArray: _libraries];
     }
     return self;
 }
@@ -73,7 +73,7 @@ NSInteger const maxSupportedLibraries = 50;
                                             NSString *name2 = [MMPhotoLibrary nameFromPath: libPath2];
                                             return  [name1 localizedCompare: name2];
                                         }];
-    [MMPrefsWindowController serializeLibrariesToDefaults: _libraries];
+    [MMPrefsManager serializeLibrariesToDefaults: _libraries];
     return [_libraries indexOfObject: newLibraryPath];
 }
 
@@ -83,7 +83,7 @@ NSInteger const maxSupportedLibraries = 50;
 - (void) removeLibraryAtIndex: (NSUInteger) index
 {
     [_libraries removeObjectAtIndex: index];
-    [MMPrefsWindowController serializeLibrariesToDefaults: _libraries];
+    [MMPrefsManager serializeLibrariesToDefaults: _libraries];
 }
 
 - (NSString *) libraryNameForIndex: (NSInteger) index

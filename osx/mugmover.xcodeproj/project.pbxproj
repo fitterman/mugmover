@@ -41,6 +41,7 @@
 		C4968CD71A15101500F34E46 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4968CB61A15101500F34E46 /* Cocoa.framework */; };
 		C4968CDF1A15101500F34E46 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C4968CDD1A15101500F34E46 /* InfoPlist.strings */; };
 		C4968CE11A15101500F34E46 /* mugmoverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C4968CE01A15101500F34E46 /* mugmoverTests.m */; };
+		C49EB6E51B0E6C5000239EEA /* MMPrefsManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C49EB6E41B0E6C5000239EEA /* MMPrefsManager.m */; };
 		C4A687A71ACC7682007CDC6D /* MMFileUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A61ACC7682007CDC6D /* MMFileUtility.m */; };
 		C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A91ACC773E007CDC6D /* MMDataUtility.m */; };
 		C4ACCCBA1B0A700C00BED7FF /* MMWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = C4ACCCB81B0A700C00BED7FF /* MMWindowController.m */; };
@@ -142,6 +143,8 @@
 		C4968CDC1A15101500F34E46 /* mugmoverTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "mugmoverTests-Info.plist"; sourceTree = "<group>"; };
 		C4968CDE1A15101500F34E46 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C4968CE01A15101500F34E46 /* mugmoverTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = mugmoverTests.m; sourceTree = "<group>"; };
+		C49EB6E31B0E6C5000239EEA /* MMPrefsManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMPrefsManager.h; sourceTree = "<group>"; };
+		C49EB6E41B0E6C5000239EEA /* MMPrefsManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPrefsManager.m; sourceTree = "<group>"; };
 		C4A687A51ACC7682007CDC6D /* MMFileUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFileUtility.h; sourceTree = "<group>"; };
 		C4A687A61ACC7682007CDC6D /* MMFileUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFileUtility.m; sourceTree = "<group>"; };
 		C4A687A81ACC773E007CDC6D /* MMDataUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMDataUtility.h; sourceTree = "<group>"; };
@@ -247,6 +250,8 @@
 				C44583211AE58ED700566731 /* MMPhotoLibraryManager.m */,
 				C42F7AD91A1533AB006E38DD /* MMPoint.h */,
 				C42F7ADA1A1533AB006E38DD /* MMPoint.m */,
+				C49EB6E31B0E6C5000239EEA /* MMPrefsManager.h */,
+				C49EB6E41B0E6C5000239EEA /* MMPrefsManager.m */,
 				C493FBA61AEFA386009492BD /* MMServiceManager.h */,
 				C493FBA71AEFA386009492BD /* MMServiceManager.m */,
 				C404A9C01AD44BFA00E197F1 /* MMSmugmugFolder.h */,
@@ -547,6 +552,7 @@
 				C4ACCCBA1B0A700C00BED7FF /* MMWindowController.m in Sources */,
 				C47304241AC455600008E53E /* MMOauthFlickr.m in Sources */,
 				C4836F951A5F230E006EB567 /* NSString+Encode.m in Sources */,
+				C49EB6E51B0E6C5000239EEA /* MMPrefsManager.m in Sources */,
 				C4836F921A5F14F5006EB567 /* MMApiRequest.m in Sources */,
 				C404A9C21AD44BFA00E197F1 /* MMSmugmugFolder.m in Sources */,
 				C404A9C51AD5B7DB00E197F1 /* MMUploadOperation.m in Sources */,

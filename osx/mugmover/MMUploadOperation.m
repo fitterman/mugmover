@@ -13,7 +13,7 @@
 #import "MMOauthSmugmug.h"
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
-#import "MMPrefsWindowController.h"
+#import "MMPrefsManager.h"
 #import "MMSmugmug.h"
 #import "MMUploadOperation.h"
 
@@ -83,8 +83,8 @@ extern const NSInteger MMDefaultRetries;
                                               displayName: name
                                               description: description];
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        BOOL retransmitFilesSentPreviously = [MMPrefsWindowController
-                                              getBoolForPreferenceNamed: @"retransmitFilesSentPreviously"];
+        BOOL retransmitFilesSentPreviously = [MMPrefsManager
+                                              boolForKey: @"retransmitFilesSentPreviously"];
         NSString *albumKey = [NSString stringWithFormat: @"smugmug.%@.albums.%@",
                               service.uniqueId,
                               [event uuid]];

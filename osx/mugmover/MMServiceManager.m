@@ -7,7 +7,7 @@
 //
 
 #import "MMPhotoLibrary.h"
-#import "MMPrefsWindowController.h"
+#import "MMPrefsManager.h"
 #import "MMServiceManager.h"
 #import "MMSmugmug.h"
 #import "MMOauthAbstract.h"
@@ -23,7 +23,7 @@ NSInteger const maxSupportedServices = 50;
     {
         _windowController = windowController;
         _services = [[NSMutableArray alloc] initWithCapacity: maxSupportedServices];
-        [MMPrefsWindowController deserializeServicesFromDefaultsMergingIntoMutableArray: _services];
+        [MMPrefsManager deserializeServicesFromDefaultsMergingIntoMutableArray: _services];
     }
     return self;
 }
@@ -71,11 +71,11 @@ NSInteger const maxSupportedServices = 50;
     [_services addObject: newService];
 
     MMOauthAbstract *oa = (MMOauthAbstract *)newService.smugmugOauth;
-    [MMPrefsWindowController storeToken: oa.accessToken
-                                 secret: oa.tokenSecret
-                             forService: @"smugmug"
-                               uniqueId: newService.uniqueId];
-    [MMPrefsWindowController serializeServicesToDefaults: _services];
+    [MMPrefsManager storeToken: oa.accessToken
+                        secret: oa.tokenSecret
+                    forService: @"smugmug"
+                      uniqueId: newService.uniqueId];
+    [MMPrefsManager serializeServicesToDefaults: _services];
     return [self totalServices] - 1;
 }
 
@@ -85,7 +85,7 @@ NSInteger const maxSupportedServices = 50;
 - (void) removeServiceAtIndex: (NSUInteger) index
 {
     [_services removeObjectAtIndex: index];
-    [MMPrefsWindowController serializeServicesToDefaults: _services];
+    [MMPrefsManager serializeServicesToDefaults: _services];
 }
 
 - (MMSmugmug *) serviceForIndex: (NSInteger) index

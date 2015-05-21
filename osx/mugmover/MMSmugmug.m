@@ -8,7 +8,7 @@
 
 #import "MMSmugmug.h"
 #import "MMPhotoLibrary.h"
-#import "MMPrefsWindowController.h"
+#import "MMPrefsManager.h"
 #import "MMOauthSmugmug.h"
 #import "MMDataUtility.h"
 
@@ -105,14 +105,21 @@ long                retryCount;
 {
     if (_uniqueId)
     {
-        NSArray *tokenAndSecret = [MMPrefsWindowController getTokenAndSecretForService: @"smugmug"
-                                                                              uniqueId: _uniqueId];
-        _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: tokenAndSecret[0]
-                                                             secret: tokenAndSecret[1]];
+        NSArray *tokenAndSecret = [MMPrefsManager tokenAndSecretForService: @"smugmug"
+                                                                  uniqueId: _uniqueId];
+        if (tokenAndSecret[0] && tokenAndSecret[1])
+        {
+            _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: tokenAndSecret[0]
+                                                                 secret: tokenAndSecret[1]];
+        }
+        else
+        {
+            _smugmugOauth = nil;
+        }
         if (!_smugmugOauth)
         {
-            [MMPrefsWindowController clearTokenAndSecretForService: @"smugmug"
-                                                          uniqueId: _uniqueId];
+            [MMPrefsManager clearTokenAndSecretForService: @"smugmug"
+                                                 uniqueId: _uniqueId];
         }
     }
     if (_smugmugOauth || !attemptRetry)
@@ -256,11 +263,10 @@ long                retryCount;
 {
   
     // 1. Find the preferences. See what it holds
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSString *folderKey = [NSString stringWithFormat: @"smugmug.%@.folder.%@",
                            _uniqueId,
                           [library databaseUuid]];
-    NSString *folderId = [defaults objectForKey: folderKey];
+    NSString *folderId = [MMPrefsManager objectForKey: folderKey];
     NSString *apiRequest = nil;
     NSDictionary *parsedServerResponse;
     if (folderId)
@@ -320,8 +326,7 @@ long                retryCount;
         folderId = [folderId lastPathComponent];
         
         // Store it in the defaults
-        [defaults setObject: folderId forKey: folderKey];
-        [defaults synchronize];
+        [MMPrefsManager setObject: folderId forKey: folderKey];
         
         // If it was found or created: send it back
         return folderId;

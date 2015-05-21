@@ -8,6 +8,7 @@
 
 
 #import "MMAppDelegate.h"
+#import "MMPrefsManager.h"
 #import "MMPrefsWindowController.h"
 #import "MMWindowController.h"
 
@@ -54,7 +55,7 @@ BOOL const MMdebugLevel;
 {
     [DDLog addLogger:[DDASLLogger sharedInstance]];
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
-    [MMPrefsWindowController setDefaultPreferenceValues];
+    [MMPrefsManager setDefaultPreferenceValues];
     
     [_window close]; // We don't use the system-provided window
     _windowController = [[MMWindowController alloc] initWithWindowNibName:@"MMWindowController"];
