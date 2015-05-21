@@ -176,12 +176,10 @@
                 if (event.toBeProcessed)
                 {
                     _totalImagesToTransmit += [[event filecount] integerValue];
-                    NSDictionary *options = @{@"skipProcessedImages": @(_skipProcessedImageCheckbox.state)};
                     MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
                                                                                               row: row
                                                                                           service: serviceApi
                                                                                          folderId: folderId
-                                                                                          options: options
                                                                                  windowController: self];
                     [_uploadOperationQueue addOperation: uploadOperation];
                 }
@@ -242,8 +240,8 @@
     [dialog setDirectoryURL: url];
 
     // Show it as a window-modal
-    [dialog beginSheetModalForWindow:self.window
-                   completionHandler:^(NSInteger result)
+    [dialog beginSheetModalForWindow: self.window
+                   completionHandler: ^(NSInteger result)
      {
          if (result == NSFileHandlingPanelOKButton)
          {

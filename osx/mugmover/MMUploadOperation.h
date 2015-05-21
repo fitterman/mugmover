@@ -19,14 +19,12 @@
 @property (weak, readonly)      MMLibraryEvent *            event;
 @property (assign)              NSInteger                   row;
 @property (weak, readonly)      MMSmugmug *                 service;
-@property (assign)              BOOL                        skipProcessedImages;
 @property (weak)                MMWindowController *        windowController;
 
 - (id) initWithEvent: (MMLibraryEvent *) event
                  row: (NSInteger) row
              service: (MMSmugmug *) service
             folderId: (NSString *) folderId
-             options: (NSDictionary *) options
     windowController: (MMWindowController *) windowController;
 
 @end

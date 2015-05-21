@@ -8,6 +8,7 @@
 
 #import "MMPhotoLibrary.h"
 #import "MMPhotoLibraryManager.h"
+#import "MMPrefsWindowController.h"
 
 NSInteger const maxSupportedLibraries = 50;
 
@@ -20,7 +21,7 @@ NSInteger const maxSupportedLibraries = 50;
     {
         _windowController = windowController;
         _libraries = [[NSMutableArray alloc] initWithCapacity: maxSupportedLibraries];
-        [self deserializeFromDefaults];
+        [MMPrefsWindowController deserializeLibrariesFromDefaultsMergingIntoMutableArray: _libraries];
     }
     return self;
 }
@@ -72,7 +73,7 @@ NSInteger const maxSupportedLibraries = 50;
                                             NSString *name2 = [MMPhotoLibrary nameFromPath: libPath2];
                                             return  [name1 localizedCompare: name2];
                                         }];
-    [self serializeToDefaults];
+    [MMPrefsWindowController serializeLibrariesToDefaults: _libraries];
     return [_libraries indexOfObject: newLibraryPath];
 }
 
@@ -82,24 +83,7 @@ NSInteger const maxSupportedLibraries = 50;
 - (void) removeLibraryAtIndex: (NSUInteger) index
 {
     [_libraries removeObjectAtIndex: index];
-    [self serializeToDefaults];
-}
-
-- (void) serializeToDefaults
-{
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject: _libraries forKey: @"libraries"];
-    [defaults synchronize];
-}
-
-- (void) deserializeFromDefaults
-{
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSArray *array = [defaults objectForKey: @"libraries"];
-    if (array)
-    {
-        [_libraries addObjectsFromArray: array];
-    }
+    [MMPrefsWindowController serializeLibrariesToDefaults: _libraries];
 }
 
 - (NSString *) libraryNameForIndex: (NSInteger) index

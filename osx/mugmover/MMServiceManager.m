@@ -7,6 +7,7 @@
 //
 
 #import "MMPhotoLibrary.h"
+#import "MMPrefsWindowController.h"
 #import "MMServiceManager.h"
 #import "MMSmugmug.h"
 #import "MMOauthAbstract.h"
@@ -22,7 +23,7 @@ NSInteger const maxSupportedServices = 50;
     {
         _windowController = windowController;
         _services = [[NSMutableArray alloc] initWithCapacity: maxSupportedServices];
-        [self deserializeFromDefaults];
+        [MMPrefsWindowController deserializeServicesFromDefaultsMergingIntoMutableArray: _services];
     }
     return self;
 }
@@ -69,15 +70,12 @@ NSInteger const maxSupportedServices = 50;
     }
     [_services addObject: newService];
 
-    NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", newService.uniqueId];
-    NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", newService.uniqueId];
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     MMOauthAbstract *oa = (MMOauthAbstract *)newService.smugmugOauth;
-    [defaults setObject: oa.accessToken forKey: atKey];
-    [defaults setObject: oa.tokenSecret forKey: tsKey];
-    [defaults synchronize];
-
-    [self serializeToDefaults];
+    [MMPrefsWindowController storeToken: oa.accessToken
+                                 secret: oa.tokenSecret
+                             forService: @"smugmug"
+                               uniqueId: newService.uniqueId];
+    [MMPrefsWindowController serializeServicesToDefaults: _services];
     return [self totalServices] - 1;
 }
 
@@ -87,36 +85,7 @@ NSInteger const maxSupportedServices = 50;
 - (void) removeServiceAtIndex: (NSUInteger) index
 {
     [_services removeObjectAtIndex: index];
-    [self serializeToDefaults];
-}
-
-- (void) deserializeFromDefaults
-{
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSArray *array = [defaults objectForKey: @"services"];
-    if (array)
-    {
-        for (NSDictionary *dictionary in array)
-        {
-            MMSmugmug *service = [[MMSmugmug alloc] initFromDictionary: dictionary];
-            if (service)
-            {
-                [_services addObject: service];
-            }
-        }
-    }
-}
-
-- (void) serializeToDefaults
-{
-    NSMutableArray *serializedServices = [[NSMutableArray alloc] initWithCapacity: [self totalServices]];
-    for (MMSmugmug *service in _services)
-    {
-        [serializedServices addObject: [service serialize]];
-    }
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject: serializedServices forKey: @"services"];
-    [defaults synchronize];
+    [MMPrefsWindowController serializeServicesToDefaults: _services];
 }
 
 - (MMSmugmug *) serviceForIndex: (NSInteger) index

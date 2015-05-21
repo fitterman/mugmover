@@ -8,6 +8,7 @@
 
 #import "MMSmugmug.h"
 #import "MMPhotoLibrary.h"
+#import "MMPrefsWindowController.h"
 #import "MMOauthSmugmug.h"
 #import "MMDataUtility.h"
 
@@ -102,19 +103,16 @@ long                retryCount;
 
 - (void) configureOauthRetryOnFailure: (BOOL) attemptRetry
 {
-    // WIPE THE DEFAULTS:[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
     if (_uniqueId)
     {
-        NSString *atKey = [NSString stringWithFormat: @"smugmug.%@.accessToken", _uniqueId];
-        NSString *tsKey = [NSString stringWithFormat: @"smugmug.%@.tokenSecret", _uniqueId];
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: [defaults objectForKey: atKey]
-                                                             secret: [defaults objectForKey: tsKey]];
+        NSArray *tokenAndSecret = [MMPrefsWindowController getTokenAndSecretForService: @"smugmug"
+                                                                              uniqueId: _uniqueId];
+        _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: tokenAndSecret[0]
+                                                             secret: tokenAndSecret[1]];
         if (!_smugmugOauth)
         {
-            [defaults removeObjectForKey: atKey];
-            [defaults removeObjectForKey: tsKey];
-            [defaults synchronize];
+            [MMPrefsWindowController clearTokenAndSecretForService: @"smugmug"
+                                                          uniqueId: _uniqueId];
         }
     }
     if (_smugmugOauth || !attemptRetry)

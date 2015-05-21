@@ -10,6 +10,7 @@
 @class MMLibraryEvent;
 @class MMPhotoLibrary;
 @class MMPhotoLibraryManager;
+@class MMPrefsWindowController;
 @class MMProgressWindowController;
 @class MMServiceManager;
 
@@ -24,7 +25,6 @@
 @property (weak)    IBOutlet    NSTableView *           photosTable;
 @property (weak)    IBOutlet    NSSegmentedControl *    servicesSegmentedControl;
 @property (weak)    IBOutlet    NSTableView *           servicesTable;
-@property (weak)    IBOutlet    NSButton *              skipProcessedImageCheckbox;
 @property (weak)    IBOutlet    NSSplitView *           splitView;
 @property (weak)    IBOutlet    NSButton *              transmitButton;
 @property (weak)    IBOutlet    NSButton *              uncheckAllButton;

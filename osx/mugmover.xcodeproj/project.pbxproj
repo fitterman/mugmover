@@ -17,6 +17,8 @@
 		C42F7AD81A153368006E38DD /* MMPhotoLibrary.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7AD71A153368006E38DD /* MMPhotoLibrary.m */; };
 		C42F7ADB1A1533AB006E38DD /* MMPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = C42F7ADA1A1533AB006E38DD /* MMPoint.m */; };
 		C44583221AE58ED700566731 /* MMPhotoLibraryManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C44583211AE58ED700566731 /* MMPhotoLibraryManager.m */; };
+		C46596191B0BC78B004566A7 /* MMPrefsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = C46596171B0BC78B004566A7 /* MMPrefsWindowController.m */; };
+		C465961A1B0BC78B004566A7 /* MMPrefsWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C46596181B0BC78B004566A7 /* MMPrefsWindowController.xib */; };
 		C47304211AC317320008E53E /* MMOauthAbstract.m in Sources */ = {isa = PBXBuildFile; fileRef = C473041F1AC317320008E53E /* MMOauthAbstract.m */; };
 		C47304241AC455600008E53E /* MMOauthFlickr.m in Sources */ = {isa = PBXBuildFile; fileRef = C47304231AC455600008E53E /* MMOauthFlickr.m */; };
 		C4836F921A5F14F5006EB567 /* MMApiRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C4836F911A5F14F5006EB567 /* MMApiRequest.m */; };
@@ -43,7 +45,6 @@
 		C4A687AA1ACC773E007CDC6D /* MMDataUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C4A687A91ACC773E007CDC6D /* MMDataUtility.m */; };
 		C4ACCCBA1B0A700C00BED7FF /* MMWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = C4ACCCB81B0A700C00BED7FF /* MMWindowController.m */; };
 		C4ACCCBB1B0A700C00BED7FF /* MMWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4ACCCB91B0A700C00BED7FF /* MMWindowController.xib */; };
-		C4C4F0E71B06967600A0C09D /* MMPrefsWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4C4F0E61B06967600A0C09D /* MMPrefsWindowController.xib */; };
 		C4D3A4161AE690D0005E72B6 /* Library-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4D3A4151AE690D0005E72B6 /* Library-128.png */; };
 		C4E3D94A1ADC64AF00D82337 /* Incomplete-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4E3D9491ADC64AF00D82337 /* Incomplete-128.png */; };
 		C4E3D94E1ADC678900D82337 /* Photograph-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C4E3D94D1ADC678900D82337 /* Photograph-128.png */; };
@@ -99,6 +100,9 @@
 		C42F7ADA1A1533AB006E38DD /* MMPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPoint.m; sourceTree = "<group>"; };
 		C44583201AE58ED700566731 /* MMPhotoLibraryManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMPhotoLibraryManager.h; sourceTree = "<group>"; };
 		C44583211AE58ED700566731 /* MMPhotoLibraryManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPhotoLibraryManager.m; sourceTree = "<group>"; };
+		C46596161B0BC78B004566A7 /* MMPrefsWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMPrefsWindowController.h; sourceTree = "<group>"; };
+		C46596171B0BC78B004566A7 /* MMPrefsWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPrefsWindowController.m; sourceTree = "<group>"; };
+		C46596181B0BC78B004566A7 /* MMPrefsWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMPrefsWindowController.xib; sourceTree = "<group>"; };
 		C473041F1AC317320008E53E /* MMOauthAbstract.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMOauthAbstract.m; sourceTree = "<group>"; };
 		C47304201AC317320008E53E /* MMOauthAbstract.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMOauthAbstract.h; sourceTree = "<group>"; };
 		C47304221AC455500008E53E /* MMOauthFlickr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMOauthFlickr.h; sourceTree = "<group>"; };
@@ -145,7 +149,6 @@
 		C4ACCCB71B0A700C00BED7FF /* MMWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMWindowController.h; sourceTree = "<group>"; };
 		C4ACCCB81B0A700C00BED7FF /* MMWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMWindowController.m; sourceTree = "<group>"; };
 		C4ACCCB91B0A700C00BED7FF /* MMWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMWindowController.xib; sourceTree = "<group>"; };
-		C4C4F0E61B06967600A0C09D /* MMPrefsWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMPrefsWindowController.xib; sourceTree = "<group>"; };
 		C4D3A4151AE690D0005E72B6 /* Library-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Library-128.png"; sourceTree = "<group>"; };
 		C4E3D9491ADC64AF00D82337 /* Incomplete-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Incomplete-128.png"; sourceTree = "<group>"; };
 		C4E3D94D1ADC678900D82337 /* Photograph-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Photograph-128.png"; sourceTree = "<group>"; };
@@ -219,10 +222,12 @@
 				C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */,
 				C49377121AD05D4E006DB77D /* MMComplexTableCellView.h */,
 				C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */,
+				C46596161B0BC78B004566A7 /* MMPrefsWindowController.h */,
+				C46596171B0BC78B004566A7 /* MMPrefsWindowController.m */,
+				C46596181B0BC78B004566A7 /* MMPrefsWindowController.xib */,
 				C4FF553E1B02B09D0059AE68 /* MMProgressWindowController.h */,
 				C4FF553F1B02B09D0059AE68 /* MMProgressWindowController.m */,
 				C4FF55401B02B09D0059AE68 /* MMProgressWindowController.xib */,
-				C4C4F0E61B06967600A0C09D /* MMPrefsWindowController.xib */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -470,7 +475,7 @@
 				C4D3A4161AE690D0005E72B6 /* Library-128.png in Resources */,
 				C4968CC71A15101500F34E46 /* Credits.rtf in Resources */,
 				C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */,
-				C4C4F0E71B06967600A0C09D /* MMPrefsWindowController.xib in Resources */,
+				C465961A1B0BC78B004566A7 /* MMPrefsWindowController.xib in Resources */,
 				C4ACCCBB1B0A700C00BED7FF /* MMWindowController.xib in Resources */,
 				C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */,
 				C4FF55421B02B09D0059AE68 /* MMProgressWindowController.xib in Resources */,
@@ -555,6 +560,7 @@
 				C4836F991A6080DB006EB567 /* MMNetworkRequest.m in Sources */,
 				C44583221AE58ED700566731 /* MMPhotoLibraryManager.m in Sources */,
 				C4FF55411B02B09D0059AE68 /* MMProgressWindowController.m in Sources */,
+				C46596191B0BC78B004566A7 /* MMPrefsWindowController.m in Sources */,
 				C49377111AD04C8F006DB77D /* MMLibraryEvent.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

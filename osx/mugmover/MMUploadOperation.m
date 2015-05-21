@@ -13,6 +13,7 @@
 #import "MMOauthSmugmug.h"
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
+#import "MMPrefsWindowController.h"
 #import "MMSmugmug.h"
 #import "MMUploadOperation.h"
 
@@ -24,7 +25,6 @@ extern const NSInteger MMDefaultRetries;
                  row: (NSInteger) row
              service: (MMSmugmug *) service
             folderId: (NSString *) folderId
-             options: (NSDictionary *) options
     windowController: (MMWindowController *) windowController
 {
     self = [self init];
@@ -32,7 +32,6 @@ extern const NSInteger MMDefaultRetries;
     {
         _folderId = folderId;
         _event = event;
-        _skipProcessedImages = [[options valueForKeyPath: @"skipProcessedImages"] boolValue];
         _row = row;
         _service = service;
         _windowController = windowController;
@@ -45,8 +44,7 @@ extern const NSInteger MMDefaultRetries;
     // Do the transfer
     [self transferPhotosForEvent: _event
                        toService: _service
-                        folderId: _folderId
-             skipProcessedImages: _skipProcessedImages];
+                        folderId: _folderId];
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
      {
          [_windowController.eventsTable reloadData];
@@ -70,7 +68,6 @@ extern const NSInteger MMDefaultRetries;
 - (void) transferPhotosForEvent: (MMLibraryEvent *) event
                       toService: (MMSmugmug *) service
                        folderId: (NSString *) folderId
-            skipProcessedImages: (BOOL) skipProcessedImages
 {
     @autoreleasepool
     {
@@ -86,6 +83,8 @@ extern const NSInteger MMDefaultRetries;
                                               displayName: name
                                               description: description];
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        BOOL retransmitFilesSentPreviously = [MMPrefsWindowController
+                                              getBoolForPreferenceNamed: @"retransmitFilesSentPreviously"];
         NSString *albumKey = [NSString stringWithFormat: @"smugmug.%@.albums.%@",
                               service.uniqueId,
                               [event uuid]];
@@ -119,7 +118,7 @@ extern const NSInteger MMDefaultRetries;
             if (mappingKeyPath)
             {
                 replacementFor = [albumState valueForKeyPath: mappingKeyPath];
-                if (replacementFor && skipProcessedImages)
+                if (replacementFor && !retransmitFilesSentPreviously)
                 {
                     completedTransfers++;   // We consider it sent already so we can get the icons right
                     [_windowController incrementProgressBy: 1.0];
