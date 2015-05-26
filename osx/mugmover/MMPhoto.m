@@ -971,9 +971,8 @@ extern Float64 const MMDegreesPerRadian;
     [_attributes setObject: serviceDictionary forKey: @"service"];
 }
 
-- (BOOL) sendPhotoToMugmover
+- (NSError *) sendPhotoToMugmover
 {
-    NSLog(@"--");
     NSDictionary *cropProperties = @{
                                         @"cropOrigin":           [_cropOrigin asDictionary],
                                         @"croppedHeight":        [NSNumber numberWithLong: _croppedHeight],
@@ -1012,7 +1011,7 @@ extern Float64 const MMDegreesPerRadian;
     if (!jsonData)
     {
         DDLogError(@"ERROR JSON Serialization returned: %@", error);
-        return NO;
+        return error;
     }
 
     NSString *jsonString = [[NSString alloc] initWithData: jsonData encoding: NSUTF8StringEncoding];
@@ -1022,9 +1021,9 @@ extern Float64 const MMDegreesPerRadian;
     {
         DDLogInfo(@"responseData = %@", responseData);
     };
-    BOOL response = [MMApiRequest synchronousUpload: postData // values should NOT be URLEncoded
-                                  completionHandler: uploadResponseHandler];
-    return response;
+    error = [MMApiRequest synchronousUpload: postData // values should NOT be URLEncoded
+                          completionHandler: uploadResponseHandler];
+    return error;
 }
 
 - (void) close

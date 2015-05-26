@@ -76,7 +76,7 @@
 
 - (void) processPhoto;
 
-- (BOOL) sendPhotoToMugmover;
+- (NSError *) sendPhotoToMugmover;
 
 - (void) setByteLength: (long long) length;
 

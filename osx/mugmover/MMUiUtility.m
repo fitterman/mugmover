@@ -34,7 +34,10 @@
     NSAlert *alert = [[NSAlert alloc] init];
     [alert addButtonWithTitle: NSLocalizedString(@"OK", nil)];
     [alert setMessageText: error.localizedDescription];
-    [alert setInformativeText: error.localizedRecoverySuggestion];
+    if (error.localizedRecoverySuggestion)
+    {
+        [alert setInformativeText: error.localizedRecoverySuggestion];
+    }
     [alert setAlertStyle: warningOrErrorStyle];
     [alert runModal];
 }

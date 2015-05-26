@@ -130,14 +130,14 @@ long                retryCount;
     // Otherwise we start the whole process over again...
     _smugmugOauth = [[MMOauthSmugmug alloc] initAndStartAuthorization: ^(Float32 progress, NSString *text)
                      {
-                         NSLog(@"progress=%f", progress);
+                         DDLogInfo(@"progress=%f", progress);
                          if (progress == 1.0)
                          {
-                             NSLog(@"progress=1.0");
+                             DDLogInfo(@"progress=1.0");
                          }
                          else
                          {
-                             NSLog(@"progress!=1.0");
+                             DDLogInfo(@"progress!=1.0");
                          }
                      }];
 }

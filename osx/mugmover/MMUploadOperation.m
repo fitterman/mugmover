@@ -16,6 +16,7 @@
 #import "MMPrefsManager.h"
 #import "MMSmugmug.h"
 #import "MMUploadOperation.h"
+#import "MMUiUtility.h"
 
 extern const NSInteger MMDefaultRetries;
 
@@ -102,8 +103,12 @@ extern const NSInteger MMDefaultRetries;
         NSInteger completedTransfers = 0;
         MMEventStatus finalStatus = MMEventStatusIncomplete; // Assume something goes wrong
 
+        NSError *error;
+
         for (MMPhoto *photo in photos)
         {
+            error = nil;
+
             // Before processing the next photo, see if we've been asked to abort
             if (self.isCancelled)
             {
@@ -149,7 +154,10 @@ extern const NSInteger MMDefaultRetries;
                     smugmugImageId = [[imageUri componentsSeparatedByString: @"/"] lastObject];
                     [photo attachServiceDictionary: serviceDictionary];
                 }
-                NSLog(@"response=%@", response);
+                else
+                {
+                    DDLogError(@"response=%@", response);
+                }
             };
 
             NSString *pathToFileToUpload = photo.iPhotoOriginalImagePath;
@@ -172,26 +180,26 @@ extern const NSInteger MMDefaultRetries;
                                                                caption: photo.caption
                                                               keywords: photo.keywordList];
             // 1. Upload to Smugmug
-            BOOL status = [service.smugmugOauth synchronousUrlRequest: uploadRequest
-                                                    remainingAttempts: MMDefaultRetries
-                                                    completionHandler: processSmugmugUpload];
-            if (tiff)
+            error = [service.smugmugOauth synchronousUrlRequest: uploadRequest
+                                              remainingAttempts: MMDefaultRetries
+                                              completionHandler: processSmugmugUpload];
+            if (tiff) // There's some cleanup to do before checking for an error
             {
                 // Delete the temp directory
                 [[NSFileManager defaultManager] removeItemAtPath: pathToFileToUpload
-                                                           error:nil];
+                                                           error: nil];
             }
-            if (!status)
+            if (error)
             {
                 DDLogError(@"Upload to Smugmug server failed for photo %@.", photo);
                 break;
             }
 
             // 2. Upload the data to Mugmover
-            status = [photo sendPhotoToMugmover];
-            if (!status)
+            error = [photo sendPhotoToMugmover];
+            if (error)
             {
-                DDLogError(@"Upload to MM server failed for photo %@.", photo);
+                DDLogError(@"Upload to MM server failed for photo %@, error %@.", photo, error);
                 // TODO Kill the uploaded photo first
                 break;
             }
@@ -207,43 +215,53 @@ extern const NSInteger MMDefaultRetries;
                 [_windowController incrementProgressBy: 1.0];
             }
         }
-        if (completedTransfers == [photos count])
-        {
-            finalStatus = MMEventStatusCompleted;
-        }
+        finalStatus = (completedTransfers == [photos count]) ? MMEventStatusCompleted : MMEventStatusIncomplete;
 
         // And at the end we have to do it in case some change(s) did not get stored
         [defaults setObject: albumState forKey: albumKey];
         [defaults synchronize];
 
-        // Now we update the featured photo for the album
-        NSString *featuredPhotoUuid = [event featuredImageUuid];
-        NSString *featuredPhotoMappingPath = [NSString stringWithFormat: @"mapping.%@", featuredPhotoUuid];
-        if (featuredPhotoUuid && featuredPhotoMappingPath)
+        if (!error)
         {
-            NSString *featuredPhotoId = [albumState valueForKeyPath: featuredPhotoMappingPath];
-            if (featuredPhotoId)
+            // Now we update the featured photo for the album
+            NSString *featuredPhotoUuid = [event featuredImageUuid];
+            NSString *featuredPhotoMappingPath = [NSString stringWithFormat: @"mapping.%@", featuredPhotoUuid];
+            if (featuredPhotoUuid && featuredPhotoMappingPath)
             {
-                NSString *featuredImageUri = [NSString stringWithFormat: @"/api/v2/album/%@/image/%@",
-                                              newAlbumId,
-                                              featuredPhotoId];
-                NSString *apiCall = [NSString stringWithFormat: @"album/%@", newAlbumId];
-                NSURLRequest *eventRequest = [service.smugmugOauth apiRequest: apiCall
-                                                                   parameters: @{@"HighlightAlbumImageUri": featuredImageUri}
-                                                                          verb: @"PATCH"];
-                BOOL status = [service.smugmugOauth synchronousUrlRequest: eventRequest
+                NSString *featuredPhotoId = [albumState valueForKeyPath: featuredPhotoMappingPath];
+                if (featuredPhotoId)
+                {
+                    NSString *featuredImageUri = [NSString stringWithFormat: @"/api/v2/album/%@/image/%@",
+                                                  newAlbumId,
+                                                  featuredPhotoId];
+                    NSString *apiCall = [NSString stringWithFormat: @"album/%@", newAlbumId];
+                    NSURLRequest *eventRequest = [service.smugmugOauth apiRequest: apiCall
+                                                                       parameters: @{@"HighlightAlbumImageUri": featuredImageUri}
+                                                                              verb: @"PATCH"];
+                    error = [service.smugmugOauth synchronousUrlRequest: eventRequest
                                                         remainingAttempts: MMDefaultRetries
                                                         completionHandler: nil];
-                if (!status)
-                {
-                    DDLogWarn(@"Unable to set featured image for event album (%@).", event.name);
+                    if (error)
+                    {
+                        DDLogWarn(@"Unable to set featured image for event album (%@).", event.name);
+                    }
                 }
             }
-        }
 
+        }
         // Restore the display to the default image for this album
         [event setActivePhotoThumbnail: nil withStatus: finalStatus];
-
+        
+        // Test again, as an error might have been generated in the latest "if"
+        if (error)
+        {
+            [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
+             {
+                 [_windowController.eventsTable reloadData];
+                 [MMUiUtility alertWithError: error style: NSWarningAlertStyle];
+                 
+            }];
+        }
     }
 }
 @end

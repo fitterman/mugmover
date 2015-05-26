@@ -13,6 +13,6 @@ typedef void (^ServiceResponseHandler)(NSDictionary *serviceResponseDictionary);
 
 @interface MMApiRequest : NSObject
 
-+ (BOOL) synchronousUpload: (NSDictionary *) bodyData // values should NOT be URLEncoded
-         completionHandler: (ServiceResponseHandler) serviceResponseHandler;
++ (NSError *) synchronousUpload: (NSDictionary *) bodyData // values should NOT be URLEncoded
+              completionHandler: (ServiceResponseHandler) serviceResponseHandler;
 @end

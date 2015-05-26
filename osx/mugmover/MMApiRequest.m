@@ -16,8 +16,8 @@ extern NSInteger const MMDefaultRetries;
 
 @implementation MMApiRequest
 
-+ (BOOL) synchronousUpload: (NSDictionary *) bodyData // values should NOT be URLEncoded
-         completionHandler: (ServiceResponseHandler) serviceResponseHandler
++ (NSError *) synchronousUpload: (NSDictionary *) bodyData // values should NOT be URLEncoded
+              completionHandler: (ServiceResponseHandler) serviceResponseHandler
 {
     NSString *stringUrl = [[NSString alloc] initWithFormat: @"http://localhost:3000/api/v%ld/upload", apiVersion];
 
@@ -51,16 +51,16 @@ extern NSInteger const MMDefaultRetries;
 
 
     NSURLResponse *response;
-    NSError *connectionError;
+    NSError *error;
     NSInteger retries = MMDefaultRetries;
     while (retries-- > 0)
     {
         NSData *serverData = [NSURLConnection sendSynchronousRequest: request
                                                    returningResponse: &response
-                                                               error: &connectionError];
-        if (connectionError)
+                                                               error: &error];
+        if (error)
         {
-            DDLogError(@"ERROR      connectionError=%@", connectionError);
+            DDLogError(@"ERROR      error=%@", error);
             // TODO BE SURE YOU CHECK FOR AN AUTH ERROR AND DO NO RETRY ON AN AUTH ERROR
             continue;
         }
@@ -74,25 +74,32 @@ extern NSInteger const MMDefaultRetries;
                 NSString *s = [[NSString alloc] initWithData: serverData encoding: NSUTF8StringEncoding];
                 DDLogError(@"response=%@", s);
             }
+            NSDictionary *userInfo = @{
+                                       NSLocalizedDescriptionKey: NSLocalizedString(@"An error was reported by the Mugmarker server.", nil),
+                                       NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"An error was reported by the Mugmarker server.", nil),
+                                       NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Retry the transfer and if the problem continues, contact Mugmarker customer service.", nil)
+                                      };
+            error = [NSError errorWithDomain: [[NSBundle mainBundle] bundleIdentifier]
+                                        code: -67
+                                    userInfo: userInfo];
             if ([httpResponse statusCode] >= 500)
             {
                 continue;   // Worthy of a retry
             }
             else
             {
-                return NO; // No sense in retrying this as it will not change
+                return error; // No sense in retrying this as it will not change
             }
         }
         NSDictionary *parsedJsonData = [MMDataUtility parseJsonData: serverData];
         if (parsedJsonData)
         {
             serviceResponseHandler(parsedJsonData);
-            return YES;
+            return nil;
         }
     }
     DDLogError(@"ERROR      maxRetriesExceeded for %@", request);
-    return NO;
+    return error;
 }
-
 
 @end

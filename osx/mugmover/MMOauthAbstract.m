@@ -120,21 +120,21 @@
      }];
 }
 
-- (BOOL) synchronousUrlRequest: (NSURLRequest *) request
-             remainingAttempts: (NSInteger) remainingAttempts
-             completionHandler: (ServiceResponseHandler) serviceResponseHandler;
+- (NSError *) synchronousUrlRequest: (NSURLRequest *) request
+                  remainingAttempts: (NSInteger) remainingAttempts
+                  completionHandler: (ServiceResponseHandler) serviceResponseHandler;
 {
     NSURLResponse *response;
-    NSError *connectionError;
+    NSError *error;
     NSInteger retries = remainingAttempts;
     while (retries-- > 0)
     {
         NSData *serverData = [NSURLConnection sendSynchronousRequest: request
                                                    returningResponse: &response
-                                                               error: &connectionError];
-        if (connectionError)
+                                                               error: &error];
+        if (error)
         {
-            DDLogError(@"ERROR      connectionError=%@", connectionError);
+            DDLogError(@"ERROR      error=%@", error);
             // TODO BE SURE YOU CHECK FOR AN AUTH ERROR AND DO NO RETRY ON AN AUTH ERROR
             continue;
         }
@@ -148,7 +148,15 @@
             {
                 DDLogError(@"response=%@", [self extractErrorResponseData: parsedJsonData]);
             }
-            return NO; // It is not possible to retry because because the nonce will be "already used"
+            NSDictionary *userInfo = @{
+                                       NSLocalizedDescriptionKey: NSLocalizedString(@"An error was reported by the Photo Service's server.", nil),
+                                       NSLocalizedFailureReasonErrorKey: NSLocalizedString(@"An error was reported by the Photo Service's server.", nil),
+                                       NSLocalizedRecoverySuggestionErrorKey: NSLocalizedString(@"Retry the transfer and if the problem continues, verify the service is operating normally.", nil)
+                                       };
+            error = [NSError errorWithDomain: [[NSBundle mainBundle] bundleIdentifier]
+                                        code: -68
+                                    userInfo: userInfo];
+            return error; // It is not possible to retry because because the nonce will be "already used"
         }
         if (parsedJsonData)
         {
@@ -156,11 +164,11 @@
             {
                 serviceResponseHandler(parsedJsonData);
             }
-            return YES;
+            return nil; // everything is okay
         }
     }
     DDLogError(@"ERROR      maxRetriesExceeded for %@", request);
-    return NO;
+    return error;
 }
 
 #pragma mark Private Methods

@@ -52,7 +52,6 @@
 
 - (void) windowWillClose: (NSNotification *) notification
 {
-    NSLog(@"Confirm it's the right window: %@", notification);
     _uploadOperationQueue = nil;
 }
 
