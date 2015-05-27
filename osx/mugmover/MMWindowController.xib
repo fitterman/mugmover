@@ -276,7 +276,7 @@
                             <action selector="transmitButtonWasPressed:" target="-2" id="Uco-KO-TMK"/>
                         </connections>
                     </button>
-                    <scrollView toolTip="Photos in the selected event" autohidesScrollers="YES" horizontalLineScroll="52" horizontalPageScroll="10" verticalLineScroll="52" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M4s-ec-ezG">
+                    <scrollView autohidesScrollers="YES" horizontalLineScroll="52" horizontalPageScroll="10" verticalLineScroll="52" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="M4s-ec-ezG">
                         <rect key="frame" x="570" y="45" width="176" height="359"/>
                         <clipView key="contentView" id="AFg-Cj-KqJ">
                             <rect key="frame" x="1" y="1" width="224" height="357"/>
@@ -478,6 +478,31 @@
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                     </scrollView>
+                    <scrollView fixedFrame="YES" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LSb-2W-gru">
+                        <rect key="frame" x="435" y="-45" width="250" height="160"/>
+                        <clipView key="contentView" ambiguous="YES" misplaced="YES" id="bgO-CG-fer">
+                            <rect key="frame" x="1" y="1" width="248" height="158"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <collectionView ambiguous="YES" id="9dO-Jc-InG">
+                                    <rect key="frame" x="0.0" y="0.0" width="248" height="158"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    <connections>
+                                        <outlet property="itemPrototype" destination="459-qn-tfU" id="i05-au-1iM"/>
+                                    </connections>
+                                </collectionView>
+                            </subviews>
+                        </clipView>
+                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="JuU-pU-dJt">
+                            <rect key="frame" x="1" y="144" width="233" height="15"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="DyF-gJ-H13">
+                            <rect key="frame" x="234" y="1" width="15" height="143"/>
+                            <autoresizingMask key="autoresizingMask"/>
+                        </scroller>
+                    </scrollView>
                 </subviews>
                 <constraints>
                     <constraint firstItem="DpO-KA-cU1" firstAttribute="leading" secondItem="fmb-VW-e16" secondAttribute="trailing" constant="8" id="0VT-Bi-cDv"/>
@@ -502,6 +527,24 @@
             </connections>
             <point key="canvasLocation" x="-26" y="101"/>
         </window>
+        <collectionViewItem id="Jii-UX-QQn">
+            <connections>
+                <outlet property="view" destination="fJU-M9-kVB" id="ygR-bi-jQc"/>
+            </connections>
+        </collectionViewItem>
+        <view id="fJU-M9-kVB">
+            <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+            <autoresizingMask key="autoresizingMask"/>
+        </view>
+        <collectionViewItem id="459-qn-tfU">
+            <connections>
+                <outlet property="view" destination="d6D-IT-aty" id="hnM-xD-o3g"/>
+            </connections>
+        </collectionViewItem>
+        <view id="d6D-IT-aty">
+            <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
+            <autoresizingMask key="autoresizingMask"/>
+        </view>
     </objects>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>
