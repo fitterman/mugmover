@@ -134,6 +134,24 @@
 {
     if (sender == _transmitButton)
     {
+        // For every combination of service and library, we maintain a destination folder.
+        // Every library event will be delivered as an album within that folder. The folder itself
+        // is created the first time we go through here, assigning it a name and URL fragment.
+        // We preserve the nodeId, allowing the customer to rename the folder and change its URL
+        // at will.
+        
+        MMSmugmug *serviceApi = [_serviceManager serviceForIndex: _servicesTable.selectedRow];
+        NSString *folderId = [serviceApi findOrCreateFolderForLibrary: _library];
+        if (!folderId)
+        {
+            _transmitButton.enabled = YES;
+            _transmitting = NO;
+            [MMUiUtility alertWithText: @"Error creating folder on service"
+                          withQuestion: nil
+                                 style: NSWarningAlertStyle];
+            return;
+        }
+
         // we keep a reference, so the WC doesn't deallocate
         _progressWindowController = [MMProgressWindowController new];
         _progressWindowController.queue = _uploadOperationQueue;
@@ -151,46 +169,27 @@
         [_eventsTable reloadData];
         __block NSInteger row = 0;
         _totalImagesToTransmit = 0;
-        MMSmugmug *serviceApi = [_serviceManager serviceForIndex: _servicesTable.selectedRow];
 
-        // For every combination of service and library, we maintain a destination folder.
-        // Every library event will be delivered as an album within that folder. The folder itself
-        // is created the first time we go through here, assigning it a name and URL fragment.
-        // We preserve the nodeId, allowing the customer to rename the folder and change its URL
-        // at will.
-
-        NSString *folderId = [serviceApi findOrCreateFolderForLibrary: _library];
-        if (!folderId)
+        for (MMLibraryEvent *event in _library.events)
         {
-            _transmitButton.enabled = YES;
-            _transmitting = NO;
-            [MMUiUtility alertWithText: @"Error creating folder on service"
-                          withQuestion: nil
-                                 style: NSWarningAlertStyle];
-        }
-        else
-        {
-            for (MMLibraryEvent *event in _library.events)
+            if (event.toBeProcessed)
             {
-                if (event.toBeProcessed)
-                {
-                    _totalImagesToTransmit += [[event filecount] integerValue];
-                    MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
-                                                                                              row: row
-                                                                                          service: serviceApi
-                                                                                         folderId: folderId
-                                                                                 windowController: self];
-                    [_uploadOperationQueue addOperation: uploadOperation];
-                }
-                row++;
+                _totalImagesToTransmit += [[event filecount] integerValue];
+                MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
+                                                                                          row: row
+                                                                                      service: serviceApi
+                                                                                     folderId: folderId
+                                                                             windowController: self];
+                [_uploadOperationQueue addOperation: uploadOperation];
             }
-            [self setCurrentProgressValue: 0.0];
-            [self setMaxProgressValue: (Float64) _totalImagesToTransmit];
+            row++;
         }
+        [self setCurrentProgressValue: 0.0];
+        [self setMaxProgressValue: (Float64) _totalImagesToTransmit];
     }
 }
 
-- (IBAction)librarySegmentedControlWasPressed: (NSSegmentedControl *) segmentedControl
+- (IBAction) librarySegmentedControlWasPressed: (NSSegmentedControl *) segmentedControl
 {
     if (segmentedControl.selectedSegment == 0) // 0 is add
     {
@@ -202,7 +201,7 @@
     }
 }
 
-- (IBAction)serviceSegmentedControlWasPressed: (NSSegmentedControl *) segmentedControl
+- (IBAction) serviceSegmentedControlWasPressed: (NSSegmentedControl *) segmentedControl
 {
     if (segmentedControl.selectedSegment == 0) // 0 is add
     {

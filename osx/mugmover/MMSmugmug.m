@@ -288,16 +288,37 @@ long                retryCount;
 
     // 3. Create a new folder, use it.
     apiRequest = [NSString stringWithFormat: @"folder/user/%@!folders", _handle];
+    NSCharacterSet *goodChars = [NSCharacterSet alphanumericCharacterSet];
+    NSCharacterSet *badChars = goodChars.invertedSet;
+    NSString *urlName = [[[library displayName] componentsSeparatedByCharactersInSet:badChars]
+                                                componentsJoinedByString:@"-"];
+    // Punctuation can turn into a dash as well, so we remove all the doubled-up dashes
+    // until they are all gone.
+    while ([urlName rangeOfString:@"--"].location != NSNotFound)
+    {
+        urlName = [urlName stringByReplacingOccurrencesOfString:@"--"
+                                                     withString:@"-"];
+    }
+
+    // From http://stackoverflow.com/questions/2952298/how-can-i-truncate-an-nsstring-to-a-set-length
+    // We need to consider multi-byte characters, although the URL may choke the service API anyway
+    NSRange stringRange = {0, MIN([urlName length], 28)}; // (28 = 31 - 3, reserving for "MM-")
+    // adjust the range to include dependent chars
+    stringRange = [urlName rangeOfComposedCharacterSequencesForRange: stringRange];
+    urlName = [[urlName substringWithRange: stringRange] lowercaseString];
+    // We are obligated to have a name that starts with an uppercase-letter...
+    urlName = [NSString stringWithFormat:@"MM-%@", urlName];
+
     NSURLRequest *createFolderRequest = [_smugmugOauth apiRequest: apiRequest
-                                                       parameters: @{@"Description":        [library description],
-                                                                     @"Name":               [library displayName],
-                                                                     @"Privacy":            @"Private",
-                                                                     @"SmugSearchable":     @"No",
-                                                                     @"SortIndex":          @"SortIndex",
-                                                                     @"UrlName":            [MMSmugmug sanitizeUuid: [library databaseUuid]],
-                                                                     @"WorldSearchable":    @"No",
-                                                                     }
-                                                             verb: @"POST"];
+                                                   parameters: @{@"Description":        [library description],
+                                                                 @"Name":               [library displayName],
+                                                                 @"Privacy":            @"Private",
+                                                                 @"SmugSearchable":     @"No",
+                                                                 @"SortIndex":          @"SortIndex",
+                                                                 @"UrlName":            urlName,
+                                                                 @"WorldSearchable":    @"No",
+                                                                 }
+                                                         verb: @"POST"];
     NSInteger httpStatus =  [MMDataUtility makeSyncJsonRequestWithRetries: createFolderRequest
                                                                parsedData: &parsedServerResponse];
     if (httpStatus == 200)

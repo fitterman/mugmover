@@ -57,7 +57,6 @@ BOOL const MMdebugLevel;
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
     [MMPrefsManager setDefaultPreferenceValues];
     
-    [_window close]; // We don't use the system-provided window
     _windowController = [[MMWindowController alloc] initWithWindowNibName:@"MMWindowController"];
     [_windowController showWindow:nil];
 }

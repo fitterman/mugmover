@@ -16,13 +16,17 @@
 
 - (id) initAndStartAuthorization: (ProgressBlockType) progressBlock
 {
-    _progressBlock = progressBlock;
-    // Register to receive the callback URL
-    [[NSAppleEventManager sharedAppleEventManager] setEventHandler: self
-                                                       andSelector: @selector(handleIncomingURL:withReplyEvent:)
-                                                     forEventClass: kInternetEventClass
-                                                        andEventID: kAEGetURL];
-    [self doOauthDance: nil];
+    self = [super init];
+    if (self)
+    {
+        _progressBlock = progressBlock;
+        // Register to receive the callback URL
+        [[NSAppleEventManager sharedAppleEventManager] setEventHandler: self
+                                                           andSelector: @selector(handleIncomingURL:withReplyEvent:)
+                                                         forEventClass: kInternetEventClass
+                                                            andEventID: kAEGetURL];
+        [self doOauthDance: nil];
+    }
     return self;
 }
 

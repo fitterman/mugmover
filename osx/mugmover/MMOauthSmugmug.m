@@ -230,7 +230,7 @@
                                             tokenSecret: [requestSettings objectForKey: @"tokensecret"]
                                                  scheme: SERVICE_SCHEME
                                           requestMethod: @"GET"
-                                           dataEncoding:TDOAuthContentTypeJsonObject
+                                           dataEncoding: TDOAuthContentTypeJsonObject
                                            headerValues: @{@"Accept": @"application/json"}
                                         signatureMethod: TDOAuthSignatureMethodHmacSha1];
 

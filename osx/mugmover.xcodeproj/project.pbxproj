@@ -55,9 +55,6 @@
 		C4F935041AD884C200AB465B /* Active-128.gif in Resources */ = {isa = PBXBuildFile; fileRef = C4F935031AD884C200AB465B /* Active-128.gif */; };
 		C4FF55411B02B09D0059AE68 /* MMProgressWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = C4FF553F1B02B09D0059AE68 /* MMProgressWindowController.m */; };
 		C4FF55421B02B09D0059AE68 /* MMProgressWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4FF55401B02B09D0059AE68 /* MMProgressWindowController.xib */; };
-		C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B01A589D7100472CAF /* Debug.xcconfig */; };
-		C4FF95B41A589D7100472CAF /* mugmover.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B11A589D7100472CAF /* mugmover.xcconfig */; };
-		C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = C4FF95B21A589D7100472CAF /* Release.xcconfig */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -440,7 +437,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = MM;
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0610;
 				ORGANIZATIONNAME = "Dicentra LLC";
 				TargetAttributes = {
 					C4968CD31A15101500F34E46 = {
@@ -476,13 +473,10 @@
 				C4968CC11A15101500F34E46 /* InfoPlist.strings in Resources */,
 				C4968CCF1A15101500F34E46 /* Images.xcassets in Resources */,
 				C4E3D94A1ADC64AF00D82337 /* Incomplete-128.png in Resources */,
-				C4FF95B41A589D7100472CAF /* mugmover.xcconfig in Resources */,
 				C4D3A4161AE690D0005E72B6 /* Library-128.png in Resources */,
 				C4968CC71A15101500F34E46 /* Credits.rtf in Resources */,
-				C4FF95B31A589D7100472CAF /* Debug.xcconfig in Resources */,
 				C465961A1B0BC78B004566A7 /* MMPrefsWindowController.xib in Resources */,
 				C4ACCCBB1B0A700C00BED7FF /* MMWindowController.xib in Resources */,
-				C4FF95B51A589D7100472CAF /* Release.xcconfig in Resources */,
 				C4FF55421B02B09D0059AE68 /* MMProgressWindowController.xib in Resources */,
 				C4968CCD1A15101500F34E46 /* MainMenu.xib in Resources */,
 				C4F935041AD884C200AB465B /* Active-128.gif in Resources */,
