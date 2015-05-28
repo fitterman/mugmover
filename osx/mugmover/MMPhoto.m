@@ -308,6 +308,9 @@ extern Float64 const MMDegreesPerRadian;
     return nil;
 }
 
+/**
+ * Returns an NSImage * for this photo/video
+ */
 - (NSImage *) getThumbnailImage
 {
     // We might have to invoke the exifLoader to get the path populated...
@@ -438,7 +441,7 @@ extern Float64 const MMDegreesPerRadian;
 
         NSURL* fileUrl = [NSURL fileURLWithPath : _iPhotoOriginalImagePath];
         _thumbnail = @""; // It cannot be null, so just in case this fails.
-        if (fileUrl)
+        if (fileUrl && ![self isVideo])
         {
             CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileUrl];
             _thumbnail = [self createPhotoThumbnail: image];
@@ -593,8 +596,12 @@ extern Float64 const MMDegreesPerRadian;
 
 - (NSString *) getKeywordList
 {
-    NSNumber *hasKw = [_attributes valueForKeyPath: @"photo.hasKeywords"];
-    if (hasKw && [hasKw isEqualToNumber: @1])
+    id hasKw = [_attributes valueForKeyPath: @"photo.hasKeywords"];
+    if (hasKw == [NSNull null])
+    {
+        return nil;
+    }
+    if ([(NSNumber *)hasKw isEqualToNumber: @1])
     {
         NSNumber *modelId = [_attributes valueForKeyPath: @"photo.versionModelId"];
         NSString *keywords = [_library.photosDatabase stringForQuery: @KEYWORD_QUERY, modelId];
