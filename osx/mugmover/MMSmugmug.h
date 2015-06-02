@@ -17,6 +17,7 @@
 @property (strong)              NSString *              accessSecret;
 @property (strong)              NSString *              accessToken;
 @property (strong)              MMPhoto *               currentPhoto;
+@property (strong)              NSMutableArray *        errorLog;
 @property (strong, readonly)    NSString *              handle;
 @property (assign, readonly)    NSInteger               page;
 @property (strong, readonly)    MMOauthSmugmug *        smugmugOauth;
@@ -43,6 +44,8 @@
 - (BOOL) getUserInfo;
 
 - (id) initFromDictionary: (NSDictionary *) dictionary;
+
+- (void) logError: (NSError *) error;
 
 - (NSString *) name;
 

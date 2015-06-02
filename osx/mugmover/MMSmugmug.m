@@ -1,4 +1,4 @@
-//
+    //
 //  MMSmugmug.m
 //  Everything to do with Smugmug integration.
 //
@@ -22,16 +22,37 @@ NSDictionary       *photoResponseDictionary;
 long                retryCount;
 
 /**
- * We are using UUIDs in many places for URL names. The UUID character-space consists
- * of the characters A-Z, a-z, 0-9 and 2 pieces of punctuation: "+", "%", each of which
- * is problematic. We replace "+" with "-" and replace "%" with "--". The UUIDs are
+ * We are using UUIDs in many places for URL names. UUIDs have been observed to have two
+ * very different forms. Either they are base-64-encoded using the characters
+ * A-Z, a-z, 0-9 and 2 pieces of punctuation: "+" and "%", both of which
+ * is problematic. We replace "+" with "-" and replace "%" with "--". These UUIDs are
  * short enough they will not exceed the Smugmug limit with this approach. As they 
- * must start with an uppercase letter, we are prefixing them all with "MM"
+ * must start with an uppercase letter, we are prefixing them all with "MM".
+ *
+ * The other form of the UUID is a series of hex digits and dashes, such as
+ * "0DA8A4A5-8E40-4D72-A5DC-EC3309EF868C". In this case, we compress out the dashes and
+ * then encode the remaining characters in base64.
  */
-+ (NSString *) sanitizeUuid: (NSString *) inUrl
++ (NSString *) sanitizeUuid: (NSString *) inUuid
 {
-    return [@"MM" stringByAppendingString: [[inUrl stringByReplacingOccurrencesOfString:@"+" withString:@"-"]
-                                            stringByReplacingOccurrencesOfString:@"%" withString:@"--"]];
+    if ([inUuid rangeOfString: @"\\A[-0-9A-F]+\\Z"
+                      options: NSRegularExpressionSearch|NSCaseInsensitiveSearch].location == NSNotFound)
+    {
+        // Case 1
+        return [@"MM" stringByAppendingString: [[inUuid stringByReplacingOccurrencesOfString:@"+" withString:@"-"]
+                                                stringByReplacingOccurrencesOfString:@"%" withString:@"--"]];
+    }
+    // case 2
+    //
+    NSString *result = [MMDataUtility parseHexToOurBase64: inUuid];
+    if (result)
+    {
+        // This is intentionally different from the prefix, above, so we can tell how we got here.
+        // And our method returns "-" already so we don't need to do that substitution.
+        return [@"M-" stringByAppendingString: [result stringByReplacingOccurrencesOfString:@"%" withString:@"--"]];
+    }
+    NSLog(@"ERROR   Base64 encoding detected bad input value");
+    return nil;
 }
 
 - (id) initFromDictionary: (NSDictionary *) dictionary
@@ -42,6 +63,7 @@ long                retryCount;
     {
         _uniqueId = [dictionary valueForKey: @"id"];
         _handle = [dictionary valueForKey: @"name"];
+        _errorLog = [[NSMutableArray alloc] init];
         [self configureOauthRetryOnFailure: NO];
         if (!_smugmugOauth)
         {
@@ -91,16 +113,25 @@ long                retryCount;
     _accessSecret = nil;
     _accessToken = nil;
     _currentPhoto = nil;
+    _errorLog = nil;
     _handle = nil;
     _uniqueId = nil;
 }
 
 #pragma mark "Public methods"
 /**
+ * Adds an error to a sequential log of errors
+ */
+- (void) logError: (NSError *) error
+{
+    NSDictionary *logRecord =@{@"time": [NSDate date], @"error": error};
+    [_errorLog addObject: logRecord];
+}
+
+/**
  This either reconsitutes an Oauth token from the stored preferences (NSUserDefaults) or
  triggers a new Oauth dance. You know the outcome by observing "initializationProgress".
  */
-
 - (void) configureOauthRetryOnFailure: (BOOL) attemptRetry
 {
     if (_uniqueId)
@@ -171,13 +202,13 @@ long                retryCount;
 #pragma mark "Private methods"
 
 /**
- * Returns the albumId of an album. The identity of the album is determined by the node
+ * Returns the albumId of an album. The identity of the album is determined by the node (folder)
  * into which it is to be placed. The arguments are
- *   +urlName+, which is part of the URL and is constrained by the rules imposed by Smugmug.
- *          The uniqueness of the urlName is required, and we impose this by using uuid from
- *          the corresponding event.
- *   +folderId+ which an ID of a Smugmug node.
- *   +displayName+ which the displayed title for the album
+ *   +urlName+     which is part of the URL and is constrained by the rules imposed by Smugmug.
+ *                 The uniqueness of the urlName is required, and we impose this by using uuid from
+ *                 the corresponding event.
+ *   +folderId+    which is the ID of a Smugmug node (folder).
+ *   +displayName+ which is the displayed title for the album
  */
 - (NSString *) findOrCreateAlbum: (NSString *) urlName
                         inFolder: (NSString *) folderId
@@ -210,6 +241,7 @@ long                retryCount;
     NSURLRequest *createAlbumRequest = [_smugmugOauth apiRequest: apiRequest
                                                       parameters: @{@"Description":        description,
                                                                     @"UrlName":            urlName,
+                                                                    @"AutoRename":         @"Yes",
                                                                     @"Name":               displayName,
                                                                     @"Privacy":            @"Private",
                                                                     @"SmugSearchable":     @"No",

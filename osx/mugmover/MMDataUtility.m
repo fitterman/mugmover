@@ -135,4 +135,66 @@ extern NSInteger const MMDefaultRetries;
     return 0;
 }
 
++ (NSError *) makeErrorForFilePath: (NSString *) filePath
+                        codeString: (NSString *) codeString
+{
+    DDLogError(@"ERROR         Making error for filePath= %@ codeString=%@", filePath, codeString);
+    NSString *recovery = NSLocalizedString(@"This may be due to corruption of the iPhoto Library. Supply the following value to Mugmover support.", nil);
+    NSDictionary *userInfo = @{NSLocalizedDescriptionKey:
+                                   NSLocalizedString(@"Upload Preparation Failed", nil),
+                               NSLocalizedFailureReasonErrorKey:
+                                   NSLocalizedString(@"An error occurred while preparing the file for upload.", nil),
+                               NSLocalizedRecoverySuggestionErrorKey:
+                                   [NSString stringWithFormat: @"%@ (%@)", recovery, codeString],
+                               @"MMFilePath": filePath};
+    return [NSError errorWithDomain: [[NSBundle mainBundle] bundleIdentifier]
+                               code: -60
+                           userInfo: userInfo];
+}
+
+// DO NOT CHANGE THIS STRING AS STORED DATA RELIES ON IT NEVER CHANGING
+#define RADIX "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-%"
+
+/**
+ * We convert a hex string into a Base64 representation using URL-safe characters 
+ * of our choosing. We assume the caller has confirmed it only contains hex characters
+ * and dashes. We squeeze out the dashes, but that's all the safety net we have.
+ */
++ (NSString *) parseHexToOurBase64: (NSString *) hexString
+{
+    NSMutableString* result = [NSMutableString new];
+    NSMutableString *workingString = [[hexString stringByReplacingOccurrencesOfString:@"-"
+                                                                          withString:@""] mutableCopy];
+    
+    // If it's not up to a multiple of 3 (nibbles), make it so.
+    NSInteger shortage = ([workingString length] % 3);
+    if (shortage != 0)
+    {
+        while (shortage++ < 3)
+        {
+            [workingString appendString: @"0"];
+        }
+    }
+
+    for (NSInteger idx = 0; idx + 3 <= workingString.length; idx += 3)
+    {
+        NSRange range = NSMakeRange(idx, 3);
+        NSString* hexStr = [workingString substringWithRange: range];
+        NSScanner* scanner = [NSScanner scannerWithString: hexStr];
+        unsigned long long value;
+        if ([scanner scanHexLongLong: &value])
+        {
+            unsigned long v1 = (value / 64);
+            unsigned long v2 = value % 64;
+            [result appendString:[@RADIX substringWithRange:NSMakeRange(v1, 1)]];
+            [result appendString:[@RADIX substringWithRange:NSMakeRange(v2, 1)]];
+        }
+        else
+        {
+            NSLog(@"ERROR  Scanner detected non-hex characters");
+            return nil;
+        }
+    }
+    return (NSString *)result;
+}
 @end

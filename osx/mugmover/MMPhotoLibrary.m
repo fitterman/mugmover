@@ -21,7 +21,7 @@
                     "FROM RKFolder f " \
                     "JOIN RKMaster m ON m.projectUuid = f.uuid "  \
                     "WHERE parentFolderUuid = 'AllProjectsItem' AND " \
-                    "    isMagic != 1 AND isHidden != 1 AND f.isInTrash != 1 " \
+                    "    isMagic != 1 AND isHidden != 1 AND m.isInTrash != 1 AND f.isInTrash != 1 " \
                     "GROUP BY f.uuid " \
                     "ORDER BY minImageDate, maxImageDate, f.uuid "
 

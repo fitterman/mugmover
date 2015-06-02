@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <TDOAuth.h>
 
+@class MMPhoto;
+
 @interface MMOauthAbstract : TDOAuth
 
 typedef void (^ProgressBlockType)(Float32, NSString *);
@@ -39,6 +41,7 @@ typedef void (^ServiceResponseHandler)(NSDictionary *serviceResponseDictionary);
 - (NSString *) extractErrorResponseData: (NSDictionary *) parsedServerResponse;
 
 - (NSError *) synchronousUrlRequest: (NSURLRequest *) request
+                              photo: (MMPhoto *) photo
                   remainingAttempts: (NSInteger) remainingAttempts
                   completionHandler: (ServiceResponseHandler) serviceResponseHandler;
 

@@ -38,10 +38,10 @@ extern NSInteger const MMDefaultRetries;
     {
         if (connectionError)
         {
-            DDLogError(@"ERROR      connectionError=%@", connectionError);
+            DDLogError(@"ERROR         connectionError=%@", connectionError);
             if (maxRetries <= 0)
             {
-                DDLogError(@"ERROR      maxRetriesExceeded for %@", request);
+                DDLogError(@"ERROR         maxRetriesExceeded for %@", request);
             }
             else
             {

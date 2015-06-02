@@ -60,7 +60,7 @@ extern NSInteger const MMDefaultRetries;
                                                                error: &error];
         if (error)
         {
-            DDLogError(@"ERROR      error=%@", error);
+            DDLogError(@"ERROR         error=%@", error);
             // TODO BE SURE YOU CHECK FOR AN AUTH ERROR AND DO NO RETRY ON AN AUTH ERROR
             continue;
         }
@@ -68,7 +68,7 @@ extern NSInteger const MMDefaultRetries;
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         if ([httpResponse statusCode] >= 400) // These are errors (300 is handled automatically)
         {
-            DDLogError(@"ERROR      httpError=%ld", (long)[httpResponse statusCode]);
+            DDLogError(@"ERROR         httpError=%ld", (long)[httpResponse statusCode]);
             if ([serverData length] > 0)
             {
                 NSString *s = [[NSString alloc] initWithData: serverData encoding: NSUTF8StringEncoding];
@@ -98,7 +98,7 @@ extern NSInteger const MMDefaultRetries;
             return nil;
         }
     }
-    DDLogError(@"ERROR      maxRetriesExceeded for %@", request);
+    DDLogError(@"ERROR         maxRetriesExceeded for %@", request);
     return error;
 }
 

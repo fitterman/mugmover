@@ -15,6 +15,7 @@
 #import "FMDB/FMDatabaseAdditions.h"
 #import "FMDB/FMResultSet.h"
 #import "MMApiRequest.h"
+#import "MMDataUtility.h"
 #import "MMLibraryEvent.h"
 #import "MMNetworkRequest.h"
 #import "MMOauthFlickr.h"
@@ -63,7 +64,7 @@ NSInteger const MMDefaultRetries = 3;
 #define QUERY_BY_VERSION_UUID   BASE_QUERY \
                                 "WHERE v.isHidden != 1 AND v.showInLibrary = 1 AND v.uuid = ? "
 #define QUERY_BY_EVENT_UUID     BASE_QUERY \
-                                "WHERE v.isHidden != 1 AND v.showInLibrary = 1 AND m.projectUuid = ? "
+                                "WHERE v.isInTrash != 1 AND v.isHidden != 1 AND v.showInLibrary = 1 AND m.projectUuid = ? "
 
 /**
  * This query locates all the keywords assigned to one version, sorting them by their display value
@@ -110,8 +111,11 @@ extern Float64 const MMDegreesPerRadian;
     [dateFormat setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
     dateFormat.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
 
+    NSString *eventUuid = [event uuid];
+
     NSInteger recordCount  = [event.library.photosDatabase intForQuery: @"SELECT count(*) FROM RKMaster "
-                                                                         "WHERE isInTrash != 1"];
+                                                                         "WHERE isInTrash != 1 AND "
+                                                                         "projectUuid = ? ", eventUuid];
 
     NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity: recordCount];
 
@@ -119,8 +123,6 @@ extern Float64 const MMDegreesPerRadian;
     NSInteger exifDiscrepancyCounter = 0;
     NSInteger exifPositiveCounter = 0;
     NSInteger exifNegativeCounter = 0;
-
-    NSString *eventUuid = [event uuid];
 
     NSString *sortOrder =  [event.library.photosDatabase
                             stringForQuery: @"SELECT sortKeyPath FROM RKAlbum WHERE uuid = 'eventFilterBarAlbum'"];
@@ -316,7 +318,8 @@ extern Float64 const MMDegreesPerRadian;
     // We might have to invoke the exifLoader to get the path populated...
     if (!_exifDictionary)
     {
-        [self populateExifFromSourceFile];
+        // We actually ignore this error
+        NSError *error = [self populateExifFromSourceFile];
     }
 
     if (![MMFileUtility lengthForFileAtPath: _iPhotoOriginalImagePath])
@@ -346,9 +349,9 @@ extern Float64 const MMDegreesPerRadian;
 }
 
 
-- (BOOL) populateExifFromSourceFile
+- (NSError *) populateExifFromSourceFile
 {
-    BOOL result = YES;
+    NSError *error;
     NSMutableDictionary *exifProperties;
     NSString *imagePath = [_attributes valueForKeyPath: @"photo.imagePath"];
     NSInteger hasAdjustments = [[_attributes valueForKeyPath: @"photo.hasAdjustments"] integerValue];
@@ -367,7 +370,7 @@ extern Float64 const MMDegreesPerRadian;
                                                        versionName: versionName];
     if ([self isVideo])
     {
-        return YES; // Sort of yes, sort of no.
+        return nil; // Sort of yes, sort of no.
     }
     if (_iPhotoOriginalImagePath)
     {
@@ -377,13 +380,14 @@ extern Float64 const MMDegreesPerRadian;
     if (!exifProperties)
     {
         DDLogInfo(@">>> isOriginal=%ld", [[_attributes valueForKeyPath: @"photo.isOriginal"] integerValue]);
+        error = [MMDataUtility makeErrorForFilePath: _iPhotoOriginalImagePath
+                                         codeString: @"EXIF"];
         exifProperties = [[NSMutableDictionary alloc] init];
-        result = NO;
     }
 
     [self populateDateFromExif: exifProperties];
     [_attributes setObject: exifProperties forKey: @"exif"];
-    return result;
+    return error;
 }
 
 - (void) populateDateFromExif: (NSDictionary *) exifProperties
@@ -419,10 +423,14 @@ extern Float64 const MMDegreesPerRadian;
 }
 
 #pragma mark Rotation and cropping code
-- (void) processPhoto
+- (NSError *) processPhoto
 {
     @autoreleasepool {
-        [self populateExifFromSourceFile];
+        NSError *error = [self populateExifFromSourceFile];
+        if (error)
+        {
+            return error;
+        }
 
         _caption = [self getCaption];
         if (_caption)
@@ -447,6 +455,7 @@ extern Float64 const MMDegreesPerRadian;
             _thumbnail = [self createPhotoThumbnail: image];
             [self fetchThumbnailsFromOriginal: image];
         }
+        return error;
     }
 }
 
@@ -1026,7 +1035,14 @@ extern Float64 const MMDegreesPerRadian;
     NSDictionary *postData = @{@"data": jsonString};
     ServiceResponseHandler uploadResponseHandler = ^(NSDictionary *responseData)
     {
-        DDLogInfo(@"responseData = %@", responseData);
+        if (_verboseLogging)
+        {
+            DDLogInfo(@"responseData = %@", responseData);
+        }
+        else if (![[responseData valueForKey: @"status"] isEqualToString: @"ok"])
+        {
+            DDLogInfo(@"responseData = %@", responseData);            
+        }
     };
     error = [MMApiRequest synchronousUpload: postData // values should NOT be URLEncoded
                           completionHandler: uploadResponseHandler];
@@ -1070,13 +1086,22 @@ extern Float64 const MMDegreesPerRadian;
 }
 
 /**
- * Tells you if the object is a TIFF.
+ * Tells you if the object is an image type that is unsupported by some service. Currently
+ * this would be TIFF or PSD on Smugmug. IMGST can include many times, including PNG, GIF
+ * and PSD. Anything that's an IMGST and neither GIF nor PNG will require conversion.
  */
-- (BOOL) isTiff
+- (BOOL) isFormatRequiringConversion
 {
-    // NOTE: Within the range of values knownn to iPhoto, the subtype is unique: i.e., there are
-    //       no videos of subtype TIF.
-    return ([[_attributes valueForKeyPath: @"photo.subtype"] isEqualToString: @"TIFST"]);
+    NSString *subtype = [_attributes valueForKeyPath: @"photo.subtype"];
+    // NOTE: Within the range of values knownn to iPhoto, the subtype is unique:
+    //       i.e., you do not need to look at the type, just the subtype.
+
+    if ([subtype isEqualToString: @"IMGST"])
+    {
+        NSString *extension = [[_iPhotoOriginalImagePath pathExtension] lowercaseString];
+        return (![extension isEqualToString: @"png"]) && (![extension isEqualToString: @"gif"]);
+    }
+    return [subtype isEqualToString: @"TIFST"];
 }
 
 /**

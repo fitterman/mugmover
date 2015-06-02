@@ -70,11 +70,11 @@
 
 - (NSString *) fullImagePath;
 
-- (BOOL) isTiff;
+- (BOOL) isFormatRequiringConversion;
 
 - (BOOL) isVideo;
 
-- (void) processPhoto;
+- (NSError *) processPhoto;
 
 - (NSError *) sendPhotoToMugmover;
 

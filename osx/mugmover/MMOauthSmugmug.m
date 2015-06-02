@@ -73,54 +73,47 @@
                     title: (NSString *) title
                   caption: (NSString *) caption
                  keywords: (NSString *) keywords
+                    error: (NSError  **) error
 {
     if (!filePath)
     {
-        DDLogError(@"filePath is nil");
-        return nil;
+        return [self setErrorAndReturn: error filePath: @"" codeString: @"filePath"];
     }
     NSURL* fileUrl = [NSURL fileURLWithPath: filePath];
     if (!fileUrl)
     {
-        DDLogError(@"fileUrl is nil");
-        return nil;
+        return [self setErrorAndReturn: error filePath: filePath codeString: @"fileUrl"];
     }
     NSString *md5 = [MMFileUtility md5ForFileAtPath: filePath];
     if (!md5)
     {
-        DDLogError(@"Unable to obtain MIME type of local file");
-        return nil;
+        return [self setErrorAndReturn: error filePath: filePath codeString: @"MD5"];
     }
     NSString* mimeType = [MMFileUtility mimeTypeForFileAtPath: filePath];
     if (!mimeType)
     {
-        DDLogError(@"Unable to obtain MIME type of local file");
-        return nil;
+        return [self setErrorAndReturn: error filePath: filePath codeString: @"mimeType"];
     }
     NSNumber *length = [MMFileUtility lengthForFileAtPath: filePath];
     if (!length)
     {
-        DDLogError(@"Unable to obtain length of local file");
-        return nil;
+        return [self setErrorAndReturn: error filePath: filePath codeString: @"length"];
     }
     NSInputStream *inputStream = [NSInputStream inputStreamWithFileAtPath: filePath];
     if (!inputStream)
     {
-        DDLogError(@"Unable to create stream to local file");
-        return nil;
+        return [self setErrorAndReturn: error filePath: filePath codeString: @"inputStream"];
     }
 
     if (!albumId)
     {
-        DDLogError(@"albumId is nil");
-        return nil;
+        return [self setErrorAndReturn: error filePath: filePath codeString: @"albumId"];
     }
     NSString *albumUri = [NSString stringWithFormat: @"/api/v2/album/%@", albumId];
     NSMutableDictionary *headerValues = [[NSMutableDictionary alloc] init];
     if (!headerValues)
     {
-        DDLogError(@"Unable to create header dictionary");
-        return nil;
+        return [self setErrorAndReturn: error filePath: filePath codeString: @"headerValues"];
     }
     [headerValues setObject: @"application/json" forKey: @"Accept"];
     [headerValues setObject: [NSString stringWithFormat: @"%@", length] forKey: @"Content-Length"];
@@ -162,8 +155,7 @@
                                                                       signatureMethod: TDOAuthSignatureMethodHmacSha1];
     if (!request)
     {
-        DDLogError(@"Unable to create request object for upload");
-        return nil;
+        return [self setErrorAndReturn: error filePath: filePath codeString: @"requestValue"];
     }
     request.HTTPBodyStream = inputStream;
     return request;
@@ -171,7 +163,21 @@
 
 #pragma mark Private Methods
 
-- (void)doOauthDance: (NSDictionary *)params;
+/**
+ * Method to build an error object. It (oddly) returns nil so the caller can just say
+ * "return setErrorAndReturn:codeString". This is handy because often the caller wants
+ * to set an error and return a nil value. If not, just call it and ignoring its return
+ * value.
+ */
+- (id) setErrorAndReturn: (NSError **) error
+                filePath: (NSString *) filePath
+              codeString: (NSString *) codeString
+{
+    *error = [MMDataUtility makeErrorForFilePath: filePath codeString: codeString];
+    return nil;
+}
+
+- (void) doOauthDance: (NSDictionary *)params;
 {
     NSDictionary *requestSettings;
     void (^specificCompletionAction)(NSData *result);

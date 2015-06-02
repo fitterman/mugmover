@@ -10,8 +10,13 @@
 
 @interface MMDataUtility : NSObject
 
++ (NSError *) makeErrorForFilePath: (NSString *) filePath
+                        codeString: (NSString *) codeString;
+
 + (NSInteger) makeSyncJsonRequestWithRetries: (NSURLRequest *) request
                                   parsedData: (NSDictionary **) parsedServerData;
+
++ (NSString *) parseHexToOurBase64: (NSString *) hexString;
 
 + (NSDictionary *) parseJsonData: (NSData *)data;
 

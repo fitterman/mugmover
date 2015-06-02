@@ -16,6 +16,7 @@
            replacementFor: (NSString *) replacementFor
                     title: (NSString *) title
                   caption: (NSString *) caption
-                 keywords: (NSString *) keywords;
+                 keywords: (NSString *) keywords
+                    error: (NSError  **) error;
 
 @end

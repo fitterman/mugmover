@@ -7,6 +7,7 @@
 //
 
 #import "MMOauthAbstract.h"
+#import "MMPhoto.h"
 #import "MMDataUtility.h"
 
 @implementation MMOauthAbstract
@@ -72,7 +73,7 @@
 {
     if (remainingAttempts <= 0)
     {
-        DDLogError(@"ERROR      maxRetriesExceeded for %@", request);
+        DDLogError(@"ERROR         maxRetriesExceeded for %@", request);
         return;
     }
     [NSURLConnection sendAsynchronousRequest: request
@@ -83,15 +84,15 @@
      {
          if (connectionError)
          {
-             DDLogError(@"ERROR      connectionError=%@", connectionError);
+             DDLogError(@"ERROR         connectionError=%@", connectionError);
              // TODO BE SURE YOU CHECK FOR AN AUTH ERROR AND DO NO RETRY ON AN AUTH ERROR
              if (remainingAttempts <= 0)
              {
-                 DDLogError(@"ERROR      maxRetriesExceeded for %@", request);
+                 DDLogError(@"ERROR         maxRetriesExceeded for %@", request);
              }
              else
              {
-                 DDLogInfo(@"RETRYING   remainingAttempts=%ld", (long)remainingAttempts);
+                 DDLogInfo(@"RETRYING      remainingAttempts=%ld", (long)remainingAttempts);
                  [self asynchronousUrlRequest: request
                                         queue: queue
                             remainingAttempts: remainingAttempts - 1
@@ -104,7 +105,7 @@
              NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
              if ([httpResponse statusCode] >= 400) // These are errors (300 is handled automatically)
              {
-                 DDLogError(@"ERROR      httpError=%ld", (long)[httpResponse statusCode]);
+                 DDLogError(@"ERROR         httpError=%ld", (long)[httpResponse statusCode]);
                  if ([serverData length] > 0)
                  {
                      NSString *serverString = [[NSString alloc] initWithData: serverData
@@ -125,6 +126,7 @@
 }
 
 - (NSError *) synchronousUrlRequest: (NSURLRequest *) request
+                              photo: (MMPhoto *) photo // For diagnostic purposes
                   remainingAttempts: (NSInteger) remainingAttempts
                   completionHandler: (ServiceResponseHandler) serviceResponseHandler;
 {
@@ -138,7 +140,7 @@
                                                                error: &error];
         if (error)
         {
-            DDLogError(@"ERROR      error=%@", error);
+            DDLogError(@"ERROR         error=%@", error);
             // TODO BE SURE YOU CHECK FOR AN AUTH ERROR AND DO NO RETRY ON AN AUTH ERROR
             continue;
         }
@@ -147,7 +149,7 @@
         NSDictionary *parsedJsonData = [MMDataUtility parseJsonData: serverData];
         if ([httpResponse statusCode] >= 400) // These are errors (300 is handled automatically)
         {
-            DDLogError(@"ERROR      httpError=%ld", (long)[httpResponse statusCode]);
+            DDLogError(@"ERROR         httpError=%ld", (long)[httpResponse statusCode]);
             if ([serverData length] > 0)
             {
                 DDLogError(@"response=%@", [self extractErrorResponseData: parsedJsonData]);
@@ -164,6 +166,23 @@
         }
         if (parsedJsonData)
         {
+            if (([httpResponse statusCode] == 200) &&
+                ([parsedJsonData objectForKey: @"stat"]) &&
+                ![[parsedJsonData objectForKey: @"stat"] isEqualToString: @"ok"])
+            {
+                NSString *errorString = @"missingValues";
+                if (photo)
+                {
+                    errorString = [NSString stringWithFormat: @"uploadFailed:%@(%@)",
+                                                              [parsedJsonData objectForKey: @"message"],
+                                                              [parsedJsonData objectForKey: @"code"]];
+                }
+                error = [MMDataUtility makeErrorForFilePath: [photo iPhotoOriginalImagePath]
+                                                 codeString: errorString];
+                return error;   // Notice we do not even try to call the response handler
+                                // Also, this can't be retried either.
+
+            }
             if (serviceResponseHandler) // It's now optional
             {
                 serviceResponseHandler(parsedJsonData);
@@ -171,7 +190,7 @@
             return nil; // everything is okay
         }
     }
-    DDLogError(@"ERROR      maxRetriesExceeded for %@", request);
+    DDLogError(@"ERROR         maxRetriesExceeded for %@", request);
     return error;
 }
 
