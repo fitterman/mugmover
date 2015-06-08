@@ -14,6 +14,7 @@
 - (NSURLRequest *) upload: (NSString *) filePath
                   albumId: (NSString *) albumId
            replacementFor: (NSString *) replacementFor
+             withPriorMd5: (NSString *) priorMd5
                     title: (NSString *) title
                   caption: (NSString *) caption
                  keywords: (NSString *) keywords

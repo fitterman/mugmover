@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 Dicentra LLC. All rights reserved.
 //
 
+#import "MMDataUtility.h"
 #import "MMPrefsManager.h"
 #import "MMSMugmug.h"
 
@@ -103,9 +104,9 @@
     // FOR TESTING, WIPE THE DEFAULTS
     // [defaults removePersistentDomainForName:[[NSBundle mainBundle] bundleIdentifier]];
     
-    if (![defaults objectForKey: @"retransmitFilesSentPreviously"])
+    if (![defaults objectForKey: @"reprocessAllImagesPreviouslyTransmitted"])
     {
-        [defaults setObject: [NSNumber numberWithBool: NO] forKey: @"retransmitFilesSentPreviously"];
+        [defaults setObject: [NSNumber numberWithBool: NO] forKey: @"reprocessAllImagesPreviouslyTransmitted"];
     }
     
     // And save them away

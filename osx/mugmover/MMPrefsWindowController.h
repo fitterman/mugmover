@@ -10,6 +10,6 @@
 
 @interface MMPrefsWindowController : NSWindowController
 @property (weak)    IBOutlet    NSButton *          closeButton;
-@property (weak)    IBOutlet    NSButton *          retransmitFiles;
+@property (weak)    IBOutlet    NSButton *          reprocessAllImagesPreviouslyTransmitted;
 
 @end

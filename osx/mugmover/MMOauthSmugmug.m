@@ -70,6 +70,7 @@
 - (NSURLRequest *) upload: (NSString *) filePath
                   albumId: (NSString *) albumId
            replacementFor: (NSString *) replacementFor
+             withPriorMd5: (NSString *) priorMd5
                     title: (NSString *) title
                   caption: (NSString *) caption
                  keywords: (NSString *) keywords
@@ -89,6 +90,14 @@
     {
         return [self setErrorAndReturn: error filePath: filePath codeString: @"MD5"];
     }
+    // If we calculate the MD5 and this is a replacement, check whether it's already
+    // on the service. If we're not supposed to reprocess a file already uploaded,
+    // then the replacementFor will not be populated and we won't fall in this path.
+    if (replacementFor && [md5 isEqualToString: priorMd5])
+    {
+        return nil; // Nothing to transfer
+    }
+
     NSString* mimeType = [MMFileUtility mimeTypeForFileAtPath: filePath];
     if (!mimeType)
     {

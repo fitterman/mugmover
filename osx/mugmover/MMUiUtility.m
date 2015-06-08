@@ -34,10 +34,25 @@
     NSAlert *alert = [[NSAlert alloc] init];
     [alert addButtonWithTitle: NSLocalizedString(@"OK", nil)];
     [alert setMessageText: error.localizedDescription];
+    NSString *extra = @"";
     if (error.localizedRecoverySuggestion)
     {
-        [alert setInformativeText: error.localizedRecoverySuggestion];
+        extra = [extra stringByAppendingString: error.localizedRecoverySuggestion];
     }
+    NSString *filePath = [error.userInfo objectForKey :@"MMFilePath"];
+    if (filePath && [filePath length] > 0)
+    {
+        if ([extra length] > 0)
+        {
+            extra = [extra stringByAppendingString: @"\n"];
+        }
+        [extra stringByAppendingString: filePath];
+    }
+    if ([extra length] > 0)
+    {
+        [alert setInformativeText: extra];
+    }
+
     [alert setAlertStyle: warningOrErrorStyle];
     [alert runModal];
 }

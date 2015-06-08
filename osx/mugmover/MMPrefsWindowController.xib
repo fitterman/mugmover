@@ -8,9 +8,7 @@
         <customObject id="-2" userLabel="File's Owner" customClass="MMPrefsWindowController">
             <connections>
                 <outlet property="closeButton" destination="4TD-Zi-Y7h" id="DKH-QP-Maq"/>
-                <outlet property="retransferSetting" destination="lNo-fv-9Cx" id="cuO-cC-USL"/>
-                <outlet property="retransmitFiles" destination="lNo-fv-9Cx" id="KmM-35-pG1"/>
-                <outlet property="retransmitSetting" destination="lNo-fv-9Cx" id="ilv-8q-bfu"/>
+                <outlet property="reprocessAllImagesPreviouslyTransmitted" destination="lNo-fv-9Cx" id="tRF-MK-ucy"/>
                 <outlet property="window" destination="F0z-JX-Cv5" id="gIp-Ho-8D9"/>
             </connections>
         </customObject>
@@ -26,8 +24,8 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lNo-fv-9Cx">
-                        <rect key="frame" x="18" y="234" width="218" height="18"/>
-                        <buttonCell key="cell" type="check" title="Retransmit files sent previously" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="C7B-BC-wTn">
+                        <rect key="frame" x="18" y="234" width="301" height="18"/>
+                        <buttonCell key="cell" type="check" title="Reprocess All Images Previously Transmitted" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="C7B-BC-wTn">
                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>

@@ -209,11 +209,23 @@ long                retryCount;
  *                 the corresponding event.
  *   +folderId+    which is the ID of a Smugmug node (folder).
  *   +displayName+ which is the displayed title for the album
+ *   +options+     allow control of the following
+ *                   Visiblity: private/unlisted/inherit*
+ *                   Social Show Sharing
+ *                   Social Allow Comments
+ *                   Social Allow Likes
+ *                   Web Searchable
+ *                   Smug searchable
+ *                   Sort by...
+ *                   OR JUST USE A QUICK SETTING!
+ 
+ *                   
+ * TODO Change Smugmug searchable to site-setting
  */
-- (NSString *) findOrCreateAlbum: (NSString *) urlName
-                        inFolder: (NSString *) folderId
-                     displayName: (NSString *) displayName
-                     description: (NSString *) description
+- (NSString *) createAlbumWithUrlName: (NSString *) urlName
+                             inFolder: (NSString *) folderId
+                          displayName: (NSString *) displayName
+                          description: (NSString *) description;
 {
     // We have to do this in 2 steps: get the folder, then get the album info
     // because the folder/id API method doesn't support the !albums request.
@@ -243,7 +255,7 @@ long                retryCount;
                                                                     @"UrlName":            urlName,
                                                                     @"AutoRename":         @"Yes",
                                                                     @"Name":               displayName,
-                                                                    @"Privacy":            @"Private",
+                                                                    @"Privacy":            @"Private", // UNLISTED?
                                                                     @"SmugSearchable":     @"No",
                                                                     @"WorldSearchable":    @"No",
                                                                   }
@@ -253,30 +265,71 @@ long                retryCount;
     if (httpStatus == 200)
     {
         uri = [parsedServerResponse valueForKeyPath: @"Response.Uri"];
-    }
-    else if (httpStatus == 409) // Conflict, it exists
-    {
-        // Cannot use valueForKeyPath because the handle might contain a period
-        NSArray *pieces = @[@"Conflicts",
-                            [parsedServerResponse valueForKeyPath: @"Response.Uri"],
-                            @"Album",
-                            @"Uri"];
-        NSObject *object = parsedServerResponse;
-        for (NSString *piece in pieces)
+        if (uri)
         {
-            object = [(NSDictionary *)object objectForKey: piece];
+            // It's actually an API URL: just get the albumId
+            return [uri lastPathComponent];
         }
-        uri = (NSString *)object;
-    }
-    
-    if (uri)
-    {
-        // It's actually an API URL: just get the albumId
-        return [uri lastPathComponent];
     }
 
     DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
     DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    return nil;
+}
+
+/**
+ * Confirms whether an AlbumID exists
+ */
+- (BOOL) hasAlbumId: (NSString *) albumId
+{
+    NSDictionary *parsedServerResponse;
+    
+    NSString *apiRequest = [NSString stringWithFormat: @"album/%@", albumId];
+    NSURLRequest *getAlbumRequest = [_smugmugOauth apiRequest: apiRequest
+                                                   parameters: @{}
+                                                         verb: @"GET"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getAlbumRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        return YES;
+    }
+    if (httpStatus == 404)
+    {
+        return NO;
+    }
+    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    return NO;
+}
+
+/**
+ * Returns the MD5 of the uploaded original file with that ID (if provided and found on service)
+ */
+- (NSString *) md5ForPhotoId: (NSString *) photoId
+{
+    if (!photoId)
+    {
+        return nil;
+    }
+
+    NSDictionary *parsedServerResponse;
+    
+    NSString *apiRequest = [NSString stringWithFormat: @"image/%@", photoId];
+    NSURLRequest *getImageRequest = [_smugmugOauth apiRequest: apiRequest
+                                                   parameters: @{}
+                                                         verb: @"GET"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getImageRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        return [parsedServerResponse valueForKeyPath: @"Response.Image.ArchivedMD5"];
+    }
+    if (httpStatus != 404)
+    {
+        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    }
     return nil;
 }
 

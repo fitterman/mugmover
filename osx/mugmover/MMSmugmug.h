@@ -34,18 +34,22 @@
 
 - (void) configureOauthRetryOnFailure: (BOOL) attemptRetry;
 
-- (NSString *) findOrCreateAlbum: (NSString *) urlName
-                        inFolder: (NSString *) folderId
-                     displayName: (NSString *) displayName
-                     description: (NSString *) description;
+- (NSString *) createAlbumWithUrlName: (NSString *) urlName
+                             inFolder: (NSString *) folderId
+                          displayName: (NSString *) displayName
+                          description: (NSString *) description;
 
 - (NSString *) findOrCreateFolderForLibrary: library;
 
 - (BOOL) getUserInfo;
 
+- (BOOL) hasAlbumId: (NSString *) albumId;
+
 - (id) initFromDictionary: (NSDictionary *) dictionary;
 
 - (void) logError: (NSError *) error;
+
+- (NSString *) md5ForPhotoId: (NSString *) photoId;
 
 - (NSString *) name;
 

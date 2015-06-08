@@ -79,23 +79,48 @@ extern const NSInteger MMDefaultRetries;
             name = [event dateRange];
         }
 
-        NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via Mugmover", name];
-        NSString *newAlbumId = [service findOrCreateAlbum: [MMSmugmug sanitizeUuid: [event uuid]]
-                                                 inFolder: folderId
-                                              displayName: name
-                                              description: description];
+        // Restore the preferences (defaults)
+
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        BOOL retransmitFilesSentPreviously = [MMPrefsManager
-                                              boolForKey: @"retransmitFilesSentPreviously"];
+        BOOL reprocessAllImagesPreviouslyTransmitted = [MMPrefsManager
+                                                        boolForKey: @"reprocessAllImagesPreviouslyTransmitted"];
         NSString *albumKey = [NSString stringWithFormat: @"smugmug.%@.albums.%@",
                               service.uniqueId,
                               [event uuid]];
         NSArray *photos = [MMPhoto getPhotosForEvent: event];
+        
+        // Get the preferences (defaults) for this event within this service
         NSMutableDictionary *albumState = [[defaults objectForKey: albumKey] mutableCopy];
-        if (!albumState)
+        NSString *albumId = nil;
+        
+        if (albumState)
+        {
+            albumId = [albumState objectForKey: @"albumId"];
+            if (albumId)
+            {
+                // If you can't find the album, clear the "albumId" so a new one will be created
+                if (![service hasAlbumId: albumId])
+                {
+                    albumId = nil;
+                }
+            }
+        }
+        else // albumState has never been saved, initialize it...
         {
             albumState = [[NSMutableDictionary alloc] init];
-            [albumState setValue: newAlbumId forKey: @"albumId"];
+        }
+        
+        // If the albumId is present and not found or this is a new (to us) album,
+        // go ahead and create one.
+        if (!albumId)
+        {
+            NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via Mugmover", name];
+            // If the old AlbumID hasn't been stored or can't be found, create a new one
+            albumId = [service createAlbumWithUrlName: [MMSmugmug sanitizeUuid: [event uuid]]
+                                             inFolder: folderId
+                                          displayName: name
+                                          description: description];
+            [albumState setValue: albumId forKey: @"albumId"];
             NSMutableDictionary *mappingDictionary = [[NSMutableDictionary alloc] initWithCapacity: [photos count]];
             [albumState setValue: mappingDictionary forKey: @"mapping"];
         }
@@ -124,7 +149,8 @@ extern const NSInteger MMDefaultRetries;
             if (mappingKeyPath)
             {
                 replacementFor = [albumState valueForKeyPath: mappingKeyPath];
-                if (replacementFor && !retransmitFilesSentPreviously)
+                // If it's already marked as uploaded and we aren't reprocessing, skip it...
+                if (replacementFor && !reprocessAllImagesPreviouslyTransmitted)
                 {
                     completedTransfers++;   // We consider it sent already so we can get the icons right
                     [_windowController incrementProgressBy: 1.0];
@@ -181,8 +207,9 @@ extern const NSInteger MMDefaultRetries;
             }
 
             NSURLRequest *uploadRequest = [service.smugmugOauth upload: pathToFileToUpload
-                                                               albumId: newAlbumId
+                                                               albumId: albumId
                                                         replacementFor: replacementFor
+                                                          withPriorMd5: [service md5ForPhotoId: replacementFor]
                                                                  title: [photo titleForUpload]
                                                                caption: photo.caption
                                                               keywords: photo.keywordList
@@ -192,35 +219,44 @@ extern const NSInteger MMDefaultRetries;
                 [service logError: error];
                 continue;
             }
-
-            // 1. Upload to Smugmug
-            error = [service.smugmugOauth synchronousUrlRequest: uploadRequest
-                                                          photo: photo
-                                              remainingAttempts: MMDefaultRetries
-                                              completionHandler: processSmugmugUpload];
-            if (imageRequiresConversion) // There's some cleanup to do before checking for an error
+            if (!uploadRequest)
             {
-                // Delete the temp directory
-                [[NSFileManager defaultManager] removeItemAtPath: pathToFileToUpload
-                                                           error: nil];
+                // No uploadRequest and no error indicates we have been asked to
+                // replace a file that already has been updated.
+                
+                // TODO We need to still update the object on Mugmover
+                smugmugImageId = replacementFor;
             }
-            if (error)
+            else
             {
-                [service logError: error];
-                DDLogError(@"Upload to Smugmug server failed for photo %@.", photo);
-                continue;
-            }
+                // 1. Upload to Smugmug
+                error = [service.smugmugOauth synchronousUrlRequest: uploadRequest
+                                                              photo: photo
+                                                  remainingAttempts: MMDefaultRetries
+                                                  completionHandler: processSmugmugUpload];
+                if (imageRequiresConversion) // There's some cleanup to do before checking for an error
+                {
+                    // Delete the temp directory
+                    [[NSFileManager defaultManager] removeItemAtPath: pathToFileToUpload
+                                                               error: nil];
+                }
+                if (error)
+                {
+                    [service logError: error];
+                    DDLogError(@"Upload to Smugmug server failed for photo %@.", photo);
+                    continue;
+                }
 
-            // 2. Upload the data to Mugmover
-            error = [photo sendPhotoToMugmover];
-            if (error)
-            {
-                [service logError: error];
-                DDLogError(@"Upload to MM server failed for photo %@, error %@.", photo, error);
-                // TODO Kill the uploaded photo that was just uploaded first
-                continue;
+                // 2. Upload the data to Mugmover
+                error = [photo sendPhotoToMugmover];
+                if (error)
+                {
+                    [service logError: error];
+                    DDLogError(@"Upload to MM server failed for photo %@, error %@.", photo, error);
+                    // TODO Kill the uploaded photo that was just uploaded first
+                    continue;
+                }
             }
-
             // 4. Now we mark it as sent in our local store
             if (smugmugImageId)
             {
@@ -247,9 +283,9 @@ extern const NSInteger MMDefaultRetries;
             if (featuredPhotoId)
             {
                 NSString *featuredImageUri = [NSString stringWithFormat: @"/api/v2/album/%@/image/%@",
-                                              newAlbumId,
+                                              albumId,
                                               featuredPhotoId];
-                NSString *apiCall = [NSString stringWithFormat: @"album/%@", newAlbumId];
+                NSString *apiCall = [NSString stringWithFormat: @"album/%@", albumId];
                 NSURLRequest *eventRequest = [service.smugmugOauth apiRequest: apiCall
                                                                    parameters: @{@"HighlightAlbumImageUri": featuredImageUri}
                                                                           verb: @"PATCH"];
