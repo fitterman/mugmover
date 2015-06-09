@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150306182450) do
+ActiveRecord::Schema.define(version: 20150609185456) do
 
   create_table "faces", force: true do |t|
     t.integer  "photo_id"
@@ -75,6 +75,9 @@ ActiveRecord::Schema.define(version: 20150306182450) do
     t.string   "big_url"
     t.integer  "flag"
     t.text     "thumbnail"
+    t.string   "web_url"
+    t.string   "original_url"
+    t.string   "large_url"
   end
 
   create_table "service_collections", force: true do |t|

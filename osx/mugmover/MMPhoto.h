@@ -84,6 +84,9 @@
 
 - (NSString *) titleForUpload;
 
+- (void) setUrlsForLargeImage: (NSString *) urlToLargeImage
+                originalImage: (NSString *) urlToOriginalImage;
+
 - (NSString *) versionName;
 
 @end

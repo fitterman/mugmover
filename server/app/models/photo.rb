@@ -6,12 +6,16 @@ class Photo < ActiveRecord::Base
   #validates   :database_uuid,       presence: true
   validates   :master_uuid,         presence: true
   validates   :version_uuid,        presence: true
-  validates   :width,     inclusion: 50..20000
-  validates   :height,    inclusion: 50..20000
-  validates     :name,               presence: {allow_nil: true}
-  #validates   :filename,            presence: true
-  #validates   :format,              inclusion: %w{jpeg png gif tiff raw}
+  validates   :width,               inclusion: 50..20000
+  validates   :height,              inclusion: 50..20000
+  validates     :name,              presence: {allow_nil: true}
+  #validates   :filename,           presence: true
+  #validates   :format,             inclusion: %w{jpeg png gif tiff raw}
 
+  validates     :large_url,         presence: true
+  validates     :original_url,      presence: true
+  validates     :web_url,           presence: true
+  
   serialize     :request, JSON
 
 #   before_save   :populate_urls
@@ -33,6 +37,11 @@ class Photo < ActiveRecord::Base
     photo.original_date = photo_hash['originalDate']
 #    photo.date_uploaded = service_hash['dateUploaded']
 #    photo.original_format = service_hash['originalFormat']
+
+    photo.web_url = photo_hash['webUrl']
+    photo.large_url = photo_hash['largeUrl']
+    photo.original_url = photo_hash['originalUrl']
+            
     photo.thumbnail = photo_hash['thumbnail']
     photo.request = full_hash
     require 'pp' ; pp photo

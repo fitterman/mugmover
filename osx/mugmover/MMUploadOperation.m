@@ -112,6 +112,7 @@ extern const NSInteger MMDefaultRetries;
         
         // If the albumId is present and not found or this is a new (to us) album,
         // go ahead and create one.
+        BOOL albumCreatedOnThisPass = NO;
         if (!albumId)
         {
             NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via Mugmover", name];
@@ -120,6 +121,7 @@ extern const NSInteger MMDefaultRetries;
                                              inFolder: folderId
                                           displayName: name
                                           description: description];
+            albumCreatedOnThisPass = (albumId != nil);
             [albumState setValue: albumId forKey: @"albumId"];
             NSMutableDictionary *mappingDictionary = [[NSMutableDictionary alloc] initWithCapacity: [photos count]];
             [albumState setValue: mappingDictionary forKey: @"mapping"];
@@ -181,11 +183,18 @@ extern const NSInteger MMDefaultRetries;
             {
                 if ([[response valueForKeyPath: @"stat"] isEqualToString: @"ok"])
                 {
-                    NSMutableDictionary *serviceDictionary = [[response objectForKey: @"Image"] mutableCopy];
-                    [serviceDictionary setObject: @"smugmug" forKey: @"service"];
-                    NSString *imageUri = [serviceDictionary valueForKeyPath: @"ImageUri"];
-                    smugmugImageId = [[imageUri componentsSeparatedByString: @"/"] lastObject];
+                    NSMutableDictionary *serviceDictionary = [[NSMutableDictionary alloc] init];
+                    [serviceDictionary setObject: @"smugmug"
+                                          forKey: @"name"];
+                    [serviceDictionary setObject: [response valueForKeyPath: @"Image.URL"]
+                                          forKey: @"url"];
+                    [serviceDictionary setObject: service.handle
+                                          forKey: @"handle"];
                     [photo attachServiceDictionary: serviceDictionary];
+
+                    NSString *imageUri = [response valueForKeyPath: @"Image.ImageUri"];
+                    NSArray *pieces = [[imageUri lastPathComponent] componentsSeparatedByString: @"-"];
+                    smugmugImageId = pieces[0];
                 }
                 else // In theory, you will no longer get here because we check for errors
                 {
@@ -224,7 +233,8 @@ extern const NSInteger MMDefaultRetries;
                 // No uploadRequest and no error indicates we have been asked to
                 // replace a file that already has been updated.
                 
-                // TODO We need to still update the object on Mugmover
+                // TODO We need to still update the object on Mugmarker, being care to update
+                //      not create nor to fully replace the object (as you could have data collisions).
                 smugmugImageId = replacementFor;
             }
             else
@@ -247,13 +257,29 @@ extern const NSInteger MMDefaultRetries;
                     continue;
                 }
 
-                // 2. Upload the data to Mugmover
+                // 2. Get the image sizes and update to the photo object
+                NSDictionary *sizes = [service imageSizesForPhotoId: smugmugImageId];
+                [photo setUrlsForLargeImage: [sizes valueForKeyPath: @"ImageSizeLarge.Url"]
+                              originalImage: [sizes valueForKeyPath: @"ImageSizeOriginal.Url"]];
+                
+                // 3. Upload the data to Mugmarker
                 error = [photo sendPhotoToMugmover];
                 if (error)
                 {
                     [service logError: error];
                     DDLogError(@"Upload to MM server failed for photo %@, error %@.", photo, error);
-                    // TODO Kill the uploaded photo that was just uploaded first
+
+                    // Because this was a new image (not a replacement to Smugmug),
+                    // we attempt to delete the photo from the service so it's not
+                    // on the service and missing from Mugmarker.
+                    if (![service deletePhotoId: smugmugImageId])
+                    {
+                        DDLogError(@"Cleanup deletion failed for photo %@", smugmugImageId);
+                    }
+                    else
+                    {
+                        smugmugImageId = nil; // So we think it failed (because it did)
+                    }
                     continue;
                 }
             }
@@ -274,29 +300,42 @@ extern const NSInteger MMDefaultRetries;
         [defaults setObject: albumState forKey: albumKey];
         [defaults synchronize];
 
-        // Now we update the featured photo for the album
-        NSString *featuredPhotoUuid = [event featuredImageUuid];
-        NSString *featuredPhotoMappingPath = [NSString stringWithFormat: @"mapping.%@", featuredPhotoUuid];
-        if (featuredPhotoUuid && featuredPhotoMappingPath)
+        // If we were unable to do any transfers AND this is a newly-created album, we need to
+        // delete the album as there is no record of its existence preserved and it will just hang
+        // out in an unusable state.
+        if (albumCreatedOnThisPass && (completedTransfers == 0))
         {
-            NSString *featuredPhotoId = [albumState valueForKeyPath: featuredPhotoMappingPath];
-            if (featuredPhotoId)
+            if (![service deleteAlbumId: albumId])
             {
-                NSString *featuredImageUri = [NSString stringWithFormat: @"/api/v2/album/%@/image/%@",
-                                              albumId,
-                                              featuredPhotoId];
-                NSString *apiCall = [NSString stringWithFormat: @"album/%@", albumId];
-                NSURLRequest *eventRequest = [service.smugmugOauth apiRequest: apiCall
-                                                                   parameters: @{@"HighlightAlbumImageUri": featuredImageUri}
-                                                                          verb: @"PATCH"];
-                error = [service.smugmugOauth synchronousUrlRequest: eventRequest
-                                                              photo: nil
-                                                  remainingAttempts: MMDefaultRetries
-                                                    completionHandler: nil];
-                if (error)
+                DDLogError(@"Cleanup deletion failed for album %@", albumId);
+            }
+        }
+        else
+        {
+            // Now we update the featured photo for the album
+            NSString *featuredPhotoUuid = [event featuredImageUuid];
+            NSString *featuredPhotoMappingPath = [NSString stringWithFormat: @"mapping.%@", featuredPhotoUuid];
+            if (featuredPhotoUuid && featuredPhotoMappingPath)
+            {
+                NSString *featuredPhotoId = [albumState valueForKeyPath: featuredPhotoMappingPath];
+                if (featuredPhotoId)
                 {
-                    // TODO Log this error!
-                    DDLogWarn(@"Unable to set featured image for event album (%@).", event.name);
+                    NSString *featuredImageUri = [NSString stringWithFormat: @"/api/v2/album/%@/image/%@",
+                                                  albumId,
+                                                  featuredPhotoId];
+                    NSString *apiCall = [NSString stringWithFormat: @"album/%@", albumId];
+                    NSURLRequest *eventRequest = [service.smugmugOauth apiRequest: apiCall
+                                                                       parameters: @{@"HighlightAlbumImageUri": featuredImageUri}
+                                                                              verb: @"PATCH"];
+                    error = [service.smugmugOauth synchronousUrlRequest: eventRequest
+                                                                  photo: nil
+                                                      remainingAttempts: MMDefaultRetries
+                                                        completionHandler: nil];
+                    if (error)
+                    {
+                        // TODO Log this error!
+                        DDLogWarn(@"Unable to set featured image for event album (%@).", event.name);
+                    }
                 }
             }
         }

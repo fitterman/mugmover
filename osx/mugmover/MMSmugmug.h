@@ -39,11 +39,17 @@
                           displayName: (NSString *) displayName
                           description: (NSString *) description;
 
+- (BOOL) deleteAlbumId: (NSString *) albumId;
+
+- (BOOL) deletePhotoId: (NSString *) photoId;
+
 - (NSString *) findOrCreateFolderForLibrary: library;
 
 - (BOOL) getUserInfo;
 
 - (BOOL) hasAlbumId: (NSString *) albumId;
+
+- (NSDictionary *) imageSizesForPhotoId: (NSString *) photoId;
 
 - (id) initFromDictionary: (NSDictionary *) dictionary;
 

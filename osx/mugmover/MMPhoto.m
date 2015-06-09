@@ -987,6 +987,23 @@ extern Float64 const MMDegreesPerRadian;
     [_attributes setObject: serviceDictionary forKey: @"service"];
 }
 
+- (void) setUrlsForLargeImage: (NSString *) urlToLargeImage
+                originalImage: (NSString *) urlToOriginalImage
+{
+    // It is possible the original image was so small a "large" size wasn't created.
+    // Just in case that is what happened, we use the large for both...
+    if (urlToOriginalImage)
+    {
+        [_attributes setValue: urlToOriginalImage forKeyPath: @"service.originalUrl"];
+        [_attributes setValue: urlToOriginalImage forKeyPath: @"service.largeUrl"];
+    }
+    // ... and then override the large with the supplied image, if present.
+    if (urlToLargeImage)
+    {
+        [_attributes setValue: urlToLargeImage forKeyPath: @"service.largeUrl"];
+    }
+}
+
 - (NSError *) sendPhotoToMugmover
 {
     NSDictionary *cropProperties = @{

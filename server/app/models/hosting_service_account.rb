@@ -14,8 +14,9 @@ class HostingServiceAccount < ActiveRecord::Base
 #  validates   :auth_token,   presence: true
 
   def self.from_hash(service_hash)
-    service_name = service_hash.delete(:name)
-    service_handle = service_hash[:handle]
+    # NOTE: symbols won't work here: this is just a Hash, not a HashWithIndifferentAccess
+    service_name = service_hash.delete('name')
+    service_handle = service_hash['handle']
 
     hosting_service_account = HostingServiceAccount.find_or_create_by(name: service_name,
                                                                       handle: service_handle)

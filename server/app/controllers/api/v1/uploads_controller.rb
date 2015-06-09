@@ -33,10 +33,13 @@ module Api
           service_hash = request.delete('service')
           database_uuid = request['source']['databaseUuid']
 
-          hosting_service_account = HostingServiceAccount.from_hash({name: 'flickr', handle: 'foobar'})
+          hosting_service_account = HostingServiceAccount.from_hash(service_hash)
           if hosting_service_account.errors.present?
             errors[:service] = hosting_service_account.errors.full_messages
           else
+            photo_hash['webUrl'] = service_hash['url']
+            photo_hash['largeUrl'] = service_hash['largeUrl']
+            photo_hash['originalUrl'] = service_hash['originalUrl']
             photo = Photo.from_hash(hosting_service_account, database_uuid, photo_hash, pristine_hash)
             if photo.errors.present?
               errors[:photo] = photo.errors.full_messages

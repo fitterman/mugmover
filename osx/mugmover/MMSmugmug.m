@@ -255,7 +255,7 @@ long                retryCount;
                                                                     @"UrlName":            urlName,
                                                                     @"AutoRename":         @"Yes",
                                                                     @"Name":               displayName,
-                                                                    @"Privacy":            @"Private", // UNLISTED?
+                                                                    @"Privacy":            @"Unlisted", // UNLISTED?
                                                                     @"SmugSearchable":     @"No",
                                                                     @"WorldSearchable":    @"No",
                                                                   }
@@ -334,6 +334,81 @@ long                retryCount;
 }
 
 /**
+ * Deletes an album from the service, returning YES to indicate success or NO for failure.
+ */
+- (BOOL) deleteAlbumId: (NSString *) albumId
+{
+    NSDictionary *parsedServerResponse;
+    
+    NSString *apiRequest = [NSString stringWithFormat: @"album/%@", albumId];
+    NSURLRequest *deleteAlbumRequest = [_smugmugOauth apiRequest: apiRequest
+                                                      parameters: @{}
+                                                            verb: @"DELETE"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: deleteAlbumRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        return YES;
+    }
+    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    return NO;
+}
+
+/**
+ * Deletes an image from the service, returning YES to indicate success or NO for failure.
+ */
+- (BOOL) deletePhotoId: (NSString *) photoId
+{
+    NSDictionary *parsedServerResponse;
+    
+    NSString *apiRequest = [NSString stringWithFormat: @"image/%@", photoId];
+    NSURLRequest *deleteImageRequest = [_smugmugOauth apiRequest: apiRequest
+                                                   parameters: @{}
+                                                         verb: @"DELETE"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: deleteImageRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        return YES;
+    }
+    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    return NO;
+}
+
+/**
+ * Gets image size details
+ */
+- (NSDictionary *) imageSizesForPhotoId: (NSString *) photoId
+{
+    if (!photoId)
+    {
+        return nil;
+    }
+    
+    NSDictionary *parsedServerResponse;
+    
+    NSString *apiRequest = [NSString stringWithFormat: @"image/%@-0!sizedetails", photoId];
+    NSURLRequest *getImageRequest = [_smugmugOauth apiRequest: apiRequest
+                                                   parameters: @{}
+                                                         verb: @"GET"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getImageRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        return [parsedServerResponse valueForKeyPath: @"Response.ImageSizeDetails"];
+    }
+    if (httpStatus != 404)
+    {
+        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    }
+    return nil;
+}
+
+
+/**
  * This method returns the Folder ID of the preferred folder under which all the uploaded
  * albums will be created.
  * 1. This queries the defaults (preferences) to see if a folder ID has been stored.
@@ -341,8 +416,7 @@ long                retryCount;
  *    the callback is invoked with the folder ID. The call returns.
  * 3. If the folder can't be accessed or a folder ID hasn't been stored, a new folder is created.
  *    Its ID is stored as a default (preference) for future access by this method.
- * If anything goes seriously wrong, before the completionCallback can be invoked, an NSError object
- * is returned.
+ * If anything goes seriously wrong, before the completionCallback can be invoked, nil is returned.
  */
 - (NSString *) findOrCreateFolderForLibrary: (MMPhotoLibrary *) library
 {
@@ -397,7 +471,7 @@ long                retryCount;
     NSURLRequest *createFolderRequest = [_smugmugOauth apiRequest: apiRequest
                                                    parameters: @{@"Description":        [library description],
                                                                  @"Name":               [library displayName],
-                                                                 @"Privacy":            @"Private",
+                                                                 @"Privacy":            @"Unlisted",
                                                                  @"SmugSearchable":     @"No",
                                                                  @"SortIndex":          @"SortIndex",
                                                                  @"UrlName":            urlName,
