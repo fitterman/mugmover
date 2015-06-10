@@ -115,10 +115,12 @@
                                 // This just sets the names in this context
                                 this.setNamesIndex = function(namesIndex)
                                 {
-                                  this.names = namesIndex;
-                                  angular.forEach(this.names, function(name)
+                                  this.names = {};
+                                  that = this;
+                                  angular.forEach(namesIndex, function(nameRecord)
                                                               {
-                                                                withNoteFunction(name);
+                                                                withNoteFunction(nameRecord);
+                                                                that.names[nameRecord['id']] = nameRecord;
                                                               }
                                                  );
                                 }
