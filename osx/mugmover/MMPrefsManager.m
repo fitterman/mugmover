@@ -12,6 +12,7 @@
 
 @implementation MMPrefsManager
 
+
 + (BOOL) boolForKey: (NSString *) name
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -26,7 +27,7 @@
     NSString *tsKey = [NSString stringWithFormat: @"%@.%@.tokenSecret", serviceString, uniqueId];
     [defaults removeObjectForKey: atKey];
     [defaults removeObjectForKey: tsKey];
-    [defaults synchronize];
+    [self syncIfNecessary: defaults];
 }
 
 + (void) deserializeLibrariesFromDefaultsMergingIntoMutableArray: (NSMutableArray *) mutableArray
@@ -66,7 +67,7 @@
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject: libraries forKey: @"libraries"];
-    [defaults synchronize];
+    [self syncIfNecessary: defaults];
 }
 
 /**
@@ -82,7 +83,7 @@
     }
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject: serializedServices forKey: @"services"];
-    [defaults synchronize];
+    [self syncIfNecessary: defaults];
 }
 
 + (void)   setBool: (BOOL) boolValue
@@ -91,7 +92,7 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject: [NSNumber numberWithBool: boolValue]
                  forKey: name];
-    [defaults synchronize];
+    [self syncIfNecessary: defaults];
 }
 
 /**
@@ -108,9 +109,7 @@
     {
         [defaults setObject: [NSNumber numberWithBool: NO] forKey: @"reprocessAllImagesPreviouslyTransmitted"];
     }
-    
-    // And save them away
-    [defaults synchronize];
+    [self syncIfNecessary: defaults];
 }
 
 + (void) setObject: (id) object
@@ -118,7 +117,7 @@
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject: object forKey: name];
-    [defaults synchronize];
+    [self syncIfNecessary: defaults];
 }
 
 + (void)  storeToken: (NSString *) accessToken
@@ -132,7 +131,16 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject: accessToken forKey: atKey];
     [defaults setObject: tokenSecret forKey: tsKey];
-    [defaults synchronize];
+    [self syncIfNecessary: defaults];
+}
+
++ (void) syncIfNecessary: (NSUserDefaults *) defaults
+{
+    static NSOperatingSystemVersion yosemite = {10, 10, 0};
+    if (![[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion: yosemite])
+    {
+        [defaults synchronize];
+    }
 }
 
 + (NSArray *) tokenAndSecretForService: (NSString *) serviceString

@@ -38,6 +38,8 @@
           forService: (NSString *) serviceString
             uniqueId: (NSString *) uniqueId;
 
++ (void) syncIfNecessary: (NSUserDefaults *) defaults;
+
 + (NSArray *) tokenAndSecretForService: (NSString *) serviceString
                               uniqueId: uniqueId;
 

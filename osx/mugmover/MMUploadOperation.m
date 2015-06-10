@@ -289,7 +289,7 @@ extern const NSInteger MMDefaultRetries;
                 // We do it on each pass in case it bombs on a large collection of photos
                 [albumState setValue: smugmugImageId forKey: mappingKeyPath];
                 [defaults setObject: albumState forKey: albumKey];
-                [defaults synchronize];
+                [MMPrefsManager syncIfNecessary: defaults];
                 completedTransfers++;
                 [_windowController incrementProgressBy: 1.0];
             }
@@ -298,7 +298,7 @@ extern const NSInteger MMDefaultRetries;
 
         // And at the end we have to do it in case some change(s) did not get stored
         [defaults setObject: albumState forKey: albumKey];
-        [defaults synchronize];
+        [MMPrefsManager syncIfNecessary: defaults];
 
         // If we were unable to do any transfers AND this is a newly-created album, we need to
         // delete the album as there is no record of its existence preserved and it will just hang
