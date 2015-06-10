@@ -1,5 +1,5 @@
 json.extract! @photo, :id
-json.thumb @photo.thumbnail_data_or_url
+json.thumb @photo.thumbnail_url
 json.url @photo.large_url
 json.flag @photo.flag?
 json.width @photo.width

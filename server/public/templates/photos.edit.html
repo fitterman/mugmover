@@ -9,10 +9,10 @@
             class="img-responsive"
             ng-src="{{photo.url}}"
             ng-click="addFaceAt($event.offsetX, $event.offsetY)"
-            ng-style="{  'width': '100%',
+            ng-style="{ 'width': '100%', 'height': '100%',
                         'background-repeat': 'no-repeat',
                         'background-size' : 'contain',
-                        'background-image': 'url(' + photo.thumb + ')' }" />
+                        'background-image': 'url(' + photo.thumb + ')'}" />
       <div id="face-frame-container">
         <div  class="{{!face.namedFaceId ? 'unknown face-frame' : 'face-frame'}}"
               ng-repeat="face in photo.faces"

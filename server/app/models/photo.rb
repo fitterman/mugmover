@@ -18,7 +18,6 @@ class Photo < ActiveRecord::Base
   
   serialize     :request, JSON
 
-#   before_save   :populate_urls
   before_save   :normalize_flag
 
   def self.from_hash(hosting_service_account, database_uuid, photo_hash, full_hash)
@@ -49,28 +48,14 @@ class Photo < ActiveRecord::Base
     return photo
   end
 
-  def thumbnail_data_or_url
-    thumbnail.blank? ? thumbnail_url : ('data:image/jpeg;base64,' + self.thumbnail)
+  def thumbnail_url
+    "/photos/#{self.id}.jpeg"
   end
 
   # Ensure it has a valid value
   def normalize_flag
     if self.flag.nil?
       self.flag = 0
-    end
-  end
-
-  def populate_urls
-    hash = request['service']
-    if hash['name'] == 'flickr'
-      farm = hash['farm']
-      server = hash['server']
-      phid = hash['id']
-      secret = hash['secret']
-      self.thumbnail_url = "https://farm#{farm}.staticflickr.com/#{server}/#{phid}_#{secret}_t.jpg"
-      self.big_url = "https://farm#{farm}.staticflickr.com/#{server}/#{phid}_#{secret}_b.jpg"
-    else
-      raise StandardError.new("Unexpected service (name=#{hash['name']}")
     end
   end
 

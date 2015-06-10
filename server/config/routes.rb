@@ -18,6 +18,8 @@ Rails.application.routes.draw do
     resources :photos, only: [:index]
   end
 
+  resources :photos, only: [:show]
+
   resources :go, only: [:show]
 
 # mugs/[id]  # shows all the people in the account
