@@ -22,7 +22,9 @@
 
   var blank = function(stringValue)
   {
-    return (stringValue === null || stringValue.trim().length === 0)
+    return (typeof(stringValue) == 'undefined' ||
+            stringValue === null ||
+            stringValue.trim().length === 0)
   }
   mugmarkerServices.factory('Photo',
                             ['$resource',
@@ -122,7 +124,7 @@
                                                                 withNoteFunction(nameRecord);
                                                                 that.names[nameRecord['id']] = nameRecord;
                                                               }
-                                                 );
+                                                  );
                                 }
 
 
