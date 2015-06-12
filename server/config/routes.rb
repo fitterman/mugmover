@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  devise_for :users
+  root controller: :go, action: :show, id: 1
   namespace :api do
     namespace :v1 do
       resource :upload, only: [:create]
