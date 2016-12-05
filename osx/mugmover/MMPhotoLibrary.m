@@ -25,9 +25,8 @@
                     "GROUP BY f.uuid " \
                     "ORDER BY minImageDate, maxImageDate, f.uuid "
 
-@import QuartzCore.CIFilter;
-@import QuartzCore.CoreImage.CIContext;
-@import QuartzCore.CoreImage.CIFilter;
+@import CoreImage.CIContext;
+@import CoreImage.CIFilter;
 
 @implementation MMPhotoLibrary
 

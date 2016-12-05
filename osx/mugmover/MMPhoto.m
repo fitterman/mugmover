@@ -28,9 +28,8 @@
 
 @import AVFoundation;
 
-@import QuartzCore.CIFilter;
-@import QuartzCore.CoreImage.CIContext;
-@import QuartzCore.CoreImage.CIFilter;
+@import CoreImage.CIContext;
+@import CoreImage.CIFilter;
 
 
 #define PAGESIZE (50)
