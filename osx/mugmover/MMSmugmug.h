@@ -11,6 +11,8 @@
 @class MMOauthSmugmug;
 @class MMLibraryEvent;
 @class MMPhotoLibrary;
+@class MMUploadOperation;
+@class MMWindowController;
 
 @interface MMSmugmug : NSObject
 
@@ -61,6 +63,9 @@
 
 - (NSDictionary *) serialize;
 
-
+- (void) transferPhotosForEvent: (MMLibraryEvent *) event
+                uploadOperation: (MMUploadOperation *) uploadOperation
+               windowController: (MMWindowController *) windowController
+                       folderId: (NSString *) folderId;
 @end
 
