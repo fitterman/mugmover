@@ -10,7 +10,6 @@
 #import "MMPrefsManager.h"
 #import "MMServiceManager.h"
 #import "MMSmugmug.h"
-#import "MMOauthAbstract.h"
 
 NSInteger const maxSupportedServices = 50;
 
@@ -70,9 +69,8 @@ NSInteger const maxSupportedServices = 50;
     }
     [_services addObject: newService];
 
-    MMOauthAbstract *oa = (MMOauthAbstract *)newService.smugmugOauth;
-    [MMPrefsManager storeToken: oa.accessToken
-                        secret: oa.tokenSecret
+    [MMPrefsManager storeToken: [newService oauthAccessToken]
+                        secret: [newService oauthTokenSecret]
                     forService: @"smugmug"
                       uniqueId: newService.uniqueId];
     [MMPrefsManager serializeServicesToDefaults: _services];

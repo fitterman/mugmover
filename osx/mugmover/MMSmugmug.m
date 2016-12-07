@@ -204,6 +204,16 @@ long                retryCount;
     }
 }
 
+- (NSString *) oauthAccessToken
+{
+    return [_smugmugOauth accessToken];
+}
+
+- (NSString *) oauthTokenSecret
+{
+    return [_smugmugOauth tokenSecret];
+}
+
 #pragma mark "Private methods"
 
 /**

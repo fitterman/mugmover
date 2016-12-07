@@ -61,6 +61,10 @@
 
 - (NSString *) name;
 
+- (NSString *) oauthAccessToken;
+
+- (NSString *) oauthTokenSecret;
+
 - (NSDictionary *) serialize;
 
 - (void) transferPhotosForEvent: (MMLibraryEvent *) event

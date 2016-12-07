@@ -11,7 +11,6 @@
 #import "MMLibraryEvent.h"
 #import "MMWindowController.h"
 #import "MMOauthAbstract.h"
-#import "MMOauthSmugmug.h"
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
 #import "MMPrefsManager.h"

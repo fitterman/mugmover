@@ -27,7 +27,7 @@
     // These things should go in the initalizer, perhaps
     _uploadOperationQueue = [[NSOperationQueue alloc] init];
     _uploadOperationQueue.name = @"Upload Queue";
-    _uploadOperationQueue.MaxConcurrentOperationCount = 1;
+    _uploadOperationQueue.maxConcurrentOperationCount = 1;
 
     _outstandingRequests = 0;
 
