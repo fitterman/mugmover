@@ -429,7 +429,7 @@
                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                             <prototypeCellViews>
                                                 <tableCellView id="Hnp-ug-bgs" customClass="MMComplexTableCellView">
-                                                    <rect key="frame" x="28" y="1" width="280" height="48"/>
+                                                    <rect key="frame" x="28.809659090909502" y="1" width="280" height="48"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DfK-Mf-xTc">

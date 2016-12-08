@@ -141,12 +141,14 @@
         // We preserve the nodeId, allowing the customer to rename the folder and change its URL
         // at will.
         
-        MMDestinationSmugmug *serviceApi = [_destinationManager destinationForIndex: _destinationsTable.selectedRow];
-        NSString *folderId = [serviceApi findOrCreateFolderForLibrary: _library];
+        // TODO This has to be cast as the right type of object. Can I just make it point to an abstract object?
+        MMDestinationSmugmug *destination = [_destinationManager destinationForIndex: _destinationsTable.selectedRow];
+        NSString *folderId = [destination findOrCreateFolderForLibrary: _library];
         if (!folderId)
         {
             _transmitButton.enabled = YES;
             _transmitting = NO;
+// TODO Make this message more specific
             [MMUiUtility alertWithText: @"Error creating folder on service"
                           withQuestion: nil
                                  style: NSWarningAlertStyle];
@@ -178,7 +180,7 @@
                 _totalImagesToTransmit += [[event filecount] integerValue];
                 MMUploadOperation *uploadOperation = [[MMUploadOperation alloc] initWithEvent: event
                                                                                           row: row
-                                                                                      service: serviceApi
+                                                                                  destination: destination
                                                                                      folderId: folderId
                                                                              windowController: self];
                 [_uploadOperationQueue addOperation: uploadOperation];

@@ -15,6 +15,8 @@
 
 @interface MMDestinationFileSystem : MMDestinationAbstract
 
+@property (strong, readonly)    NSDictionary *          eventDictionary;
+
 - (id) initFromDictionary: (NSDictionary *) dictionary;
 
 @end

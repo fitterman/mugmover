@@ -23,7 +23,7 @@
 
 - (id) initWithEvent: (MMLibraryEvent *) event
                  row: (NSInteger) row
-             service: (MMDestinationSmugmug *) destination
+         destination: (MMDestinationSmugmug *) destination
             folderId: (NSString *) folderId
     windowController: (MMWindowController *) windowController;
 
