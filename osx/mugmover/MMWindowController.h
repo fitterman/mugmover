@@ -12,7 +12,7 @@
 @class MMPhotoLibraryManager;
 @class MMPrefsWindowController;
 @class MMProgressWindowController;
-@class MMServiceManager;
+@class MMDestinationManager;
 
 @interface MMWindowController : NSWindowController <NSWindowDelegate, NSTableViewDelegate, NSSplitViewDelegate>
 
@@ -24,7 +24,7 @@
 @property (weak)    IBOutlet    NSTableView *           librariesTable;
 @property (weak)    IBOutlet    NSTableView *           photosTable;
 @property (weak)    IBOutlet    NSSegmentedControl *    servicesSegmentedControl;
-@property (weak)    IBOutlet    NSTableView *           servicesTable;
+@property (weak)    IBOutlet    NSTableView *           destinationsTable;
 @property (weak)    IBOutlet    NSSplitView *           splitView;
 @property (weak)    IBOutlet    NSButton *              transmitButton;
 @property (weak)    IBOutlet    NSButton *              uncheckAllButton;
@@ -32,6 +32,8 @@
 @property (strong)              NSImage *                       activeIcon;
 @property (strong)              NSImage *                       completedIcon;
 @property (strong)              NSImage *                       incompleteIcon;
+@property (strong)              NSImage *                       destinationIcon;
+@property (strong)              MMDestinationManager *                 destinationManager;
 @property (strong)              MMPhotoLibrary *                library;
 @property (strong)              NSImage *                       libraryIcon;
 @property (strong)              MMPhotoLibraryManager *         libraryManager;
@@ -39,17 +41,15 @@
 @property (assign)              NSInteger                       outstandingRequests;
 @property (strong)              NSArray *                       photos;
 @property (strong)              MMLibraryEvent *                selectedEvent;
-@property (strong)              NSImage *                       serviceIcon;
-@property (strong)              MMServiceManager *              serviceManager;
 @property (assign)              NSInteger                       totalImagesToTransmit;
 @property (assign)              BOOL                            transmitting;
 @property (strong)              NSOperationQueue *              uploadOperationQueue;
 
 - (void) addLibraryDialog;
 
-- (void) addFileSystemService;
+- (void) addFileSystemDestination;
 
-- (void) addSmugmugService;
+- (void) addSmugmugDestination;
 
 - (void) incrementProgressBy: (Float64) increment;
 
@@ -57,7 +57,7 @@
 
 - (void) removeLibraryDialog;
 
-- (void) removeServiceDialog;
+- (void) removeDestinationDialog;
 
 - (void) setActivePhotoThumbnail: (NSImage *) photoThumbnailImage;
 

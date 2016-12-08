@@ -33,9 +33,9 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="wFC-TO-SCJ"/>
-                            <menuItem title="Services" id="NMo-om-nkz">
+                            <menuItem title="Destinations" id="NMo-om-nkz">
                                 <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Services" systemMenu="services" id="hz9-B4-Xy5"/>
+                                <menu key="submenu" title="Destinations" systemMenu="services" id="hz9-B4-Xy5"/>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="4je-JR-u6R"/>
                             <menuItem title="Hide mugmover" keyEquivalent="h" id="Olw-nP-bQN">
@@ -303,9 +303,9 @@ CA
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="Service" id="jxT-CU-nIS">
+                <menuItem title="Destination" id="jxT-CU-nIS">
                     <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="Service" id="GEO-Iw-cKr">
+                    <menu key="submenu" title="Destination" id="GEO-Iw-cKr">
                         <items>
                             <menuItem title="Add Folder" id="Gi5-1S-RQB">
                                 <modifierMask key="keyEquivalentModifierMask"/>
@@ -319,7 +319,7 @@ CA
                                     <action selector="addSmugmugAccount:" target="Voe-Tx-rLC" id="zdc-9s-ojo"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Remove Account..." id="Fal-I4-PZk">
+                            <menuItem title="Remove Destination..." id="Fal-I4-PZk">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="removeAccount:" target="Voe-Tx-rLC" id="2Fj-Jv-CaQ"/>

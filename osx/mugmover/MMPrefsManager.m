@@ -8,8 +8,8 @@
 
 #import "MMDataUtility.h"
 #import "MMPrefsManager.h"
-#import "MMServiceFileSystem.h"
-#import "MMServiceSmugmug.h"
+#import "MMDestinationFileSystem.h"
+#import "MMDestinationSmugmug.h"
 
 @implementation MMPrefsManager
 
@@ -20,12 +20,12 @@
     return [[defaults objectForKey: name] boolValue];
 }
 
-+ (void) clearTokenAndSecretForService: (NSString *) serviceString
-                              uniqueId: (NSString *) uniqueId
++ (void) clearTokenAndSecretForDestination: (NSString *) destinationString
+                                  uniqueId: (NSString *) uniqueId
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSString *atKey = [NSString stringWithFormat: @"%@.%@.accessToken", serviceString, uniqueId];
-    NSString *tsKey = [NSString stringWithFormat: @"%@.%@.tokenSecret", serviceString, uniqueId];
+    NSString *atKey = [NSString stringWithFormat: @"%@.%@.accessToken", destinationString, uniqueId];
+    NSString *tsKey = [NSString stringWithFormat: @"%@.%@.tokenSecret", destinationString, uniqueId];
     [defaults removeObjectForKey: atKey];
     [defaults removeObjectForKey: tsKey];
     [self syncIfNecessary: defaults];
@@ -41,7 +41,7 @@
     }
 }
 
-+ (void) deserializeServicesFromDefaultsMergingIntoMutableArray: (NSMutableArray *) mutableArray
++ (void) deserializeDestinationsFromDefaultsMergingIntoMutableArray: (NSMutableArray *) mutableArray
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSArray *array = [defaults objectForKey: @"services"];
@@ -49,19 +49,19 @@
     {
         for (NSDictionary *dictionary in array)
         {
-            NSString *serviceType = (NSString *)[dictionary objectForKey: @"type"];
-            MMServiceAbstract *service = nil;
-            if ([serviceType isEqualToString: @"smugmug"])
+            NSString *destinationType = (NSString *)[dictionary objectForKey: @"type"];
+            MMDestinationAbstract *destination = nil;
+            if ([destinationType isEqualToString: @"smugmug"])
             {
-                service = [[MMServiceSmugmug alloc] initFromDictionary: dictionary];
+                destination = [[MMDestinationSmugmug alloc] initFromDictionary: dictionary];
             }
-            else if ([serviceType isEqualToString: @"filesystem"])
+            else if ([destinationType isEqualToString: @"filesystem"])
             {
-                service = [[MMServiceFileSystem alloc] initFromDictionary: dictionary];
+                destination = [[MMDestinationFileSystem alloc] initFromDictionary: dictionary];
             }
-            if (service)
+            if (destination)
             {
-                [mutableArray addObject: service];
+                [mutableArray addObject: destination];
             }
         }
     }
@@ -84,15 +84,15 @@
  * This expects to take in an array of SmugMug service objects. It will serialize them
  * and then store the array of serialized values
  */
-+ (void) serializeServicesToDefaults: (NSArray *) services
++ (void) serializeDestinationsToDefaults: (NSArray *) destinations
 {
-    NSMutableArray *serializedServices = [[NSMutableArray alloc] initWithCapacity: [services count]];
-    for (MMServiceSmugmug *service in services)
+    NSMutableArray *serializedDestinations = [[NSMutableArray alloc] initWithCapacity: [destinations count]];
+    for (MMDestinationSmugmug *destination in destinations)
     {
-        [serializedServices addObject: [service serialize]];
+        [serializedDestinations addObject: [destination serialize]];
     }
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject: serializedServices forKey: @"services"];
+    [defaults setObject: serializedDestinations forKey: @"services"];
     [self syncIfNecessary: defaults];
 }
 
@@ -132,11 +132,11 @@
 
 + (void)  storeToken: (NSString *) accessToken
               secret: (NSString *) tokenSecret
-          forService: (NSString *) serviceString
+      forDestination: (NSString *) destinationString
             uniqueId: (NSString *) uniqueId;
 {
-    NSString *atKey = [NSString stringWithFormat: @"%@.%@.accessToken", serviceString, uniqueId];
-    NSString *tsKey = [NSString stringWithFormat: @"%@.%@.tokenSecret", serviceString, uniqueId];
+    NSString *atKey = [NSString stringWithFormat: @"%@.%@.accessToken", destinationString, uniqueId];
+    NSString *tsKey = [NSString stringWithFormat: @"%@.%@.tokenSecret", destinationString, uniqueId];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject: accessToken forKey: atKey];
@@ -153,11 +153,11 @@
     }
 }
 
-+ (NSArray *) tokenAndSecretForService: (NSString *) serviceString
-                              uniqueId: uniqueId
++ (NSArray *) tokenAndSecretForDestination: (NSString *) destinationString
+                                  uniqueId: uniqueId
 {
-    NSString *atKey = [NSString stringWithFormat: @"%@.%@.accessToken", serviceString, uniqueId];
-    NSString *tsKey = [NSString stringWithFormat: @"%@.%@.tokenSecret", serviceString, uniqueId];
+    NSString *atKey = [NSString stringWithFormat: @"%@.%@.accessToken", destinationString, uniqueId];
+    NSString *tsKey = [NSString stringWithFormat: @"%@.%@.tokenSecret", destinationString, uniqueId];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     return @[[defaults objectForKey: atKey], [defaults objectForKey: tsKey]];
 }

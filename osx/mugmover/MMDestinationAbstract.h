@@ -1,13 +1,13 @@
 //
-//  MMServiceAbstract.h
+//  MMDestinationAbstract.h
 //  mugmover
 //
 //  Created by Bob Fitterman on 12/7/16.
 //  Copyright © 2016 Dicentra LLC. All rights reserved.
 //
 
-#ifndef MMServiceAbstract_h
-#define MMServiceAbstract_h
+#ifndef MMDestinationAbstract_h
+#define MMDestinationAbstract_h
 
 @class MMLibraryEvent;
 @class MMPhoto;
@@ -15,7 +15,7 @@
 @class MMUploadOperation;
 @class MMWindowController;
 
-@interface MMServiceAbstract : NSObject
+@interface MMDestinationAbstract : NSObject
 
 @property (strong)              NSString *              accessSecret;
 @property (strong)              NSString *              accessToken;
@@ -47,4 +47,4 @@
 
 @end
 
-#endif /* MMServiceAbstract_h */
+#endif /* MMDestinationAbstract_h */

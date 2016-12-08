@@ -1,5 +1,5 @@
 //
-//  MMServiceSmugmug.h
+//  MMDestinationSmugmug.h
 //  mugmover
 //
 //  Created by Bob Fitterman on 03/17/15.
@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MMServiceAbstract.h"
+#import "MMDestinationAbstract.h"
 
 @class MMOauthSmugmug;
 @class MMLibraryEvent;
@@ -15,7 +15,7 @@
 @class MMUploadOperation;
 @class MMWindowController;
 
-@interface MMServiceSmugmug : MMServiceAbstract
+@interface MMDestinationSmugmug : MMDestinationAbstract
 
 @property (strong, readonly)    NSString *              handle;
 @property (assign, readonly)    NSInteger               page;

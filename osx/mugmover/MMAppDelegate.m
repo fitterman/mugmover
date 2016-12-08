@@ -28,16 +28,16 @@ BOOL const MMdebugLevel;
 }
 
 - (IBAction)addFileFolder:(id)sender {
-    [_windowController addFileSystemService];
+    [_windowController addFileSystemDestination];
 }
 
 
 - (IBAction)addSmugmugAccount:(id)sender {
-    [_windowController addSmugmugService];
+    [_windowController addSmugmugDestination];
 }
 
 - (IBAction)removeAccount:(id)sender {
-    [_windowController removeServiceDialog];
+    [_windowController removeDestinationDialog];
 }
 
 - (IBAction)editPreferences:(id)sender {

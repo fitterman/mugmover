@@ -1,13 +1,13 @@
 //
-//  MMServiceSmugmug.m
+//  MMDestinationSmugmug.m
 //  Everything to do with Smugmug integration.
 //
 //  Created by Bob Fitterman on 03/17/15.
 //  Copyright (c) 2015 Dicentra LLC. All rights reserved.
 //
 
-#import "MMServiceAbstract.h"
-#import "MMServiceSmugmug.h"
+#import "MMDestinationAbstract.h"
+#import "MMDestinationSmugmug.h"
 #import "MMLibraryEvent.h"
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
@@ -18,7 +18,7 @@
 #import "MMUploadOperation.h"
 #import "MMWindowController.h"
 
-@implementation MMServiceSmugmug
+@implementation MMDestinationSmugmug
 
 #define PHOTOS_PER_REQUEST (10)
 extern const NSInteger MMDefaultRetries;
@@ -300,7 +300,7 @@ long                retryCount;
         {
             NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via Mugmover", name];
             // If the old AlbumID hasn't been stored or can't be found, create a new one
-            albumId = [self createAlbumWithUrlName: [MMServiceSmugmug sanitizeUuid: [event uuid]]
+            albumId = [self createAlbumWithUrlName: [MMDestinationSmugmug sanitizeUuid: [event uuid]]
                                           inFolder: folderId
                                        displayName: name
                                        description: description];
@@ -541,8 +541,8 @@ long                retryCount;
 {
     if (self.uniqueId)
     {
-        NSArray *tokenAndSecret = [MMPrefsManager tokenAndSecretForService: @"smugmug"
-                                                                  uniqueId: self.uniqueId];
+        NSArray *tokenAndSecret = [MMPrefsManager tokenAndSecretForDestination: @"smugmug"
+                                                                      uniqueId: self.uniqueId];
         if (tokenAndSecret[0] && tokenAndSecret[1])
         {
             _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: tokenAndSecret[0]
@@ -554,8 +554,8 @@ long                retryCount;
         }
         if (!_smugmugOauth)
         {
-            [MMPrefsManager clearTokenAndSecretForService: @"smugmug"
-                                                 uniqueId: self.uniqueId];
+            [MMPrefsManager clearTokenAndSecretForDestination: @"smugmug"
+                                                     uniqueId: self.uniqueId];
         }
     }
     if (_smugmugOauth || !attemptRetry)

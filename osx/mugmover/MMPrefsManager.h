@@ -12,18 +12,18 @@
 
 + (BOOL) boolForKey: (NSString *) name;
 
-+ (void) clearTokenAndSecretForService: (NSString *) serviceString
-                              uniqueId: (NSString *) uniqueId;
++ (void) clearTokenAndSecretForDestination: (NSString *) destinationString
+                                  uniqueId: (NSString *) uniqueId;
 
 + (void) deserializeLibrariesFromDefaultsMergingIntoMutableArray: (NSMutableArray *) mutableArray;
 
-+ (void) deserializeServicesFromDefaultsMergingIntoMutableArray: (NSMutableArray *) mutableArray;
++ (void) deserializeDestinationsFromDefaultsMergingIntoMutableArray: (NSMutableArray *) mutableArray;
 
 + (id) objectForKey: (NSString *) name;
 
 + (void) serializeLibrariesToDefaults: (NSArray *) libraries;
 
-+ (void) serializeServicesToDefaults: (NSArray *) services;
++ (void) serializeDestinationsToDefaults: (NSArray *) destinations;
 
 + (void)   setBool: (BOOL) boolValue
             forKey: (NSString *) name;
@@ -35,12 +35,12 @@
 
 + (void)  storeToken: (NSString *) accessToken
               secret: (NSString *) tokenSecret
-          forService: (NSString *) serviceString
+      forDestination: (NSString *) destionationString
             uniqueId: (NSString *) uniqueId;
 
 + (void) syncIfNecessary: (NSUserDefaults *) defaults;
 
-+ (NSArray *) tokenAndSecretForService: (NSString *) serviceString
-                              uniqueId: uniqueId;
++ (NSArray *) tokenAndSecretForDestination: (NSString *) destinationString
+                                  uniqueId: uniqueId;
 
 @end

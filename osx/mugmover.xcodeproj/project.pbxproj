@@ -23,11 +23,11 @@
 		C4836F921A5F14F5006EB567 /* MMApiRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C4836F911A5F14F5006EB567 /* MMApiRequest.m */; };
 		C4836F951A5F230E006EB567 /* NSString+Encode.m in Sources */ = {isa = PBXBuildFile; fileRef = C4836F941A5F230E006EB567 /* NSString+Encode.m */; };
 		C4836F991A6080DB006EB567 /* MMNetworkRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C4836F981A6080DB006EB567 /* MMNetworkRequest.m */; };
-		C48C5DD51AB89AAB007C10B0 /* MMServiceSmugmug.m in Sources */ = {isa = PBXBuildFile; fileRef = C48C5DD41AB89AAB007C10B0 /* MMServiceSmugmug.m */; };
-		C48C5DD91AB89AD4007C10B0 /* MMServiceSmugmug.h in Resources */ = {isa = PBXBuildFile; fileRef = C48C5DD81AB89AD4007C10B0 /* MMServiceSmugmug.h */; };
+		C48C5DD51AB89AAB007C10B0 /* MMDestinationSmugmug.m in Sources */ = {isa = PBXBuildFile; fileRef = C48C5DD41AB89AAB007C10B0 /* MMDestinationSmugmug.m */; };
+		C48C5DD91AB89AD4007C10B0 /* MMDestinationSmugmug.h in Resources */ = {isa = PBXBuildFile; fileRef = C48C5DD81AB89AD4007C10B0 /* MMDestinationSmugmug.h */; };
 		C49377111AD04C8F006DB77D /* MMLibraryEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = C49377101AD04C8F006DB77D /* MMLibraryEvent.m */; };
 		C49377141AD05D4E006DB77D /* MMComplexTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */; };
-		C493FBA81AEFA386009492BD /* MMServiceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C493FBA71AEFA386009492BD /* MMServiceManager.m */; };
+		C493FBA81AEFA386009492BD /* MMDestinationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C493FBA71AEFA386009492BD /* MMDestinationManager.m */; };
 		C493FBAA1AEFB220009492BD /* Service-128.png in Resources */ = {isa = PBXBuildFile; fileRef = C493FBA91AEFB220009492BD /* Service-128.png */; };
 		C4968CB71A15101500F34E46 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4968CB61A15101500F34E46 /* Cocoa.framework */; };
 		C4968CC11A15101500F34E46 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C4968CBF1A15101500F34E46 /* InfoPlist.strings */; };
@@ -52,8 +52,8 @@
 		C4F934FE1AD728E500AB465B /* MMCheckboxTableCellView.h in Sources */ = {isa = PBXBuildFile; fileRef = C4F934FD1AD728E500AB465B /* MMCheckboxTableCellView.h */; };
 		C4F935001AD7290600AB465B /* MMCheckboxTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */; };
 		C4F935041AD884C200AB465B /* Active-128.gif in Resources */ = {isa = PBXBuildFile; fileRef = C4F935031AD884C200AB465B /* Active-128.gif */; };
-		C4FC08E31DF8D14E00487BCA /* MMServiceAbstract.m in Sources */ = {isa = PBXBuildFile; fileRef = C4FC08E21DF8D14E00487BCA /* MMServiceAbstract.m */; };
-		C4FC08E81DF8DF2E00487BCA /* MMServiceFileSystem.m in Sources */ = {isa = PBXBuildFile; fileRef = C4FC08E71DF8DF2E00487BCA /* MMServiceFileSystem.m */; };
+		C4FC08E31DF8D14E00487BCA /* MMDestinationAbstract.m in Sources */ = {isa = PBXBuildFile; fileRef = C4FC08E21DF8D14E00487BCA /* MMDestinationAbstract.m */; };
+		C4FC08E81DF8DF2E00487BCA /* MMDestinationFileSystem.m in Sources */ = {isa = PBXBuildFile; fileRef = C4FC08E71DF8DF2E00487BCA /* MMDestinationFileSystem.m */; };
 		C4FF55411B02B09D0059AE68 /* MMProgressWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = C4FF553F1B02B09D0059AE68 /* MMProgressWindowController.m */; };
 		C4FF55421B02B09D0059AE68 /* MMProgressWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4FF55401B02B09D0059AE68 /* MMProgressWindowController.xib */; };
 /* End PBXBuildFile section */
@@ -84,7 +84,7 @@
 		C404A9BD1AD410C600E197F1 /* MMUiUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMUiUtility.h; sourceTree = "<group>"; };
 		C404A9BE1AD410C600E197F1 /* MMUiUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMUiUtility.m; sourceTree = "<group>"; };
 		C404A9C31AD5B7DB00E197F1 /* MMUploadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMUploadOperation.h; sourceTree = "<group>"; };
-		C404A9C41AD5B7DB00E197F1 /* MMUploadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMUploadOperation.m; sourceTree = "<group>"; };
+		C404A9C41AD5B7DB00E197F1 /* MMUploadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MMUploadOperation.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C404A9CC1AD6C90400E197F1 /* Completed-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Completed-128.png"; sourceTree = "<group>"; };
 		C4118EEE1A49E4F30057A72B /* MMEnvironment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MMEnvironment.h; sourceTree = "<group>"; };
 		C411AA741AC197A30087D1FA /* MMOauthSmugmug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMOauthSmugmug.h; sourceTree = "<group>"; };
@@ -111,14 +111,14 @@
 		C4836F941A5F230E006EB567 /* NSString+Encode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Encode.m"; sourceTree = "<group>"; };
 		C4836F971A6080DB006EB567 /* MMNetworkRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMNetworkRequest.h; sourceTree = "<group>"; };
 		C4836F981A6080DB006EB567 /* MMNetworkRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMNetworkRequest.m; sourceTree = "<group>"; };
-		C48C5DD41AB89AAB007C10B0 /* MMServiceSmugmug.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMServiceSmugmug.m; sourceTree = "<group>"; };
-		C48C5DD81AB89AD4007C10B0 /* MMServiceSmugmug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMServiceSmugmug.h; sourceTree = "<group>"; };
+		C48C5DD41AB89AAB007C10B0 /* MMDestinationSmugmug.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MMDestinationSmugmug.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		C48C5DD81AB89AD4007C10B0 /* MMDestinationSmugmug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MMDestinationSmugmug.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		C493770F1AD04C8F006DB77D /* MMLibraryEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMLibraryEvent.h; sourceTree = "<group>"; };
 		C49377101AD04C8F006DB77D /* MMLibraryEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMLibraryEvent.m; sourceTree = "<group>"; };
 		C49377121AD05D4E006DB77D /* MMComplexTableCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMComplexTableCellView.h; sourceTree = "<group>"; };
 		C49377131AD05D4E006DB77D /* MMComplexTableCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMComplexTableCellView.m; sourceTree = "<group>"; };
-		C493FBA61AEFA386009492BD /* MMServiceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMServiceManager.h; sourceTree = "<group>"; };
-		C493FBA71AEFA386009492BD /* MMServiceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMServiceManager.m; sourceTree = "<group>"; };
+		C493FBA61AEFA386009492BD /* MMDestinationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MMDestinationManager.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C493FBA71AEFA386009492BD /* MMDestinationManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MMDestinationManager.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C493FBA91AEFB220009492BD /* Service-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Service-128.png"; sourceTree = "<group>"; };
 		C4968CB31A15101500F34E46 /* mugmover.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mugmover.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4968CB61A15101500F34E46 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -140,13 +140,13 @@
 		C4968CDE1A15101500F34E46 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C4968CE01A15101500F34E46 /* mugmoverTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = mugmoverTests.m; sourceTree = "<group>"; };
 		C49EB6E31B0E6C5000239EEA /* MMPrefsManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMPrefsManager.h; sourceTree = "<group>"; };
-		C49EB6E41B0E6C5000239EEA /* MMPrefsManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMPrefsManager.m; sourceTree = "<group>"; };
+		C49EB6E41B0E6C5000239EEA /* MMPrefsManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MMPrefsManager.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C4A687A51ACC7682007CDC6D /* MMFileUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMFileUtility.h; sourceTree = "<group>"; };
 		C4A687A61ACC7682007CDC6D /* MMFileUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMFileUtility.m; sourceTree = "<group>"; };
 		C4A687A81ACC773E007CDC6D /* MMDataUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMDataUtility.h; sourceTree = "<group>"; };
 		C4A687A91ACC773E007CDC6D /* MMDataUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMDataUtility.m; sourceTree = "<group>"; };
 		C4ACCCB71B0A700C00BED7FF /* MMWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMWindowController.h; sourceTree = "<group>"; };
-		C4ACCCB81B0A700C00BED7FF /* MMWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMWindowController.m; sourceTree = "<group>"; };
+		C4ACCCB81B0A700C00BED7FF /* MMWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MMWindowController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C4ACCCB91B0A700C00BED7FF /* MMWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMWindowController.xib; sourceTree = "<group>"; };
 		C4D3A4151AE690D0005E72B6 /* Library-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Library-128.png"; sourceTree = "<group>"; };
 		C4E3D9491ADC64AF00D82337 /* Incomplete-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Incomplete-128.png"; sourceTree = "<group>"; };
@@ -156,10 +156,10 @@
 		C4F934FD1AD728E500AB465B /* MMCheckboxTableCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMCheckboxTableCellView.h; sourceTree = "<group>"; };
 		C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMCheckboxTableCellView.m; sourceTree = "<group>"; };
 		C4F935031AD884C200AB465B /* Active-128.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "Active-128.gif"; sourceTree = "<group>"; };
-		C4FC08E21DF8D14E00487BCA /* MMServiceAbstract.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMServiceAbstract.m; sourceTree = "<group>"; };
-		C4FC08E41DF8D16300487BCA /* MMServiceAbstract.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MMServiceAbstract.h; sourceTree = "<group>"; };
-		C4FC08E61DF8DF1700487BCA /* MMServiceFileSystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MMServiceFileSystem.h; sourceTree = "<group>"; };
-		C4FC08E71DF8DF2E00487BCA /* MMServiceFileSystem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMServiceFileSystem.m; sourceTree = "<group>"; };
+		C4FC08E21DF8D14E00487BCA /* MMDestinationAbstract.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MMDestinationAbstract.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		C4FC08E41DF8D16300487BCA /* MMDestinationAbstract.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MMDestinationAbstract.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C4FC08E61DF8DF1700487BCA /* MMDestinationFileSystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MMDestinationFileSystem.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C4FC08E71DF8DF2E00487BCA /* MMDestinationFileSystem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MMDestinationFileSystem.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C4FF553E1B02B09D0059AE68 /* MMProgressWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMProgressWindowController.h; sourceTree = "<group>"; };
 		C4FF553F1B02B09D0059AE68 /* MMProgressWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMProgressWindowController.m; sourceTree = "<group>"; };
 		C4FF55401B02B09D0059AE68 /* MMProgressWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMProgressWindowController.xib; sourceTree = "<group>"; };
@@ -379,14 +379,14 @@
 		C4FC08E51DF8DDE800487BCA /* Services and Manager */ = {
 			isa = PBXGroup;
 			children = (
-				C4FC08E41DF8D16300487BCA /* MMServiceAbstract.h */,
-				C4FC08E21DF8D14E00487BCA /* MMServiceAbstract.m */,
-				C48C5DD81AB89AD4007C10B0 /* MMServiceSmugmug.h */,
-				C48C5DD41AB89AAB007C10B0 /* MMServiceSmugmug.m */,
-				C4FC08E61DF8DF1700487BCA /* MMServiceFileSystem.h */,
-				C4FC08E71DF8DF2E00487BCA /* MMServiceFileSystem.m */,
-				C493FBA61AEFA386009492BD /* MMServiceManager.h */,
-				C493FBA71AEFA386009492BD /* MMServiceManager.m */,
+				C4FC08E41DF8D16300487BCA /* MMDestinationAbstract.h */,
+				C4FC08E21DF8D14E00487BCA /* MMDestinationAbstract.m */,
+				C48C5DD81AB89AD4007C10B0 /* MMDestinationSmugmug.h */,
+				C48C5DD41AB89AAB007C10B0 /* MMDestinationSmugmug.m */,
+				C4FC08E61DF8DF1700487BCA /* MMDestinationFileSystem.h */,
+				C4FC08E71DF8DF2E00487BCA /* MMDestinationFileSystem.m */,
+				C493FBA61AEFA386009492BD /* MMDestinationManager.h */,
+				C493FBA71AEFA386009492BD /* MMDestinationManager.m */,
 			);
 			name = "Services and Manager";
 			sourceTree = "<group>";
@@ -482,7 +482,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C48C5DD91AB89AD4007C10B0 /* MMServiceSmugmug.h in Resources */,
+				C48C5DD91AB89AD4007C10B0 /* MMDestinationSmugmug.h in Resources */,
 				C4968CC11A15101500F34E46 /* InfoPlist.strings in Resources */,
 				C4968CCF1A15101500F34E46 /* Images.xcassets in Resources */,
 				C4E3D94A1ADC64AF00D82337 /* Incomplete-128.png in Resources */,
@@ -552,7 +552,7 @@
 				C42F7AD81A153368006E38DD /* MMPhotoLibrary.m in Sources */,
 				C4968CCA1A15101500F34E46 /* MMAppDelegate.m in Sources */,
 				C4F934FE1AD728E500AB465B /* MMCheckboxTableCellView.h in Sources */,
-				C4FC08E31DF8D14E00487BCA /* MMServiceAbstract.m in Sources */,
+				C4FC08E31DF8D14E00487BCA /* MMDestinationAbstract.m in Sources */,
 				C49377141AD05D4E006DB77D /* MMComplexTableCellView.m in Sources */,
 				C4F935001AD7290600AB465B /* MMCheckboxTableCellView.m in Sources */,
 				C4968CC31A15101500F34E46 /* main.m in Sources */,
@@ -562,14 +562,14 @@
 				C4836F951A5F230E006EB567 /* NSString+Encode.m in Sources */,
 				C49EB6E51B0E6C5000239EEA /* MMPrefsManager.m in Sources */,
 				C4836F921A5F14F5006EB567 /* MMApiRequest.m in Sources */,
-				C4FC08E81DF8DF2E00487BCA /* MMServiceFileSystem.m in Sources */,
+				C4FC08E81DF8DF2E00487BCA /* MMDestinationFileSystem.m in Sources */,
 				C404A9C51AD5B7DB00E197F1 /* MMUploadOperation.m in Sources */,
 				C4A687A71ACC7682007CDC6D /* MMFileUtility.m in Sources */,
 				C42F7AD51A1532FC006E38DD /* MMFace.m in Sources */,
 				C411AA761AC197A30087D1FA /* MMOauthSmugmug.m in Sources */,
-				C493FBA81AEFA386009492BD /* MMServiceManager.m in Sources */,
+				C493FBA81AEFA386009492BD /* MMDestinationManager.m in Sources */,
 				C4F3F1811A26E90900C2BE00 /* MMPhoto.m in Sources */,
-				C48C5DD51AB89AAB007C10B0 /* MMServiceSmugmug.m in Sources */,
+				C48C5DD51AB89AAB007C10B0 /* MMDestinationSmugmug.m in Sources */,
 				C42F7ADB1A1533AB006E38DD /* MMPoint.m in Sources */,
 				C4836F991A6080DB006EB567 /* MMNetworkRequest.m in Sources */,
 				C44583221AE58ED700566731 /* MMPhotoLibraryManager.m in Sources */,

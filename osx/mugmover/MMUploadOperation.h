@@ -11,19 +11,19 @@
 @class MMLibraryEvent;
 @class MMWindowController;
 @class MMPhotoLibrary;
-@class MMServiceSmugmug;
+@class MMDestinationSmugmug;
 
 @interface MMUploadOperation : NSOperation
 
 @property (strong, readonly)    NSString *                  folderId;
 @property (weak, readonly)      MMLibraryEvent *            event;
 @property (assign)              NSInteger                   row;
-@property (weak, readonly)      MMServiceSmugmug *                 service;
+@property (weak, readonly)      MMDestinationSmugmug *      destination;
 @property (weak)                MMWindowController *        windowController;
 
 - (id) initWithEvent: (MMLibraryEvent *) event
                  row: (NSInteger) row
-             service: (MMServiceSmugmug *) service
+             service: (MMDestinationSmugmug *) destination
             folderId: (NSString *) folderId
     windowController: (MMWindowController *) windowController;
 

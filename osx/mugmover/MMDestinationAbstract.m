@@ -1,5 +1,5 @@
 //
-//  MMServiceAbstract.m
+//  MMDestinationAbstract.m
 //  mugmover
 //
 //  Created by Bob Fitterman on 12/7/16.
@@ -7,9 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MMServiceAbstract.h"
+#import "MMDestinationAbstract.h"
 
-@implementation MMServiceAbstract : NSObject ;
+@implementation MMDestinationAbstract : NSObject ;
 
 - (id) init
 {

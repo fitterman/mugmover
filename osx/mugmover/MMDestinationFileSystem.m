@@ -1,15 +1,15 @@
 //
-//  MMServiceFileSystem.m
+//  MMDestinationFileSystem.m
 //  mugmover
 //
 //  Created by Bob Fitterman on 12/7/16.
 //  Copyright © 2016 Dicentra LLC. All rights reserved.
 //
 
-#import "MMServiceAbstract.h"
-#import "MMServiceFileSystem.h"
+#import "MMDestinationAbstract.h"
+#import "MMDestinationFileSystem.h"
 
-@implementation MMServiceFileSystem
+@implementation MMDestinationFileSystem
 
 - (id) initFromDictionary: (NSDictionary *) dictionary
 {

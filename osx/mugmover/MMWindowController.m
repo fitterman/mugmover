@@ -15,9 +15,9 @@
 #import "MMPhotoLibraryManager.h"
 #import "MMProgressWindowController.h"
 #import "MMUiUtility.h"
-#import "MMServiceManager.h"
-#import "MMServiceFileSystem.h"
-#import "MMServiceSmugmug.h"
+#import "MMDestinationManager.h"
+#import "MMDestinationFileSystem.h"
+#import "MMDestinationSmugmug.h"
 #import "MMUploadOperation.h"
 
 
@@ -36,7 +36,7 @@
     _completedIcon = [MMUiUtility iconImage: @"Completed-128" ofType: @"png"];
     _incompleteIcon = [MMUiUtility iconImage: @"Incomplete-128" ofType: @"png"];
     _libraryIcon = [MMUiUtility iconImage: @"Library-128" ofType: @"png"];
-    _serviceIcon = [MMUiUtility iconImage: @"Service-128" ofType: @"png"];
+    _destinationIcon = [MMUiUtility iconImage: @"Service-128" ofType: @"png"];
     _transmitting = NO;
 
     _libraryManager = [[MMPhotoLibraryManager alloc] initForWindowController: self];
@@ -44,9 +44,9 @@
     [_librariesTable reloadData];
     [_librariesTable selectRowIndexes: indexSet
                  byExtendingSelection: NO];
-    _serviceManager = [[MMServiceManager alloc] initForWindowController: self];
-    [_servicesTable reloadData];
-    [_servicesTable selectRowIndexes: indexSet
+    _destinationManager = [[MMDestinationManager alloc] initForWindowController: self];
+    [_destinationsTable reloadData];
+    [_destinationsTable selectRowIndexes: indexSet
                 byExtendingSelection: NO];
 }
 
@@ -62,7 +62,7 @@
  */
 - (void) setTransmitButtonStateWithHint: (BOOL) hint
 {
-    BOOL canTransmit = (_librariesTable.selectedRow != -1) && (_servicesTable.selectedRow != -1);
+    BOOL canTransmit = (_librariesTable.selectedRow != -1) && (_destinationsTable.selectedRow != -1);
     if (!canTransmit)
     {
         _transmitButton.enabled = NO;
@@ -141,7 +141,7 @@
         // We preserve the nodeId, allowing the customer to rename the folder and change its URL
         // at will.
         
-        MMServiceSmugmug *serviceApi = [_serviceManager serviceForIndex: _servicesTable.selectedRow];
+        MMDestinationSmugmug *serviceApi = [_destinationManager destinationForIndex: _destinationsTable.selectedRow];
         NSString *folderId = [serviceApi findOrCreateFolderForLibrary: _library];
         if (!folderId)
         {
@@ -153,7 +153,7 @@
             return;
         }
 
-        // we keep a reference, so the WC doesn't deallocate
+        // we keep a reference, so the window controller doesn't deallocate
         _progressWindowController = [MMProgressWindowController new];
         _progressWindowController.queue = _uploadOperationQueue;
         [self.window beginSheet:[_progressWindowController window]
@@ -202,15 +202,15 @@
     }
 }
 
-- (IBAction) serviceSegmentedControlWasPressed: (NSSegmentedControl *) segmentedControl
+- (IBAction) destinationSegmentedControlWasPressed: (NSSegmentedControl *) segmentedControl
 {
     if (segmentedControl.selectedSegment == 0) // 0 is add
     {
-        [self addSmugmugService];
+        [self addSmugmugDestination];
     }
     else if (segmentedControl.selectedSegment == 1) // 1 is forget/delete
     {
-        [self removeServiceDialog];
+        [self removeDestinationDialog];
     }
 }
 
@@ -276,38 +276,38 @@
      ];
 }
 
-- (void) addFileSystemService
+- (void) addFileSystemDestination
 {
-    MMServiceFileSystem *newService = [[MMServiceFileSystem alloc] initFromDictionary: @{
+    MMDestinationFileSystem *newDestination = [[MMDestinationFileSystem alloc] initFromDictionary: @{
                                                                          @"type": @"filesystem",
                                                                          @"path": @"/Users/Bob/downloads/whatever"
                                                                                    }];
     
     NSError *error;
-    NSInteger row = [_serviceManager insertService: newService error: &error];
-    [_servicesTable reloadData];
+    NSInteger row = [_destinationManager insertDestination: newDestination error: &error];
+    [_destinationsTable reloadData];
     NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: row];
-    [_servicesTable selectRowIndexes: indexSet
+    [_destinationsTable selectRowIndexes: indexSet
                 byExtendingSelection: NO];
 }
 
-- (void) addSmugmugService
+- (void) addSmugmugDestination
 {
-    MMServiceSmugmug *newService = [[MMServiceSmugmug alloc] init];
-    [newService authenticate: ^(BOOL success)
+    MMDestinationSmugmug *newDestination = [[MMDestinationSmugmug alloc] init];
+    [newDestination authenticate: ^(BOOL success)
      {
          if (success)
          {
              NSError *error;
-             NSInteger row = [_serviceManager insertService: newService error: &error];
-             [_servicesTable reloadData];
+             NSInteger row = [_destinationManager insertDestination: newDestination error: &error];
+             [_destinationsTable reloadData];
              NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: row];
-             [_servicesTable selectRowIndexes: indexSet
+             [_destinationsTable selectRowIndexes: indexSet
                          byExtendingSelection: NO];
          }
          else
          {
-             [MMUiUtility alertWithText: @"Unable to add service."
+             [MMUiUtility alertWithText: @"Unable to add destination."
                            withQuestion: nil
                                   style: NSWarningAlertStyle];
          }
@@ -341,25 +341,25 @@
     [self setTransmitButtonStateWithHint: NO];
 }
 
-- (void) removeServiceDialog
+- (void) removeDestinationDialog
 {
-    NSInteger oldSelectedRow = _servicesTable.selectedRow;
+    NSInteger oldSelectedRow = _destinationsTable.selectedRow;
     if (oldSelectedRow > -1)
     {
-        if ([MMUiUtility alertWithText: @"Stop using this service"
-                          withQuestion: @"Do you want to stop using the selected selected?\nYou can add it back at a later time."
+        if ([MMUiUtility alertWithText: @"Stop using this destination"
+                          withQuestion: @"Do you want to stop using the selected destination?\nYou can add it back at a later time."
                                  style: NSInformationalAlertStyle])
         {
-            [_serviceManager removeServiceAtIndex: oldSelectedRow];
-            [_servicesTable reloadData];
-            if (oldSelectedRow >= [_serviceManager totalServices])
+            [_destinationManager removeDestinationAtIndex: oldSelectedRow];
+            [_destinationsTable reloadData];
+            if (oldSelectedRow >= [_destinationManager totalDestinations])
             {
-                oldSelectedRow = [_serviceManager totalServices] - 1;
+                oldSelectedRow = [_destinationManager totalDestinations] - 1;
             }
             if (oldSelectedRow >= 0)
             {
                 NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: oldSelectedRow];
-                [_servicesTable selectRowIndexes: indexSet
+                [_destinationsTable selectRowIndexes: indexSet
                             byExtendingSelection: NO];
             }
         }
@@ -427,10 +427,10 @@
         baseCellView.textField.stringValue = [_libraryManager libraryNameForIndex: row];
         baseCellView.imageView.image = _libraryIcon;
     }
-    else if (tableView == _servicesTable)
+    else if (tableView == _destinationsTable)
     {
-        baseCellView.textField.stringValue = [_serviceManager serviceNameForIndex: row];
-        baseCellView.imageView.image = _serviceIcon;
+        baseCellView.textField.stringValue = [_destinationManager destinationNameForIndex: row];
+        baseCellView.imageView.image = _destinationIcon;
     }
     else if ((tableView == _eventsTable) && _library.events)
     {
@@ -513,9 +513,9 @@
     {
         return [_libraryManager totalLibraries];
     }
-    else if (tableView == _servicesTable)
+    else if (tableView == _destinationsTable)
     {
-        return [_serviceManager totalServices];
+        return [_destinationManager totalDestinations];
     }
     else if (tableView == _eventsTable)
     {

@@ -621,7 +621,7 @@ extern Float64 const MMDegreesPerRadian;
 /**
  * This method determines the title associated with the uploaded picture. If the base part of the
  * file name is the same as the "name" (title) field, then we upload no title. This allows the user
- * to regulate it on the service, as most of them allow for display of the file name when no
+ * us to regulate it on a hosted service, as most of them allow for display of the file name when no
  * title is provided.
  */
 - (NSString *) titleForUpload

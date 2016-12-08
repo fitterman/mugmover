@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Dicentra LLC. All rights reserved.
 //
 
-#import "MMServiceSmugmug.h"
+#import "MMDestinationSmugmug.h"
 #import "MMUploadOperation.h"
 #import "MMWindowController.h"
 
@@ -16,7 +16,7 @@ extern const NSInteger MMDefaultRetries;
 
 - (id) initWithEvent: (MMLibraryEvent *) event
                  row: (NSInteger) row
-             service: (MMServiceSmugmug *) service
+         destination: (MMDestinationSmugmug *) destination
             folderId: (NSString *) folderId
     windowController: (MMWindowController *) windowController
 {
@@ -26,7 +26,7 @@ extern const NSInteger MMDefaultRetries;
         _folderId = folderId;
         _event = event;
         _row = row;
-        _service = service;
+        _destination = destination;
         _windowController = windowController;
     }
     return self;
@@ -35,10 +35,10 @@ extern const NSInteger MMDefaultRetries;
 - (void) main
 {
     // Do the transfer
-    [_service transferPhotosForEvent: _event
-                     uploadOperation: self
-                    windowController: _windowController
-                            folderId: _folderId];
+    [_destination transferPhotosForEvent: _event
+                         uploadOperation: self
+                        windowController: _windowController
+                                folderId: _folderId];
     [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
      {
          [_windowController.eventsTable reloadData];
