@@ -8,7 +8,7 @@
 
 #import "MMDataUtility.h"
 #import "MMPrefsManager.h"
-#import "MMSMugmug.h"
+#import "MMServiceSmugmug.h"
 
 @implementation MMPrefsManager
 
@@ -48,7 +48,7 @@
     {
         for (NSDictionary *dictionary in array)
         {
-            MMSmugmug *service = [[MMSmugmug alloc] initFromDictionary: dictionary];
+            MMServiceSmugmug *service = [[MMServiceSmugmug alloc] initFromDictionary: dictionary];
             if (service)
             {
                 [mutableArray addObject: service];
@@ -77,7 +77,7 @@
 + (void) serializeServicesToDefaults: (NSArray *) services
 {
     NSMutableArray *serializedServices = [[NSMutableArray alloc] initWithCapacity: [services count]];
-    for (MMSmugmug *service in services)
+    for (MMServiceSmugmug *service in services)
     {
         [serializedServices addObject: [service serialize]];
     }

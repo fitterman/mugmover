@@ -16,7 +16,7 @@
 #import "MMProgressWindowController.h"
 #import "MMUiUtility.h"
 #import "MMServiceManager.h"
-#import "MMSmugmug.h"
+#import "MMServiceSmugmug.h"
 #import "MMUploadOperation.h"
 
 
@@ -140,7 +140,7 @@
         // We preserve the nodeId, allowing the customer to rename the folder and change its URL
         // at will.
         
-        MMSmugmug *serviceApi = [_serviceManager serviceForIndex: _servicesTable.selectedRow];
+        MMServiceSmugmug *serviceApi = [_serviceManager serviceForIndex: _servicesTable.selectedRow];
         NSString *folderId = [serviceApi findOrCreateFolderForLibrary: _library];
         if (!folderId)
         {
@@ -277,7 +277,7 @@
 
 - (void) addSmugmugService
 {
-    MMSmugmug *newService = [[MMSmugmug alloc] init];
+    MMServiceSmugmug *newService = [[MMServiceSmugmug alloc] init];
     [newService authenticate: ^(BOOL success)
      {
          if (success)

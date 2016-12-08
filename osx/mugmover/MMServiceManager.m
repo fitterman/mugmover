@@ -9,7 +9,7 @@
 #import "MMPhotoLibrary.h"
 #import "MMPrefsManager.h"
 #import "MMServiceManager.h"
-#import "MMSmugmug.h"
+#import "MMServiceSmugmug.h"
 
 NSInteger const maxSupportedServices = 50;
 
@@ -37,7 +37,7 @@ NSInteger const maxSupportedServices = 50;
  * an error occurs. Returns -1 if an error occurs, otherwise returns the index of the
  * newly-added value in the sorted array.
  */
-- (NSInteger) insertService: (MMSmugmug *) newService
+- (NSInteger) insertService: (MMServiceSmugmug *) newService
                       error: (NSError **) error;
 {
     if ([self isAtCapacity])
@@ -52,7 +52,7 @@ NSInteger const maxSupportedServices = 50;
                                  userInfo: userInfo];
         return -1; // No more room
     }
-    for (MMSmugmug *service in _services)
+    for (MMServiceSmugmug *service in _services)
     {
         if ([service isEqualTo: newService])
         {
@@ -86,7 +86,7 @@ NSInteger const maxSupportedServices = 50;
     [MMPrefsManager serializeServicesToDefaults: _services];
 }
 
-- (MMSmugmug *) serviceForIndex: (NSInteger) index
+- (MMServiceSmugmug *) serviceForIndex: (NSInteger) index
 {
     if ((0 <= index) && (index < _services.count))
     {
@@ -100,7 +100,7 @@ NSInteger const maxSupportedServices = 50;
 
 - (NSString *) serviceNameForIndex: (NSInteger) index
 {
-    MMSmugmug *service = [self serviceForIndex: index];
+    MMServiceSmugmug *service = [self serviceForIndex: index];
     if (service)
     {
         return [service name];

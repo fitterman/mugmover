@@ -1,5 +1,5 @@
 //
-//  MMSmugmug.h
+//  MMServiceSmugmug.h
 //  mugmover
 //
 //  Created by Bob Fitterman on 03/17/15.
@@ -7,26 +7,19 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MMFace.h"
+#import "MMServiceAbstract.h"
+
 @class MMOauthSmugmug;
 @class MMLibraryEvent;
 @class MMPhotoLibrary;
 @class MMUploadOperation;
 @class MMWindowController;
 
-@interface MMSmugmug : NSObject
+@interface MMServiceSmugmug : MMServiceAbstract
 
-@property (strong)              NSString *              accessSecret;
-@property (strong)              NSString *              accessToken;
-@property (strong)              MMPhoto *               currentPhoto;
-@property (strong)              NSMutableArray *        errorLog;
 @property (strong, readonly)    NSString *              handle;
 @property (assign, readonly)    NSInteger               page;
 @property (strong, readonly)    MMOauthSmugmug *        smugmugOauth;
-@property (strong, readonly)    NSString *              tokenSecret;
-@property (strong)              NSString *              uniqueId;
-
-
 
 + (NSString *) sanitizeUuid: (NSString *) inUrl;
 

@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Dicentra LLC. All rights reserved.
 //
 
-#import "MMSmugmug.h"
+#import "MMServiceSmugmug.h"
 #import "MMUploadOperation.h"
 #import "MMWindowController.h"
 
@@ -16,7 +16,7 @@ extern const NSInteger MMDefaultRetries;
 
 - (id) initWithEvent: (MMLibraryEvent *) event
                  row: (NSInteger) row
-             service: (MMSmugmug *) service
+             service: (MMServiceSmugmug *) service
             folderId: (NSString *) folderId
     windowController: (MMWindowController *) windowController
 {

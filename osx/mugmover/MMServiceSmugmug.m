@@ -1,12 +1,13 @@
-    //
-//  MMSmugmug.m
+//
+//  MMServiceSmugmug.m
 //  Everything to do with Smugmug integration.
 //
 //  Created by Bob Fitterman on 03/17/15.
 //  Copyright (c) 2015 Dicentra LLC. All rights reserved.
 //
 
-#import "MMSmugmug.h"
+#import "MMServiceAbstract.h"
+#import "MMServiceSmugmug.h"
 #import "MMLibraryEvent.h"
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
@@ -17,8 +18,7 @@
 #import "MMUploadOperation.h"
 #import "MMWindowController.h"
 
-@implementation MMSmugmug
-
+@implementation MMServiceSmugmug
 
 #define PHOTOS_PER_REQUEST (10)
 extern const NSInteger MMDefaultRetries;
@@ -63,12 +63,12 @@ long                retryCount;
 - (id) initFromDictionary: (NSDictionary *) dictionary
 {
     self = [super init];
-    if (self)
-    if (dictionary && [[dictionary valueForKey: @"type"] isEqualToString: @"smugmug"])
+    if ((self) &&
+        (dictionary && [[dictionary valueForKey: @"type"] isEqualToString: @"smugmug"]))
     {
-        _uniqueId = [dictionary valueForKey: @"id"];
+        self.uniqueId = [dictionary valueForKey: @"id"];
         _handle = [dictionary valueForKey: @"name"];
-        _errorLog = [[NSMutableArray alloc] init];
+        self.errorLog = [[NSMutableArray alloc] init];
         [self configureOauthRetryOnFailure: NO];
         if (!_smugmugOauth)
         {
@@ -103,24 +103,24 @@ long                retryCount;
 
 - (NSString *) name
 {
-    return [NSString stringWithFormat: @"%@ (Smugmug)\n%@", _handle, _uniqueId];
+    return [NSString stringWithFormat: @"%@ (Smugmug)\n%@", _handle, self.uniqueId];
 }
 
 - (NSDictionary *) serialize
 {
     return @{@"type":   @"smugmug",
-              @"id":     _uniqueId,
+              @"id":     self.uniqueId,
              @"name":   (!_handle ? @"(none)" : _handle)};
 }
 
 - (void) close
 {
-    _accessSecret = nil;
-    _accessToken = nil;
-    _currentPhoto = nil;
-    _errorLog = nil;
+    self.accessSecret = nil;
+    self.accessToken = nil;
+    self.currentPhoto = nil;
+    self.errorLog = nil;
     _handle = nil;
-    _uniqueId = nil;
+    self.uniqueId = nil;
 }
 
 #pragma mark "Public methods"
@@ -130,7 +130,7 @@ long                retryCount;
 - (void) logError: (NSError *) error
 {
     NSDictionary *logRecord =@{@"time": [NSDate date], @"error": error};
-    [_errorLog addObject: logRecord];
+    [self.errorLog addObject: logRecord];
 }
 
 /**
@@ -139,10 +139,10 @@ long                retryCount;
  */
 - (void) configureOauthRetryOnFailure: (BOOL) attemptRetry
 {
-    if (_uniqueId)
+    if (self.uniqueId)
     {
         NSArray *tokenAndSecret = [MMPrefsManager tokenAndSecretForService: @"smugmug"
-                                                                  uniqueId: _uniqueId];
+                                                                  uniqueId: self.uniqueId];
         if (tokenAndSecret[0] && tokenAndSecret[1])
         {
             _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: tokenAndSecret[0]
@@ -155,7 +155,7 @@ long                retryCount;
         if (!_smugmugOauth)
         {
             [MMPrefsManager clearTokenAndSecretForService: @"smugmug"
-                                                 uniqueId: _uniqueId];
+                                                 uniqueId: self.uniqueId];
         }
     }
     if (_smugmugOauth || !attemptRetry)
@@ -192,7 +192,7 @@ long                retryCount;
                                                                parsedData: &parsedServerResponse];
     if (httpStatus == 200)
     {
-        _uniqueId = [parsedServerResponse valueForKeyPath: @"Response.User.RefTag"];
+        self.uniqueId = [parsedServerResponse valueForKeyPath: @"Response.User.RefTag"];
         _handle = [parsedServerResponse valueForKeyPath: @"Response.User.NickName"];
         return YES;
     }
@@ -438,7 +438,7 @@ long                retryCount;
   
     // 1. Find the preferences. See what it holds
     NSString *folderKey = [NSString stringWithFormat: @"smugmug.%@.folder.%@",
-                           _uniqueId,
+                           self.uniqueId,
                           [library databaseUuid]];
     NSString *folderId = [MMPrefsManager objectForKey: folderKey];
     NSString *apiRequest = nil;
@@ -557,7 +557,7 @@ long                retryCount;
         BOOL reprocessAllImagesPreviouslyTransmitted = [MMPrefsManager
                                                         boolForKey: @"reprocessAllImagesPreviouslyTransmitted"];
         NSString *albumKey = [NSString stringWithFormat: @"smugmug.%@.albums.%@",
-                              _uniqueId,
+                              self.uniqueId,
                               [event uuid]];
         NSArray *photos = [MMPhoto getPhotosForEvent: event];
         
@@ -589,7 +589,7 @@ long                retryCount;
         {
             NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via Mugmover", name];
             // If the old AlbumID hasn't been stored or can't be found, create a new one
-            albumId = [self createAlbumWithUrlName: [MMSmugmug sanitizeUuid: [event uuid]]
+            albumId = [self createAlbumWithUrlName: [MMServiceSmugmug sanitizeUuid: [event uuid]]
                                              inFolder: folderId
                                           displayName: name
                                           description: description];
