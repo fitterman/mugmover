@@ -16,6 +16,7 @@
 #import "MMProgressWindowController.h"
 #import "MMUiUtility.h"
 #import "MMServiceManager.h"
+#import "MMServiceFileSystem.h"
 #import "MMServiceSmugmug.h"
 #import "MMUploadOperation.h"
 
@@ -273,6 +274,21 @@
          }
      }
      ];
+}
+
+- (void) addFileSystemService
+{
+    MMServiceFileSystem *newService = [[MMServiceFileSystem alloc] initFromDictionary: @{
+                                                                         @"type": @"filesystem",
+                                                                         @"path": @"/Users/Bob/downloads/whatever"
+                                                                                   }];
+    
+    NSError *error;
+    NSInteger row = [_serviceManager insertService: newService error: &error];
+    [_servicesTable reloadData];
+    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: row];
+    [_servicesTable selectRowIndexes: indexSet
+                byExtendingSelection: NO];
 }
 
 - (void) addSmugmugService

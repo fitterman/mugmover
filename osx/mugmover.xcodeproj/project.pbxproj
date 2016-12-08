@@ -53,6 +53,7 @@
 		C4F935001AD7290600AB465B /* MMCheckboxTableCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = C4F934FF1AD7290600AB465B /* MMCheckboxTableCellView.m */; };
 		C4F935041AD884C200AB465B /* Active-128.gif in Resources */ = {isa = PBXBuildFile; fileRef = C4F935031AD884C200AB465B /* Active-128.gif */; };
 		C4FC08E31DF8D14E00487BCA /* MMServiceAbstract.m in Sources */ = {isa = PBXBuildFile; fileRef = C4FC08E21DF8D14E00487BCA /* MMServiceAbstract.m */; };
+		C4FC08E81DF8DF2E00487BCA /* MMServiceFileSystem.m in Sources */ = {isa = PBXBuildFile; fileRef = C4FC08E71DF8DF2E00487BCA /* MMServiceFileSystem.m */; };
 		C4FF55411B02B09D0059AE68 /* MMProgressWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = C4FF553F1B02B09D0059AE68 /* MMProgressWindowController.m */; };
 		C4FF55421B02B09D0059AE68 /* MMProgressWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = C4FF55401B02B09D0059AE68 /* MMProgressWindowController.xib */; };
 /* End PBXBuildFile section */
@@ -157,6 +158,8 @@
 		C4F935031AD884C200AB465B /* Active-128.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = "Active-128.gif"; sourceTree = "<group>"; };
 		C4FC08E21DF8D14E00487BCA /* MMServiceAbstract.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMServiceAbstract.m; sourceTree = "<group>"; };
 		C4FC08E41DF8D16300487BCA /* MMServiceAbstract.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MMServiceAbstract.h; sourceTree = "<group>"; };
+		C4FC08E61DF8DF1700487BCA /* MMServiceFileSystem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MMServiceFileSystem.h; sourceTree = "<group>"; };
+		C4FC08E71DF8DF2E00487BCA /* MMServiceFileSystem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMServiceFileSystem.m; sourceTree = "<group>"; };
 		C4FF553E1B02B09D0059AE68 /* MMProgressWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMProgressWindowController.h; sourceTree = "<group>"; };
 		C4FF553F1B02B09D0059AE68 /* MMProgressWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MMProgressWindowController.m; sourceTree = "<group>"; };
 		C4FF55401B02B09D0059AE68 /* MMProgressWindowController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MMProgressWindowController.xib; sourceTree = "<group>"; };
@@ -249,8 +252,6 @@
 				C42F7ADA1A1533AB006E38DD /* MMPoint.m */,
 				C49EB6E31B0E6C5000239EEA /* MMPrefsManager.h */,
 				C49EB6E41B0E6C5000239EEA /* MMPrefsManager.m */,
-				C493FBA61AEFA386009492BD /* MMServiceManager.h */,
-				C493FBA71AEFA386009492BD /* MMServiceManager.m */,
 				C404A9C31AD5B7DB00E197F1 /* MMUploadOperation.h */,
 				C404A9C41AD5B7DB00E197F1 /* MMUploadOperation.m */,
 			);
@@ -309,10 +310,7 @@
 				C4836F911A5F14F5006EB567 /* MMApiRequest.m */,
 				C4836F971A6080DB006EB567 /* MMNetworkRequest.h */,
 				C4836F981A6080DB006EB567 /* MMNetworkRequest.m */,
-				C4FC08E41DF8D16300487BCA /* MMServiceAbstract.h */,
-				C4FC08E21DF8D14E00487BCA /* MMServiceAbstract.m */,
-				C48C5DD81AB89AD4007C10B0 /* MMServiceSmugmug.h */,
-				C48C5DD41AB89AAB007C10B0 /* MMServiceSmugmug.m */,
+				C4FC08E51DF8DDE800487BCA /* Services and Manager */,
 				C4A687A41ACC72B4007CDC6D /* OAuth Classes */,
 				C4A687AB1ACC77E1007CDC6D /* Utility Classes */,
 				C4968CCE1A15101500F34E46 /* Images.xcassets */,
@@ -376,6 +374,21 @@
 				C404A9BE1AD410C600E197F1 /* MMUiUtility.m */,
 			);
 			name = "Utility Classes";
+			sourceTree = "<group>";
+		};
+		C4FC08E51DF8DDE800487BCA /* Services and Manager */ = {
+			isa = PBXGroup;
+			children = (
+				C4FC08E41DF8D16300487BCA /* MMServiceAbstract.h */,
+				C4FC08E21DF8D14E00487BCA /* MMServiceAbstract.m */,
+				C48C5DD81AB89AD4007C10B0 /* MMServiceSmugmug.h */,
+				C48C5DD41AB89AAB007C10B0 /* MMServiceSmugmug.m */,
+				C4FC08E61DF8DF1700487BCA /* MMServiceFileSystem.h */,
+				C4FC08E71DF8DF2E00487BCA /* MMServiceFileSystem.m */,
+				C493FBA61AEFA386009492BD /* MMServiceManager.h */,
+				C493FBA71AEFA386009492BD /* MMServiceManager.m */,
+			);
+			name = "Services and Manager";
 			sourceTree = "<group>";
 		};
 		C4FF95AF1A589D7100472CAF /* Config */ = {
@@ -549,6 +562,7 @@
 				C4836F951A5F230E006EB567 /* NSString+Encode.m in Sources */,
 				C49EB6E51B0E6C5000239EEA /* MMPrefsManager.m in Sources */,
 				C4836F921A5F14F5006EB567 /* MMApiRequest.m in Sources */,
+				C4FC08E81DF8DF2E00487BCA /* MMServiceFileSystem.m in Sources */,
 				C404A9C51AD5B7DB00E197F1 /* MMUploadOperation.m in Sources */,
 				C4A687A71ACC7682007CDC6D /* MMFileUtility.m in Sources */,
 				C42F7AD51A1532FC006E38DD /* MMFace.m in Sources */,

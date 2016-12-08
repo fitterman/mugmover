@@ -25,8 +25,6 @@
 
 - (void) authenticate: (void (^) (BOOL)) completionHandler;
 
-- (void) close;
-
 - (void) configureOauthRetryOnFailure: (BOOL) attemptRetry;
 
 - (NSString *) createAlbumWithUrlName: (NSString *) urlName
@@ -38,8 +36,6 @@
 
 - (BOOL) deletePhotoId: (NSString *) photoId;
 
-- (NSString *) findOrCreateFolderForLibrary: library;
-
 - (BOOL) getUserInfo;
 
 - (BOOL) hasAlbumId: (NSString *) albumId;
@@ -48,8 +44,6 @@
 
 - (id) initFromDictionary: (NSDictionary *) dictionary;
 
-- (void) logError: (NSError *) error;
-
 - (NSString *) md5ForPhotoId: (NSString *) photoId;
 
 - (NSString *) name;
@@ -57,8 +51,6 @@
 - (NSString *) oauthAccessToken;
 
 - (NSString *) oauthTokenSecret;
-
-- (NSDictionary *) serialize;
 
 - (void) transferPhotosForEvent: (MMLibraryEvent *) event
                 uploadOperation: (MMUploadOperation *) uploadOperation

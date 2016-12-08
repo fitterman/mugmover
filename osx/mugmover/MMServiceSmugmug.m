@@ -68,7 +68,6 @@ long                retryCount;
     {
         self.uniqueId = [dictionary valueForKey: @"id"];
         _handle = [dictionary valueForKey: @"name"];
-        self.errorLog = [[NSMutableArray alloc] init];
         [self configureOauthRetryOnFailure: NO];
         if (!_smugmugOauth)
         {
@@ -78,6 +77,8 @@ long                retryCount;
     }
     return self;
 }
+
+#pragma mark == Public Methods ==
 
 /**
  * To use this, just create an instance of this class and invoke this method with a block
@@ -101,327 +102,11 @@ long                retryCount;
                      }];
 }
 
-- (NSString *) name
-{
-    return [NSString stringWithFormat: @"%@ (Smugmug)\n%@", _handle, self.uniqueId];
-}
-
-- (NSDictionary *) serialize
-{
-    return @{@"type":   @"smugmug",
-              @"id":     self.uniqueId,
-             @"name":   (!_handle ? @"(none)" : _handle)};
-}
-
 - (void) close
 {
-    self.accessSecret = nil;
-    self.accessToken = nil;
-    self.currentPhoto = nil;
-    self.errorLog = nil;
     _handle = nil;
-    self.uniqueId = nil;
+    [super close];
 }
-
-#pragma mark "Public methods"
-/**
- * Adds an error to a sequential log of errors
- */
-- (void) logError: (NSError *) error
-{
-    NSDictionary *logRecord =@{@"time": [NSDate date], @"error": error};
-    [self.errorLog addObject: logRecord];
-}
-
-/**
- This either reconsitutes an Oauth token from the stored preferences (NSUserDefaults) or
- triggers a new Oauth dance. You know the outcome by observing "initializationProgress".
- */
-- (void) configureOauthRetryOnFailure: (BOOL) attemptRetry
-{
-    if (self.uniqueId)
-    {
-        NSArray *tokenAndSecret = [MMPrefsManager tokenAndSecretForService: @"smugmug"
-                                                                  uniqueId: self.uniqueId];
-        if (tokenAndSecret[0] && tokenAndSecret[1])
-        {
-            _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: tokenAndSecret[0]
-                                                                 secret: tokenAndSecret[1]];
-        }
-        else
-        {
-            _smugmugOauth = nil;
-        }
-        if (!_smugmugOauth)
-        {
-            [MMPrefsManager clearTokenAndSecretForService: @"smugmug"
-                                                 uniqueId: self.uniqueId];
-        }
-    }
-    if (_smugmugOauth || !attemptRetry)
-    {
-        return; // after synchronize
-    }
-
-    // Otherwise we start the whole process over again...
-    _smugmugOauth = [[MMOauthSmugmug alloc] initAndStartAuthorization: ^(Float32 progress, NSString *text)
-                     {
-                         DDLogInfo(@"progress=%f", progress);
-                         if (progress == 1.0)
-                         {
-                             DDLogInfo(@"progress=1.0");
-                         }
-                         else
-                         {
-                             DDLogInfo(@"progress!=1.0");
-                         }
-                     }];
-}
-
-
-/**
- * Returns a BOOL indicating whether it was able to obtain user information via the API.
- */
-- (BOOL) getUserInfo
-{
-    NSDictionary *parsedServerResponse;
-    NSURLRequest *userInfoRequest = [_smugmugOauth apiRequest: @"!authuser"
-                                                   parameters: nil
-                                                        verb: @"GET"];
-    NSInteger httpStatus =  [MMDataUtility makeSyncJsonRequestWithRetries: userInfoRequest
-                                                               parsedData: &parsedServerResponse];
-    if (httpStatus == 200)
-    {
-        self.uniqueId = [parsedServerResponse valueForKeyPath: @"Response.User.RefTag"];
-        _handle = [parsedServerResponse valueForKeyPath: @"Response.User.NickName"];
-        return YES;
-    }
-    else
-    {
-        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
-        return NO;
-    }
-}
-
-- (NSString *) oauthAccessToken
-{
-    return [_smugmugOauth accessToken];
-}
-
-- (NSString *) oauthTokenSecret
-{
-    return [_smugmugOauth tokenSecret];
-}
-
-#pragma mark "Private methods"
-
-/**
- * Returns the albumId of an album. The identity of the album is determined by the node (folder)
- * into which it is to be placed. The arguments are
- *   +urlName+     which is part of the URL and is constrained by the rules imposed by Smugmug.
- *                 The uniqueness of the urlName is required, and we impose this by using uuid from
- *                 the corresponding event.
- *   +folderId+    which is the ID of a Smugmug node (folder).
- *   +displayName+ which is the displayed title for the album
- *   +options+     allow control of the following
- *                   Visiblity: private/unlisted/inherit*
- *                   Social Show Sharing
- *                   Social Allow Comments
- *                   Social Allow Likes
- *                   Web Searchable
- *                   Smug searchable
- *                   Sort by...
- *                   OR JUST USE A QUICK SETTING!
- 
- *                   
- * TODO Change Smugmug searchable to site-setting
- */
-- (NSString *) createAlbumWithUrlName: (NSString *) urlName
-                             inFolder: (NSString *) folderId
-                          displayName: (NSString *) displayName
-                          description: (NSString *) description;
-{
-    // We have to do this in 2 steps: get the folder, then get the album info
-    // because the folder/id API method doesn't support the !albums request.
-    NSDictionary *parsedServerResponse;
-
-    NSString *apiRequest = [NSString stringWithFormat: @"folder/id/%@", folderId];
-    NSURLRequest *getFolderRequest = [_smugmugOauth apiRequest: apiRequest
-                                                    parameters: @{}
-                                                          verb: @"GET"];
-    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getFolderRequest
-                                                              parsedData: &parsedServerResponse];
-    if (httpStatus != 200)
-    {
-        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
-        return nil;
-    }
-        
-    NSString *uri = nil;
-    
-    // Our API does not work with full paths, so... we have to strip off the "/api/v2/" part
-    NSString *fullPath = [parsedServerResponse  valueForKeyPath: @"Response.Folder.Uri"];
-    fullPath = [fullPath substringFromIndex:[@"/api/v2/" length]];
-    apiRequest = [NSString stringWithFormat: @"%@!albums", fullPath];
-    NSURLRequest *createAlbumRequest = [_smugmugOauth apiRequest: apiRequest
-                                                      parameters: @{@"Description":        description,
-                                                                    @"UrlName":            urlName,
-                                                                    @"AutoRename":         @"Yes",
-                                                                    @"Name":               displayName,
-                                                                    @"Privacy":            @"Unlisted", // UNLISTED?
-                                                                    @"SmugSearchable":     @"No",
-                                                                    @"WorldSearchable":    @"No",
-                                                                  }
-                                                            verb: @"POST"];
-    httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: createAlbumRequest
-                                                    parsedData: &parsedServerResponse];
-    if (httpStatus == 200)
-    {
-        uri = [parsedServerResponse valueForKeyPath: @"Response.Uri"];
-        if (uri)
-        {
-            // It's actually an API URL: just get the albumId
-            return [uri lastPathComponent];
-        }
-    }
-
-    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
-    return nil;
-}
-
-/**
- * Confirms whether an AlbumID exists
- */
-- (BOOL) hasAlbumId: (NSString *) albumId
-{
-    NSDictionary *parsedServerResponse;
-    
-    NSString *apiRequest = [NSString stringWithFormat: @"album/%@", albumId];
-    NSURLRequest *getAlbumRequest = [_smugmugOauth apiRequest: apiRequest
-                                                   parameters: @{}
-                                                         verb: @"GET"];
-    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getAlbumRequest
-                                                              parsedData: &parsedServerResponse];
-    if (httpStatus == 200)
-    {
-        return YES;
-    }
-    if (httpStatus == 404)
-    {
-        return NO;
-    }
-    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
-    return NO;
-}
-
-/**
- * Returns the MD5 of the uploaded original file with that ID (if provided and found on service)
- */
-- (NSString *) md5ForPhotoId: (NSString *) photoId
-{
-    if (!photoId)
-    {
-        return nil;
-    }
-
-    NSDictionary *parsedServerResponse;
-    
-    NSString *apiRequest = [NSString stringWithFormat: @"image/%@", photoId];
-    NSURLRequest *getImageRequest = [_smugmugOauth apiRequest: apiRequest
-                                                   parameters: @{}
-                                                         verb: @"GET"];
-    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getImageRequest
-                                                              parsedData: &parsedServerResponse];
-    if (httpStatus == 200)
-    {
-        return [parsedServerResponse valueForKeyPath: @"Response.Image.ArchivedMD5"];
-    }
-    if (httpStatus != 404)
-    {
-        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
-    }
-    return nil;
-}
-
-/**
- * Deletes an album from the service, returning YES to indicate success or NO for failure.
- */
-- (BOOL) deleteAlbumId: (NSString *) albumId
-{
-    NSDictionary *parsedServerResponse;
-    
-    NSString *apiRequest = [NSString stringWithFormat: @"album/%@", albumId];
-    NSURLRequest *deleteAlbumRequest = [_smugmugOauth apiRequest: apiRequest
-                                                      parameters: @{}
-                                                            verb: @"DELETE"];
-    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: deleteAlbumRequest
-                                                              parsedData: &parsedServerResponse];
-    if (httpStatus == 200)
-    {
-        return YES;
-    }
-    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
-    return NO;
-}
-
-/**
- * Deletes an image from the service, returning YES to indicate success or NO for failure.
- */
-- (BOOL) deletePhotoId: (NSString *) photoId
-{
-    NSDictionary *parsedServerResponse;
-    
-    NSString *apiRequest = [NSString stringWithFormat: @"image/%@", photoId];
-    NSURLRequest *deleteImageRequest = [_smugmugOauth apiRequest: apiRequest
-                                                   parameters: @{}
-                                                         verb: @"DELETE"];
-    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: deleteImageRequest
-                                                              parsedData: &parsedServerResponse];
-    if (httpStatus == 200)
-    {
-        return YES;
-    }
-    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
-    return NO;
-}
-
-/**
- * Gets image size details
- */
-- (NSDictionary *) imageSizesForPhotoId: (NSString *) photoId
-{
-    if (!photoId)
-    {
-        return nil;
-    }
-    
-    NSDictionary *parsedServerResponse;
-    
-    NSString *apiRequest = [NSString stringWithFormat: @"image/%@-0!sizedetails", photoId];
-    NSURLRequest *getImageRequest = [_smugmugOauth apiRequest: apiRequest
-                                                   parameters: @{}
-                                                         verb: @"GET"];
-    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getImageRequest
-                                                              parsedData: &parsedServerResponse];
-    if (httpStatus == 200)
-    {
-        return [parsedServerResponse valueForKeyPath: @"Response.ImageSizeDetails"];
-    }
-    if (httpStatus != 404)
-    {
-        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
-        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
-    }
-    return nil;
-}
-
 
 /**
  * This method returns the Folder ID of the preferred folder under which all the uploaded
@@ -435,11 +120,11 @@ long                retryCount;
  */
 - (NSString *) findOrCreateFolderForLibrary: (MMPhotoLibrary *) library
 {
-  
+    
     // 1. Find the preferences. See what it holds
     NSString *folderKey = [NSString stringWithFormat: @"smugmug.%@.folder.%@",
                            self.uniqueId,
-                          [library databaseUuid]];
+                           [library databaseUuid]];
     NSString *folderId = [MMPrefsManager objectForKey: folderKey];
     NSString *apiRequest = nil;
     NSDictionary *parsedServerResponse;
@@ -459,13 +144,13 @@ long                retryCount;
         DDLogError(@"Error status=%ld", (long)status);
         DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
     }
-
+    
     // 3. Create a new folder, use it.
     apiRequest = [NSString stringWithFormat: @"folder/user/%@!folders", _handle];
     NSCharacterSet *goodChars = [NSCharacterSet alphanumericCharacterSet];
     NSCharacterSet *badChars = goodChars.invertedSet;
     NSString *urlName = [[[library displayName] componentsSeparatedByCharactersInSet:badChars]
-                                                componentsJoinedByString:@"-"];
+                         componentsJoinedByString:@"-"];
     // Punctuation can turn into a dash as well, so we remove all the doubled-up dashes
     // until they are all gone.
     while ([urlName rangeOfString:@"--"].location != NSNotFound)
@@ -473,7 +158,7 @@ long                retryCount;
         urlName = [urlName stringByReplacingOccurrencesOfString:@"--"
                                                      withString:@"-"];
     }
-
+    
     // From http://stackoverflow.com/questions/2952298/how-can-i-truncate-an-nsstring-to-a-set-length
     // We need to consider multi-byte characters, although the URL may choke the service API anyway
     NSRange stringRange = {0, MIN([urlName length], 28)}; // (28 = 31 - 3, reserving for "MM-")
@@ -482,17 +167,17 @@ long                retryCount;
     urlName = [[urlName substringWithRange: stringRange] lowercaseString];
     // We are obligated to have a name that starts with an uppercase-letter...
     urlName = [NSString stringWithFormat:@"MM-%@", urlName];
-
+    
     NSURLRequest *createFolderRequest = [_smugmugOauth apiRequest: apiRequest
-                                                   parameters: @{@"Description":        [library description],
-                                                                 @"Name":               [library displayName],
-                                                                 @"Privacy":            @"Unlisted",
-                                                                 @"SmugSearchable":     @"No",
-                                                                 @"SortIndex":          @"SortIndex",
-                                                                 @"UrlName":            urlName,
-                                                                 @"WorldSearchable":    @"No",
-                                                                 }
-                                                         verb: @"POST"];
+                                                       parameters: @{@"Description":        [library description],
+                                                                     @"Name":               [library displayName],
+                                                                     @"Privacy":            @"Unlisted",
+                                                                     @"SmugSearchable":     @"No",
+                                                                     @"SortIndex":          @"SortIndex",
+                                                                     @"UrlName":            urlName,
+                                                                     @"WorldSearchable":    @"No",
+                                                                     }
+                                                             verb: @"POST"];
     NSInteger httpStatus =  [MMDataUtility makeSyncJsonRequestWithRetries: createFolderRequest
                                                                parsedData: &parsedServerResponse];
     if (httpStatus == 200)
@@ -533,11 +218,37 @@ long                retryCount;
     return nil; // Signals you completed and failed.
 }
 
+- (NSString *) identifier
+{
+    return @"smugmug";
+}
+
+- (NSString *) name
+{
+    return [NSString stringWithFormat: @"%@ (Smugmug)\n%@", _handle, self.uniqueId];
+}
+
+- (NSString *) oauthAccessToken
+{
+    return [_smugmugOauth accessToken];
+}
+
+- (NSString *) oauthTokenSecret
+{
+    return [_smugmugOauth tokenSecret];
+}
+
+- (NSDictionary *) serialize
+{
+    return @{@"type":   [self identifier],
+             @"id":     self.uniqueId,
+             @"name":   (!_handle ? @"(none)" : _handle)};
+}
+
 /**
  * Tightly connected to the MMUploadOperation class. This is what does the
  * actual transfer.
  */
-
 - (void) transferPhotosForEvent: (MMLibraryEvent *) event
                 uploadOperation: (MMUploadOperation *) uploadOperation
                windowController: (MMWindowController *) windowController
@@ -590,9 +301,9 @@ long                retryCount;
             NSString *description = [NSString stringWithFormat: @"From event \"%@\", uploaded via Mugmover", name];
             // If the old AlbumID hasn't been stored or can't be found, create a new one
             albumId = [self createAlbumWithUrlName: [MMServiceSmugmug sanitizeUuid: [event uuid]]
-                                             inFolder: folderId
-                                          displayName: name
-                                          description: description];
+                                          inFolder: folderId
+                                       displayName: name
+                                       description: description];
             albumCreatedOnThisPass = (albumId != nil);
             [albumState setValue: albumId forKey: @"albumId"];
             NSMutableDictionary *mappingDictionary = [[NSMutableDictionary alloc] initWithCapacity: [photos count]];
@@ -797,12 +508,12 @@ long                retryCount;
                                                   featuredPhotoId];
                     NSString *apiCall = [NSString stringWithFormat: @"album/%@", albumId];
                     NSURLRequest *eventRequest = [_smugmugOauth apiRequest: apiCall
-                                                                       parameters: @{@"HighlightAlbumImageUri": featuredImageUri}
-                                                                             verb: @"PATCH"];
+                                                                parameters: @{@"HighlightAlbumImageUri": featuredImageUri}
+                                                                      verb: @"PATCH"];
                     error = [_smugmugOauth synchronousUrlRequest: eventRequest
-                                                                  photo: nil
-                                                      remainingAttempts: MMDefaultRetries
-                                                      completionHandler: nil];
+                                                           photo: nil
+                                               remainingAttempts: MMDefaultRetries
+                                               completionHandler: nil];
                     if (error)
                     {
                         // TODO Log this error!
@@ -818,6 +529,284 @@ long                retryCount;
              [windowController.eventsTable reloadData];
          }];
     }
+}
+
+#pragma mark == Private Methods ==
+
+/**
+ This either reconsitutes an Oauth token from the stored preferences (NSUserDefaults) or
+ triggers a new Oauth dance. You know the outcome by observing "initializationProgress".
+ */
+- (void) configureOauthRetryOnFailure: (BOOL) attemptRetry
+{
+    if (self.uniqueId)
+    {
+        NSArray *tokenAndSecret = [MMPrefsManager tokenAndSecretForService: @"smugmug"
+                                                                  uniqueId: self.uniqueId];
+        if (tokenAndSecret[0] && tokenAndSecret[1])
+        {
+            _smugmugOauth = [[MMOauthSmugmug alloc] initWithStoredToken: tokenAndSecret[0]
+                                                                 secret: tokenAndSecret[1]];
+        }
+        else
+        {
+            _smugmugOauth = nil;
+        }
+        if (!_smugmugOauth)
+        {
+            [MMPrefsManager clearTokenAndSecretForService: @"smugmug"
+                                                 uniqueId: self.uniqueId];
+        }
+    }
+    if (_smugmugOauth || !attemptRetry)
+    {
+        return; // after synchronize
+    }
+    
+    // Otherwise we start the whole process over again...
+    _smugmugOauth = [[MMOauthSmugmug alloc] initAndStartAuthorization: ^(Float32 progress, NSString *text)
+                     {
+                         DDLogInfo(@"progress=%f", progress);
+                         if (progress == 1.0)
+                         {
+                             DDLogInfo(@"progress=1.0");
+                         }
+                         else
+                         {
+                             DDLogInfo(@"progress!=1.0");
+                         }
+                     }];
+}
+
+/**
+ * Returns the albumId of an album. The identity of the album is determined by the node (folder)
+ * into which it is to be placed. The arguments are
+ *   +urlName+     which is part of the URL and is constrained by the rules imposed by Smugmug.
+ *                 The uniqueness of the urlName is required, and we impose this by using uuid from
+ *                 the corresponding event.
+ *   +folderId+    which is the ID of a Smugmug node (folder).
+ *   +displayName+ which is the displayed title for the album
+ *   +options+     allow control of the following
+ *                   Visiblity: private/unlisted/inherit*
+ *                   Social Show Sharing
+ *                   Social Allow Comments
+ *                   Social Allow Likes
+ *                   Web Searchable
+ *                   Smug searchable
+ *                   Sort by...
+ *                   OR JUST USE A QUICK SETTING!
+ 
+ *
+ * TODO Change Smugmug searchable to site-setting
+ */
+- (NSString *) createAlbumWithUrlName: (NSString *) urlName
+                             inFolder: (NSString *) folderId
+                          displayName: (NSString *) displayName
+                          description: (NSString *) description;
+{
+    // We have to do this in 2 steps: get the folder, then get the album info
+    // because the folder/id API method doesn't support the !albums request.
+    NSDictionary *parsedServerResponse;
+    
+    NSString *apiRequest = [NSString stringWithFormat: @"folder/id/%@", folderId];
+    NSURLRequest *getFolderRequest = [_smugmugOauth apiRequest: apiRequest
+                                                    parameters: @{}
+                                                          verb: @"GET"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getFolderRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus != 200)
+    {
+        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+        return nil;
+    }
+    
+    NSString *uri = nil;
+    
+    // Our API does not work with full paths, so... we have to strip off the "/api/v2/" part
+    NSString *fullPath = [parsedServerResponse  valueForKeyPath: @"Response.Folder.Uri"];
+    fullPath = [fullPath substringFromIndex:[@"/api/v2/" length]];
+    apiRequest = [NSString stringWithFormat: @"%@!albums", fullPath];
+    NSURLRequest *createAlbumRequest = [_smugmugOauth apiRequest: apiRequest
+                                                      parameters: @{@"Description":        description,
+                                                                    @"UrlName":            urlName,
+                                                                    @"AutoRename":         @"Yes",
+                                                                    @"Name":               displayName,
+                                                                    @"Privacy":            @"Unlisted", // UNLISTED?
+                                                                    @"SmugSearchable":     @"No",
+                                                                    @"WorldSearchable":    @"No",
+                                                                    }
+                                                            verb: @"POST"];
+    httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: createAlbumRequest
+                                                    parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        uri = [parsedServerResponse valueForKeyPath: @"Response.Uri"];
+        if (uri)
+        {
+            // It's actually an API URL: just get the albumId
+            return [uri lastPathComponent];
+        }
+    }
+    
+    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    return nil;
+}
+
+/**
+ * Deletes an album from the service, returning YES to indicate success or NO for failure.
+ */
+- (BOOL) deleteAlbumId: (NSString *) albumId
+{
+    NSDictionary *parsedServerResponse;
+    
+    NSString *apiRequest = [NSString stringWithFormat: @"album/%@", albumId];
+    NSURLRequest *deleteAlbumRequest = [_smugmugOauth apiRequest: apiRequest
+                                                      parameters: @{}
+                                                            verb: @"DELETE"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: deleteAlbumRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        return YES;
+    }
+    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    return NO;
+}
+
+/**
+ * Deletes an image from the service, returning YES to indicate success or NO for failure.
+ */
+- (BOOL) deletePhotoId: (NSString *) photoId
+{
+    NSDictionary *parsedServerResponse;
+    
+    NSString *apiRequest = [NSString stringWithFormat: @"image/%@", photoId];
+    NSURLRequest *deleteImageRequest = [_smugmugOauth apiRequest: apiRequest
+                                                      parameters: @{}
+                                                            verb: @"DELETE"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: deleteImageRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        return YES;
+    }
+    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    return NO;
+}
+
+/**
+ * Returns a BOOL indicating whether it was able to obtain user information via the API.
+ */
+- (BOOL) getUserInfo
+{
+    NSDictionary *parsedServerResponse;
+    NSURLRequest *userInfoRequest = [_smugmugOauth apiRequest: @"!authuser"
+                                                   parameters: nil
+                                                         verb: @"GET"];
+    NSInteger httpStatus =  [MMDataUtility makeSyncJsonRequestWithRetries: userInfoRequest
+                                                               parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        self.uniqueId = [parsedServerResponse valueForKeyPath: @"Response.User.RefTag"];
+        _handle = [parsedServerResponse valueForKeyPath: @"Response.User.NickName"];
+        return YES;
+    }
+    else
+    {
+        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+        return NO;
+    }
+}
+
+/**
+ * Confirms whether an AlbumID exists
+ */
+- (BOOL) hasAlbumId: (NSString *) albumId
+{
+    NSDictionary *parsedServerResponse;
+    
+    NSString *apiRequest = [NSString stringWithFormat: @"album/%@", albumId];
+    NSURLRequest *getAlbumRequest = [_smugmugOauth apiRequest: apiRequest
+                                                   parameters: @{}
+                                                         verb: @"GET"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getAlbumRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        return YES;
+    }
+    if (httpStatus == 404)
+    {
+        return NO;
+    }
+    DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+    DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    return NO;
+}
+
+/**
+ * Gets image size details
+ */
+- (NSDictionary *) imageSizesForPhotoId: (NSString *) photoId
+{
+    if (!photoId)
+    {
+        return nil;
+    }
+    
+    NSDictionary *parsedServerResponse;
+    
+    NSString *apiRequest = [NSString stringWithFormat: @"image/%@-0!sizedetails", photoId];
+    NSURLRequest *getImageRequest = [_smugmugOauth apiRequest: apiRequest
+                                                   parameters: @{}
+                                                         verb: @"GET"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getImageRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        return [parsedServerResponse valueForKeyPath: @"Response.ImageSizeDetails"];
+    }
+    if (httpStatus != 404)
+    {
+        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    }
+    return nil;
+}
+
+/**
+ * Returns the MD5 of the uploaded original file with that ID (if provided and found on service)
+ */
+- (NSString *) md5ForPhotoId: (NSString *) photoId
+{
+    if (!photoId)
+    {
+        return nil;
+    }
+    
+    NSDictionary *parsedServerResponse;
+    
+    NSString *apiRequest = [NSString stringWithFormat: @"image/%@", photoId];
+    NSURLRequest *getImageRequest = [_smugmugOauth apiRequest: apiRequest
+                                                   parameters: @{}
+                                                         verb: @"GET"];
+    NSInteger httpStatus = [MMDataUtility makeSyncJsonRequestWithRetries: getImageRequest
+                                                              parsedData: &parsedServerResponse];
+    if (httpStatus == 200)
+    {
+        return [parsedServerResponse valueForKeyPath: @"Response.Image.ArchivedMD5"];
+    }
+    if (httpStatus != 404)
+    {
+        DDLogError(@"Network error httpStatusCode=%ld", (long)httpStatus);
+        DDLogError(@"response=%@", [_smugmugOauth extractErrorResponseData: parsedServerResponse]);
+    }
+    return nil;
 }
 
 @end

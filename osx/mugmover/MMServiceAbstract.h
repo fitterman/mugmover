@@ -24,6 +24,27 @@
 @property (strong, readonly)    NSString *              tokenSecret;
 @property (strong)              NSString *              uniqueId;
 
+- (void) close;
+
+- (NSString *) findOrCreateFolderForLibrary: library;
+
+- (NSString *) identifier;
+
+- (void) logError: (NSError *) error;
+
+- (NSString *) name;
+
+- (NSString *) oauthAccessToken;
+
+- (NSString *) oauthTokenSecret;
+
+- (NSDictionary *) serialize;
+
+- (void) transferPhotosForEvent: (MMLibraryEvent *) event
+                uploadOperation: (MMUploadOperation *) uploadOperation
+               windowController: (MMWindowController *) windowController
+                       folderId: (NSString *) folderId;
+
 @end
 
 #endif /* MMServiceAbstract_h */

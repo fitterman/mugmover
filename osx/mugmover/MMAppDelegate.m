@@ -27,6 +27,11 @@ BOOL const MMdebugLevel;
     [_windowController removeLibraryDialog];
 }
 
+- (IBAction)addFileFolder:(id)sender {
+    [_windowController addFileSystemService];
+}
+
+
 - (IBAction)addSmugmugAccount:(id)sender {
     [_windowController addSmugmugService];
 }

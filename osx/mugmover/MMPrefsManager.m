@@ -8,6 +8,7 @@
 
 #import "MMDataUtility.h"
 #import "MMPrefsManager.h"
+#import "MMServiceFileSystem.h"
 #import "MMServiceSmugmug.h"
 
 @implementation MMPrefsManager
@@ -48,7 +49,16 @@
     {
         for (NSDictionary *dictionary in array)
         {
-            MMServiceSmugmug *service = [[MMServiceSmugmug alloc] initFromDictionary: dictionary];
+            NSString *serviceType = (NSString *)[dictionary objectForKey: @"type"];
+            MMServiceAbstract *service = nil;
+            if ([serviceType isEqualToString: @"smugmug"])
+            {
+                service = [[MMServiceSmugmug alloc] initFromDictionary: dictionary];
+            }
+            else if ([serviceType isEqualToString: @"filesystem"])
+            {
+                service = [[MMServiceFileSystem alloc] initFromDictionary: dictionary];
+            }
             if (service)
             {
                 [mutableArray addObject: service];

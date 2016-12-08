@@ -10,6 +10,7 @@
 #import "MMPrefsManager.h"
 #import "MMServiceManager.h"
 #import "MMServiceSmugmug.h"
+#import "MMWindowController.h"
 
 NSInteger const maxSupportedServices = 50;
 
@@ -37,7 +38,7 @@ NSInteger const maxSupportedServices = 50;
  * an error occurs. Returns -1 if an error occurs, otherwise returns the index of the
  * newly-added value in the sorted array.
  */
-- (NSInteger) insertService: (MMServiceSmugmug *) newService
+- (NSInteger) insertService: (MMServiceAbstract *) newService
                       error: (NSError **) error;
 {
     if ([self isAtCapacity])
@@ -52,7 +53,7 @@ NSInteger const maxSupportedServices = 50;
                                  userInfo: userInfo];
         return -1; // No more room
     }
-    for (MMServiceSmugmug *service in _services)
+    for (MMServiceAbstract *service in _services)
     {
         if ([service isEqualTo: newService])
         {
@@ -71,7 +72,7 @@ NSInteger const maxSupportedServices = 50;
 
     [MMPrefsManager storeToken: [newService oauthAccessToken]
                         secret: [newService oauthTokenSecret]
-                    forService: @"smugmug"
+                    forService: [newService identifier]
                       uniqueId: newService.uniqueId];
     [MMPrefsManager serializeServicesToDefaults: _services];
     return [self totalServices] - 1;

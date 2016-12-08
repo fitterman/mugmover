@@ -47,9 +47,13 @@
 
 - (void) addLibraryDialog;
 
+- (void) addFileSystemService;
+
 - (void) addSmugmugService;
 
 - (void) incrementProgressBy: (Float64) increment;
+
+- (id) initFromDictionary: (NSDictionary *) dictionary;
 
 - (void) removeLibraryDialog;
 

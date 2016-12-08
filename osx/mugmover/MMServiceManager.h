@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 @class MMWindowController;
+@class MMServiceAbstract;
 @class MMServiceSmugmug;
 
 @interface MMServiceManager : NSObject
@@ -18,7 +19,7 @@
 
 - (id) initForWindowController: (id) windowController;
 
-- (NSInteger) insertService: (MMServiceSmugmug *)newService
+- (NSInteger) insertService: (MMServiceAbstract *)newService
                       error: (NSError **) error;
 
 - (BOOL) isAtCapacity;
