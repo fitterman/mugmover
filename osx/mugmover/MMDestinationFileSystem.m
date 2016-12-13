@@ -8,6 +8,7 @@
 
 #import "MMDestinationAbstract.h"
 #import "MMDestinationFileSystem.h"
+#import "MMFileUtility.h"
 #import "MMLibraryEvent.h"
 #import "MMPhoto.h"
 #import "MMPrefsManager.h"
@@ -16,11 +17,13 @@
 
 @implementation MMDestinationFileSystem
 
+NSString *destTypeIdentifier = @"filesystem";
+
 - (id) initFromDictionary: (NSDictionary *) dictionary
 {
     self = [super init];
     if ((self) &&
-        (dictionary && [[dictionary valueForKey: @"type"] isEqualToString: @"filesystem"]))
+        (dictionary && [[dictionary valueForKey: @"type"] isEqualToString: destTypeIdentifier]))
     {
         self.uniqueId = [dictionary valueForKey: @"id"];
     }
@@ -28,9 +31,9 @@
 }
 
 /**
- * This method returns an NSString pointer if it succeeds. The caller never uses the value (in the
- * instance of this service. Hence the arbitrary return value to indicate success.
- * It looks for a folder, creates it if it doesn't exist. The folder should contain also have a 
+ * This method returns an NSString pointer if it succeeds. The return value is the full path
+ * to the folder (if success), otherwise a nil value is returned.
+ * It looks for a folder, creates it if it doesn't exist. The folder should contain also have a
  * hidden file called ".mugmover" which will help track the mapping of iPhoto events to 
  * file system folders.
  */
@@ -84,12 +87,12 @@
             _eventDictionary = @{};
         }
     }
-    return @"I'm happy"; // Any string value would do.
+    return [pathUrl path]; // The full path to the destination folder, including "/"
 }
 
 - (NSString *) identifier
 {
-    return @"filesystem";
+    return destTypeIdentifier;
 }
 
 - (NSString *) name
@@ -108,28 +111,106 @@
 }
 
 /**
+ * "private" method for finding the destination directory. 
+ * It creates the directory if necessary.
+ * TODO It will hunt down the directory even if the event has been renamed.
+ */
+- (NSString *) findDestinationDirectoryForEvent: (MMLibraryEvent *) event
+                             underDirectoryPath: parentDirectoryPath
+{
+    NSString *name = [event name];
+    if ((!name) || ([name length] == 0))
+    {
+        name = [event dateRange];
+    }
+ 
+    name = [name stringByReplacingOccurrencesOfString: @"/" withString: @"\\f"];
+    NSString *eventDirectoryName = [NSString stringWithFormat: @"%@ (%@)", name, [event uuid]];
+    NSString *pathToDestinationDirectory = [NSString pathWithComponents: @[parentDirectoryPath, eventDirectoryName]];
+ 
+    // Go for an exact match
+    BOOL isDir = NO;
+    if ([[NSFileManager defaultManager] fileExistsAtPath: pathToDestinationDirectory
+                                             isDirectory: &isDir] && isDir)
+    {
+        return pathToDestinationDirectory;
+    }
+    
+    // See if there's a directory with a name that matches the uuid in parentheses
+    
+    NSError *error;
+    NSArray *directoryContents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath: parentDirectoryPath
+                                                                                     error: &error];
+    NSString *match = [NSString stringWithFormat: @"*(%@)*", [event uuid]];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF like %@", match];
+    NSArray *subdirs = [directoryContents filteredArrayUsingPredicate:predicate];
+    
+    // Now make sure it exists (and is a directory) or create it
+
+    for (id dirpath in subdirs)
+    {
+        isDir = NO;
+        NSString *fullpath = [NSString pathWithComponents: @[parentDirectoryPath, dirpath]];
+        if ([[NSFileManager defaultManager] fileExistsAtPath: fullpath
+                                                 isDirectory: &isDir] && isDir)
+        {
+            // Found a matching directory, rename it
+            [[NSFileManager defaultManager] moveItemAtPath: fullpath
+                                                    toPath: pathToDestinationDirectory
+                                                     error: &error];
+            if (error)
+            {
+                DDLogError(@"Unable to move ""%@"" to ""%@""", fullpath, pathToDestinationDirectory);
+                continue; // consider another possibility, if there is more than one (unlikely)
+            }
+            // Look no more
+            return fullpath;
+        }
+        // do something with object
+    }
+
+    if(![[NSFileManager defaultManager] fileExistsAtPath: pathToDestinationDirectory])
+    {
+        [[NSFileManager defaultManager] createDirectoryAtPath: pathToDestinationDirectory
+                                  withIntermediateDirectories: YES
+                                                   attributes: nil
+                                                        error: &error];
+    }
+    
+    if (error)
+    {
+        DDLogError(@"Unable to create directory (%@) for transfer, error %@",
+                   pathToDestinationDirectory, error);
+        return nil; // TODO return is the right way to handle this, correct?
+    }
+    return pathToDestinationDirectory;
+}
+
+/**
  * Tightly connected to the MMUploadOperation class. This is what does the
  * actual transfer.
  */
 - (void) transferPhotosForEvent: (MMLibraryEvent *) event
                 uploadOperation: (MMUploadOperation *) uploadOperation
                windowController: (MMWindowController *) windowController
-                       folderId: (NSString *) folderId
+                       folderId: (NSString *) folderId /* directory name for export */
 {
     @autoreleasepool
     {
-        NSString *name = [event name];
-        if ((!name) || ([name length] == 0))
+        NSString *pathToDestinationDirectory = [self findDestinationDirectoryForEvent: event
+                                                                   underDirectoryPath: folderId];
+        
+        if (!pathToDestinationDirectory)
         {
-            name = [event dateRange];
+            return; // TODO Verify this is the right action if you can't find/create the directory
         }
-        
+
         // Restore the preferences (defaults)
-        
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         BOOL reprocessAllImagesPreviouslyTransmitted = [MMPrefsManager
                                                         boolForKey: @"reprocessAllImagesPreviouslyTransmitted"];
-        NSString *albumKey = [NSString stringWithFormat: @"smugmug.%@.albums.%@",
+        NSString *albumKey = [NSString stringWithFormat: @"%@.%@.albums.%@",
+                              destTypeIdentifier,
                               self.uniqueId,
                               [event uuid]];
         NSArray *photos = [MMPhoto getPhotosForEvent: event];
@@ -176,13 +257,13 @@
         // We use these next two to keep track of whether everything completes
 */
         NSInteger completedTransfers = 0;
+        NSInteger allCounter = 0;
         MMEventStatus finalStatus = MMEventStatusIncomplete; // Assume something goes wrong
-
-        NSError *error;
         
         for (MMPhoto *photo in photos)
         {
-            error = nil;
+            NSError *error = nil;
+            allCounter++;
             
             // Before processing the next photo, see if we've been asked to abort
             if (uploadOperation.isCancelled)
@@ -214,15 +295,19 @@
                 NSLog(@"ERROR >> %@", error);
                 continue;
             }
-            NSImage *currentPhotoThumbnail = [photo getThumbnailImage];
-            [event setActivePhotoThumbnail: currentPhotoThumbnail
-                                withStatus: MMEventStatusActive];
-            [windowController setActivePhotoThumbnail: currentPhotoThumbnail];
-            [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
-             {
-                 [windowController.eventsTable reloadData];
-             }
-             ];
+            
+            if ((allCounter % 10) == 1)
+            {
+                NSImage *currentPhotoThumbnail = [photo getThumbnailImage];
+                [event setActivePhotoThumbnail: currentPhotoThumbnail
+                                    withStatus: MMEventStatusActive];
+                [windowController setActivePhotoThumbnail: currentPhotoThumbnail];
+                [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
+                     {
+                         [windowController.eventsTable reloadData];
+                     }
+                 ];
+            }
 /*
             __block NSString *smugmugImageId = nil;
             // This must be declared inside the loop because it references "photo"
@@ -248,33 +333,31 @@
                     DDLogError(@"response=%@", response);
                 }
             };
+
+ */
+            NSString *copiedFilePath = nil;
             
-            NSString *pathToFileToUpload = photo.iPhotoOriginalImagePath;
             BOOL imageRequiresConversion = [photo isFormatRequiringConversion];
             if (imageRequiresConversion)
             {
-                NSString *jpegPath = [MMFileUtility temporaryJpegFromPath: photo.iPhotoOriginalImagePath];
-                if (!jpegPath)
-                {
-                    DDLogError(@"Failed to create JPEG to %@ (at %@)", photo, photo.iPhotoOriginalImagePath);
-                    break;
-                }
-                pathToFileToUpload = jpegPath;
+                copiedFilePath = [MMFileUtility jpegFromPath: photo.iPhotoOriginalImagePath
+                                                 toDirectory: pathToDestinationDirectory];
+
             }
-            
-            NSURLRequest *uploadRequest = [_smugmugOauth upload: pathToFileToUpload
-                                                        albumId: albumId
-                                                 replacementFor: replacementFor
-                                                   withPriorMd5: [self md5ForPhotoId: replacementFor]
-                                                          title: [photo titleForUpload]
-                                                        caption: photo.caption
-                                                       keywords: photo.keywordList
-                                                          error: &error];
-            if (error)
+            else
             {
-                [self logError: error];
-                continue;
+                copiedFilePath = [MMFileUtility copyFileAtPath: photo.iPhotoOriginalImagePath
+                                                   toDirectory: pathToDestinationDirectory];
+                // Instead of converting the image, we can just copy it over.
             }
+            if (!copiedFilePath)
+            {
+                DDLogError(@"Failed to create JPEG to %@ (at %@, from %@)", photo,
+                           pathToDestinationDirectory, photo.iPhotoOriginalImagePath);
+                break; // TODO Verify we want to break out of the loop.
+            }
+
+            /*
             if (!uploadRequest)
             {
                 // No uploadRequest and no error indicates we have been asked to
@@ -387,13 +470,14 @@
                 }
             }
         }
+ */
         // Restore the display to the default image for this album
         [event setActivePhotoThumbnail: nil withStatus: finalStatus];
         [[NSOperationQueue mainQueue] addOperationWithBlock: ^(void)
          {
              [windowController.eventsTable reloadData];
          }];
- */
+ 
     }
 }
 
