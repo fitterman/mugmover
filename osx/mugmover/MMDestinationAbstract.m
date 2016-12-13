@@ -90,4 +90,12 @@
                 format:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)];    
 }
 
+/**
+ * I do not understand this but I cannot access the getter
+ * from outside the class and have it work.
+ */
+- (NSString *) uniqueIdKludge
+{
+    return _uniqueId;
+}
 @end

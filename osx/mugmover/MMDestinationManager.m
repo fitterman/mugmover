@@ -73,7 +73,7 @@ NSInteger const maxSupportedDestinations = 50;
     [MMPrefsManager storeToken: [newDestination oauthAccessToken]
                         secret: [newDestination oauthTokenSecret]
                 forDestination: [newDestination identifier]
-                      uniqueId: newDestination.uniqueId];
+                      uniqueId: [newDestination uniqueIdKludge]];
     [MMPrefsManager serializeDestinationsToDefaults: _destinations];
     return [self totalDestinations] - 1;
 }
@@ -101,10 +101,10 @@ NSInteger const maxSupportedDestinations = 50;
 
 - (NSString *) destinationNameForIndex: (NSInteger) index
 {
-    MMDestinationSmugmug *service = [self destinationForIndex: index];
-    if (service)
+    MMDestinationAbstract *destination = [self destinationForIndex: index];
+    if (destination)
     {
-        return [service name];
+        return [destination name];
     }
     else
     {

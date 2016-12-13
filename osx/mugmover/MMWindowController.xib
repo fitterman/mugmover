@@ -143,7 +143,7 @@
                                 <rect key="frame" x="0.0" y="193" width="220" height="191"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <subviews>
-                                    <scrollView toolTip="Desintations" autohidesScrollers="YES" horizontalLineScroll="54" horizontalPageScroll="10" verticalLineScroll="54" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mcH-v4-HmO">
+                                    <scrollView toolTip="Destinations" autohidesScrollers="YES" horizontalLineScroll="54" horizontalPageScroll="10" verticalLineScroll="54" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mcH-v4-HmO">
                                         <rect key="frame" x="0.0" y="20" width="220" height="171"/>
                                         <clipView key="contentView" id="jL2-sO-coo">
                                             <rect key="frame" x="1" y="1" width="218" height="169"/>
@@ -156,7 +156,7 @@
                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                     <tableColumns>
-                                                        <tableColumn width="215" minWidth="40" maxWidth="1000" id="8yx-vg-1j6">
+                                                        <tableColumn width="215" minWidth="40" maxWidth="1000" headerToolTip="" id="8yx-vg-1j6">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
                                                                 <font key="font" metaFont="smallSystem"/>
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -181,7 +181,7 @@
                                                                         <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsExpansionToolTips="YES" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="d3k-Hv-XXJ">
                                                                             <rect key="frame" x="56" y="10" width="154" height="42"/>
                                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                            <textFieldCell key="cell" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" title="Table View Cell" id="u42-TR-fgA">
+                                                                            <textFieldCell key="cell" lineBreakMode="truncatingMiddle" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" title="Table View Cell" id="u42-TR-fgA">
                                                                                 <font key="font" metaFont="system"/>
                                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                                 <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
@@ -429,7 +429,7 @@
                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                             <prototypeCellViews>
                                                 <tableCellView id="Hnp-ug-bgs" customClass="MMComplexTableCellView">
-                                                    <rect key="frame" x="28.809659090909502" y="1" width="280" height="48"/>
+                                                    <rect key="frame" x="28" y="1" width="280" height="48"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <subviews>
                                                         <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DfK-Mf-xTc">
@@ -515,6 +515,7 @@
             </connections>
             <point key="canvasLocation" x="-26" y="101"/>
         </window>
+        <userDefaultsController representsSharedInstance="YES" id="Agn-eI-bL2"/>
     </objects>
     <resources>
         <image name="NSActionTemplate" width="14" height="14"/>

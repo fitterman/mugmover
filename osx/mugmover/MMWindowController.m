@@ -280,17 +280,36 @@
 
 - (void) addFileSystemDestination
 {
-    MMDestinationFileSystem *newDestination = [[MMDestinationFileSystem alloc] initFromDictionary: @{
-                                                                         @"type": @"filesystem",
-                                                                         @"path": @"/Users/Bob/downloads/whatever"
-                                                                                   }];
+    // Create the File Open Dialog class.
+    NSOpenPanel* openDlg = [NSOpenPanel openPanel];
     
-    NSError *error;
-    NSInteger row = [_destinationManager insertDestination: newDestination error: &error];
-    [_destinationsTable reloadData];
-    NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: row];
-    [_destinationsTable selectRowIndexes: indexSet
-                byExtendingSelection: NO];
+    // Enable the selection of files in the dialog.
+    [openDlg setCanChooseFiles: NO];
+    [openDlg setAllowsMultipleSelection: NO];
+    [openDlg setCanChooseDirectories: YES];
+    [openDlg setCanCreateDirectories: YES];
+    
+    // Display the dialog. If the OK button was pressed, process the files.
+    if ( [openDlg runModal] == NSOKButton )
+    {
+        // Get the selections and then iterate over them
+        NSArray* urls = [openDlg URLs];
+        NSURL *url = [urls objectAtIndex: 0];
+        if (url)
+        {
+            MMDestinationFileSystem *newDestination = [[MMDestinationFileSystem alloc] initFromDictionary: @{
+                                                                                 @"type": @"filesystem",
+                                                                                 @"id": [url path]
+                                                                                           }];
+        
+            NSError *error;
+            NSInteger row = [_destinationManager insertDestination: newDestination error: &error];
+            [_destinationsTable reloadData];
+            NSIndexSet *indexSet = [NSIndexSet indexSetWithIndex: row];
+            [_destinationsTable selectRowIndexes: indexSet
+                        byExtendingSelection: NO];
+        }
+    }
 }
 
 - (void) addSmugmugDestination
@@ -592,4 +611,5 @@
     }
     [self setTransmitButtonStateWithHint: NO];
 }
+
 @end

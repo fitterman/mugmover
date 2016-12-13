@@ -97,7 +97,8 @@ NSString *destTypeIdentifier = @"filesystem";
 
 - (NSString *) name
 {
-    return [NSString stringWithFormat: @"%@ (File System)\n%@", @"_handle", self.uniqueId];
+    NSString *dirname = [self.uniqueId lastPathComponent];
+    return [NSString stringWithFormat: @"%@ (File System)\n%@", dirname, self.uniqueId];
 }
 
 - (NSString *) oauthAccessToken

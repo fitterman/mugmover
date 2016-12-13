@@ -45,6 +45,9 @@
                windowController: (MMWindowController *) windowController
                        folderId: (NSString *) folderId;
 
+
+- (NSString *) uniqueIdKludge;
+
 @end
 
 #endif /* MMDestinationAbstract_h */
