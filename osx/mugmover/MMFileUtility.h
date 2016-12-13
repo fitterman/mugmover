@@ -10,7 +10,13 @@
 
 @interface MMFileUtility : NSObject
 
++ (NSString *) copyFileAtPath: (NSString *) imageFile
+                  toDirectory: (NSString *) directory;
+
 + (NSMutableDictionary*) exifForFileAtPath: (NSString*) filePath;
+
++ (NSString *) jpegFromPath: (NSString *) imageFile
+                toDirectory: (NSString *) directory;
 
 + (NSNumber *) lengthForFileAtPath: (NSString *) path;
 
@@ -19,7 +25,5 @@
 + (NSString *) mimeTypeForFileAtPath: (NSString *) path;
 
 + (NSString *) pathToTemporaryDirectory;
-
-+ (NSString *) temporaryJpegFromPath: (NSString *) imageFile;
 
 @end

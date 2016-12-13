@@ -389,10 +389,11 @@ long                retryCount;
             BOOL imageRequiresConversion = [photo isFormatRequiringConversion];
             if (imageRequiresConversion)
             {
-                NSString *jpegPath = [MMFileUtility temporaryJpegFromPath: photo.iPhotoOriginalImagePath];
+                NSString *jpegPath = [MMFileUtility jpegFromPath: photo.iPhotoOriginalImagePath
+                                                     toDirectory: [MMFileUtility pathToTemporaryDirectory]];
                 if (!jpegPath)
                 {
-                    DDLogError(@"Failed to create JPEG to %@ (at %@)", photo, photo.iPhotoOriginalImagePath);
+                    DDLogError(@"Failed to create JPEG to %@ (from %@)", photo, photo.iPhotoOriginalImagePath);
                     break;
                 }
                 pathToFileToUpload = jpegPath;

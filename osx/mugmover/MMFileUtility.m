@@ -12,6 +12,51 @@
 @implementation MMFileUtility
 #pragma mark Class (utility) Methods
 /**
+ * Copies the contents of the file at a given path to the specified directory.
+ * Returns nil for failure, path to new file for success.
+ */
++ (NSString *) copyFileAtPath: (NSString *) filePath
+                  toDirectory: (NSString *) directory
+{
+    NSError *error;
+
+    // Test that the source file can be found
+    
+    if (![[NSFileManager defaultManager] isReadableFileAtPath: filePath])
+    {
+        return nil;
+    }
+
+    // Extract the filename portion of the path
+    
+     NSString *sourceFilename = [filePath lastPathComponent];
+    
+    // Test that the destination directory exists and is a directory
+    
+    BOOL isDir = YES;
+    if([[NSFileManager defaultManager] fileExistsAtPath: directory
+                                            isDirectory: &isDir] && !isDir)
+    {
+        return nil;
+    }
+    
+    // Form the full destination path
+    
+    NSString *destPath = [directory stringByAppendingPathComponent: sourceFilename];
+    
+    // Copy the source to the destination
+    
+    if (![[NSFileManager defaultManager] copyItemAtPath: filePath
+                                                 toPath: destPath
+                                                  error: &error])
+    {
+        return nil;
+    }
+
+    return destPath;
+}
+
+/**
  This method extracts Exif data from a local file, return a dictionary. The keys of the
  dictionary have paths that are values like "EXIF", "TIFF", etc. at the first level.
  */
@@ -158,11 +203,12 @@
 }
 
 /**
- * Returns the path to a newly-created JPEG file in a newly-created temporary directory.
+ * Returns the path to a newly-created JPEG file in a specified directory.
  * The caller is obliged to do any cleanup (of the file and directory).
  * Returns nil in the event any step fails.
  */
-+ (NSString *) temporaryJpegFromPath: (NSString *) imageFile
++ (NSString *) jpegFromPath: (NSString *) imageFile
+                toDirectory: (NSString *) directory
 {
     NSImage *sourceImage = [[NSImage alloc] initWithContentsOfFile: imageFile];
     NSArray *representations = [sourceImage representations];
@@ -171,13 +217,12 @@
     NSData *bitmapData = [NSBitmapImageRep representationOfImageRepsInArray: representations
                                                                   usingType: NSJPEGFileType
                                                                  properties: imageProps];
-    NSString *pathToTemporaryDirectory = [MMFileUtility pathToTemporaryDirectory];
-    if (pathToTemporaryDirectory)
+    if (directory)
     {
         NSString *filePart = [[[imageFile lastPathComponent]
-                                    stringByDeletingPathExtension]
-                                        stringByAppendingPathExtension: @"jpg"];
-        NSString *filePath = [pathToTemporaryDirectory stringByAppendingPathComponent: filePart];
+                               stringByDeletingPathExtension]
+                              stringByAppendingPathExtension: @"jpg"];
+        NSString *filePath = [directory stringByAppendingPathComponent: filePart];
         [bitmapData writeToFile: filePath
                      atomically: YES];
         return filePath;
