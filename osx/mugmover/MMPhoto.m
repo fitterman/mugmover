@@ -371,7 +371,12 @@ extern Float64 const MMDegreesPerRadian;
     {
         return nil; // Sort of yes, sort of no.
     }
-    if (_iPhotoOriginalImagePath)
+    if ([self isGifOrPng])
+    {
+        // Populate an empty one
+        exifProperties = [[NSMutableDictionary alloc] init];
+    }
+    else if (_iPhotoOriginalImagePath)
     {
         exifProperties = [MMFileUtility exifForFileAtPath: _iPhotoOriginalImagePath];
     }
@@ -450,7 +455,7 @@ extern Float64 const MMDegreesPerRadian;
         _thumbnail = @""; // It cannot be null, so just in case this fails.
         if (fileUrl && ![self isVideo])
         {
-            CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileUrl];
+            CIImage *image = [[CIImage alloc] initWithContentsOfURL: fileUrl];            
             _thumbnail = [self createPhotoThumbnail: image];
             [self fetchThumbnailsFromOriginal: image];
         }
@@ -1108,15 +1113,32 @@ extern Float64 const MMDegreesPerRadian;
  */
 - (BOOL) isFormatRequiringConversion
 {
-    NSString *subtype = [_attributes valueForKeyPath: @"photo.subtype"];
-    // NOTE: Within the range of values knownn to iPhoto, the subtype is unique:
-    //       i.e., you do not need to look at the type, just the subtype.
+    return ([self isGifOrPng] || [self isTiff]);
+}
 
+/**
+ * Tells you if the object is a GIF or PNG
+ */
+- (BOOL) isGifOrPng
+{
+    NSString *subtype = [_attributes valueForKeyPath: @"photo.subtype"];
+    // NOTE: Within the range of values known to iPhoto, the subtype is unique:
+    //       i.e., you do not need to look at the type, just the subtype.
+    
     if ([subtype isEqualToString: @"IMGST"])
     {
         NSString *extension = [[_iPhotoOriginalImagePath pathExtension] lowercaseString];
         return (![extension isEqualToString: @"png"]) && (![extension isEqualToString: @"gif"]);
     }
+    return NO;
+}
+
+/**
+ * Tells you if the object is a TIFF
+ */
+- (BOOL) isTiff
+{
+    NSString *subtype = [_attributes valueForKeyPath: @"photo.subtype"];
     return [subtype isEqualToString: @"TIFST"];
 }
 

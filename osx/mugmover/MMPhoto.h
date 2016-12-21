@@ -72,6 +72,10 @@
 
 - (BOOL) isFormatRequiringConversion;
 
+- (BOOL) isGifOrPng;
+
+- (BOOL) isTiff;
+
 - (BOOL) isVideo;
 
 - (NSError *) processPhoto;
