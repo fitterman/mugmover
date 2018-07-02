@@ -13,6 +13,26 @@
 @implementation MMFileUtility
 #pragma mark Class (utility) Methods
 /**
+ * Escapes a string so it will be acceptable to bash
+ */
++ (NSString *) bashEscapedString: (NSString *) inString
+{
+    /*
+        We use apostrophe's (single quotes) to delimit the string, which requires that
+        replace apostrophes with '"'"' to get the apostrophe to appear.
+     */
+    NSMutableString *result = [[NSMutableString alloc] init];
+    [result appendString: inString];
+    [result replaceOccurrencesOfString: @"'"
+                            withString: @"'\"'\"'"
+                               options: NSLiteralSearch
+                                 range: NSMakeRange(0, [result length])];
+    [result insertString: @"'" atIndex: 0];
+    [result appendString: @"'"];
+    return result;
+}
+
+/**
  * Copies the contents of the file at a given path to the specified directory.
  * Returns nil for failure, path to new file for success.
  */

@@ -10,6 +10,8 @@
 
 @interface MMFileUtility : NSObject
 
++ (NSString *) bashEscapedString: (NSString *) inString;
+
 + (NSString *) copyFileAtPath: (NSString *) imageFile
                   toDirectory: (NSString *) directory;
 
