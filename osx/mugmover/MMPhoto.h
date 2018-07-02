@@ -23,24 +23,25 @@
 @property (strong)              MMPoint *                   cropOrigin;
 @property (assign, readonly)    Float64                     croppedHeight;
 @property (assign, readonly)    Float64                     croppedWidth;
+@property (strong)              NSMutableString *            desc;
 @property (strong)              NSMutableDictionary *       exifDictionary;
 @property (strong)              NSMutableArray *            faceArray;
 @property (assign)              NSInteger                   index;
 @property (strong)              NSString *                  iPhotoOriginalImagePath;
 @property (strong)              NSString *                  keywordList;
-@property (weak, readonly)      MMPhotoLibrary *            library;
-@property (assign, readonly)    Float64                     masterHeight;
+@property (weak, readonly)     MMPhotoLibrary *            library;
+@property (assign, readonly)   Float64                     masterHeight;
 @property (strong)              NSString *                  masterUuid;
-@property (assign, readonly)    Float64                     masterWidth;
+@property (assign, readonly)   Float64                     masterWidth;
 @property (strong)              NSMutableArray *            oldNotesToDelete;
 @property (strong)              NSString *                  originalDate;
 @property (strong)              NSString *                  originalFileName;
 @property (strong)              NSString *                  originalUrl;
-@property (assign, readonly)    Float64                     processedHeight;
-@property (assign, readonly)    Float64                     processedWidth;
+@property (assign, readonly)   Float64                     processedHeight;
+@property (assign, readonly)   Float64                     processedWidth;
 @property (strong)              MMNetworkRequest *          request;
-@property (assign, readonly)    Float64                     rotationAngle;
-@property (assign, readonly)    Float64                     straightenAngle;
+@property (assign, readonly)   Float64                     rotationAngle;
+@property (assign, readonly)   Float64                     straightenAngle;
 @property (strong)              NSString *                  thumbnail;
 @property (assign)              BOOL                        verboseLogging;
 @property (assign)              NSInteger                   version;
@@ -65,6 +66,8 @@
 - (NSString *) fileName;
 
 - (NSNumber *) fileSize;
+
+- (NSString *) formattedDescription;
 
 - (NSImage *) getThumbnailImage;
 

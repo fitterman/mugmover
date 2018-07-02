@@ -286,7 +286,94 @@ extern Float64 const MMDegreesPerRadian;
     _attributes = [[NSMutableDictionary alloc] initWithCapacity: 20];
     [_attributes setObject: [_library sourceDictionary] forKey: @"source"];
     [_attributes setObject: [inDictionary mutableCopy] forKey: @"photo"];
+    _desc = [[NSMutableString alloc] init];
     return self;
+}
+
+- (NSString *) formattedDescription
+{
+    /* Various things to do
+        * Include the caption
+        * Include the name unless it's the filename
+        * Include the Event Name
+        * Include the Face names
+        * Deal with deleted and unnamed faces
+        * Trim line-break characters
+        * Remove apostrophe's or escape them
+     */
+
+    
+    // First off, if someone changed the filename, make note of that.
+    NSString *filename = [_attributes valueForKeyPath: @"photo.fileName"];
+    NSString *originalFilename = [_attributes valueForKeyPath: @"photo.originalFileName"];
+    if (![filename isEqualToString: originalFilename])
+    {
+        [_desc appendString: filename];
+        [_desc appendString: @". "];
+    }
+
+    // If there's a caption, add that to the mix.
+    if (_caption != nil)
+    {
+        [_desc appendString: _caption];
+        [_desc appendString: @". "];
+    }
+
+    /* Sort the faces so they are left to right, strictly */
+    NSArray *sortedFaces = [_faceArray sortedArrayUsingComparator: ^(MMFace *f1, MMFace *f2) {
+        
+        if (f1.centerPoint.x > f2.centerPoint.x) {
+            return (NSComparisonResult)NSOrderedDescending;
+        }
+        if (f2.centerPoint.x > f1.centerPoint.x) {
+            return (NSComparisonResult)NSOrderedAscending;
+        }
+        return (NSComparisonResult)NSOrderedSame;
+    }];
+
+    /* Transfer the names from the faces, treating blank names as a special case */
+    NSMutableArray *names = [[NSMutableArray alloc] initWithCapacity: [sortedFaces count]];
+    NSInteger nonBlankNameCount = 0;
+    if ([sortedFaces count] > 0)
+    {
+        for (MMFace *face in sortedFaces)
+        {
+            if ([face.name length] > 0)
+            {
+                nonBlankNameCount++;
+                [names addObject: face.name];
+            }
+            else if (([face visible]) && (![face rejected]))
+            {
+                [names addObject: @"?"];
+            }
+        }
+    }
+
+    if (nonBlankNameCount > 0)
+    {
+        /* Append the names*/
+        if ([names count] > 1)
+        {
+            [_desc appendString: @"Names (L to R): "];
+            [_desc appendString: [names componentsJoinedByString: @", "]];
+            [_desc appendString: @". "];
+       }
+        else if ([names count] == 1)
+        {
+            [_desc appendString: @"Name: "];
+            [_desc appendString: [names objectAtIndex: 0]];
+            [_desc appendString: @". "];
+        }
+    }
+    
+    if (_keywordList)
+    {
+        [_desc appendString: @"Keyword(s): "];
+        [_desc appendString: _keywordList];
+        [_desc appendString: @". "];
+    }
+    return (NSString *)_desc;
 }
 
 - (NSString *) getCaption
