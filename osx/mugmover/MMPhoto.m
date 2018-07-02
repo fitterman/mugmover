@@ -9,7 +9,7 @@
 //  Copyright (c) 2014 Dicentra LLC. All rights reserved.
 //
 
-// TODO Review "SharingActivity.db" for matches
+// TODO: Review "SharingActivity.db" for matches
 
 #import "FMDB/FMDatabase.h"
 #import "FMDB/FMDatabaseAdditions.h"
@@ -132,7 +132,7 @@ extern Float64 const MMDegreesPerRadian;
     }
     else if ([sortOrder hasSuffix: @"&iptcProperties.Keywords"])
     {
-        // TODO this is unsupported because (a) it is complicated and (b) I don't believe many people use this.
+        // TODO: this is unsupported because (a) it is complicated and (b) I don't believe many people use this.
         // NOTE: Aperture supports hierarchical keywords
         // NOTE: Not so hard to do now the KEYWORD_QUERY is done, but it needs to be attached as a subquery.
         //       I tested that and it works, but it's pretty slow. Consider adding it back in.
@@ -181,7 +181,7 @@ extern Float64 const MMDegreesPerRadian;
         MMPhoto *photo = [[MMPhoto alloc] initFromDictionary: resultDictionary
                                                      library: event.library];
  /* ################################################################################################
-  * TODO Restore this functionality
+  * TODO: Restore this functionality
 
         NSDictionary *photoProperties =  @{
                                            // From the master
@@ -408,7 +408,7 @@ extern Float64 const MMDegreesPerRadian;
 
     NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
     [dateFormat setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
-    // TODO Use the same logic here as in the MMLibraryEvent for determining zone.
+    // TODO: Use the same logic here as in the MMLibraryEvent for determining zone.
     dateFormat.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
 
     if (exifDateString)
@@ -677,7 +677,6 @@ extern Float64 const MMDegreesPerRadian;
                                 _masterUuid];
 
     result = [[NSMutableArray alloc] initWithCapacity: matches]; // Even if it's zero, you have to send back an array
-
     if (matches > 0)
     {
         if (!result)
@@ -685,7 +684,7 @@ extern Float64 const MMDegreesPerRadian;
             DDLogError(@"ERROR   No result returned by FMDatabase");
             return nil;
         }
-        // TODO By counting rejected faces you can spot photos with large crowds where only one person matters
+        // TODO: By counting rejected faces you can spot photos with large crowds where only one person matters
         FMResultSet *resultSet = [faceDb executeQuery: @"SELECT f.*, "
                                   "fn.name, fn.uuid faceNameUuid, fn.fullName, fn.keyVersionUuid FROM RKDetectedFace f "
                                   "LEFT JOIN RKFaceName fn ON f.faceKey = fn.faceKey "
@@ -964,7 +963,7 @@ extern Float64 const MMDegreesPerRadian;
             NSMutableArray *thumbnails = [self getCroppedRegions: image
                                                  withCoordinates: rectangles
                                                        thumbSize: MAX_THUMB_DIM];
-            // TODO Need an assertion here
+            // TODO: Need an assertion here
             if ([thumbnails count] != [_faceArray count])
             {
                 DDLogError(@"ERROR expected %lu thumbnails, got %lu.", [_faceArray count], [thumbnails count]);
