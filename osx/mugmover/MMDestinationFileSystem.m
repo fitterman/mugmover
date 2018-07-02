@@ -205,7 +205,7 @@ NSString *destTypeIdentifier = @"filesystem";
         {
             return; // TODO Verify this is the right action if you can't find/create the directory
         }
-
+        
         // Restore the preferences (defaults)
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         BOOL reprocessAllImagesPreviouslyTransmitted = [MMPrefsManager
@@ -215,7 +215,12 @@ NSString *destTypeIdentifier = @"filesystem";
                               self.uniqueId,
                               [event uuid]];
         NSArray *photos = [MMPhoto getPhotosForEvent: event];
-        
+
+        // For file transfers, we generate a script that can be used to update the Exif
+        // data after the export. It's an array of strings, one per file.
+        // We have an extra so we can get a terminal newline in the file.
+        NSMutableArray *scriptCommands = [[NSMutableArray alloc] initWithCapacity: [photos count] + 1];
+
         // Get the preferences (defaults) for this event within this service
         NSMutableDictionary *albumState = [[defaults objectForKey: albumKey] mutableCopy];
         NSString *albumId = nil;
@@ -341,6 +346,7 @@ NSString *destTypeIdentifier = @"filesystem";
             BOOL imageRequiresConversion = [photo isFormatRequiringConversion];
             if (imageRequiresConversion)
             {
+                // TODO Fix this to overwrite if exists
                 copiedFilePath = [MMFileUtility jpegFromPath: photo.iPhotoOriginalImagePath
                                                  toDirectory: pathToDestinationDirectory];
 
@@ -357,7 +363,17 @@ NSString *destTypeIdentifier = @"filesystem";
                            pathToDestinationDirectory, photo.iPhotoOriginalImagePath);
                 break; // TODO Verify we want to break out of the loop.
             }
-
+            
+            NSString *description = @"";
+            if (photo.caption != nil)
+            {
+                description = [description stringByAppendingString: photo.caption];
+            }
+            NSString* cmd = [NSString stringWithFormat: @"exiftool '%@' -DateTimeOriginal='%@' -Description '%@'",
+                                copiedFilePath,
+                                [photo.originalDate stringByReplacingOccurrencesOfString: @"-" withString: @":"],
+                                description];
+            [scriptCommands addObject: cmd];
             /*
             if (!uploadRequest)
             {
@@ -426,6 +442,31 @@ NSString *destTypeIdentifier = @"filesystem";
             }
  */
         }
+        
+        // Create the exiftool command file
+        
+        // First we concatenate the strings
+        [scriptCommands addObject: @""]; // Empty string helps to add the terminal newline
+        NSString *exiftoolCommands = [scriptCommands componentsJoinedByString: @"\n"];
+        
+        // Then we write them to the file
+        NSError *writeError = nil;
+        NSString *exiftoolFile = [pathToDestinationDirectory stringByAppendingPathComponent: @"xt.sh"];
+        
+        [[NSFileManager defaultManager] createFileAtPath: exiftoolFile
+                                                    contents: nil
+                                                  attributes: nil];
+        [exiftoolCommands writeToFile: exiftoolFile
+                           atomically: YES
+                             encoding: NSUTF8StringEncoding
+                                error: &writeError];
+        if (writeError != nil)
+        {
+            // TODO Do something
+        }
+        
+        // The finalStatus should reflect whether a writeError occurred or not
+        
         finalStatus = (completedTransfers == [photos count]) ? MMEventStatusCompleted : MMEventStatusIncomplete;
 
         // And at the end we have to do it in case some change(s) did not get stored

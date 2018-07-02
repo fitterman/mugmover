@@ -1,3 +1,4 @@
+
 //
 //  MMFileUtility.m
 //  mugmover
@@ -43,6 +44,11 @@
     // Form the full destination path
     
     NSString *destPath = [directory stringByAppendingPathComponent: sourceFilename];
+
+    // Attempt to delete the destination file (in case it already exists)
+
+    [[NSFileManager defaultManager] removeItemAtPath: destPath
+                                               error: &error];
     
     // Copy the source to the destination
     
