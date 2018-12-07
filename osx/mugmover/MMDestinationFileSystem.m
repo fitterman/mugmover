@@ -125,7 +125,7 @@ NSString *destTypeIdentifier = @"filesystem";
         name = [event dateRange];
     }
  
-    name = [name stringByReplacingOccurrencesOfString: @"/" withString: @"\\f"];
+    name = [name stringByReplacingOccurrencesOfString: @"/" withString: @"-"];
     NSString *eventDirectoryName = [NSString stringWithFormat: @"%@ (%@)", name, [event uuid]];
     NSString *pathToDestinationDirectory = [NSString pathWithComponents: @[parentDirectoryPath, eventDirectoryName]];
  
@@ -194,18 +194,18 @@ NSString *destTypeIdentifier = @"filesystem";
 - (void) transferPhotosForEvent: (MMLibraryEvent *) event
                 uploadOperation: (MMUploadOperation *) uploadOperation
                windowController: (MMWindowController *) windowController
-                       folderId: (NSString *) folderId /* directory name for export */
+                       folderId: (NSString *) dirNameForExport /* parent directory for export */
 {
     @autoreleasepool
     {
         NSString *pathToDestinationDirectory = [self findDestinationDirectoryForEvent: event
-                                                                   underDirectoryPath: folderId];
+                                                                    underDirectoryPath: dirNameForExport];
         
         if (!pathToDestinationDirectory)
         {
             return; // TODO Verify this is the right action if you can't find/create the directory
         }
-        
+
         // Restore the preferences (defaults)
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         BOOL reprocessAllImagesPreviouslyTransmitted = [MMPrefsManager
@@ -217,17 +217,27 @@ NSString *destTypeIdentifier = @"filesystem";
         NSArray *photos = [MMPhoto getPhotosForEvent: event];
 
         // For file transfers, we generate a script that can be used to update the Exif
-        // data after the export. It's an array of strings, two per file. (one for echo,
-        // one for exiftool). There's an extra so we can get a terminal newline in the file.
-        NSMutableArray *scriptCommands = [[NSMutableArray alloc] initWithCapacity: (2 * [photos count]) + 1];
-
+        // data after the export. It's an array of strings, 3 per file. (one for echo,
+        // one for exiftool, one for touch to make the time match).
+        // There's 2 extras so we can insert an 'echo' of the event name and get a
+        // terminal newline in the file.
+        NSMutableArray *scriptCommands = [[NSMutableArray alloc] initWithCapacity: (3 * [photos count]) + 2];
+        if ([[event name] length] == 0)
+        {
+            [scriptCommands addObject: [NSString stringWithFormat: @"echo ; echo '   Event: (unnamed)'"]];
+        }
+        else
+        {
+            [scriptCommands addObject:
+                [NSString stringWithFormat: @"echo ; echo '   Event: '%@", [MMFileUtility bashEscapedString: [event name]]]];
+        }
+        
         // Get the preferences (defaults) for this event within this service
         NSMutableDictionary *albumState = [[defaults objectForKey: albumKey] mutableCopy];
 
         NSInteger completedTransfers = 0;
         NSInteger allCounter = 0;
         MMEventStatus finalStatus = MMEventStatusIncomplete; // Assume something goes wrong
-        
         for (MMPhoto *photo in photos)
         {
             NSError *error = nil;
@@ -262,6 +272,7 @@ NSString *destTypeIdentifier = @"filesystem";
             NSString *copiedFilePath = nil;
             
             BOOL imageRequiresConversion = [photo isFormatRequiringConversion];
+            // TODO Handle video
             if (imageRequiresConversion)
             {
                 // TODO Fix this to overwrite if exists
@@ -281,15 +292,30 @@ NSString *destTypeIdentifier = @"filesystem";
                            pathToDestinationDirectory, photo.iPhotoOriginalImagePath);
                 break; // TODO Verify we want to break out of the loop.
             }
-            
-            NSString* cmd = [NSString stringWithFormat: @"echo '%@'", copiedFilePath];
-            [scriptCommands addObject: cmd];
-            cmd = [NSString stringWithFormat: @"exiftool '%@' -DateTimeOriginal='%@' -Description=%@",
-                                copiedFilePath,
-                                [photo.originalDate stringByReplacingOccurrencesOfString: @"-" withString: @":"],
-                                [MMFileUtility bashEscapedString: [photo formattedDescription]]];
-            [scriptCommands addObject: cmd];
 
+            // Set the EXIF timestamp: Extract the last part of the path (the local sub-dir name)
+            NSMutableArray *pathComponents = [[copiedFilePath pathComponents] mutableCopy];
+            while ([pathComponents count] > 2)
+            {
+                [pathComponents removeObjectAtIndex: 0];
+            }
+            NSString *subdirPath = [NSString pathWithComponents:pathComponents];
+            NSString *escapedPath = [MMFileUtility bashEscapedString: subdirPath];
+            NSString* cmd = [NSString stringWithFormat: @"echo %@", escapedPath];
+            [scriptCommands addObject: cmd];
+            // exiftool only works for photos
+            if (![photo isVideo])
+            {
+                cmd = [NSString stringWithFormat: @"exiftool %@ -DateTimeOriginal='%@' -Description=%@",
+                                    [MMFileUtility bashEscapedString: subdirPath],
+                                    photo.originalDate,
+                                    [MMFileUtility bashEscapedString: [photo formattedDescription]]];
+                [scriptCommands addObject: cmd];
+            }
+            // This should address videos (I hope) and it's safe for all file types
+            cmd = [NSString stringWithFormat: @"touch -t %@ %@", [photo originalDateInTouchFormat],
+                                                                      escapedPath];
+            [scriptCommands addObject: cmd];
             completedTransfers++;
             [windowController incrementProgressBy: 1.0];
         }
@@ -304,22 +330,32 @@ NSString *destTypeIdentifier = @"filesystem";
         
         // Then we write them to the file
         NSError *writeError = nil;
-        NSString *exiftoolFile = [pathToDestinationDirectory stringByAppendingPathComponent: @"xt.sh"];
-        
-        [[NSFileManager defaultManager] createFileAtPath: exiftoolFile
+        NSString *exiftoolFilePath = [dirNameForExport stringByAppendingPathComponent: @"xt.sh"];
+
+        NSFileHandle *fh = [NSFileHandle fileHandleForWritingAtPath: exiftoolFilePath];
+        if (fh == nil) {
+            [[NSFileManager defaultManager] createFileAtPath: exiftoolFilePath
                                                     contents: nil
-                                                  attributes: @{ NSFilePosixPermissions : @0544 }];
-        
-        [exiftoolCommands writeToFile: exiftoolFile
-                           atomically: YES
-                             encoding: NSUTF8StringEncoding
-                                error: &writeError];
+                                                  attributes: @{ NSFilePosixPermissions : @0744 }];
+            fh = [NSFileHandle fileHandleForWritingAtPath: exiftoolFilePath];
+        }
+        @try
+        {
+            [fh seekToEndOfFile];
+            [fh writeData: [exiftoolCommands dataUsingEncoding: NSUTF8StringEncoding]];
+            [fh closeFile];
+        }
+        @catch (NSException *e)
+        {
+            NSLog(@"exception=%@", e);
+            writeError = [NSError errorWithDomain:@"MyStuff" code:123 userInfo: nil];
+        }
+    
         if (writeError != nil)
         {
             finalStatus = MMEventStatusIncomplete;    // TODO Do something
         }
         
-
         // And at the end we have to do it in case some change(s) did not get stored
         [defaults setObject: albumState forKey: albumKey];
 

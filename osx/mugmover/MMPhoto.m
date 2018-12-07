@@ -56,10 +56,11 @@ NSInteger const MMDefaultRetries = 3;
                     "        v.fileName versionFileName, " \
                     "        v.isOriginal, v.hasAdjustments, v.hasKeywords, " \
                     "        v.masterHeight, v.masterWidth, " \
+                    "        v.imageDate versionImageDate, " \
                     "        v.name versionName, v.processedHeight, v.processedWidth, v.rotation, " \
                     "        v.modelId versionModelId " /* For keywords */ \
                     "FROM RKVersion v " \
-                    "    JOIN RKMaster m  ON v.masterUuid = m.uuid " 
+                    "    JOIN RKMaster m  ON v.masterUuid = m.uuid "
 #define QUERY_BY_VERSION_UUID   BASE_QUERY \
                                 "WHERE v.isHidden != 1 AND v.showInLibrary = 1 AND v.uuid = ? "
 #define QUERY_BY_EVENT_UUID     BASE_QUERY \
@@ -166,69 +167,24 @@ extern Float64 const MMDegreesPerRadian;
     while (resultSet && [resultSet next])
     {
         counter++;
-        Float64 createDate = [resultSet doubleForColumn: @"createDate"];
-        NSDate *createDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) createDate];
-
-        long long int fileCreationDate = [resultSet longLongIntForColumn: @"fileCreationDate"];
-        NSDate *fileCreationDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) fileCreationDate];
-        long long int fileModificationDate = [resultSet longLongIntForColumn: @"fileModificationDate"];
-        NSDate *fileModificationDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) fileModificationDate];
-        long long int imageDate = [resultSet longLongIntForColumn: @"imageDate"];
-        NSDate *imageDateTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) imageDate];
-
+        long long int imageDateInDatabase = [resultSet longLongIntForColumn: @"versionImageDate"];
+        NSDate *imageDateInDatabaseTimestamp = [[NSDate alloc] initWithTimeIntervalSinceReferenceDate: (NSTimeInterval) imageDateInDatabase];
 
         NSDictionary *resultDictionary = [resultSet resultDictionary];
         MMPhoto *photo = [[MMPhoto alloc] initFromDictionary: resultDictionary
                                                      library: event.library];
- /* ################################################################################################
-  * TODO: Restore this functionality
 
-        NSDictionary *photoProperties =  @{
-                                           // From the master
-                                           @"createDateTimestamp": [dateFormat stringFromDate: createDateTimestamp],
-                                           @"imagePath": [@[library.libraryBasePath, imagePath] componentsJoinedByString: @"/"],
-                                           @"fileCreationDate": [dateFormat stringFromDate: fileCreationDateTimestamp],
-                                           @"fileModificationDate": [dateFormat stringFromDate: fileModificationDateTimestamp],
-                                           @"imageDate": [dateFormat stringFromDate: imageDateTimestamp],
-                                           };
-        DDLogInfo(@"      createDateTimestamp       %@", [dateFormat stringFromDate: createDateTimestamp]);
-        DDLogInfo(@"      fileCreationDateTimestamp %@", [dateFormat stringFromDate: fileCreationDateTimestamp]);
-        DDLogInfo(@"      imageDateTimestamp        %@", [dateFormat stringFromDate: imageDateTimestamp]);
-
-    // After, compare photo.originalDate against imateDateTimestamp
-
-        DDLogInfo(@"      Exif/DateTimeOriginal     %@", [dateFormat stringFromDate: exifDateTimestamp]);
-        NSTimeInterval deltaTime = [exifDateTimestamp timeIntervalSinceDate: imageDateTimestamp];
-
-        if (deltaTime != 0.0)
-        {
-            exifDiscrepancyCounter++;
-            DDLogInfo(@"                                ^^^^^^^^^^^^^^^^^^^ %@", name);
-            if (deltaTime > 0)
-            {
-                exifPositiveCounter++;
-            }
-            else
-            {
-                exifNegativeCounter++;
-            }
-        };
-
-        //DDLogInfo(@"Master/Version   %@", jsonString);
-        // DDLogInfo(@"MASTER     %ld %@ %@ %ld %@", counter, masterUuid, createDateTimestamp, versionNumber, versionUuid);
-  */
         if (photo)
         {
+            NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
+            [dateFormatter setDateFormat:@"yyyy:MM:dd HH:mm:ss"];
+            [dateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
+            NSString *stringFromDate = [dateFormatter stringFromDate:imageDateInDatabaseTimestamp];
+            photo.originalDate = stringFromDate;
+            photo.event = event;
             [result addObject: photo];
         }
-
     }
-    // DDLogInfo(@"MASTER     DONE");
-    // DDLogInfo(@"  Date/time mismatches detected=%ld (postive=%ld, negative=%ld)",
-    //          exifDiscrepancyCounter, exifPositiveCounter, exifNegativeCounter);
-    // DDLogInfo(@"  counter=%ld", counter);
-    // DDLogInfo(@"TODO ImageIO: CreateMeThrew error #203 (Duplicate property or field node)");
-    // DDLogInfo(@"TODO Look into using imageTimezoneName for time conversions");
 
     if (resultSet)
     {
@@ -338,14 +294,17 @@ extern Float64 const MMDegreesPerRadian;
     {
         for (MMFace *face in sortedFaces)
         {
-            if ([face.name length] > 0)
+            if ([face visible] && (![face rejected]))
             {
-                nonBlankNameCount++;
-                [names addObject: face.name];
-            }
-            else if (([face visible]) && (![face rejected]))
-            {
-                [names addObject: @"?"];
+                if ([face.name length] > 0)
+                {
+                    nonBlankNameCount++;
+                    [names addObject: face.name];
+                }
+                else
+                {
+                    [names addObject: @"?"];
+                }
             }
         }
     }
@@ -355,24 +314,37 @@ extern Float64 const MMDegreesPerRadian;
         /* Append the names*/
         if ([names count] > 1)
         {
-            [_desc appendString: @"Names (L to R): "];
-            [_desc appendString: [names componentsJoinedByString: @", "]];
-            [_desc appendString: @". "];
+            [_desc appendFormat: @"Name (L to R): %@. ", [names componentsJoinedByString: @", "]];
        }
         else if ([names count] == 1)
         {
-            [_desc appendString: @"Name: "];
-            [_desc appendString: [names objectAtIndex: 0]];
-            [_desc appendString: @". "];
+            [_desc appendFormat: @"Name: %@. ", [names objectAtIndex: 0]];
         }
     }
     
     if (_keywordList)
     {
-        [_desc appendString: @"Keyword(s): "];
-        [_desc appendString: _keywordList];
-        [_desc appendString: @". "];
+        NSMutableString *keywords = [_keywordList mutableCopy];
+        [keywords replaceOccurrencesOfString: @","
+                                  withString: @", "
+                                     options: NSLiteralSearch
+                                       range: NSMakeRange(0, [keywords length])];
+        [_desc appendFormat: @"Keyword(s): %@. ", keywords];
     }
+    
+    if (_event != nil)
+    {
+        NSString *ename = [_event name];
+        if (ename && ([ename length] > 0))
+        {
+            [_desc appendFormat: @"Event Name: %@. ", [_event name]];
+        }
+    }
+        // These captions might need the attention of a human being.
+    if (sortedFaces.count > 11)
+    {
+        [_desc appendString: @"LargeGroup. "];
+     }
     return (NSString *)_desc;
 }
 
@@ -476,41 +448,8 @@ extern Float64 const MMDegreesPerRadian;
         exifProperties = [[NSMutableDictionary alloc] init];
     }
 
-    [self populateDateFromExif: exifProperties];
     [_attributes setObject: exifProperties forKey: @"exif"];
     return error;
-}
-
-- (void) populateDateFromExif: (NSDictionary *) exifProperties
-{    
-    NSString *exifDateString;
-    for (NSString *keypath in @[@"Exif.DateTimeOriginal", @"Exif.DateTimeDigitized", @"TIFF.DateTime"])
-    {
-        exifDateString = [exifProperties valueForKeyPath: keypath];
-        if (exifDateString)
-        {
-            break;
-        }
-    }
-
-    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
-    [dateFormat setDateFormat: @"yyyy-MM-dd HH:mm:ss"];
-    // TODO: Use the same logic here as in the MMLibraryEvent for determining zone.
-    dateFormat.timeZone = [NSTimeZone timeZoneWithName: @"UTC"];
-
-    if (exifDateString)
-    {
-        NSDate *exifDateTimestamp = nil;
-        for (NSDateFormatter *exifDateFormat in [_library exifDateFormatters])
-        {
-            exifDateTimestamp = [exifDateFormat dateFromString: exifDateString];
-            if (exifDateTimestamp)
-            {
-                _originalDate = [dateFormat stringFromDate: exifDateTimestamp];
-                break;
-            }
-        }
-    }
 }
 
 #pragma mark Rotation and cropping code
@@ -1164,6 +1103,7 @@ extern Float64 const MMDegreesPerRadian;
     _attributes = nil;
     _caption = nil;
     _cropOrigin = nil;
+    _event = nil;
     [_exifDictionary removeAllObjects];
     _exifDictionary = nil;
     if (_faceArray)

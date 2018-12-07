@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "MMPhoto.h"
 #import "MMPhotoLibrary.h"
+#import "MMLibraryEvent.h"
 
 @class MMApiRequest;
 @class MMPoint;
@@ -24,6 +25,7 @@
 @property (assign, readonly)    Float64                     croppedHeight;
 @property (assign, readonly)    Float64                     croppedWidth;
 @property (strong)              NSMutableString *            desc;
+@property (strong)              MMLibraryEvent *             event;
 @property (strong)              NSMutableDictionary *       exifDictionary;
 @property (strong)              NSMutableArray *            faceArray;
 @property (assign)              NSInteger                   index;
