@@ -28,8 +28,4 @@
 
 + (NSString *) pathToTemporaryDirectory;
 
-+ (BOOL) setTimestampsTo: (NSString *)dateString
-           forFileAtPath: (NSString *)destPath;
-
-
 @end
