@@ -1255,10 +1255,26 @@ extern Float64 const MMDegreesPerRadian;
                                    versionName: [_attributes valueForKeyPath: @"photo.versionName"]];
 }
 
+/**
+ * Extracts the datetime in the format CCYYMMDDHHMM.SS for use with touch shell command.
+ */
+- (NSString *) originalDateInTouchFormat
+{
+    NSMutableArray *elements = [[NSMutableArray alloc] initWithCapacity: 8];
+    [elements addObject: [_originalDate substringWithRange:NSMakeRange(0, 4)]];
+    [elements addObject: [_originalDate substringWithRange:NSMakeRange(5, 2)]];
+    [elements addObject: [_originalDate substringWithRange:NSMakeRange(8, 2)]];
+    [elements addObject: [_originalDate substringWithRange:NSMakeRange(11, 2)]];
+    [elements addObject: [_originalDate substringWithRange:NSMakeRange(14, 2)]];
+    [elements addObject: @"."];
+    [elements addObject: [_originalDate substringWithRange:NSMakeRange(17, 2)]];
+    
+    return [elements componentsJoinedByString: @""];
+}
+
 - (NSString *) versionName
 {
     return [_attributes valueForKeyPath: @"photo.versionName"];
 }
-
 
 @end

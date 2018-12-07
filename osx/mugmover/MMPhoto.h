@@ -81,6 +81,8 @@
 
 - (BOOL) isVideo;
 
+- (NSString *) originalDateInTouchFormat;
+
 - (NSError *) processPhoto;
 
 - (NSError *) sendPhotoToMugmover;
