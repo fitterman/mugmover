@@ -279,5 +279,47 @@
     return directoryPath;
 }
 
+/**
+ * Set the creation and modification timestamps to a vaule specified by timestamp
+ * string of the format YYYY:MM:DD HH:MM:SS.
+ */
++ (BOOL) setTimestampsTo: (NSString *)dateString
+           forFileAtPath: (NSString *)destPath
+{
+    NSError *error = nil;
+    NSCalendar *gregorian = [[NSCalendar alloc]
+                             initWithCalendarIdentifier: NSGregorianCalendar];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    NSDateComponents *comps = [[NSDateComponents alloc] init];
+    
+    [comps setYear:   [[dateString substringWithRange:NSMakeRange(0, 4)] intValue]];
+    [comps setMonth:  [[dateString substringWithRange:NSMakeRange(5, 2)] intValue]];
+    [comps setDay:    [[dateString substringWithRange:NSMakeRange(8, 2)] intValue]];
+    [comps setHour:   [[dateString substringWithRange:NSMakeRange(11, 2)] intValue]];
+    [comps setMinute: [[dateString substringWithRange:NSMakeRange(14, 2)] intValue]];
+    [comps setSecond: [[dateString substringWithRange:NSMakeRange(17, 2)] intValue]];
+    
+    NSDate *date = [gregorian dateFromComponents: comps];
+    [fileManager setAttributes: @{NSFileCreationDate: date}
+                  ofItemAtPath: destPath
+                         error: &error];
+    
+    if (error)
+    {
+        NSLog(@"ERROR >> %@ (setting NSFileCreationDate)", error);
+        return FALSE;
+    }
+    
+    [fileManager setAttributes: @{NSFileModificationDate: date}
+                  ofItemAtPath: destPath
+                         error: &error];
+    if (error)
+    {
+        NSLog(@"ERROR >> %@ (setting NSFileModificationDate)", error);
+        return FALSE;
+    }
+    return TRUE;
+}
 
 @end
