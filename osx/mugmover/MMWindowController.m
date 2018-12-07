@@ -396,7 +396,9 @@
 {
     if (_progressWindowController.progressIndicator)
     {
-        [_progressWindowController.progressIndicator incrementBy: increment];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [_progressWindowController.progressIndicator incrementBy: increment];
+        });
     }
 }
 
@@ -405,10 +407,12 @@
  */
 - (void) setActivePhotoThumbnail: (NSImage *) photoThumbnailImage
 {
-    if (_progressWindowController.currentThumbnail)
-    {
-        _progressWindowController.currentThumbnail.image = photoThumbnailImage;
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (_progressWindowController.currentThumbnail)
+        {
+            _progressWindowController.currentThumbnail.image = photoThumbnailImage;
+        }
+    });
 }
 
 /**
