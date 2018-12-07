@@ -1,0 +1,155 @@
+SELECT minImageDate, minImageTimeZoneName, maxImageDate, maxImageTimeZoneName, name, versionCount 
+FROM RKFolder where isMagic != 1 AND isHidden != 1 AND  isInTrash != 1 ORDER BY minImageDate, maxImageDate, uuid;
+
+select distinct  f.uuid, f.name  from RKMaster m left join RKFolder f   on f.uuid = m.projectUuid and m.uuid is not null where m.isInTrash != 1;
+
+CREATE TABLE RKFolder
+modelId primary key
+uuid
+folderType
+name
+parentFolderUuid
+implicitAlbumUuid
+posterVersionUuid
+automaticallyGenerateFullSizePreviews
+versionCount
+minImageTimeZoneName
+maxImageTimeZoneName
+minImageDate
+maxImageDate
+folderPath
+createDate
+isExpanded
+isHidden
+isHiddenWhenEmpty
+isFavorite
+isInTrash
+isMagic
+colorLabelIndex
+sortAscending
+sortKeyPath
+
+
+TABLE RKMaster
+  Required
+    fileName
+    imagePath
+    isInTrash
+    originalVersionName
+    uuid
+
+  Captured but currently not used
+    colorSpaceName
+    fileCreationDate
+    fileModificationDate
+    fileSize
+    imageDate
+    isMissing
+    originalFileName
+    originalFileSize
+    name
+    projectUuid - see projectUuid on RKVersion
+    subtype - JPGST, IMGST, TIFST, VIDST
+    type - IMGT, VIDT (image, video)
+
+  Not Reviewed
+    hasNotes
+    
+    fileVolumeUuid
+    alternateMasterUuid
+    originalVersionUuid
+    fileIsReference (all zero)
+    isExternallyEditable
+    isTrulyRaw (all zero)
+    hasAttachments (all zero)
+    hasFocusPoints (null or zero)
+    createDate
+
+  Video Only
+    duration - not null for videos
+indicating duration in seconds
+including fractional seconds
+
+  Don't care
+    burstUuid
+    colorSpaceDefinition blob
+    faceDetectionState
+    fileAliasData blob
+    imageFormat - strangely
+it's a longish
+    imageHash
+    importedBy
+    importGroupUuid
+    pixelFormat
+    streamAssetId
+    streamSourceUuid
+    
+  );
+
+TABLE RKVersion
+  Required
+    uuid
+    masterHeight
+    masterWidth
+    processedHeight
+    processedWidth
+    versionNumber
+    masterUuid
+    rotation
+    fileName
+    isOriginal
+    showInLibrary
+    
+  Unused but of interest
+    imageDate
+    isFlagged
+    isInTrash
+    projectUuid - initially the same as thumbnailGroup, but tracks the CURRENT event. This is the "uuid" field of the RKFolder. RKFolder.name may be an empty string, but doesn't appear to be a null. Identical to value in RKMaster.
+
+  Definitely not of interest
+    thumbnailGroup - appears to be the ORIGINAL event into which the image was stored
+
+  Video Only
+    videoInPoint
+    videoOutPoint
+    videoPosterFramePoint
+
+  Raw Images
+    rawMasterUuid
+    rawVersion
+    nonRawMasterUuid
+
+  Currently Unused
+    adjSeqNum
+    hasAdjustments - 0, 1
+    hasEnabledAdjustments - 0, 1
+    
+    colorLabelIndex
+    contentVersion
+    createDate
+    editListData blob
+    editState
+    
+    exifLatitude decimal
+    exifLongitude decimal
+    
+    exportImageChangeDate
+    exportMetadataChangeDate
+    faceDetectionIsFromPreview
+    faceDetectionRotationFromMaster
+    hasKeywords
+    hasNotes
+    imageTimeZoneName
+    isEditable (all 1)
+    isHidden
+    mainRating
+    masterId
+    name
+    overridePlaceId
+    
+    propertiesVersion
+    renderVersion
+    stackUuid
+    supportedStatus
+
+    

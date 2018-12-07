@@ -1,0 +1,35 @@
+SELECT masterUuid, masterHeight, masterWidth, processedHeight,
+       processedWidth, rotation, imagePath, filename, versionUuid FROM RKVersion v 
+       FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid 
+       WHERE uuid = ? AND versionNumber = ? 
+
+SELECT v.versionNumber version, v.uuid versionUuid, m.uuid, imagePath, v.filename filename, 
+       masterUuid, masterHeight, masterWidth, processedHeight, processedWidth, 
+       rotation, isOriginal "
+ FROM RKVersion v JOIN RKMaster m ON m.uuid = v.masterUuid 
+ WHERE m.isInTrash != 1 AND m.originalVersionName  = ? AND 
+       "v.processedWidth = ? AND v.processedHeight = ? 
+ ORDER BY v.versionNumber DESC 
+
+SELECT v.filename, v.uuid versionUuid, imagePath 
+        FROM RKMaster m JOIN RKVersion v ON m.uuid = v.masterUuid 
+        INNER JOIN 
+          (SELECT uuid, MAX(versionNumber) version FROM RKVersion x 
+        WHERE masterUuid = ? GROUP BY masterUuid) lastVersion 
+        ON v.uuid = lastVersion.uuid AND v.versionNumber = lastVersion.version 
+
+=== NOT ANALYZED
+
+
+
+SELECT * FROM RKImageAdjustment 
+         WHERE name IN ('RKCropOperation', 'RKStraightenCropOperation') 
+         AND isEnabled = 1 
+         AND versionUuid = ? 
+         ORDER BY adjIndex
+
+SELECT f.*, fn.name, fn.uuid faceNameUuid, fn.fullName, fn.keyVersionUuid FROM RKDetectedFace f 
+            "LEFT JOIN RKFaceName fn ON f.faceKey = fn.faceKey 
+            "WHERE masterUuid = ?
+           withArgumentsInArray: args];
+
